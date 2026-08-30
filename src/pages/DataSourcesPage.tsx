@@ -1,4 +1,5 @@
 import { Database, ScanLine, ShieldCheck } from "lucide-react";
+import { AccountImportPanel } from "@/components/account/AccountImportPanel";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusCard } from "@/components/shared/StatusCard";
 import {
@@ -40,6 +41,7 @@ export default function DataSourcesPage() {
           icon={ShieldCheck}
         />
       </section>
+      <AccountImportPanel />
       <Card className="border-primary/25">
         <CardHeader>
           <CardTitle>{t("imports.security.title")}</CardTitle>

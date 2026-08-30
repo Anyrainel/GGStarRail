@@ -54,7 +54,10 @@ export default function HomePage() {
             <CardDescription>
               {account
                 ? t("home.snapshot.source", {
-                    source: account.source.provider,
+                    source:
+                      account.source.provider === "demo-account"
+                        ? t("source.demo")
+                        : account.source.provider,
                   })
                 : t("home.snapshot.empty")}
             </CardDescription>

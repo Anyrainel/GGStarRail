@@ -7,6 +7,12 @@
     "dev": "vite",
     "dev:wrangler": "npm run dev:worker",
     "dev:worker": "wrangler dev --config wrangler.jsonc",
+    "data:sync": "node scripts/sync-hsr-reference.mjs",
+    "data:verify": "node scripts/sync-hsr-reference.mjs --verify-only",
+    "data:check": "node scripts/sync-hsr-reference.mjs --check-generated",
+    "assets:sync": "node scripts/sync-hsr-assets.mjs",
+    "assets:verify": "node scripts/sync-hsr-assets.mjs --verify-only",
+    "assets:check": "node scripts/sync-hsr-assets.mjs --check-generated",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "type-check": "tsc -b --noEmit",
@@ -20,7 +26,7 @@
     "depcheck": "depcruise src tests worker --config .dependency-cruiser.cjs",
     "check:worker-config": "node scripts/check-worker-config.mjs",
     "check:worker": "npm run check:worker-config && npm run type-check:worker && npm run test:worker",
-    "check": "npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
+    "check": "npm run data:check && npm run assets:check && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

@@ -68,16 +68,17 @@ Provider DTOs stay outside the canonical domain:
 
 1. A provider validates its external envelope.
 2. It converts to a locale-neutral `AccountImportDraft` or data manifest.
-3. A future review layer presents safe warnings.
+3. The local import review presents counts and safe warnings before applying.
 4. One store-owned action applies the accepted snapshot.
 
 The current provider boundary includes:
 
-- GIlore manifest validation only.
-- GGStarRail scanner-envelope validation only.
+- verified GIlore reference-bundle sync and lazy catalog loaders;
+- native GGStarRail and explicit GOODScanner experimental-envelope adapters,
+  with review-before-apply local file import;
 - HoYoLAB injected transport with one-use credential handling only.
 
-No provider performs a live network request in this foundation.
+No GGStarRail provider performs a live network request for reference data.
 
 ## Worker
 

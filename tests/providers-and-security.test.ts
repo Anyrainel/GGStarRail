@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import manifest from "@/generated/hsr-reference/manifest.json";
 import { parseGIloreManifest } from "@/providers/gilore/manifest";
 import {
   EphemeralAuthMaterial,
@@ -11,38 +12,54 @@ import { PROVIDER_REGISTRY } from "@/providers/types";
 import { makeAccountSnapshot } from "./fixtures";
 
 const credentialMarker = "ltoken=VERY_PRIVATE_MARKER_2026";
+const V1_COUNT_KEYS = [
+  "cavern_relic_sets",
+  "character_experience_tables",
+  "characters",
+  "combat_types",
+  "light_cone_experience_tables",
+  "light_cones",
+  "logical_relic_pieces",
+  "paths",
+  "planar_ornament_sets",
+  "properties",
+  "relic_experience_tables",
+  "relic_main_affix_character_weights",
+  "relic_main_affix_score_bases",
+  "relic_main_affixes",
+  "relic_piece_variants",
+  "relic_sets",
+  "relic_slots",
+  "relic_sub_affix_character_weights",
+  "relic_sub_affix_score_bases",
+  "relic_sub_affixes",
+] as const;
 
 describe("provider and credential boundaries", () => {
-  it("accepts only an HSR, bilingual, version-1 GIlore manifest", () => {
-    const manifest = {
-      format: "ggstarrail-data",
-      schemaVersion: 1,
-      game: "honkai-star-rail",
-      provider: "gilore",
-      locales: ["en", "zh-CN"],
-      provenance: {
-        repository: "https://example.com/independent-hsr-data",
-        revision: "abcdef1234567890",
-        extractorVersion: "0.1.0",
-        generatedAt: "2026-08-30T00:00:00.000Z",
-        license: "review-required",
-      },
-      datasets: [
-        {
-          id: "characters",
-          version: "1",
-          recordCount: 0,
-          checksum: `sha256:${"a".repeat(64)}`,
-        },
-      ],
-    } as const;
+  it("accepts only the two exact audited GIlore v1 manifest shapes", () => {
     expect(parseGIloreManifest(manifest).locales).toEqual(["en", "zh-CN"]);
+    const v1Counts = Object.fromEntries(
+      V1_COUNT_KEYS.map((key) => [key, manifest.counts[key]])
+    );
+    expect(
+      parseGIloreManifest({
+        ...manifest,
+        counts: v1Counts,
+        schema_version: "1.0.0",
+      }).schema_version
+    ).toBe("1.0.0");
     expect(() =>
-      parseGIloreManifest({ ...manifest, schemaVersion: 2 })
-    ).toThrow();
+      parseGIloreManifest({ ...manifest, schema_version: "1.2.0" })
+    ).toThrow(/schema_version/);
     expect(() =>
-      parseGIloreManifest({ ...manifest, game: "genshin" })
-    ).toThrow();
+      parseGIloreManifest({
+        ...manifest,
+        source: { ...manifest.source, source_id: "other_source" },
+      })
+    ).toThrow(/source_id/);
+    expect(() =>
+      parseGIloreManifest({ ...manifest, game_id: "genshin" })
+    ).toThrow(/game_id/);
   });
 
   it("parses the GGStarRail scanner envelope and rejects credential fields", () => {

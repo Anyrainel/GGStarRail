@@ -1,6 +1,5 @@
 # Security and import boundaries
-bounded error codes so redaction is defense in depth rather than the primary
-control.
+
 ## Authentication-cookie invariant
 
 HoYoLAB authentication-cookie material is an ephemeral request input, not app
@@ -24,10 +23,13 @@ not be logged, and failures must not mutate the workspace.
 
 ## File imports
 
-Scanner imports validate the outer format and canonical account snapshot with
-Zod. A recursive guard rejects credential-shaped field names before parsing.
-Future file-size, checksum, and partial-coverage checks belong in the adapter,
-before any store action.
+Scanner imports validate the versioned outer format and canonical account
+snapshot with Zod. The GOODScanner experimental format has its own explicit
+adapter instead of weakening either schema. A recursive guard rejects
+credential-shaped field names before parsing. The UI produces a review draft;
+only a separate apply action replaces the account, so parse failures cannot
+mutate the store. Future file-size or signed-export checks belong in the
+adapter before that store action.
 
 ## Diagnostics
 

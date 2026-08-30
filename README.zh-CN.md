@@ -11,20 +11,31 @@ GGStarRail 是一个本地优先的《崩坏：星穹铁道》账号、背包、
 
 ```powershell
 npm install
+npm run data:sync
+npm run assets:sync
 npm run dev
 ```
+
+`data:sync` 会先校验同级 GIlore 仓库中的规范化数据包，再写入本仓库已忽略的
+本地生成目录。全新检出时，需要先在 GIlore 中生成其未纳入 Git 的数据包，或通过
+`--source` 指定另一个已验证的数据包；详见[数据来源要求](docs/source-provenance.md)。
+`assets:sync` 只消费 GIlore 已生成并校验的资源包，将图片写入本仓库忽略的本地缓存；
+GGStarRail 不提交或主张拥有上游游戏美术资源。
 
 Vite 默认监听 `http://localhost:5173`。可另行运行 `npm run dev:worker`
 启动不带任何线上绑定的 Worker 外壳；它目前只提供 `GET /api/health`。
 
 ## 当前真实范围
 
-已实现：React 19 应用外壳、响应式路由、双语目录、星铁领域模型、Zustand
-版本化持久化、独立备份封装、基础评分/计算筛选/建议整理服务、导入契约、安全错误
-处理、Worker 健康检查以及测试和边界规则。
+已实现：React 19 应用外壳、响应式路由、双语目录、星铁领域模型、完整且按需加载的
+GIlore 图鉴数据、可复现的数据同步与完整性校验、Zustand 版本化持久化、独立备份
+封装、可搜索筛选并查看详细数据的角色/光锥/遗器图鉴、账号背包视图、使用真实图鉴
+ID 的演示账号、导入前审阅的本地 JSON 文件流程、GGStarRail 与 GOODScanner 的显式
+适配器、基础评分/计算筛选/建议整理服务、安全错误处理、Worker 健康检查以及测试和
+边界规则。校验失败的导入不会修改当前账号数据。
 
-仅搭好接口：真实 GIlore 星铁数据、扫描器文件导入、HoYoLAB 网络请求、图鉴内容、
-完整配装编辑器、云备份、身份认证、Worker 存储与生产配置。
+后续接入：实时扫描采集与正式扫描器交接、HoYoLAB 网络请求、完整配装编辑器、云备份、
+身份认证、Worker 存储与生产配置。
 
 明确排除：队伍伤害优化、原神伤害引擎和充能计算器。
 

@@ -38,12 +38,13 @@ and error recovery are localized in English and Simplified Chinese.
 - Triage emits only `keep`, `review`, or `salvage-candidate` labels. Locked and
   equipped items can be protected, and no in-game mutation exists.
 
-## Scaffold-only features
+## Local data boundary
 
-The pages do not yet provide editors, bulk actions, import review, or real
-catalog names. GIlore and scanner code currently validates envelopes; it does
-not ship production datasets or watch files. The HoYoLAB adapter has no
-endpoint, request implementation, response schema, or UI.
+The prototype imports the complete normalized GIlore reference bundle through
+an explicit verified sync. Generated data is local and ignored rather than
+committed. Catalog members load lazily and retain stable IDs, bilingual values,
+and provenance. The HoYoLAB adapter still has no endpoint, request
+implementation, response schema, or credential UI.
 
 ## Non-goals
 

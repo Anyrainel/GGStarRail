@@ -8,7 +8,7 @@ export const StableIdSchema = z
 
 export const ImportReceiptSchema = z
   .object({
-    provider: z.enum(["scanner-export", "hoyolab-account"]),
+    provider: z.enum(["scanner-export", "hoyolab-account", "demo-account"]),
     formatVersion: z.number().int().positive(),
     sourceVersion: z.string().min(1),
     sourceRevision: z.string().min(1).optional(),

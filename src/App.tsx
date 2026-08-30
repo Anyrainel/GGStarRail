@@ -78,6 +78,7 @@ export default function App() {
           path={APP_PATHS.archiveCharacters}
           element={
             <ArchivePage
+              kind="characters"
               titleKey="route.archiveCharacters.title"
               descriptionKey="route.archiveCharacters.description"
             />
@@ -87,6 +88,7 @@ export default function App() {
           path={APP_PATHS.archiveLightCones}
           element={
             <ArchivePage
+              kind="lightCones"
               titleKey="route.archiveLightCones.title"
               descriptionKey="route.archiveLightCones.description"
             />
@@ -96,6 +98,7 @@ export default function App() {
           path={APP_PATHS.archiveRelicSets}
           element={
             <ArchivePage
+              kind="relicSets"
               titleKey="route.archiveRelicSets.title"
               descriptionKey="route.archiveRelicSets.description"
             />

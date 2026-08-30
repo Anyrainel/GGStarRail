@@ -7,5 +7,7 @@ coverage/
 *.tsbuildinfo
 playwright-report/
 test-results/
+/src/generated/hsr-reference/
+/public/assets/ggstarrail/cache/
 .DS_Store
 Thumbs.db

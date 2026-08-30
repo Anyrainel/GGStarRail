@@ -1,44 +1,122 @@
 import { z } from "zod";
 
-export const LocalizedTextSchema = z
+const Sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
+const SourceFileEntrySchema = z
   .object({
-    en: z.string().min(1),
-    "zh-CN": z.string().min(1),
+    row_count: z.number().int().nonnegative(),
+    sha256: Sha256Schema,
+  })
+  .strict();
+const BundleFileEntrySchema = z
+  .object({
+    byte_count: z.number().int().nonnegative(),
+    entity_count: z.number().int().nonnegative().nullable(),
+    sha256: Sha256Schema,
   })
   .strict();
 
-export type LocalizedText = z.infer<typeof LocalizedTextSchema>;
+export const ReferenceLocaleSchema = z.enum(["en", "zh-CN"]);
 
-export const SourceProvenanceSchema = z
+export const BundleSchemaVersionSchema = z.enum(["1.0.0", "1.1.0"]);
+
+const CommonCountsShape = {
+  cavern_relic_sets: z.number().int().nonnegative(),
+  character_experience_tables: z.number().int().nonnegative(),
+  characters: z.number().int().nonnegative(),
+  combat_types: z.number().int().nonnegative(),
+  light_cone_experience_tables: z.number().int().nonnegative(),
+  light_cones: z.number().int().nonnegative(),
+  logical_relic_pieces: z.number().int().nonnegative(),
+  paths: z.number().int().nonnegative(),
+  planar_ornament_sets: z.number().int().nonnegative(),
+  properties: z.number().int().nonnegative(),
+  relic_experience_tables: z.number().int().nonnegative(),
+  relic_main_affix_character_weights: z.number().int().nonnegative(),
+  relic_main_affix_score_bases: z.number().int().nonnegative(),
+  relic_main_affixes: z.number().int().nonnegative(),
+  relic_piece_variants: z.number().int().nonnegative(),
+  relic_sets: z.number().int().nonnegative(),
+  relic_slots: z.number().int().nonnegative(),
+  relic_sub_affix_character_weights: z.number().int().nonnegative(),
+  relic_sub_affix_score_bases: z.number().int().nonnegative(),
+  relic_sub_affixes: z.number().int().nonnegative(),
+} as const;
+
+const V1CountsSchema = z.object(CommonCountsShape).strict();
+const V1_1CountsSchema = z
   .object({
-    repository: z.string().url(),
-    revision: z.string().min(7),
-    extractorVersion: z.string().min(1),
-    generatedAt: z.string().datetime(),
-    license: z.string().min(1),
-    notes: z.string().min(1).optional(),
+    ...CommonCountsShape,
+    character_enhancement_variants: z.number().int().nonnegative(),
+    character_ranks: z.number().int().nonnegative(),
+    character_servant_attachments: z.number().int().nonnegative(),
+    character_servant_skills: z.number().int().nonnegative(),
+    character_servants: z.number().int().nonnegative(),
+    character_skills: z.number().int().nonnegative(),
+    character_skills_using_description_fallback: z.number().int().nonnegative(),
+    character_trace_levels: z.number().int().nonnegative(),
+    character_trace_nodes: z.number().int().nonnegative(),
+    enhanced_character_ranks: z.number().int().nonnegative(),
+    enhanced_character_skills: z.number().int().nonnegative(),
+    enhanced_character_trace_levels: z.number().int().nonnegative(),
+    enhanced_character_trace_nodes: z.number().int().nonnegative(),
+    light_cone_superimpositions: z.number().int().nonnegative(),
+    progression_items: z.number().int().nonnegative(),
+    properties_with_real_icons: z.number().int().nonnegative(),
   })
   .strict();
 
-export const DatasetManifestEntrySchema = z
+const ManifestFilesSchema = z
   .object({
-    id: z.string().regex(/^[a-z][a-z0-9-]*$/),
-    version: z.string().min(1),
-    recordCount: z.number().int().nonnegative(),
-    checksum: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+    "characters.json": BundleFileEntrySchema,
+    "corroboration.json": BundleFileEntrySchema,
+    "diagnostics.json": BundleFileEntrySchema,
+    "light_cones.json": BundleFileEntrySchema,
+    "progression.json": BundleFileEntrySchema,
+    "property_tables.json": BundleFileEntrySchema,
+    "relic_pieces.json": BundleFileEntrySchema,
+    "relic_sets.json": BundleFileEntrySchema,
   })
   .strict();
 
-export const DataBundleManifestSchema = z
+const ManifestSourceSchema = z
   .object({
-    format: z.literal("ggstarrail-data"),
-    schemaVersion: z.literal(1),
-    game: z.literal("honkai-star-rail"),
-    provider: z.literal("gilore"),
-    locales: z.tuple([z.literal("en"), z.literal("zh-CN")]),
-    provenance: SourceProvenanceSchema,
-    datasets: z.array(DatasetManifestEntrySchema).min(1),
+    branch: z.string().min(1),
+    commit_time: z.string().datetime({ offset: true }),
+    commit_title: z.string().min(1),
+    license_status: z.string().min(1),
+    remote_url: z.string().url(),
+    revision: z.string().regex(/^[a-f0-9]{40}$/),
+    source_id: z.literal("turn_based_game_data"),
+    source_version: z.string().min(1),
   })
   .strict();
+
+const CommonManifestShape = {
+  bundle_id: z.literal("ggstarrail-reference"),
+  files: ManifestFilesSchema,
+  game_id: z.literal("honkai_star_rail"),
+  locales: z.tuple([z.literal("en"), z.literal("zh-CN")]),
+  source: ManifestSourceSchema,
+  source_files: z.record(z.string().min(1), SourceFileEntrySchema),
+} as const;
+
+export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
+  z
+    .object({
+      ...CommonManifestShape,
+      counts: V1CountsSchema,
+      schema_version: z.literal("1.0.0"),
+    })
+    .strict(),
+  z
+    .object({
+      ...CommonManifestShape,
+      counts: V1_1CountsSchema,
+      schema_version: z.literal("1.1.0"),
+    })
+    .strict(),
+]);
 
 export type DataBundleManifest = z.infer<typeof DataBundleManifestSchema>;
+export type BundleSchemaVersion = z.infer<typeof BundleSchemaVersionSchema>;
+export type ReferenceLocale = z.infer<typeof ReferenceLocaleSchema>;

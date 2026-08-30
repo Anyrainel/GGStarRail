@@ -1,0 +1,140 @@
+{
+  "characters": {
+    "bundle_id": "ggstarrail-reference",
+    "collection": "characters",
+    "game_id": "honkai_star_rail",
+    "schema_version": "1.0.0",
+    "source_revision": "014e33e2404f8cd668bf06fc2ea6db53b6bc3992",
+    "value": [
+      {
+        "id": "1001",
+        "rarity": 4,
+        "path_id": "Knight",
+        "combat_type_id": "Ice",
+        "name": {
+          "en": { "value": "March 7th", "provenance": {} },
+          "zh-CN": { "value": "三月七", "provenance": {} }
+        },
+        "description": null,
+        "max_promotion": 6,
+        "max_rank": 6,
+        "max_energy": 120,
+        "experience_type": 1,
+        "icon_path": "SpriteOutput/AvatarRoundIcon/1001.png",
+        "promotions": [],
+        "skills": [
+          {
+            "id": "100101",
+            "name": {
+              "en": { "value": "Frigid Cold Arrow", "provenance": {} },
+              "zh-CN": { "value": "极寒的弓矢", "provenance": {} }
+            },
+            "description": {
+              "en": { "value": "Deals Ice DMG.", "provenance": {} },
+              "zh-CN": { "value": "造成冰属性伤害。", "provenance": {} }
+            },
+            "simple_description": null,
+            "trigger_key": "Skill01",
+            "attack_type": "Normal",
+            "effect_type": "SingleAttack",
+            "max_level": 1,
+            "levels": [{ "level": 1, "parameters": [0.5] }]
+          }
+        ]
+      }
+    ]
+  },
+  "lightCones": {
+    "bundle_id": "ggstarrail-reference",
+    "collection": "light_cones",
+    "game_id": "honkai_star_rail",
+    "schema_version": "1.0.0",
+    "source_revision": "014e33e2404f8cd668bf06fc2ea6db53b6bc3992",
+    "value": [
+      {
+        "id": "20000",
+        "rarity": 3,
+        "path_id": "Knight",
+        "name": {
+          "en": { "value": "Arrows", "provenance": {} },
+          "zh-CN": { "value": "锋镝", "provenance": {} }
+        },
+        "description": {
+          "en": { "value": "A legacy Light Cone.", "provenance": {} },
+          "zh-CN": { "value": "旧版光锥。", "provenance": {} }
+        },
+        "background_description": {
+          "en": { "value": "Legacy background.", "provenance": {} },
+          "zh-CN": { "value": "旧版背景。", "provenance": {} }
+        },
+        "max_promotion": 6,
+        "max_superimposition": 1,
+        "experience_type": 1,
+        "icon_path": "SpriteOutput/ItemIcon/20000.png",
+        "promotions": [],
+        "effect": {
+          "id": "20000",
+          "name": {
+            "en": { "value": "Crisis", "provenance": {} },
+            "zh-CN": { "value": "危机", "provenance": {} }
+          },
+          "description": {
+            "en": { "value": "Increases CRIT Rate.", "provenance": {} },
+            "zh-CN": { "value": "提高暴击率。", "provenance": {} }
+          },
+          "superimpositions": [{ "level": 1, "parameters": [0.12] }]
+        }
+      }
+    ]
+  },
+  "progression": {
+    "bundle_id": "ggstarrail-reference",
+    "collection": "progression",
+    "game_id": "honkai_star_rail",
+    "schema_version": "1.0.0",
+    "source_revision": "014e33e2404f8cd668bf06fc2ea6db53b6bc3992",
+    "value": {
+      "character_experience": [
+        { "id": 1, "levels": [{ "level": 1, "experience": 0 }] }
+      ],
+      "light_cone_experience": [
+        { "id": 1, "levels": [{ "level": 1, "experience": 0 }] }
+      ],
+      "relic_experience": [
+        { "id": 1, "levels": [{ "level": 0, "experience": 0 }] }
+      ],
+      "relic_main_affixes": [],
+      "relic_sub_affixes": [],
+      "relic_scoring": {
+        "main_affix_base_values": [],
+        "sub_affix_base_values": [],
+        "main_affix_character_weights": [],
+        "sub_affix_character_weights": []
+      }
+    }
+  },
+  "propertyTables": {
+    "bundle_id": "ggstarrail-reference",
+    "collection": "property_tables",
+    "game_id": "honkai_star_rail",
+    "schema_version": "1.0.0",
+    "source_revision": "014e33e2404f8cd668bf06fc2ea6db53b6bc3992",
+    "value": {
+      "properties": [
+        {
+          "id": "StanceBreakAddedRatio",
+          "name": null,
+          "relic_name": null,
+          "value_kind": "unknown",
+          "display_order": 18,
+          "is_displayed": false,
+          "is_battle_displayed": false,
+          "icon_path": "0"
+        }
+      ],
+      "paths": [],
+      "combat_types": [],
+      "relic_slots": []
+    }
+  }
+}
