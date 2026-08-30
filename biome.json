@@ -1,0 +1,61 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.12/schema.json",
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "useExhaustiveDependencies": "warn",
+        "noUnusedVariables": "error",
+        "noUnusedFunctionParameters": "error",
+        "noUnusedImports": "error"
+      },
+      "style": {
+        "useNodejsImportProtocol": "error",
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "lineEnding": "lf",
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    }
+  },
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": true
+    }
+  },
+  "css": {
+    "parser": { "tailwindDirectives": true }
+  },
+  "files": {
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/node_modules",
+      "!**/coverage",
+      "!**/.wrangler",
+      "!**/*.d.ts"
+    ]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  }
+}

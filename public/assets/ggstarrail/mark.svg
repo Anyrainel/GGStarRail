@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">GGStarRail</title>
+  <defs>
+    <linearGradient id="rail" x1="8" y1="54" x2="56" y2="10" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#55d5e6"/>
+      <stop offset="1" stop-color="#ffd16a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="26" fill="#111a33" stroke="url(#rail)" stroke-width="3"/>
+  <path d="M12 38c11-1 18-9 22-22 5 12 11 19 19 21-10 1-17 6-21 14-4-7-10-11-20-13Z" fill="none" stroke="url(#rail)" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="48" cy="17" r="3" fill="#ffd16a"/>
+</svg>

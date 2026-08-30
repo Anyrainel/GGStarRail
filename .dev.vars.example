@@ -1,0 +1,2 @@
+# Copy to .dev.vars only when a future Worker feature has a documented need.
+# Never place HoYoLAB cookies or authentication-cookie material in this file.

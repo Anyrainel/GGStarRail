@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ggstarrail-worker",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-30",
+  "workers_dev": true,
+  "vars": {
+    "APP_ID": "ggstarrail-local",
+    "ALLOWED_ORIGIN": "http://localhost:5173"
+  }
+  // Add development bindings only after documenting their provenance.
+  // Keep account IDs, resource IDs, routes, and secrets out of this scaffold.
+}
