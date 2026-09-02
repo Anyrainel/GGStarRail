@@ -87,6 +87,28 @@ describe("combined Account inventory", () => {
         name: "Inventory Character results",
       })
     ).toBeInTheDocument();
+    await within(lightConeSection).findByRole("region", {
+      name: "Inventory Light Cone results",
+    });
+    await within(relicSection).findByRole("region", {
+      name: "Inventory Relic results",
+    });
+
+    const characterIcon = characterSection.querySelector(
+      "[data-item-icon-kind='character']"
+    );
+    const lightConeIcon = lightConeSection.querySelector(
+      "[data-item-icon-kind='light-cone']"
+    );
+    const relicIcon = relicSection.querySelector(
+      "[data-item-icon-kind='relic-piece']"
+    );
+    expect(characterIcon).toHaveAttribute("data-item-level");
+    expect(characterIcon?.querySelector("[data-item-badge]")).not.toBeNull();
+    expect(lightConeIcon).toHaveAttribute("data-item-level");
+    expect(lightConeIcon?.querySelector("[data-item-badge]")).not.toBeNull();
+    expect(relicIcon).toHaveAttribute("data-item-level");
+    expect(relicIcon).toHaveAttribute("data-item-rarity");
   });
 
   it("combines Cavern and Planar Relics with independent quick filters", async () => {

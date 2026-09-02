@@ -117,8 +117,14 @@ describe("Archive catalogs", () => {
     expect(trailblazer).not.toHaveTextContent("8001");
     expect(trailblazer).not.toHaveAccessibleName(/8001/);
     expect(trailblazer).not.toHaveTextContent("{NICKNAME}");
+    expect(
+      queryElement(trailblazer, '[data-item-icon-kind="character"]')
+    ).toHaveAttribute("data-item-rarity", "5");
     await user.click(trailblazer);
     let detail = screen.getByTestId("character-detail");
+    expect(
+      queryElement(detail, '[data-item-icon-kind="character"]')
+    ).toHaveAttribute("data-item-rarity", "5");
     expect(detail).toHaveTextContent("A girl/boy who boarded");
     expect(detail).not.toHaveTextContent("{F#");
     expect(detail).not.toHaveTextContent("{M#");
@@ -222,6 +228,12 @@ describe("Archive catalogs", () => {
     expect(catalogItem(region, "light-cone", "20000")).toHaveTextContent(
       "Arrows"
     );
+    expect(
+      queryElement(
+        catalogItem(region, "light-cone", "20000"),
+        '[data-item-icon-kind="light-cone"]'
+      )
+    ).toHaveAttribute("data-item-rarity", "3");
     await user.selectOptions(
       screen.getByRole("combobox", { name: "Path" }),
       "Rogue"
@@ -235,6 +247,9 @@ describe("Archive catalogs", () => {
       screen.getByRole("heading", { level: 2, name: "Arrows" }),
       "aside"
     );
+    expect(
+      queryElement(detail, '[data-item-icon-kind="light-cone"]')
+    ).toHaveAttribute("data-item-rarity", "3");
     expect(
       within(detail).getByRole("heading", { level: 3, name: "Crisis" })
     ).toBeInTheDocument();
@@ -562,6 +577,12 @@ describe("Archive catalogs", () => {
     const search = screen.getByRole("searchbox", { name: "Search" });
     await user.type(search, "太空封印站");
     expect(within(region).getAllByRole("button")).toHaveLength(1);
+    expect(
+      queryElement(
+        catalogItem(region, "relic-set", "301"),
+        '[data-item-icon-kind="relic-set"]'
+      )
+    ).toHaveAttribute("data-item-rarity", "5");
     let detail = closestElement(
       await screen.findByRole("heading", {
         level: 2,
@@ -572,6 +593,9 @@ describe("Archive catalogs", () => {
     expect(within(detail).getByText("Logical pieces (2)")).toBeInTheDocument();
     expect(within(detail).getByText("Planar Sphere")).toBeInTheDocument();
     expect(within(detail).getByText("Link Rope")).toBeInTheDocument();
+    expect(
+      detail.querySelectorAll('[data-item-icon-kind="relic-piece"]')
+    ).toHaveLength(2);
 
     const advancedCatalogSummary = screen.getByText("Advanced catalog data", {
       selector: "summary",

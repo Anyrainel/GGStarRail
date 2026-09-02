@@ -66,19 +66,19 @@ describe("Account Data source and lock-state presentation", () => {
     await user.selectOptions(status, "unknown-lock");
     await waitFor(() => {
       expect(
-        within(lightConeSection).getAllByText("Lock state unknown")
-      ).toHaveLength(2);
+        lightConeSection.querySelectorAll("[data-item-lock='unknown']")
+      ).toHaveLength(1);
     });
 
     await user.selectOptions(status, "unlocked");
     await waitFor(() => {
       expect(
-        within(lightConeSection).getAllByText("Lock state unknown")
-      ).toHaveLength(1);
+        lightConeSection.querySelectorAll("[data-item-lock='unknown']")
+      ).toHaveLength(0);
     });
   });
 
-  it("exposes unknown Relic lock state as its own filter and badge", async () => {
+  it("exposes unknown Relic lock state as its own filter and icon marker", async () => {
     const account = await createDemoAccount();
     const cavernRelic = account.relics.find((relic) =>
       ["head", "hands", "body", "feet"].includes(relic.slot)
@@ -102,9 +102,9 @@ describe("Account Data source and lock-state presentation", () => {
     await user.selectOptions(status, "unknown-lock");
 
     await waitFor(() => {
-      const unknownLabels =
-        within(relicSection).getAllByText("Lock state unknown");
-      expect(unknownLabels.length).toBeGreaterThan(1);
+      expect(
+        relicSection.querySelectorAll("[data-item-lock='unknown']")
+      ).toHaveLength(1);
     });
     expect(
       within(status).getByRole("option", { name: "Lock state unknown" })

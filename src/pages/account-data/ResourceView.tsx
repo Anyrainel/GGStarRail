@@ -24,12 +24,13 @@ import {
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { APP_PATHS } from "@/config/navigation";
-import type { RelicCategory } from "@/domain/account/schemas";
+import type { Relic, RelicCategory } from "@/domain/account/schemas";
 import { generateResourceSuggestions } from "@/domain/resources/recommendations";
 import type {
   ResourceActionKind,
@@ -145,6 +146,10 @@ export function ResourceView() {
       (categoryFilter === "all" || suggestion.category === categoryFilter) &&
       (priorityFilter === "all" || suggestion.priority === priorityFilter) &&
       (setFilter === "all" || suggestion.setId === setFilter)
+  );
+  const relicByKey = useMemo(
+    () => new Map((account?.relics ?? []).map((relic) => [relic.key, relic])),
+    [account?.relics]
   );
   const setOptions = useMemo(
     () =>
@@ -406,6 +411,11 @@ export function ResourceView() {
                         suggestion={suggestion}
                         data={data}
                         locale={locale}
+                        sourceRelic={
+                          suggestion.kind === "synthesize"
+                            ? undefined
+                            : relicByKey.get(suggestion.relicKey)
+                        }
                       />
                     ))}
                   </div>
@@ -423,10 +433,12 @@ function ResourceSuggestionCard({
   suggestion,
   data,
   locale,
+  sourceRelic,
 }: {
   suggestion: ResourceSuggestion;
   data: NonNullable<ReturnType<typeof useBuildReferences>["data"]>;
   locale: ReturnType<typeof useI18n>["locale"];
+  sourceRelic?: Relic;
 }) {
   const { t } = useI18n();
   const piece = data.relicPieces.byId.get(suggestion.targetDefinitionId);
@@ -441,7 +453,7 @@ function ResourceSuggestionCard({
   return (
     <article className="overflow-hidden rounded-xl border border-border bg-gradient-card shadow-lg">
       <div className="flex items-start gap-3 border-b border-border p-4">
-        <AssetImage
+        <ItemIcon
           kind="relic-piece"
           id={piece?.id ?? suggestion.targetDefinitionId}
           sourcePath={piece?.icon_path ?? ""}
@@ -450,7 +462,10 @@ function ResourceSuggestionCard({
             locale,
             suggestion.targetDefinitionId
           )}
-          className="h-14 w-14 shrink-0 rounded-lg bg-background/70 object-contain"
+          rarity={sourceRelic?.rarity ?? piece?.rarity ?? null}
+          level={sourceRelic ? `+${sourceRelic.level}` : undefined}
+          locked={sourceRelic?.locked}
+          size="md"
         />
         <div className="min-w-0 flex-1 space-y-1.5">
           <div className="flex items-start justify-between gap-2">

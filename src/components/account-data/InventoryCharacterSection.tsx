@@ -5,9 +5,8 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { InventoryToolbar } from "@/components/account/InventoryToolbar";
-import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { Badge } from "@/components/ui/badge";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Character } from "@/domain/account/schemas";
 import { useCharacterReferences } from "@/hooks/useCatalogReferences";
@@ -160,23 +159,32 @@ export function InventoryCharacterSection({
             return (
               <Card key={character.key} className="overflow-hidden">
                 <CardContent className="flex items-center gap-3 p-3">
-                  <AssetImage
+                  <ItemIcon
                     kind="character"
                     id={definition?.id ?? character.definitionId}
                     sourcePath={definition?.icon_path ?? ""}
-                    alt={name}
-                    className="h-14 w-14 shrink-0 rounded-lg bg-background/70 object-contain"
+                    alt={`${name}, ${t("field.level", { value: character.level })}, ${t("field.eidolon", { value: character.eidolon })}`}
+                    rarity={definition?.rarity ?? null}
+                    badge={character.eidolon}
+                    level={`Lv. ${character.level}`}
+                    cornerAsset={
+                      combatType
+                        ? {
+                            kind: "combat-type",
+                            id: combatType.id,
+                            sourcePath: combatType.icon_path,
+                            alt: localizedName(
+                              combatType.name,
+                              locale,
+                              character.combatTypeId
+                            ),
+                          }
+                        : undefined
+                    }
+                    size="md"
                   />
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <p className="truncate text-sm font-semibold">{name}</p>
-                    <div className="flex flex-wrap gap-1">
-                      <Badge>
-                        {t("field.level", { value: character.level })}
-                      </Badge>
-                      <Badge variant="outline">
-                        {t("field.eidolon", { value: character.eidolon })}
-                      </Badge>
-                    </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {localizedName(path?.name, locale, character.pathId)}
                       {" · "}

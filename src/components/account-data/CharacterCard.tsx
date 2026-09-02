@@ -23,6 +23,7 @@ import {
   createRelicScoringContext,
 } from "@/lib/buildReferences";
 import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
+import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { cn } from "@/lib/utils";
 import type { RelicSlotId } from "@/providers/gilore/types";
 
@@ -138,6 +139,10 @@ function CharacterCardComponent({
   const relicBySlot = new Map(relics.map((relic) => [relic.slot, relic]));
   const cavernSets = useMemo(() => summarizeSets(relics, "cavern"), [relics]);
   const planarSets = useMemo(() => summarizeSets(relics, "planar"), [relics]);
+  const setRarityById = useMemo(
+    () => createRelicSetRarityMap(references.relicPieces.values),
+    [references.relicPieces.values]
+  );
   const scores = useMemo(
     () => scoreLoadout(relics, build, profile, references),
     [build, profile, references, relics]
@@ -197,7 +202,7 @@ function CharacterCardComponent({
                 id={setDefinition?.id ?? id}
                 sourcePath={setDefinition?.icon_path ?? ""}
                 alt={`${setName}, ${pieceCount}`}
-                rarity={5}
+                rarity={setRarityById.get(id) ?? null}
                 badge={count}
                 size={compact ? "sm" : "md"}
               />
@@ -259,7 +264,7 @@ function CharacterCardComponent({
               id={definition?.id ?? character.definitionId}
               sourcePath={definition?.icon_path ?? ""}
               alt={characterIconLabel}
-              rarity={definition?.rarity ?? 1}
+              rarity={definition?.rarity ?? null}
               badge={character.eidolon}
               level={`Lv. ${character.level}`}
               cornerAsset={
@@ -341,7 +346,7 @@ function CharacterCardComponent({
                 id={lightConeDefinition?.id ?? lightCone.definitionId}
                 sourcePath={lightConeDefinition?.icon_path ?? ""}
                 alt={lightConeIconLabel}
-                rarity={lightConeDefinition?.rarity ?? 1}
+                rarity={lightConeDefinition?.rarity ?? null}
                 badge={lightCone.superimposition}
                 level={`Lv. ${lightCone.level}`}
                 locked={lightCone.locked}

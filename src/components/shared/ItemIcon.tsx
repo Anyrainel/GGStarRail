@@ -77,7 +77,8 @@ export interface ItemIconProps
   extends CatalogAssetRef,
     Omit<React.ComponentPropsWithoutRef<"div">, "children" | "id"> {
   alt: string;
-  rarity: number;
+  /** Null renders a neutral frame when the catalog cannot supply a rarity. */
+  rarity: number | null;
   /** A compact in-game rank marker: Eidolon, Superimposition, or piece count. */
   badge?: string | number;
   /** Rendered in the attached strip below the artwork. */
@@ -90,7 +91,11 @@ export interface ItemIconProps
   imageClassName?: string;
 }
 
-function rarityBackground(rarity: number): string {
+function rarityBackground(rarity: number | null): string {
+  if (rarity === null) {
+    return "linear-gradient(180deg, hsl(var(--muted)), hsl(var(--secondary)))";
+  }
+
   switch (rarity) {
     case 5:
       return "linear-gradient(180deg, #a35d55, #d0aa6e)";
@@ -253,7 +258,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           height: totalHeight,
         }}
         data-item-icon-kind={kind}
-        data-item-rarity={rarity}
+        data-item-rarity={rarity ?? "unknown"}
         data-item-level={level}
         {...props}
       >

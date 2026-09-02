@@ -65,4 +65,24 @@ describe("ItemIcon", () => {
     expect(container.querySelector("[data-item-lock='unknown']")).toBeVisible();
     expect(container.querySelector("[data-item-lock='locked']")).toBeNull();
   });
+
+  it("uses a neutral frame when rarity metadata is unavailable", () => {
+    const { container } = render(
+      <ItemIcon
+        kind="relic-set"
+        id="unknown-rarity"
+        alt="Relic set"
+        rarity={null}
+      />
+    );
+
+    expect(screen.getByRole("img", { name: "Relic set" })).toHaveAttribute(
+      "data-item-rarity",
+      "unknown"
+    );
+    expect(container.querySelector("[data-item-artwork]")).toHaveStyle({
+      backgroundImage:
+        "linear-gradient(180deg, hsl(var(--muted)), hsl(var(--secondary)))",
+    });
+  });
 });

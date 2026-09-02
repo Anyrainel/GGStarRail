@@ -16,6 +16,7 @@ import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { localizedName } from "@/lib/catalogPresentation";
 import { formatGameText } from "@/lib/gameText";
+import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { cn } from "@/lib/utils";
 import { useRelicPriorityStore } from "@/stores/useRelicPriorityStore";
 
@@ -58,23 +59,20 @@ export default function RelicTierListView() {
     ],
     [t]
   );
-  const items = useMemo<readonly TierItemData<RelicPriorityGroup>[]>(
-    () =>
-      [...(data?.relicSets.values ?? [])]
-        .map((relicSet) => ({
-          kind: "relic-set" as const,
-          id: relicSet.id,
-          sourcePath: relicSet.icon_path,
-          name: formatGameText(
-            localizedName(relicSet.name, locale, relicSet.id)
-          ),
-          rarity: null,
-          group: "other" as const,
-          detail: relicSet.kind,
-        }))
-        .sort((left, right) => left.name.localeCompare(right.name, locale)),
-    [data, locale]
-  );
+  const items = useMemo<readonly TierItemData<RelicPriorityGroup>[]>(() => {
+    const rarityBySet = createRelicSetRarityMap(data?.relicPieces.values ?? []);
+    return [...(data?.relicSets.values ?? [])]
+      .map((relicSet) => ({
+        kind: "relic-set" as const,
+        id: relicSet.id,
+        sourcePath: relicSet.icon_path,
+        name: formatGameText(localizedName(relicSet.name, locale, relicSet.id)),
+        rarity: rarityBySet.get(relicSet.id) ?? null,
+        group: "other" as const,
+        detail: relicSet.kind,
+      }))
+      .sort((left, right) => left.name.localeCompare(right.name, locale));
+  }, [data, locale]);
   const filters: readonly [RelicKindFilter, string][] = [
     ["all", t("filter.allKinds")],
     ["cavern_relic", t("archive.kind.cavern")],

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AssetImage } from "@/components/shared/AssetImage";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import type { Relic, RelicSlot } from "@/domain/account/schemas";
 import type { RelicScore } from "@/domain/build/scoring";
@@ -62,12 +62,15 @@ export function RelicScoreCard({
       )}
     >
       <div className="flex min-w-0 items-start gap-3">
-        <AssetImage
+        <ItemIcon
           kind="relic-piece"
           id={piece?.id ?? relic.definitionId}
           sourcePath={piece?.icon_path ?? ""}
-          alt={pieceName}
-          className="h-12 w-12 shrink-0 rounded-lg bg-background/70 object-contain sm:h-14 sm:w-14"
+          alt={`${pieceName}, +${relic.level}`}
+          rarity={relic.rarity}
+          level={`+${relic.level}`}
+          locked={relic.locked}
+          size="md"
         />
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex min-w-0 items-start justify-between gap-2">
@@ -92,19 +95,6 @@ export function RelicScoreCard({
             <Badge variant="outline" className="text-xs">
               {localizedName(slotDefinition?.name, locale, relic.slot)}
             </Badge>
-            <Badge variant="secondary" className="text-xs tabular-nums">
-              +{relic.level}
-            </Badge>
-            {relic.locked === true && (
-              <Badge variant="outline" className="text-xs">
-                {t("field.locked")}
-              </Badge>
-            )}
-            {relic.locked === null && (
-              <Badge variant="outline" className="text-xs">
-                {t("build.lockUnknown")}
-              </Badge>
-            )}
             {relic.equippedCharacterKey && (
               <Badge variant="outline" className="text-xs">
                 {t("field.equipped")}

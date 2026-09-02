@@ -54,6 +54,9 @@ describe("HSR Tier List views", () => {
 
     const firstItem = priorityItems(container)[0];
     if (!firstItem) throw new Error("Character priority item missing");
+    expect(
+      firstItem.querySelector('[data-item-icon-kind="character"]')
+    ).toHaveAttribute("data-item-rarity", "5");
     const itemId = firstItem.dataset.priorityItemId;
     if (!itemId) throw new Error("Character priority ID missing");
     await user.click(firstItem);
@@ -79,6 +82,11 @@ describe("HSR Tier List views", () => {
       () => expect(priorityItems(container).length).toBeGreaterThan(0),
       catalogTimeout
     );
+    expect(
+      priorityItems(container)[0]?.querySelector(
+        '[data-item-icon-kind="light-cone"]'
+      )
+    ).toHaveAttribute("data-item-rarity", "5");
     expect(screen.getAllByRole("tab").length).toBeGreaterThan(1);
     expect(useLightConePriorityStore.getState().assignments).toEqual({});
   });
@@ -102,6 +110,14 @@ describe("HSR Tier List views", () => {
       () => expect(priorityItems(container).length).toBe(60),
       catalogTimeout
     );
+    expect(
+      [...priorityItems(container)].every(
+        (item) =>
+          item
+            .querySelector('[data-item-icon-kind="relic-set"]')
+            ?.getAttribute("data-item-rarity") !== "unknown"
+      )
+    ).toBe(true);
 
     const firstItem = priorityItems(container)[0];
     if (!firstItem) throw new Error("Relic priority item missing");

@@ -5,8 +5,8 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { InventoryToolbar } from "@/components/account/InventoryToolbar";
-import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { LightCone } from "@/domain/account/schemas";
@@ -142,46 +142,27 @@ export function InventoryLightConeSection({
             return (
               <Card key={lightCone.key} className="overflow-hidden">
                 <CardContent className="flex items-center gap-3 p-3">
-                  <AssetImage
+                  <ItemIcon
                     kind="light-cone"
                     id={definition?.id ?? lightCone.definitionId}
                     sourcePath={definition?.icon_path ?? ""}
-                    alt={name}
-                    className="h-16 w-12 shrink-0 rounded-md bg-background/70 object-contain"
+                    alt={`${name}, ${t("field.level", { value: lightCone.level })}, ${t("field.superimposition", { value: lightCone.superimposition })}`}
+                    rarity={definition?.rarity ?? null}
+                    badge={lightCone.superimposition}
+                    level={`Lv. ${lightCone.level}`}
+                    locked={lightCone.locked}
+                    size="md"
                   />
                   <div className="min-w-0 flex-1 space-y-1.5">
                     <p className="line-clamp-2 text-sm font-semibold leading-5">
                       {name}
                     </p>
-                    <div className="flex flex-wrap gap-1">
-                      <Badge>
-                        {t("field.level", { value: lightCone.level })}
-                      </Badge>
-                      <Badge variant="outline">
-                        {t("field.superimposition", {
-                          value: lightCone.superimposition,
-                        })}
-                      </Badge>
-                      {definition && (
-                        <Badge variant="secondary">
-                          {t("field.rarity", { value: definition.rarity })}
-                        </Badge>
-                      )}
-                    </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {localizedName(path?.name, locale, lightCone.pathId)}
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {lightCone.equippedCharacterKey && (
                         <Badge variant="outline">{t("field.equipped")}</Badge>
-                      )}
-                      {lightCone.locked === true && (
-                        <Badge variant="outline">{t("field.locked")}</Badge>
-                      )}
-                      {lightCone.locked === null && (
-                        <Badge variant="outline">
-                          {t("field.lockUnknown")}
-                        </Badge>
                       )}
                     </div>
                   </div>

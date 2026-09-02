@@ -88,6 +88,14 @@ describe("Resource and Relic Triage views", () => {
       screen.getByText(/GGStarRail does not know your consumable balances/)
     ).toBeVisible();
     expect((await screen.findAllByRole("article")).length).toBeGreaterThan(0);
+    expect(
+      document.querySelector("[data-item-icon-kind='relic-piece']")
+    ).not.toBeNull();
+    expect(
+      document.querySelector(
+        "[data-item-icon-kind='relic-piece'][data-item-level]"
+      )
+    ).not.toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Planar Ornament" }));
     await waitFor(() => {
@@ -133,6 +141,9 @@ describe("Resource and Relic Triage views", () => {
     ).toBeInTheDocument();
     const allCards = await screen.findAllByRole("article");
     expect(allCards).toHaveLength(account.relics.length);
+    expect(
+      allCards[0]?.querySelector("[data-item-icon-kind='relic-piece']")
+    ).toHaveAttribute("data-item-level");
     expect(
       screen.getByRole("button", { name: "Download instructions" })
     ).toBeDisabled();

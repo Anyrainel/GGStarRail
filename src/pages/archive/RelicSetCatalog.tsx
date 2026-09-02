@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
+import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import {
   getLocalizedValue,
   isPropertyDefinitionV1_1,
@@ -114,6 +116,10 @@ export function RelicSetCatalog() {
         )
       );
   }, [kind, locale, query, resource.data]);
+  const rarityBySet = useMemo(
+    () => createRelicSetRarityMap(resource.data?.relicPieces.values ?? []),
+    [resource.data]
+  );
 
   useEffect(() => {
     if (filtered.length === 0) {
@@ -199,6 +205,7 @@ export function RelicSetCatalog() {
               <RelicSetCard
                 key={set.id}
                 relicSet={set}
+                rarity={rarityBySet.get(set.id) ?? null}
                 selected={set.id === selected?.id}
                 onSelect={(trigger) => {
                   setSelectedId(set.id);
@@ -233,10 +240,12 @@ export function RelicSetCatalog() {
 
 function RelicSetCard({
   relicSet,
+  rarity,
   selected,
   onSelect,
 }: {
   relicSet: RelicSetDefinition;
+  rarity: number | null;
   selected: boolean;
   onSelect: (trigger: HTMLButtonElement) => void;
 }) {
@@ -258,12 +267,13 @@ function RelicSetCard({
         }
       >
         <CardContent className="flex items-center gap-3 p-3">
-          <AssetImage
+          <ItemIcon
             kind="relic-set"
             id={relicSet.id}
             sourcePath={relicSet.icon_path}
             alt={name}
-            className="h-20 w-20 shrink-0 rounded-lg bg-background/60 object-contain"
+            rarity={rarity}
+            size="xl"
           />
           <span className="min-w-0 space-y-2">
             <span className="line-clamp-2 block font-semibold">{name}</span>
@@ -352,12 +362,13 @@ function RelicSetDetail({
                 key={piece.key}
                 className="flex gap-3 rounded-lg border border-border bg-background/45 p-2"
               >
-                <AssetImage
+                <ItemIcon
                   kind="relic-piece"
                   id={piece.representative.id}
                   sourcePath={piece.representative.icon_path}
                   alt={pieceName}
-                  className="h-16 w-16 shrink-0 rounded-md object-contain"
+                  rarity={piece.representative.rarity}
+                  size="lg"
                 />
                 <div className="min-w-0">
                   <p className="line-clamp-2 text-sm font-medium">

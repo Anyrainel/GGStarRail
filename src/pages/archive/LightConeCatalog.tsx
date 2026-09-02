@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AssetImage } from "@/components/shared/AssetImage";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
@@ -298,17 +298,17 @@ function LightConeCard({
         }
       >
         <CardContent className="flex items-center gap-3 p-2.5">
-          <AssetImage
+          <ItemIcon
             kind="light-cone"
             id={lightCone.id}
             sourcePath={lightCone.icon_path}
             alt={name}
-            className="h-16 w-11 shrink-0 rounded-md bg-background/60 object-cover"
+            rarity={lightCone.rarity}
+            size="md"
           />
           <span className="min-w-0 space-y-1.5">
             <span className="line-clamp-2 block font-semibold">{name}</span>
             <span className="flex flex-wrap gap-1.5">
-              <Badge>{lightCone.rarity} ★</Badge>
               <Badge variant="secondary">{pathName}</Badge>
             </span>
           </span>
@@ -350,17 +350,15 @@ function LightConeDetail({
       className="min-w-0 space-y-5 overflow-hidden rounded-xl border border-border bg-card/75 p-4 lg:sticky lg:top-0"
     >
       <div className="flex gap-4">
-        <AssetImage
+        <ItemIcon
           kind="light-cone"
           id={lightCone.id}
           sourcePath={lightCone.icon_path}
           alt={name}
-          className="h-40 w-28 shrink-0 rounded-xl bg-background/60 object-cover"
+          rarity={lightCone.rarity}
+          size="xl"
         />
         <div className="min-w-0 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            {lightCone.rarity} ★
-          </p>
           <h2 className="text-xl font-semibold">{name}</h2>
           <div className="flex flex-wrap gap-2">
             <Badge>{pathName}</Badge>

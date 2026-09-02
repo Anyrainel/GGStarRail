@@ -9,8 +9,8 @@ import {
   type InventoryFilterChip,
   InventoryFilterChips,
 } from "@/components/account-data/InventoryFilterChips";
-import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -332,12 +332,15 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
               <Card key={relic.key} className="overflow-hidden">
                 <CardContent className="space-y-2.5 p-3">
                   <div className="flex items-start gap-3">
-                    <AssetImage
+                    <ItemIcon
                       kind="relic-piece"
                       id={piece?.id ?? relic.definitionId}
                       sourcePath={piece?.icon_path ?? ""}
-                      alt={name}
-                      className="h-14 w-14 shrink-0 rounded-lg bg-background/70 object-contain"
+                      alt={`${name}, +${relic.level}`}
+                      rarity={relic.rarity}
+                      level={`+${relic.level}`}
+                      locked={relic.locked}
+                      size="md"
                     />
                     <div className="min-w-0 flex-1 space-y-1">
                       <p className="line-clamp-2 text-sm font-semibold leading-5">
@@ -347,10 +350,6 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
                         {setName}
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        <Badge>+{relic.level}</Badge>
-                        <Badge variant="secondary">
-                          {t("field.rarity", { value: relic.rarity })}
-                        </Badge>
                         <Badge variant="outline">
                           {localizedName(
                             slotDefinition?.name,
@@ -364,12 +363,6 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
                   <div className="flex flex-wrap gap-1">
                     {relic.equippedCharacterKey && (
                       <Badge variant="outline">{t("field.equipped")}</Badge>
-                    )}
-                    {relic.locked === true && (
-                      <Badge variant="outline">{t("field.locked")}</Badge>
-                    )}
-                    {relic.locked === null && (
-                      <Badge variant="outline">{t("field.lockUnknown")}</Badge>
                     )}
                     {relic.discarded === true && (
                       <Badge variant="outline">{t("field.discarded")}</Badge>
