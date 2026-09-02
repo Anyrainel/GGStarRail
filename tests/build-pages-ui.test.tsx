@@ -76,6 +76,15 @@ function metricValue(label: string): number {
   return Number(value);
 }
 
+function readBlobText(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => resolve(String(reader.result)));
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.readAsText(blob);
+  });
+}
+
 afterEach(() => {
   act(() => useWorkspaceStore.getState().clearWorkspace());
 });
@@ -118,6 +127,29 @@ describe("Build Lab route interactions", () => {
         "Edited route score"
       );
     });
+  });
+
+  it("keeps scoring editable and offers the account handoff without account data", async () => {
+    await prepareBuildWorkspace();
+    act(() => useWorkspaceStore.setState({ account: null }));
+    renderRoute(APP_PATHS.scoring);
+
+    expect(await screen.findByText("Profile settings")).toBeVisible();
+    expect(
+      screen.getByText(
+        "This scoring profile is ready. Import an account to score inventory Relics and evaluate the equipped build."
+      )
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Import account" })
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Load demo account" })
+    ).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Data source details" })
+    ).toHaveAttribute("href", APP_PATHS.imports);
+    expect(screen.queryByText("Scored Relics")).not.toBeInTheDocument();
   });
 
   it("switches a derived slot filter and opens the full recommendation view", async () => {
@@ -242,6 +274,21 @@ describe("Build Lab route interactions", () => {
     state.setTriageRules({ ...state.triageRules, protectLocked: false });
 
     const user = userEvent.setup();
+    let downloadedBlob: Blob | null = null;
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: vi.fn((blob: Blob) => {
+        downloadedBlob = blob;
+        return "blob:locked-discard-guard";
+      }),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: vi.fn(),
+    });
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+      () => undefined
+    );
     renderRoute(APP_PATHS.triage);
     expect(
       await screen.findByRole("checkbox", { name: /^Protect locked Relics/ })
@@ -251,11 +298,30 @@ describe("Build Lab route interactions", () => {
     await waitFor(() => {
       expect(metricValue("Locked before discard")).toBe(1);
     });
+    const previewInstructionCount = metricValue("Instructions");
     expect(metricValue("Preview only")).toBeGreaterThanOrEqual(1);
     expect(
-      screen.getByText(
-        /unlocking and discard marking require separate reviewed runs/i
-      )
+      screen.getByText(/counted in this preview but omitted from the download/i)
     ).toBeVisible();
+
+    await user.click(
+      screen.getByRole("button", { name: "Download instructions" })
+    );
+    expect(downloadedBlob).toBeInstanceOf(Blob);
+    const downloaded = JSON.parse(
+      await readBlobText(downloadedBlob as unknown as Blob)
+    ) as {
+      instructions: {
+        before: { lock: boolean | null };
+        desired: { discard?: boolean };
+      }[];
+    };
+    expect(
+      downloaded.instructions.some(
+        ({ before, desired }) =>
+          before.lock === true && desired.discard === true
+      )
+    ).toBe(false);
+    expect(downloaded.instructions).toHaveLength(previewInstructionCount - 1);
   });
 });

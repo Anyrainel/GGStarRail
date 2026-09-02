@@ -101,6 +101,12 @@ export interface ManagerActionabilitySummary {
   reasonCounts: Record<ManagerPreviewOnlyReason, number>;
 }
 
+export interface ManagerInstructionPreview {
+  envelope: ManagerInstructionEnvelope;
+  actionability: ManagerActionabilitySummary;
+  omittedInstructionIds: string[];
+}
+
 const MANAGER_SLOT: Record<
   RelicSlot,
   z.infer<typeof ManagerRelicMatcherSchema>["slot"]
@@ -168,12 +174,20 @@ function desiredStates(
   return [];
 }
 
-export async function createManagerInstructionEnvelope(
+function isLockedDiscardInstruction(
+  instruction: z.infer<typeof ManagerInstructionSchema>
+): boolean {
+  return (
+    instruction.before.lock === true && instruction.desired.discard === true
+  );
+}
+
+export async function createManagerInstructionPreview(
   account: AccountSnapshot,
   evaluations: readonly RelicTriageEvaluation[],
   referenceRevision: string,
   requestId: string = crypto.randomUUID()
-): Promise<ManagerInstructionEnvelope> {
+): Promise<ManagerInstructionPreview> {
   const hasFreshScannerEvidence =
     account.source.provider === "scanner-export" &&
     account.source.coverage.relics === "complete";
@@ -206,10 +220,17 @@ export async function createManagerInstructionEnvelope(
     .sort((left, right) =>
       JSON.stringify(left).localeCompare(JSON.stringify(right))
     );
-  const instructions = plans.map((plan, index) => ({
+  const proposedInstructions = plans.map((plan, index) => ({
     id: `hsr-manager-${String(index + 1).padStart(4, "0")}-${"lock" in plan.desired ? "lock" : "discard"}`,
     ...plan,
   }));
+  const actionability = summarizeInstructionActionability(proposedInstructions);
+  const omittedInstructionIds = proposedInstructions
+    .filter(isLockedDiscardInstruction)
+    .map(({ id }) => id);
+  const instructions = proposedInstructions.filter(
+    (instruction) => !isLockedDiscardInstruction(instruction)
+  );
   const semanticPayload = JSON.stringify({ referenceRevision, instructions });
   const idempotencyKey = `sha256:${await sha256(semanticPayload)}`;
   const envelope = ManagerInstructionEnvelopeSchema.parse({
@@ -230,31 +251,51 @@ export async function createManagerInstructionEnvelope(
     instructions,
   });
   assertNoSensitiveFields(envelope);
-  return envelope;
+  return { envelope, actionability, omittedInstructionIds };
+}
+
+export async function createManagerInstructionEnvelope(
+  account: AccountSnapshot,
+  evaluations: readonly RelicTriageEvaluation[],
+  referenceRevision: string,
+  requestId: string = crypto.randomUUID()
+): Promise<ManagerInstructionEnvelope> {
+  return (
+    await createManagerInstructionPreview(
+      account,
+      evaluations,
+      referenceRevision,
+      requestId
+    )
+  ).envelope;
 }
 
 export function serializeManagerInstructionEnvelope(
   envelope: ManagerInstructionEnvelope
 ): string {
-  assertNoSensitiveFields(envelope);
-  return JSON.stringify(
-    ManagerInstructionEnvelopeSchema.parse(envelope),
-    null,
-    2
-  );
+  const parsed = ManagerInstructionEnvelopeSchema.parse(envelope);
+  if (parsed.instructions.some(isLockedDiscardInstruction)) {
+    throw new Error(
+      "Locked Relics must be unlocked in a separate reviewed run before discard marking"
+    );
+  }
+  assertNoSensitiveFields(parsed);
+  return JSON.stringify(parsed, null, 2);
 }
 
-export function summarizeManagerInstructionActionability(
-  envelope: ManagerInstructionEnvelope
+function summarizeInstructionActionability(
+  candidateInstructions: readonly z.infer<typeof ManagerInstructionSchema>[]
 ): ManagerActionabilitySummary {
-  const parsed = ManagerInstructionEnvelopeSchema.parse(envelope);
+  const instructionsForReview = z
+    .array(ManagerInstructionSchema)
+    .parse(candidateInstructions);
   const matcherCounts = new Map<string, number>();
-  for (const instruction of parsed.instructions) {
+  for (const instruction of instructionsForReview) {
     const matcherKey = JSON.stringify(instruction.matcher);
     matcherCounts.set(matcherKey, (matcherCounts.get(matcherKey) ?? 0) + 1);
   }
 
-  const instructions = parsed.instructions.map((instruction) => {
+  const instructions = instructionsForReview.map((instruction) => {
     const reasons: ManagerPreviewOnlyReason[] = [];
     if (
       instruction.before.lock === null ||
@@ -296,4 +337,11 @@ export function summarizeManagerInstructionActionability(
     previewOnlyCount: instructions.length - actionableCount,
     reasonCounts,
   };
+}
+
+export function summarizeManagerInstructionActionability(
+  envelope: ManagerInstructionEnvelope
+): ManagerActionabilitySummary {
+  const parsed = ManagerInstructionEnvelopeSchema.parse(envelope);
+  return summarizeInstructionActionability(parsed.instructions);
 }

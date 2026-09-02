@@ -264,7 +264,7 @@ export const messagesEn = {
   "build.coverageNoticeBody":
     "Scores, filters, and triage use only pieces present in this local snapshot. Showcase and equipped-only sources cannot prove that an absent item is missing from the full inventory.",
   "scoring.needsAccount":
-    "Create a scoring profile from any Character; import an account only when you want inventory and equipped-build results.",
+    "This scoring profile is ready. Import an account to score inventory Relics and evaluate the equipped build.",
   "scoring.profile": "Scoring profile",
   "scoring.noProfiles": "No scoring profiles yet.",
   "scoring.profileCharacter": "Create from Character",
@@ -389,7 +389,7 @@ export const messagesEn = {
   "triage.managerPreparing": "Preparing…",
   "triage.managerDownload": "Download instructions",
   "triage.managerBoundary":
-    "GGStarRail only creates a review file; it never changes the game. GOODScanner must rescan and match exactly one visible Relic before acting. A locked Relic stays preview-only for discard marking: unlocking and discard marking require separate reviewed runs. Salvage, equip, delete, and unlock commands are never exported.",
+    "GGStarRail only creates a review file; it never changes the game. GOODScanner must rescan and match exactly one visible Relic before acting. Locked-before-discard candidates are counted in this preview but omitted from the download: unlocking and discard marking require separate reviewed runs. Salvage, equip, delete, and unlock commands are never exported.",
   "triage.managerError":
     "The manager preview could not be created. No file was downloaded.",
   "triage.managerInstructions": "Instructions",
@@ -400,7 +400,7 @@ export const messagesEn = {
   "triage.managerReasonLocked": "Locked before discard",
   "triage.managerReasonAmbiguous": "Ambiguous matchers",
   "triage.managerReasonHelp":
-    "Preview-only reason counts can overlap. Locked Relics cannot be discard-marked in the same run, even when locked-piece protection is off. The download remains a review file; GOODScanner decides actionability only after a fresh visible-item rescan.",
+    "Preview-only reason counts can overlap. Locked-before-discard candidates are omitted from the download even when locked-piece protection is off. The download remains a review file; GOODScanner decides actionability only after a fresh visible-item rescan.",
   "triage.managerNoInstructions":
     "No lock or discard-mark changes are proposed by the current triage results.",
   "triage.managerUnknownBefore":

@@ -246,7 +246,7 @@ export const messagesZhCn = {
   "build.coverageNoticeBody":
     "评分、筛选和整理只会使用当前本地快照中的遗器。个人展示和仅已装备来源无法证明未出现的物品不存在于完整背包中。",
   "scoring.needsAccount":
-    "可为任意角色创建评分方案；只有查看背包和当前装备评分时才需要导入账号。",
+    "评分方案已就绪。导入账号后即可为背包遗器评分，并评估角色当前装备。",
   "scoring.profile": "评分方案",
   "scoring.noProfiles": "尚无评分方案。",
   "scoring.profileCharacter": "按角色创建",
@@ -360,7 +360,7 @@ export const messagesZhCn = {
   "triage.managerPreparing": "正在准备…",
   "triage.managerDownload": "下载指令",
   "triage.managerBoundary":
-    "GGStarRail 只生成复核文件，不会修改游戏。GOODScanner 必须重新扫描，并且只匹配到一件画面可见遗器后才可执行。已锁定遗器的弃置标记必须保持仅预览：解锁与弃置标记必须分两次复核执行。文件绝不会包含分解、装备、删除或解锁指令。",
+    "GGStarRail 只生成复核文件，不会修改游戏。GOODScanner 必须重新扫描，并且只匹配到一件画面可见遗器后才可执行。已锁定且准备标记弃置的候选仍会计入预览，但不会写入下载文件；解锁与弃置标记必须分两次复核执行。文件绝不会包含分解、装备、删除或解锁指令。",
   "triage.managerError": "无法生成管理器预览；没有下载任何文件。",
   "triage.managerInstructions": "指令数",
   "triage.managerPreviewOnly": "仅预览",
@@ -370,7 +370,7 @@ export const messagesZhCn = {
   "triage.managerReasonLocked": "弃置前仍为锁定",
   "triage.managerReasonAmbiguous": "匹配结果不唯一",
   "triage.managerReasonHelp":
-    "同一条指令可能同时计入多种仅预览原因。即使关闭已锁定遗器保护，也不能在同一次执行中为其标记弃置。下载内容仍是复核文件；GOODScanner 只有重新扫描画面可见物品后才能判断是否可执行。",
+    "同一条指令可能同时计入多种仅预览原因。即使关闭已锁定遗器保护，已锁定且准备标记弃置的候选也不会写入下载文件。下载内容仍是复核文件；GOODScanner 只有重新扫描画面可见物品后才能判断是否可执行。",
   "triage.managerNoInstructions": "当前整理结果没有提出锁定或弃置标记变更。",
   "triage.managerUnknownBefore":
     "有 {count} 条指令没有观测到操作前状态，必须保持仅预览，直到完整的新扫描确认状态。",

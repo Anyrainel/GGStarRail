@@ -22,6 +22,8 @@ import {
 import { createDemoAccount } from "@/lib/demoAccount";
 import {
   createManagerInstructionEnvelope,
+  createManagerInstructionPreview,
+  serializeManagerInstructionEnvelope,
   summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
 import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
@@ -319,7 +321,35 @@ describe("end-to-end build workspace domain", () => {
     );
     expect(result.decision).toBe("salvage-review");
 
-    const envelope = await createManagerInstructionEnvelope(
+    const preview = await createManagerInstructionPreview(
+      scannerAccount,
+      [
+        {
+          relic: lockedCandidate,
+          score: 0,
+          grade: "D",
+          matchingBuildIds: [],
+          result,
+        },
+      ],
+      HSR_REFERENCE_MANIFEST.source.revision,
+      "ggstarrail-locked-discard-guard"
+    );
+    const repeated = await createManagerInstructionPreview(
+      scannerAccount,
+      [
+        {
+          relic: lockedCandidate,
+          score: 0,
+          grade: "D",
+          matchingBuildIds: [],
+          result,
+        },
+      ],
+      HSR_REFERENCE_MANIFEST.source.revision,
+      "ggstarrail-locked-discard-guard-repeat"
+    );
+    const publicEnvelope = await createManagerInstructionEnvelope(
       scannerAccount,
       [
         {
@@ -334,12 +364,13 @@ describe("end-to-end build workspace domain", () => {
       "ggstarrail-locked-discard-guard"
     );
 
-    expect(envelope.instructions).toHaveLength(1);
-    expect(envelope.instructions[0]).toMatchObject({
-      before: { lock: true, discard: false },
-      desired: { discard: true },
-    });
-    expect(summarizeManagerInstructionActionability(envelope)).toMatchObject({
+    expect(preview.envelope.instructions).toHaveLength(0);
+    expect(publicEnvelope).toEqual(preview.envelope);
+    expect(preview.omittedInstructionIds).toEqual(["hsr-manager-0001-discard"]);
+    expect(preview.envelope.idempotencyKey).toBe(
+      repeated.envelope.idempotencyKey
+    );
+    expect(preview.actionability).toMatchObject({
       actionableCount: 0,
       previewOnlyCount: 1,
       reasonCounts: { locked: 1 },
@@ -350,6 +381,48 @@ describe("end-to-end build workspace domain", () => {
         },
       ],
     });
+    const serialized = serializeManagerInstructionEnvelope(preview.envelope);
+    expect(JSON.parse(serialized).instructions).toEqual([]);
+    expect(serialized).not.toContain('"discard": true');
+
+    expect(() =>
+      serializeManagerInstructionEnvelope({
+        ...preview.envelope,
+        instructions: [
+          {
+            id: "unsafe-locked-discard",
+            matcher: {
+              key: lockedCandidate.definitionId,
+              gameId: Number(lockedCandidate.definitionId),
+              setKey: lockedCandidate.setId,
+              locationKey: null,
+              rarity: lockedCandidate.rarity,
+              slot: (
+                {
+                  head: "Head",
+                  hands: "Hands",
+                  body: "Body",
+                  feet: "Feet",
+                  planarSphere: "PlanarSphere",
+                  linkRope: "LinkRope",
+                } as const
+              )[lockedCandidate.slot],
+              level: lockedCandidate.level,
+              mainStat: {
+                key: lockedCandidate.mainStat.statId,
+                value: lockedCandidate.mainStat.value,
+              },
+              substats: lockedCandidate.substats.map((substat) => ({
+                key: substat.statId,
+                value: substat.value,
+              })),
+            },
+            before: { lock: true, discard: false },
+            desired: { discard: true },
+          },
+        ],
+      })
+    ).toThrow(/unlocked in a separate reviewed run/i);
   });
 
   it("round-trips builds separately from account data", async () => {

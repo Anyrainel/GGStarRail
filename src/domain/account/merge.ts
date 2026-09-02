@@ -59,6 +59,36 @@ function remapCharacterKey(
   return key ? (incomingKeyMap.get(key) ?? key) : undefined;
 }
 
+function distinctInstanceKey(
+  preferredKey: string,
+  records: readonly { key: string }[]
+): string {
+  const existingKeys = new Set(records.map((record) => record.key));
+  if (!existingKeys.has(preferredKey)) return preferredKey;
+
+  for (let ordinal = 1; ; ordinal += 1) {
+    const suffix = `:merge:${ordinal}`;
+    const candidate = `${preferredKey.slice(0, 128 - suffix.length)}${suffix}`;
+    if (!existingKeys.has(candidate)) return candidate;
+  }
+}
+
+function visibleLightConeFingerprint(lightCone: LightCone): string {
+  return JSON.stringify({
+    definitionId: lightCone.definitionId,
+    pathId: lightCone.pathId,
+    level: lightCone.level,
+    ascension: lightCone.ascension,
+    superimposition: lightCone.superimposition,
+  });
+}
+
+function withoutLightConeAssignment(lightCone: LightCone): LightCone {
+  const { equippedCharacterKey: _equippedCharacterKey, ...unequipped } =
+    lightCone;
+  return unequipped;
+}
+
 function mergeLightCones(
   current: readonly LightCone[],
   incoming: readonly LightCone[],
@@ -66,32 +96,67 @@ function mergeLightCones(
 ): LightCone[] {
   const merged = [...current];
   for (const source of incoming) {
-    const lightCone = {
-      ...source,
-      equippedCharacterKey: remapCharacterKey(
-        source.equippedCharacterKey,
-        incomingKeyMap
-      ),
-    };
-    const byKey = merged.findIndex(
-      (candidate) => candidate.key === lightCone.key
+    const { equippedCharacterKey: sourceCharacterKey, ...sourceWithoutEquip } =
+      source;
+    const equippedCharacterKey = remapCharacterKey(
+      sourceCharacterKey,
+      incomingKeyMap
     );
-    const equippedMatch = lightCone.equippedCharacterKey
+    const lightCone = {
+      ...sourceWithoutEquip,
+      ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
+    };
+    const fingerprint = visibleLightConeFingerprint(lightCone);
+    const equippedMatches = equippedCharacterKey
       ? merged
           .map((candidate, index) => ({ candidate, index }))
           .filter(
             ({ candidate }) =>
-              candidate.equippedCharacterKey === lightCone.equippedCharacterKey
+              candidate.equippedCharacterKey === equippedCharacterKey &&
+              visibleLightConeFingerprint(candidate) === fingerprint
           )
       : [];
+    const byKey = merged.findIndex(
+      (candidate) =>
+        candidate.key === lightCone.key &&
+        visibleLightConeFingerprint(candidate) === fingerprint
+    );
+    const visibleMatches = merged
+      .map((candidate, index) => ({ candidate, index }))
+      .filter(
+        ({ candidate }) =>
+          visibleLightConeFingerprint(candidate) === fingerprint
+      );
     const index =
       byKey >= 0
         ? byKey
-        : equippedMatch.length === 1
-          ? (equippedMatch[0]?.index ?? -1)
-          : -1;
+        : equippedMatches.length === 1
+          ? (equippedMatches[0]?.index ?? -1)
+          : visibleMatches.length === 1
+            ? (visibleMatches[0]?.index ?? -1)
+            : -1;
+
+    if (equippedCharacterKey) {
+      for (
+        let candidateIndex = 0;
+        candidateIndex < merged.length;
+        candidateIndex += 1
+      ) {
+        const candidate = merged[candidateIndex];
+        if (
+          candidateIndex !== index &&
+          candidate?.equippedCharacterKey === equippedCharacterKey
+        ) {
+          merged[candidateIndex] = withoutLightConeAssignment(candidate);
+        }
+      }
+    }
+
     if (index < 0) {
-      merged.push(lightCone);
+      merged.push({
+        ...lightCone,
+        key: distinctInstanceKey(lightCone.key, merged),
+      });
       continue;
     }
     const existing = merged[index];
@@ -120,6 +185,11 @@ function visibleRelicFingerprint(relic: Relic): string {
   });
 }
 
+function withoutRelicAssignment(relic: Relic): Relic {
+  const { equippedCharacterKey: _equippedCharacterKey, ...unequipped } = relic;
+  return unequipped;
+}
+
 function mergeRelics(
   current: readonly Relic[],
   incoming: readonly Relic[],
@@ -127,32 +197,37 @@ function mergeRelics(
 ): Relic[] {
   const merged = [...current];
   for (const source of incoming) {
+    const { equippedCharacterKey: sourceCharacterKey, ...sourceWithoutEquip } =
+      source;
+    const equippedCharacterKey = remapCharacterKey(
+      sourceCharacterKey,
+      incomingKeyMap
+    );
     const relic = {
-      ...source,
-      equippedCharacterKey: remapCharacterKey(
-        source.equippedCharacterKey,
-        incomingKeyMap
-      ),
+      ...sourceWithoutEquip,
+      ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
     };
-    const byKey = merged.findIndex((candidate) => candidate.key === relic.key);
-    const equippedMatches = relic.equippedCharacterKey
-      ? merged
-          .map((candidate, index) => ({ candidate, index }))
-          .filter(
-            ({ candidate }) =>
-              candidate.equippedCharacterKey === relic.equippedCharacterKey &&
-              candidate.slot === relic.slot
-          )
-      : [];
     const fingerprint = visibleRelicFingerprint(relic);
-    const visibleMatches = relic.equippedCharacterKey
+    const equippedMatches = equippedCharacterKey
       ? merged
           .map((candidate, index) => ({ candidate, index }))
           .filter(
             ({ candidate }) =>
+              candidate.equippedCharacterKey === equippedCharacterKey &&
+              candidate.slot === relic.slot &&
               visibleRelicFingerprint(candidate) === fingerprint
           )
       : [];
+    const byKey = merged.findIndex(
+      (candidate) =>
+        candidate.key === relic.key &&
+        visibleRelicFingerprint(candidate) === fingerprint
+    );
+    const visibleMatches = merged
+      .map((candidate, index) => ({ candidate, index }))
+      .filter(
+        ({ candidate }) => visibleRelicFingerprint(candidate) === fingerprint
+      );
     const index =
       byKey >= 0
         ? byKey
@@ -161,8 +236,29 @@ function mergeRelics(
           : visibleMatches.length === 1
             ? (visibleMatches[0]?.index ?? -1)
             : -1;
+
+    if (equippedCharacterKey) {
+      for (
+        let candidateIndex = 0;
+        candidateIndex < merged.length;
+        candidateIndex += 1
+      ) {
+        const candidate = merged[candidateIndex];
+        if (
+          candidateIndex !== index &&
+          candidate?.equippedCharacterKey === equippedCharacterKey &&
+          candidate.slot === relic.slot
+        ) {
+          merged[candidateIndex] = withoutRelicAssignment(candidate);
+        }
+      }
+    }
+
     if (index < 0) {
-      merged.push(relic);
+      merged.push({
+        ...relic,
+        key: distinctInstanceKey(relic.key, merged),
+      });
       continue;
     }
     const existing = merged[index];

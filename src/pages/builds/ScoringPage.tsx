@@ -5,6 +5,7 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
+import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import {
   GradeBadge,
   NumberField,
@@ -365,60 +366,67 @@ export default function ScoringPage() {
                   </CardContent>
                 </Card>
               )}
-              <Card className="overflow-hidden">
-                <CardHeader className="border-b border-border bg-gradient-select p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <CardTitle className="text-sm">
-                        {t("scoring.inventoryTitle")}
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        {t("scoring.inventoryHelp")}
-                      </CardDescription>
-                    </div>
-                    <Badge variant="outline">
-                      {t("scoring.showingTop", {
-                        shown: Math.min(30, scoredRelics.length),
-                        total: scoredRelics.length,
-                      })}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-                  {scoredRelics.slice(0, 30).map(({ relic, score }) => (
-                    <RelicScoreCard
-                      key={relic.key}
-                      relic={relic}
-                      score={score}
-                      references={data}
-                      locale={locale}
-                    >
-                      <div className="grid gap-2">
-                        <ScoreBar
-                          value={score.substatScore}
-                          label={t("scoring.substatScore")}
-                        />
-                        {profile.includeMainStat && (
-                          <ScoreBar
-                            value={score.mainStatScore}
-                            label={t("scoring.mainStatScore")}
-                          />
-                        )}
-                        {!score.mainStatAccepted && (
-                          <p className="text-xs text-muted-foreground">
-                            {t("scoring.offTargetMain")}
-                          </p>
-                        )}
+              {!account ? (
+                <WorkspaceStartState
+                  messageKey="scoring.needsAccount"
+                  icon={CircleGauge}
+                />
+              ) : (
+                <Card className="overflow-hidden">
+                  <CardHeader className="border-b border-border bg-gradient-select p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <CardTitle className="text-sm">
+                          {t("scoring.inventoryTitle")}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                          {t("scoring.inventoryHelp")}
+                        </CardDescription>
                       </div>
-                    </RelicScoreCard>
-                  ))}
-                  {scoredRelics.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      {t("scoring.noRelics")}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+                      <Badge variant="outline">
+                        {t("scoring.showingTop", {
+                          shown: Math.min(30, scoredRelics.length),
+                          total: scoredRelics.length,
+                        })}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+                    {scoredRelics.slice(0, 30).map(({ relic, score }) => (
+                      <RelicScoreCard
+                        key={relic.key}
+                        relic={relic}
+                        score={score}
+                        references={data}
+                        locale={locale}
+                      >
+                        <div className="grid gap-2">
+                          <ScoreBar
+                            value={score.substatScore}
+                            label={t("scoring.substatScore")}
+                          />
+                          {profile.includeMainStat && (
+                            <ScoreBar
+                              value={score.mainStatScore}
+                              label={t("scoring.mainStatScore")}
+                            />
+                          )}
+                          {!score.mainStatAccepted && (
+                            <p className="text-xs text-muted-foreground">
+                              {t("scoring.offTargetMain")}
+                            </p>
+                          )}
+                        </div>
+                      </RelicScoreCard>
+                    ))}
+                    {scoredRelics.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {t("scoring.noRelics")}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
             </>
           ) : (
             <Card>

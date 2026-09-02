@@ -38,10 +38,9 @@ import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { createRelicScoringContext } from "@/lib/buildReferences";
 import {
-  createManagerInstructionEnvelope,
-  type ManagerInstructionEnvelope,
+  createManagerInstructionPreview,
+  type ManagerInstructionPreview,
   serializeManagerInstructionEnvelope,
-  summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
 import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
@@ -58,7 +57,7 @@ export default function TriagePage() {
   const { data, error, loading } = useBuildReferences();
   const [filter, setFilter] = useState<DecisionFilter>("all");
   const [managerPreview, setManagerPreview] =
-    useState<ManagerInstructionEnvelope | null>(null);
+    useState<ManagerInstructionPreview | null>(null);
   const [managerBusy, setManagerBusy] = useState(false);
   const [managerError, setManagerError] = useState<string | null>(null);
   const scoringContext = useMemo(
@@ -95,9 +94,7 @@ export default function TriagePage() {
   const visible = evaluations.filter(
     ({ result }) => filter === "all" || result.decision === filter
   );
-  const managerActionability = managerPreview
-    ? summarizeManagerInstructionActionability(managerPreview)
-    : null;
+  const managerActionability = managerPreview?.actionability ?? null;
 
   function updateRules(next: TriageRules) {
     setRules(next);
@@ -109,12 +106,12 @@ export default function TriagePage() {
     setManagerBusy(true);
     setManagerError(null);
     try {
-      const envelope = await createManagerInstructionEnvelope(
+      const preview = await createManagerInstructionPreview(
         account,
         evaluations,
         HSR_REFERENCE_MANIFEST.source.revision
       );
-      setManagerPreview(envelope);
+      setManagerPreview(preview);
     } catch {
       setManagerError(t("triage.managerError"));
     } finally {
@@ -124,13 +121,13 @@ export default function TriagePage() {
 
   function downloadPreview() {
     if (!managerPreview) return;
-    const json = serializeManagerInstructionEnvelope(managerPreview);
+    const json = serializeManagerInstructionEnvelope(managerPreview.envelope);
     const url = URL.createObjectURL(
       new Blob([json], { type: "application/json" })
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `ggstarrail-manager-${managerPreview.requestId}.json`;
+    anchor.download = `ggstarrail-manager-${managerPreview.envelope.requestId}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -261,7 +258,7 @@ export default function TriagePage() {
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <PreviewMetric
                     label={t("triage.managerInstructions")}
-                    value={managerPreview.instructions.length}
+                    value={managerActionability?.instructions.length ?? 0}
                   />
                   <PreviewMetric
                     label={t("triage.managerPreviewOnly")}
@@ -293,7 +290,7 @@ export default function TriagePage() {
                     }
                   />
                   <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-3">
-                    {managerPreview.instructions.length === 0
+                    {(managerActionability?.instructions.length ?? 0) === 0
                       ? t("triage.managerNoInstructions")
                       : (managerActionability?.previewOnlyCount ?? 0) > 0
                         ? t("triage.managerReasonHelp")
