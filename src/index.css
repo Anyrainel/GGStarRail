@@ -5,24 +5,59 @@
 @layer base {
   :root {
     color-scheme: dark;
-    --background: 224 35% 7%;
-    --foreground: 210 28% 96%;
-    --card: 224 30% 10%;
-    --card-foreground: 210 28% 96%;
-    --primary: 43 89% 62%;
-    --primary-foreground: 225 38% 8%;
-    --secondary: 222 23% 16%;
-    --secondary-foreground: 210 28% 94%;
-    --muted: 222 20% 14%;
-    --muted-foreground: 215 16% 66%;
-    --accent: 195 45% 19%;
-    --accent-foreground: 190 55% 92%;
+    --background: 229 22% 7%;
+    --foreground: 0 0% 95%;
+    --card: 229 22% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 229 24% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 223 62% 48%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 229 24% 13%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 229 20% 10%;
+    --muted-foreground: 225 12% 62%;
+    --accent: 224 48% 34%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 22%;
-    --input: 220 20% 20%;
-    --ring: 43 89% 62%;
-    --radius: 0.8rem;
+    --border: 228 19% 22%;
+    --input: 229 20% 10%;
+    --ring: 223 62% 52%;
+    --radius: 0.75rem;
+    --gradient-page:
+      radial-gradient(
+        ellipse 85% 75% at 50% 50%,
+        hsl(221 39% 25%) 0%,
+        transparent 92%
+      ),
+      radial-gradient(
+        ellipse 170% 60% at 50% 50%,
+        hsl(245 31% 20%) 0%,
+        transparent 94%
+      ),
+      radial-gradient(
+        ellipse 60% 165% at 50% 50%,
+        hsl(247 28% 14%) 0%,
+        transparent 92%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        hsl(229 22% 7%) 0%,
+        hsl(229 22% 7%) 100%
+      );
+    --gradient-card: linear-gradient(
+      135deg,
+      hsl(227 29% 16%) 0%,
+      hsl(234 30% 14%) 50%,
+      hsl(242 25% 10%) 100%
+    );
+    --gradient-select: linear-gradient(
+      135deg,
+      hsl(242 25% 10%) 0%,
+      hsl(234 30% 14%) 50%,
+      hsl(227 29% 16%) 100%
+    );
   }
 
   * {
@@ -37,22 +72,32 @@
     @apply m-0 bg-background text-foreground antialiased;
     min-width: 320px;
     min-height: 100vh;
-    background-image:
-      radial-gradient(
-        circle at 88% 0%,
-        hsl(190 65% 28% / 0.18),
-        transparent 34rem
-      ),
-      radial-gradient(
-        circle at 8% 100%,
-        hsl(43 80% 38% / 0.09),
-        transparent 30rem
-      );
+    overflow: hidden;
   }
 
   button,
   a {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .overflow-y-auto,
+  .overflow-x-auto {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+    scrollbar-width: thin;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar,
+  .overflow-x-auto::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb,
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background-color: hsl(var(--muted-foreground) / 0.35);
+    background-clip: content-box;
   }
 }
 

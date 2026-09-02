@@ -1,5 +1,5 @@
 import { SlidersHorizontal } from "lucide-react";
-import { EmptyState } from "@/components/shared/EmptyState";
+import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 export default function BuildsPage() {
   const { t } = useI18n();
+  const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
   return (
     <>
@@ -16,7 +17,12 @@ export default function BuildsPage() {
         descriptionKey="route.builds.description"
       />
       {builds.length === 0 ? (
-        <EmptyState messageKey="empty.builds" icon={SlidersHorizontal} />
+        <WorkspaceStartState
+          messageKey="empty.builds"
+          detailKey="empty.builds.prototype"
+          icon={SlidersHorizontal}
+          primaryAction={account ? "open-account" : "load-demo"}
+        />
       ) : (
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {builds.map((build) => (

@@ -17,8 +17,8 @@ export default function FiltersPage() {
         <StatusCard
           titleKey="filters.engine.title"
           bodyKey="filters.engine.body"
-          statusKey="status.implemented"
-          status="implemented"
+          statusKey="status.scaffolded"
+          status="scaffolded"
           icon={Filter}
         />
       </div>

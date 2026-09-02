@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "demo:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-demo.ps1",
     "dev:wrangler": "npm run dev:worker",
     "dev:worker": "wrangler dev --config wrangler.jsonc",
     "data:sync": "node scripts/sync-hsr-reference.mjs",
@@ -29,6 +30,8 @@
     "check": "npm run data:check && npm run assets:check && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
     "@radix-ui/react-slot": "^1.2.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

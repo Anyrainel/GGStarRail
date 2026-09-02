@@ -5,6 +5,7 @@ export const ASSET_NAMESPACE = "/assets/ggstarrail" as const;
 
 export const STORAGE_KEYS = {
   locale: "ggstarrail:locale:v1",
+  theme: "ggstarrail:theme:v1",
   workspace: "ggstarrail:workspace:v1",
 } as const;
 

@@ -693,18 +693,6 @@ export function CharacterExtendedDetails({
 }) {
   const { locale, t } = useI18n();
   const itemById = createProgressionItemIndex(progressionItems);
-  const baseSkillLevels = character.skills.reduce(
-    (total, skill) => total + skill.levels.length,
-    0
-  );
-  const traceLevels = character.traces.reduce(
-    (total, trace) => total + trace.levels.length,
-    0
-  );
-  const servantSkillCount = character.servants.reduce(
-    (total, servant) => total + servant.skills.length,
-    0
-  );
   return (
     <>
       <details
@@ -714,7 +702,6 @@ export function CharacterExtendedDetails({
         <summary className="cursor-pointer font-semibold">
           {t("archive.baseSkills", {
             skills: character.skills.length,
-            levels: baseSkillLevels,
           })}
         </summary>
         <div className="mt-3">
@@ -741,7 +728,6 @@ export function CharacterExtendedDetails({
         <summary className="cursor-pointer font-semibold">
           {t("archive.traceTree", {
             nodes: character.traces.length,
-            levels: traceLevels,
           })}
         </summary>
         <div className="mt-3">
@@ -753,67 +739,73 @@ export function CharacterExtendedDetails({
         </div>
       </details>
 
-      <details
-        data-testid="character-servants"
-        className="rounded-lg border border-border bg-background/45 p-3"
-      >
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.servants", {
-            servants: character.servants.length,
-            skills: servantSkillCount,
-          })}
-        </summary>
-        <div className="mt-3 space-y-3">
-          <p className="text-xs leading-5 text-muted-foreground">
-            {t("archive.servantBoundary")}
-          </p>
-          {character.servants.map((servant) => (
-            <details
-              key={servant.id}
-              data-servant-id={servant.id}
-              className="rounded-lg border border-primary/25 bg-primary/5 p-3"
-            >
-              <summary className="cursor-pointer font-medium">
-                {localizedText(
-                  servant.name,
-                  locale,
-                  [],
-                  t("terms.trailblazer")
-                )}{" "}
-                · {servant.id}
-              </summary>
-              <div className="mt-3">
-                <SkillCollection skills={servant.skills} itemById={itemById} />
-              </div>
-            </details>
-          ))}
-        </div>
-      </details>
+      {character.servants.length > 0 && (
+        <details
+          data-testid="character-servants"
+          className="rounded-lg border border-border bg-background/45 p-3"
+        >
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.servants", {
+              servants: character.servants.length,
+            })}
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p className="text-xs leading-5 text-muted-foreground">
+              {t("archive.servantBoundary")}
+            </p>
+            {character.servants.map((servant) => (
+              <details
+                key={servant.id}
+                data-servant-id={servant.id}
+                className="rounded-lg border border-primary/25 bg-primary/5 p-3"
+              >
+                <summary className="cursor-pointer font-medium">
+                  {localizedText(
+                    servant.name,
+                    locale,
+                    [],
+                    t("terms.trailblazer")
+                  )}{" "}
+                  · {servant.id}
+                </summary>
+                <div className="mt-3">
+                  <SkillCollection
+                    skills={servant.skills}
+                    itemById={itemById}
+                  />
+                </div>
+              </details>
+            ))}
+          </div>
+        </details>
+      )}
 
-      <details
-        data-testid="character-enhancements"
-        className="rounded-lg border border-border bg-background/45 p-3"
-      >
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.seasonalEnhancements", {
-            value: character.enhancements.length,
-          })}
-        </summary>
-        <div className="mt-3 space-y-3">
-          <p className="text-xs leading-5 text-muted-foreground">
-            {t("archive.seasonalBoundary")}
-          </p>
-          {character.enhancements.map((variant) => (
-            <EnhancementVariant
-              key={variant.enhanced_id}
-              character={character}
-              variant={variant}
-              itemById={itemById}
-              propertyTables={propertyTables}
-            />
-          ))}
-        </div>
-      </details>
+      {character.enhancements.length > 0 && (
+        <details
+          data-testid="character-enhancements"
+          className="rounded-lg border border-border bg-background/45 p-3"
+        >
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.seasonalEnhancements", {
+              value: character.enhancements.length,
+            })}
+          </summary>
+          <div className="mt-3 space-y-3">
+            <p className="text-xs leading-5 text-muted-foreground">
+              {t("archive.seasonalBoundary")}
+            </p>
+            {character.enhancements.map((variant) => (
+              <EnhancementVariant
+                key={variant.enhanced_id}
+                character={character}
+                variant={variant}
+                itemById={itemById}
+                propertyTables={propertyTables}
+              />
+            ))}
+          </div>
+        </details>
+      )}
 
       <ExperienceItemSection items={progressionItems} kind="character" />
     </>

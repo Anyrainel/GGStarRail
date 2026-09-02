@@ -1,12 +1,11 @@
-import { type RefObject, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
-import { useMobileDetailFocus } from "@/hooks/useMobileDetailFocus";
-import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
+import { TRAILBLAZER_TERMS, TRAILBLAZER_VARIANT_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatCharacterDisplayName, formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/gameText";
 import {
   getLocalizedValue,
   isCharacterDefinitionV1_1,
@@ -28,6 +27,11 @@ import {
   CatalogSearch,
   CatalogSelect,
 } from "./CatalogControls";
+import {
+  CatalogDetailSheet,
+  useCatalogDetailSheet,
+} from "./CatalogDetailSheet";
+import { CatalogSourceDisclosure } from "./CatalogSourceDisclosure";
 import {
   CharacterExtendedDetails,
   characterExtendedSearchText,
@@ -55,15 +59,15 @@ function characterDisplayName(
   locale: ReferenceLocale,
   trailblazerFallback: string
 ): string {
-  return formatGameText(
-    formatCharacterDisplayName(
-      character.id,
-      getLocalizedValue(character.name, locale),
-      trailblazerFallback
-    ),
-    [],
-    trailblazerFallback
-  );
+  const sourceName = getLocalizedValue(character.name, locale);
+  if (sourceName === "{NICKNAME}" && /^80(?:0[1-9]|10)$/.test(character.id)) {
+    const variant =
+      Number(character.id) % 2 === 1
+        ? TRAILBLAZER_VARIANT_TERMS[locale].caelus
+        : TRAILBLAZER_VARIANT_TERMS[locale].stelle;
+    return `${trailblazerFallback} · ${variant}`;
+  }
+  return formatGameText(sourceName, [], trailblazerFallback);
 }
 
 export function CharacterCatalog() {
@@ -75,8 +79,12 @@ export function CharacterCatalog() {
   const [combatTypeId, setCombatTypeId] = useState("all");
   const [rarity, setRarity] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { detailRef, requestMobileDetailFocus } =
-    useMobileDetailFocus<HTMLElement>();
+  const {
+    open: detailOpen,
+    setOpen: setDetailOpen,
+    openOnNarrowScreen,
+    restoreTriggerFocus,
+  } = useCatalogDetailSheet();
 
   const searchIndex = useMemo(() => {
     if (!resource.data) return new Map<string, string>();
@@ -173,6 +181,31 @@ export function CharacterCatalog() {
   const selectedCombatType = selected
     ? propertyTables.combatTypeById.get(selected.combat_type_id)
     : undefined;
+  const selectedName = selected
+    ? characterDisplayName(selected, locale, trailblazerFallback)
+    : "";
+  const selectedDetail = selected ? (
+    <CharacterDetail
+      character={selected}
+      pathName={
+        selectedPath
+          ? formatGameText(getLocalizedValue(selectedPath.name, locale))
+          : selected.path_id
+      }
+      combatTypeName={
+        selectedCombatType
+          ? formatGameText(getLocalizedValue(selectedCombatType.name, locale))
+          : selected.combat_type_id
+      }
+      scoringWeights={
+        progression.relic_scoring.main_affix_character_weights.find(
+          (entry) => entry.character_id === selected.id
+        )?.weights
+      }
+      progression={progression}
+      propertyTables={propertyTables}
+    />
+  ) : null;
 
   return (
     <div className="space-y-4">
@@ -226,9 +259,9 @@ export function CharacterCatalog() {
         })}
       </p>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <section
-          className="order-2 grid gap-3 sm:grid-cols-2 lg:order-1 xl:grid-cols-3"
+          className="grid gap-2 sm:grid-cols-2 lg:max-h-[calc(100dvh-15rem)] lg:grid-cols-1 lg:overflow-y-auto lg:rounded-xl lg:border lg:border-border lg:bg-card/20 lg:p-2"
           aria-label={t("archive.characterList")}
         >
           {filtered.length === 0 ? (
@@ -252,38 +285,26 @@ export function CharacterCatalog() {
                     locale
                   ) ?? character.combat_type_id
                 )}
-                onSelect={() => {
+                onSelect={(trigger) => {
                   setSelectedId(character.id);
-                  requestMobileDetailFocus();
+                  openOnNarrowScreen(trigger);
                 }}
               />
             ))
           )}
         </section>
-        {selected && (
-          <CharacterDetail
-            panelRef={detailRef}
-            character={selected}
-            pathName={
-              selectedPath
-                ? formatGameText(getLocalizedValue(selectedPath.name, locale))
-                : selected.path_id
-            }
-            combatTypeName={
-              selectedCombatType
-                ? formatGameText(
-                    getLocalizedValue(selectedCombatType.name, locale)
-                  )
-                : selected.combat_type_id
-            }
-            scoringWeights={
-              progression.relic_scoring.main_affix_character_weights.find(
-                (entry) => entry.character_id === selected.id
-              )?.weights
-            }
-            progression={progression}
-            propertyTables={propertyTables}
-          />
+        {selectedDetail && (
+          <>
+            <div className="hidden min-w-0 lg:block">{selectedDetail}</div>
+            <CatalogDetailSheet
+              open={detailOpen}
+              onOpenChange={setDetailOpen}
+              onCloseAutoFocus={restoreTriggerFocus}
+              title={selectedName}
+            >
+              {selectedDetail}
+            </CatalogDetailSheet>
+          </>
         )}
       </div>
     </div>
@@ -301,15 +322,16 @@ function CharacterCard({
   selected: boolean;
   pathName: string;
   combatTypeName: string;
-  onSelect: () => void;
+  onSelect: (trigger: HTMLButtonElement) => void;
 }) {
   const { locale, t } = useI18n();
   const name = characterDisplayName(character, locale, t("terms.trailblazer"));
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={(event) => onSelect(event.currentTarget)}
       aria-pressed={selected}
+      data-character-id={character.id}
       className="group overflow-hidden rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card
@@ -319,24 +341,23 @@ function CharacterCard({
             : "h-full transition-colors group-hover:border-primary/35 group-hover:bg-secondary/45"
         }
       >
-        <CardContent className="flex items-center gap-3 p-3">
+        <CardContent className="flex items-center gap-3 p-2.5">
           <AssetImage
             kind="character"
             id={character.id}
             sourcePath={character.icon_path}
             alt={name}
-            className="h-20 w-20 shrink-0 rounded-lg bg-background/60 object-cover object-top"
+            className="h-14 w-14 shrink-0 rounded-lg bg-background/60 object-cover object-top lg:h-12 lg:w-12"
           />
-          <span className="min-w-0 space-y-2">
+          <span className="min-w-0 space-y-1.5">
             <span className="block truncate font-semibold">{name}</span>
             <span className="flex flex-wrap gap-1.5">
               <Badge>{character.rarity} ★</Badge>
               <Badge variant="secondary">{pathName}</Badge>
-              <Badge variant="outline">{combatTypeName}</Badge>
+              <Badge variant="outline" className="lg:hidden xl:inline-flex">
+                {combatTypeName}
+              </Badge>
             </span>
-            <code className="block text-[11px] text-muted-foreground">
-              {character.id}
-            </code>
           </span>
         </CardContent>
       </Card>
@@ -389,7 +410,6 @@ function CommonCharacterSkills({
 }
 
 function CharacterDetail({
-  panelRef,
   character,
   pathName,
   combatTypeName,
@@ -397,7 +417,6 @@ function CharacterDetail({
   progression,
   propertyTables,
 }: {
-  panelRef: RefObject<HTMLElement | null>;
   character: CharacterDefinition;
   pathName: string;
   combatTypeName: string;
@@ -426,16 +445,10 @@ function CharacterDetail({
   const itemById = additiveProgression
     ? createProgressionItemIndex(additiveProgression.items)
     : null;
-  const promotionCostRows = character.promotions.reduce(
-    (total, promotion) => total + promotion.costs.length,
-    0
-  );
   return (
     <aside
-      ref={panelRef}
-      tabIndex={-1}
       data-testid="character-detail"
-      className="order-1 scroll-mt-4 space-y-5 rounded-xl border border-border bg-card/75 p-4 outline-none lg:order-2 lg:sticky lg:top-0"
+      className="min-w-0 space-y-5 overflow-hidden rounded-xl border border-border bg-card/75 p-4 lg:sticky lg:top-0"
     >
       <div className="flex gap-4">
         <AssetImage
@@ -450,7 +463,6 @@ function CharacterDetail({
             {character.rarity} ★
           </p>
           <h2 className="text-xl font-semibold">{name}</h2>
-          <code className="text-xs text-muted-foreground">{character.id}</code>
           <div className="flex flex-wrap gap-2">
             <Badge>{pathName}</Badge>
             <Badge variant="secondary">{combatTypeName}</Badge>
@@ -460,7 +472,7 @@ function CharacterDetail({
           </div>
         </div>
       </div>
-      <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
+      <p className="break-words whitespace-pre-line text-sm leading-6 text-muted-foreground">
         {description}
       </p>
 
@@ -484,7 +496,6 @@ function CharacterDetail({
           {itemById
             ? t("archive.promotionsWithCosts", {
                 promotions: character.promotions.length,
-                costs: promotionCostRows,
               })
             : t("archive.progression")}
         </summary>
@@ -560,13 +571,10 @@ function CharacterDetail({
         </details>
       )}
 
-      <div className="rounded-lg border border-border bg-background/45 p-3 text-xs text-muted-foreground">
-        <p>{t("archive.provenance.primary")}</p>
-        <code className="mt-1 block break-all">
-          {provenance.source_revision}
-        </code>
-        <p className="mt-2 break-all">{provenance.source_path}</p>
-      </div>
+      <CatalogSourceDisclosure
+        revision={provenance.source_revision}
+        path={provenance.source_path}
+      />
     </aside>
   );
 }

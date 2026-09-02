@@ -7,7 +7,20 @@ export const messagesZhCn = {
   "app.locale": "语言",
   "app.locale.english": "English",
   "app.locale.chinese": "简体中文",
+  "site.switcher.label": "切换游戏站点",
+  "site.genshin": "原神",
+  "site.starRail": "崩坏：星穹铁道",
+  "site.starRail.short": "星穹铁道",
+  "theme.label": "主题",
+  "theme.astral": "群星之夜",
+  "theme.express": "星穹列车",
+  "theme.dreamscape": "美梦之境",
+  "common.more": "更多",
+  "common.close": "关闭",
+  "nav.menu": "菜单",
+  "nav.primaryLabel": "主导航",
   "nav.overview": "概览",
+  "nav.accountData": "账号数据",
   "nav.account": "账号",
   "nav.characters": "角色",
   "nav.inventory": "背包",
@@ -25,9 +38,20 @@ export const messagesZhCn = {
   "nav.archiveLightCones": "光锥图鉴",
   "nav.archiveRelicSets": "遗器套装图鉴",
   "nav.imports": "数据来源",
-  "route.home.title": "本地星铁工作台",
+  "route.home.title": "配好角色，留下真正有用的遗器",
   "route.home.description":
-    "无需线上凭据，即可浏览已审计的双语图鉴或加载可预览的本地账号。",
+    "沿用 GGArtifact 熟悉的账号与圣遗物管理流程，为《崩坏：星穹铁道》重构，支持本地导入与完整双语图鉴。",
+  "home.openAccount": "打开账号数据",
+  "home.openArchive": "浏览图鉴",
+  "home.tools.title": "星铁工具",
+  "home.tools.body":
+    "延续 GGArtifact 以玩家任务为核心的结构，适配角色、光锥、遗器和位面饰品。",
+  "home.tool.account.title": "查看账号数据",
+  "home.tool.account.body": "在同一本地工作台中浏览已导入的角色与装备。",
+  "home.tool.builds.title": "预览遗器配装规划",
+  "home.tool.builds.body": "先查看评分、筛选与整理基础；完整编辑器仍在开发中。",
+  "home.tool.archive.title": "浏览游戏图鉴",
+  "home.tool.archive.body": "搜索角色、光锥和遗器套装，并查看完整效果。",
   "route.characters.title": "账号角色",
   "route.characters.description":
     "已拥有角色、养成、星魂、行迹和已装备物品引用。",
@@ -41,25 +65,25 @@ export const messagesZhCn = {
   "route.planar.title": "位面饰品",
   "route.planar.description": "位面球和连结绳作为独立的星铁装备部位建模。",
   "route.builds.title": "配装配置",
-  "route.builds.description": "配置目标角色、套装要求、主词条偏好和评分方案。",
+  "route.builds.description":
+    "预览已导入的配装目标；套装、主词条和评分方案编辑器尚未开放。",
   "route.scoring.title": "遗器评分",
   "route.scoring.description":
-    "由用户设定词条权重，进行确定且不涉及伤害计算的评分。",
+    "评分引擎基础已就绪；权重编辑与遗器评分结果页面尚未开放。",
   "route.filters.title": "计算筛选",
   "route.filters.description":
-    "按稀有度、等级、评分、锁定、装备状态和类别组合筛选条件。",
+    "筛选引擎基础已就绪；条件编辑与筛选结果页面尚未开放。",
   "route.triage.title": "遗器整理",
   "route.triage.description":
-    "标记保留、复核或建议分解的候选项，不修改游戏数据。",
+    "整理引擎基础已就绪；保留、复核和建议分解的交互流程尚未开放。",
   "route.archiveCharacters.title": "角色图鉴",
   "route.archiveCharacters.description":
-    "查看全部已审计角色的双语描述、命途、战斗属性、技能、养成数据和来源信息。",
+    "浏览角色描述、命途、战斗属性、技能、星魂、行迹与养成信息。",
   "route.archiveLightCones.title": "光锥图鉴",
-  "route.archiveLightCones.description":
-    "查看全部已审计光锥的双语效果、叠影数值、养成数据和来源信息。",
+  "route.archiveLightCones.description": "浏览光锥效果、叠影等级与养成信息。",
   "route.archiveRelicSets.title": "遗器套装图鉴",
   "route.archiveRelicSets.description":
-    "查看完整隧洞遗器与位面饰品套装、逻辑部位、稀有度变体、词条档位和评分表。",
+    "浏览隧洞遗器与位面饰品套装、部位、稀有度和套装效果。",
   "route.imports.title": "数据来源",
   "route.imports.description":
     "预览本地扫描器导出，或加载采用真实图鉴 ID 的演示账号；文件始终留在本机。",
@@ -79,7 +103,7 @@ export const messagesZhCn = {
   "home.snapshot.counts":
     "{characters} 名角色 · {lightCones} 个光锥 · {relics} 件装备",
   "status.implemented": "已实现",
-  "status.scaffolded": "已搭框架",
+  "status.scaffolded": "原型阶段",
   "status.excluded": "已排除",
   "status.noLiveData": "未配置线上数据",
   "common.open": "打开",
@@ -119,16 +143,20 @@ export const messagesZhCn = {
   "empty.planar": "本地工作区中没有位面饰品。",
   "empty.filtered": "没有符合当前筛选条件的记录。",
   "empty.builds": "尚未创建自定义配装。",
+  "empty.builds.prototype":
+    "配装编辑器目前仍处于原型阶段，暂未开放。你可以先查看账号数据或管理导入来源。",
+  "empty.openAccount": "查看账号数据",
+  "empty.demoError": "无法加载内置演示账号；当前账号数据没有任何变化。",
   "empty.archive": "尚未加载具有完整来源信息的游戏数据包。",
   "scoring.engine.title": "中立评分服务",
   "scoring.engine.body":
-    "引擎将标准化词条数值与用户权重相乘汇总，不作伤害或角色价值判断。",
+    "评分引擎已通过测试，可汇总标准化词条与权重；本原型暂不提供权重编辑器和遗器评分结果页。",
   "filters.engine.title": "类型化筛选计算器",
   "filters.engine.body":
-    "已支持对稳定的星铁背包字段和计算评分应用全部/任一条件。",
+    "筛选引擎已通过测试，可对星铁背包字段应用全部或任一条件；本原型暂不提供条件编辑器和结果页。",
   "triage.engine.title": "仅提供整理建议",
   "triage.engine.body":
-    "锁定或已装备的物品会受到保护；结果仅为标签，本应用不会在游戏内分解物品。",
+    "整理引擎已通过测试，并会保护锁定或已装备物品；本原型暂不提供交互整理流程，也不会修改游戏内物品。",
   "archive.provenance.title": "必须提供来源信息",
   "archive.provenance.body":
     "每份数据都必须声明上游来源、修订版本、生成时间、语言覆盖、许可说明和校验和。",
@@ -147,6 +175,8 @@ export const messagesZhCn = {
   "archive.characterList": "角色图鉴结果",
   "archive.lightConeList": "光锥图鉴结果",
   "archive.relicSetList": "遗器与位面饰品套装图鉴结果",
+  "archive.dataDetails": "关于图鉴数据",
+  "archive.sourceDetails": "数据来源详情",
   "archive.bundle.title": "GIlore 参考数据包",
   "archive.bundle.bilingual": "English + 简体中文",
   "archive.bundle.summary":
@@ -164,7 +194,7 @@ export const messagesZhCn = {
   "archive.progression": "养成与基础属性",
   "archive.promotion": "晋阶",
   "archive.maxLevel": "等级上限",
-  "archive.sourceScoring": "数据源遗器权重",
+  "archive.sourceScoring": "高级遗器评分数据",
   "archive.sourceScoringHint":
     "这些数据源表仅作为透明的评分输入，不代表伤害计算、价值判断或配装排名。",
   "archive.sourceValueMissing": "主要数据源中缺失",
@@ -178,7 +208,7 @@ export const messagesZhCn = {
   "archive.setBonuses": "套装效果",
   "archive.pieceBonus": "{value} 件套",
   "archive.logicalPieces": "逻辑部位（{value}）",
-  "archive.referenceTables": "完整参考表",
+  "archive.referenceTables": "高级图鉴数据",
   "archive.referenceTablesHint":
     "可检查规范 ID、本地化名称、有效部位、完整词条档位、养成数据和数据源评分表。",
   "archive.taxonomyCounts":
@@ -202,7 +232,7 @@ export const messagesZhCn = {
     "1.1 详细数据 · {skills} 个基础技能 · {ranks} 个星魂 · {traces} 个行迹节点 · {servants} 个召唤物 · {variants} 个赛季强化变体 · {superimpositions} 行叠影数据 · {items} 个养成道具",
   "archive.additiveUnavailable":
     "架构 1.0.0 数据包不包含详细星魂、行迹、召唤物、赛季强化与养成道具解析；仍会显示通用图鉴数据，不会虚构缺失记录。",
-  "archive.baseSkills": "基础技能 · {skills} 个技能 · {levels} 行等级数据",
+  "archive.baseSkills": "技能（{skills}）",
   "archive.skillSource.simple": "展示摘要采用主要数据源中的简述。",
   "archive.skillSource.fallback":
     "主要数据源未提供简述；此处明确回退为数据源中的完整描述。",
@@ -226,14 +256,14 @@ export const messagesZhCn = {
   "archive.eidolon": "星魂 {value}",
   "archive.unlockCosts": "解锁消耗",
   "archive.skillLevelAdditions": "技能等级提升",
-  "archive.traceTree": "行迹树 · {nodes} 个节点 · {levels} 行等级数据",
+  "archive.traceTree": "行迹（{nodes}）",
   "archive.traceNode": "行迹节点 {value}",
   "archive.defaultUnlocked": "默认解锁",
   "archive.prerequisites": "前置节点稳定 ID",
   "archive.levelRequirements": "等级要求",
   "archive.promotionRequired": "晋阶 {value}",
   "archive.characterLevelRequired": "角色等级 {value}",
-  "archive.servants": "召唤物 · {servants} 条独立记录 · {skills} 个技能",
+  "archive.servants": "召唤物（{servants}）",
   "archive.servantBoundary":
     "召唤物保留为带有独立稳定 ID 和技能的数据源记录，不会并入角色的基础技能列表。",
   "archive.seasonalEnhancements": "赛季强化（{value} 个独立变体）",
@@ -252,11 +282,11 @@ export const messagesZhCn = {
   "archive.eidolonChanges": "星魂改动（{value}）",
   "archive.before": "强化前",
   "archive.after": "强化后",
-  "archive.rankUpMaterials": "精确叠影材料 ID（{value}）",
+  "archive.rankUpMaterials": "叠影材料（{value}）",
   "archive.superimpositions": "叠影数据（{value}）",
   "archive.superimposition": "叠影 {value}",
   "archive.abilityId": "能力 ID",
-  "archive.promotionsWithCosts": "养成 · {promotions} 阶 · {costs} 行材料",
+  "archive.promotionsWithCosts": "养成（{promotions} 阶）",
   "imports.gilore.title": "GIlore 数据包",
   "imports.gilore.body":
     "本地双语数据包只有在清单、字节数、哈希、封装、修订、数量和语言全部通过校验后才会被接受。",
@@ -324,6 +354,8 @@ export const messagesZhCn = {
   "error.hint": "请刷新页面。如问题持续，可复制已经脱敏的技术详情用于排查。",
   "error.redacted": "诊断信息中的疑似敏感值会被隐藏。",
   "terms.trailblazer": "开拓者",
+  "terms.caelus": "穹",
+  "terms.stelle": "星",
   "terms.path.destruction": "毁灭",
   "terms.path.hunt": "巡猎",
   "terms.path.erudition": "智识",

@@ -13,8 +13,8 @@ export default function TriagePage() {
         <StatusCard
           titleKey="triage.engine.title"
           bodyKey="triage.engine.body"
-          statusKey="status.implemented"
-          status="implemented"
+          statusKey="status.scaffolded"
+          status="scaffolded"
           icon={ShieldCheck}
         />
       </div>

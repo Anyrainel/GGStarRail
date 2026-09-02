@@ -15,7 +15,7 @@ stored data or requires a schema migration.
 npm install
 npm run data:sync
 npm run assets:sync
-npm run dev
+npm run demo:start
 ```
 
 `data:sync` verifies the normalized bundle in the sibling GIlore checkout and
@@ -27,15 +27,20 @@ path; see [Source provenance](docs/source-provenance.md).
 bundle. It writes only to an ignored local cache; no upstream game-art binary
 is committed by GGStarRail.
 
-The Vite app defaults to `http://localhost:5173`. The placeholder Worker can be
-run separately with `npm run dev:worker`; it exposes only `GET /api/health` and
-has no live bindings.
+`demo:start` leaves a detached local demo at `http://127.0.0.1:41737`, so it
+stays available after the launching terminal closes. It validates the page
+identity before reusing a listener and writes timestamped logs under
+`%TEMP%\ggstarrail-demo`; it is not a reboot-persistent Windows service. Use
+`npm run dev` for an attached Vite session on its default port. The placeholder
+Worker can be run separately with `npm run dev:worker`; it exposes only
+`GET /api/health` and has no live bindings.
 
 ## Developer commands
 
 | Command | Purpose |
 | --- | --- |
 | `npm run dev` | Start the React/Vite app |
+| `npm run demo:start` | Start or reuse the detached demo on port 41737 |
 | `npm run dev:worker` | Start the resource-free Worker shell |
 | `npm run data:sync` | Verify and import the sibling GIlore reference bundle |
 | `npm run data:verify` | Verify the source bundle without publishing it |

@@ -13,7 +13,7 @@ GGStarRail 是一个本地优先的《崩坏：星穹铁道》账号、背包、
 npm install
 npm run data:sync
 npm run assets:sync
-npm run dev
+npm run demo:start
 ```
 
 `data:sync` 会先校验同级 GIlore 仓库中的规范化数据包，再写入本仓库已忽略的
@@ -22,8 +22,11 @@ npm run dev
 `assets:sync` 只消费 GIlore 已生成并校验的资源包，将图片写入本仓库忽略的本地缓存；
 GGStarRail 不提交或主张拥有上游游戏美术资源。
 
-Vite 默认监听 `http://localhost:5173`。可另行运行 `npm run dev:worker`
-启动不带任何线上绑定的 Worker 外壳；它目前只提供 `GET /api/health`。
+`demo:start` 会在 `http://127.0.0.1:41737` 启动与终端分离的本地演示站，
+在复用现有端口前会校验 GGStarRail 页面标识，日志写入
+`%TEMP%\ggstarrail-demo`。它不是重启后自动运行的 Windows 服务。如需前台调试，
+可使用 `npm run dev`；另可运行 `npm run dev:worker` 启动不带任何线上绑定的
+Worker 外壳，它目前只提供 `GET /api/health`。
 
 ## 当前真实范围
 

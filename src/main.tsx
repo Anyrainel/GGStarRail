@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import { I18nProvider } from "./i18n/I18nContext";
 import "./index.css";
 
@@ -11,12 +12,14 @@ if (!rootElement) throw new Error("Root element is missing");
 
 createRoot(rootElement).render(
   <StrictMode>
-    <I18nProvider>
-      <ErrorBoundary>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </ErrorBoundary>
-    </I18nProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ErrorBoundary>
+      </I18nProvider>
+    </ThemeProvider>
   </StrictMode>
 );

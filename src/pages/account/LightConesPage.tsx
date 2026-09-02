@@ -5,6 +5,7 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { InventoryToolbar } from "@/components/account/InventoryToolbar";
+import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -95,7 +96,14 @@ export default function LightConesPage() {
         descriptionKey="route.lightCones.description"
       />
       {lightCones.length === 0 ? (
-        <EmptyState messageKey="empty.lightCones" icon={WandSparkles} />
+        account ? (
+          <EmptyState messageKey="empty.lightCones" icon={WandSparkles} />
+        ) : (
+          <WorkspaceStartState
+            messageKey="empty.lightCones"
+            icon={WandSparkles}
+          />
+        )
       ) : loading ? (
         <CatalogLoading />
       ) : error || !data ? (

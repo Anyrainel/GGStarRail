@@ -1,9 +1,8 @@
-import { type RefObject, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
-import { useMobileDetailFocus } from "@/hooks/useMobileDetailFocus";
 import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
@@ -28,6 +27,11 @@ import {
   CatalogSearch,
   CatalogSelect,
 } from "./CatalogControls";
+import {
+  CatalogDetailSheet,
+  useCatalogDetailSheet,
+} from "./CatalogDetailSheet";
+import { CatalogSourceDisclosure } from "./CatalogSourceDisclosure";
 import {
   LightConeExtendedDetails,
   lightConeExtendedSearchText,
@@ -57,8 +61,12 @@ export function LightConeCatalog() {
   const [pathId, setPathId] = useState("all");
   const [rarity, setRarity] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { detailRef, requestMobileDetailFocus } =
-    useMobileDetailFocus<HTMLElement>();
+  const {
+    open: detailOpen,
+    setOpen: setDetailOpen,
+    openOnNarrowScreen,
+    restoreTriggerFocus,
+  } = useCatalogDetailSheet();
 
   const searchIndex = useMemo(() => {
     if (!resource.data) return new Map<string, string>();
@@ -159,6 +167,21 @@ export function LightConeCatalog() {
   const selectedPath = selected
     ? propertyTables.pathById.get(selected.path_id)
     : undefined;
+  const selectedName = selected
+    ? formatGameText(getLocalizedValue(selected.name, locale))
+    : "";
+  const selectedDetail = selected ? (
+    <LightConeDetail
+      lightCone={selected}
+      pathName={
+        selectedPath
+          ? formatGameText(getLocalizedValue(selectedPath.name, locale))
+          : selected.path_id
+      }
+      progression={progression}
+      propertyTables={propertyTables}
+    />
+  ) : null;
 
   return (
     <div className="space-y-4">
@@ -201,9 +224,9 @@ export function LightConeCatalog() {
         })}
       </p>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(260px,320px)_minmax(0,1fr)]">
         <section
-          className="order-2 grid gap-3 sm:grid-cols-2 lg:order-1 xl:grid-cols-3"
+          className="grid gap-2 sm:grid-cols-2 lg:max-h-[calc(100dvh-15rem)] lg:grid-cols-1 lg:overflow-y-auto lg:rounded-xl lg:border lg:border-border lg:bg-card/20 lg:p-2"
           aria-label={t("archive.lightConeList")}
         >
           {filtered.length === 0 ? (
@@ -220,26 +243,26 @@ export function LightConeCatalog() {
                     locale
                   ) ?? lightCone.path_id
                 )}
-                onSelect={() => {
+                onSelect={(trigger) => {
                   setSelectedId(lightCone.id);
-                  requestMobileDetailFocus();
+                  openOnNarrowScreen(trigger);
                 }}
               />
             ))
           )}
         </section>
-        {selected && (
-          <LightConeDetail
-            panelRef={detailRef}
-            lightCone={selected}
-            pathName={
-              selectedPath
-                ? formatGameText(getLocalizedValue(selectedPath.name, locale))
-                : selected.path_id
-            }
-            progression={progression}
-            propertyTables={propertyTables}
-          />
+        {selectedDetail && (
+          <>
+            <div className="hidden min-w-0 lg:block">{selectedDetail}</div>
+            <CatalogDetailSheet
+              open={detailOpen}
+              onOpenChange={setDetailOpen}
+              onCloseAutoFocus={restoreTriggerFocus}
+              title={selectedName}
+            >
+              {selectedDetail}
+            </CatalogDetailSheet>
+          </>
         )}
       </div>
     </div>
@@ -255,15 +278,16 @@ function LightConeCard({
   lightCone: LightConeDefinition;
   selected: boolean;
   pathName: string;
-  onSelect: () => void;
+  onSelect: (trigger: HTMLButtonElement) => void;
 }) {
   const { locale } = useI18n();
   const name = formatGameText(getLocalizedValue(lightCone.name, locale));
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={(event) => onSelect(event.currentTarget)}
       aria-pressed={selected}
+      data-light-cone-id={lightCone.id}
       className="group overflow-hidden rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card
@@ -273,23 +297,20 @@ function LightConeCard({
             : "h-full transition-colors group-hover:border-primary/35 group-hover:bg-secondary/45"
         }
       >
-        <CardContent className="flex items-center gap-3 p-3">
+        <CardContent className="flex items-center gap-3 p-2.5">
           <AssetImage
             kind="light-cone"
             id={lightCone.id}
             sourcePath={lightCone.icon_path}
             alt={name}
-            className="h-24 w-16 shrink-0 rounded-md bg-background/60 object-cover"
+            className="h-16 w-11 shrink-0 rounded-md bg-background/60 object-cover"
           />
-          <span className="min-w-0 space-y-2">
+          <span className="min-w-0 space-y-1.5">
             <span className="line-clamp-2 block font-semibold">{name}</span>
             <span className="flex flex-wrap gap-1.5">
               <Badge>{lightCone.rarity} ★</Badge>
               <Badge variant="secondary">{pathName}</Badge>
             </span>
-            <code className="block text-[11px] text-muted-foreground">
-              {lightCone.id}
-            </code>
           </span>
         </CardContent>
       </Card>
@@ -298,13 +319,11 @@ function LightConeCard({
 }
 
 function LightConeDetail({
-  panelRef,
   lightCone,
   pathName,
   progression,
   propertyTables,
 }: {
-  panelRef: RefObject<HTMLElement | null>;
   lightCone: LightConeDefinition;
   pathName: string;
   progression: ProgressionTables;
@@ -325,16 +344,10 @@ function LightConeDetail({
   const itemById = additiveProgression
     ? createProgressionItemIndex(additiveProgression.items)
     : null;
-  const promotionCostRows = lightCone.promotions.reduce(
-    (total, promotion) => total + promotion.costs.length,
-    0
-  );
   return (
     <aside
-      ref={panelRef}
-      tabIndex={-1}
       data-testid="light-cone-detail"
-      className="order-1 scroll-mt-4 space-y-5 rounded-xl border border-border bg-card/75 p-4 outline-none lg:order-2 lg:sticky lg:top-0"
+      className="min-w-0 space-y-5 overflow-hidden rounded-xl border border-border bg-card/75 p-4 lg:sticky lg:top-0"
     >
       <div className="flex gap-4">
         <AssetImage
@@ -349,7 +362,6 @@ function LightConeDetail({
             {lightCone.rarity} ★
           </p>
           <h2 className="text-xl font-semibold">{name}</h2>
-          <code className="text-xs text-muted-foreground">{lightCone.id}</code>
           <div className="flex flex-wrap gap-2">
             <Badge>{pathName}</Badge>
             <Badge variant="outline">
@@ -360,7 +372,7 @@ function LightConeDetail({
           </div>
         </div>
       </div>
-      <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
+      <p className="break-words whitespace-pre-line text-sm leading-6 text-muted-foreground">
         {formatGameText(
           getLocalizedValue(lightCone.description, locale),
           [],
@@ -383,19 +395,6 @@ function LightConeDetail({
             trailblazer
           )}
         </p>
-        <div className="grid gap-2 sm:grid-cols-5 lg:grid-cols-2 xl:grid-cols-5">
-          {lightCone.effect.superimpositions.map((rank) => (
-            <div
-              key={rank.level}
-              className="rounded-md border border-border bg-background/55 p-2 text-xs"
-            >
-              <p className="font-semibold">S{rank.level}</p>
-              <p className="mt-1 font-mono text-muted-foreground">
-                {rank.parameters.join(" · ")}
-              </p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {additiveLightCone && additiveProgression && additivePropertyTables ? (
@@ -415,7 +414,6 @@ function LightConeDetail({
           {itemById
             ? t("archive.promotionsWithCosts", {
                 promotions: lightCone.promotions.length,
-                costs: promotionCostRows,
               })
             : t("archive.progression")}
         </summary>
@@ -482,13 +480,10 @@ function LightConeDetail({
         </p>
       </details>
 
-      <div className="rounded-lg border border-border bg-background/45 p-3 text-xs text-muted-foreground">
-        <p>{t("archive.provenance.primary")}</p>
-        <code className="mt-1 block break-all">
-          {provenance.source_revision}
-        </code>
-        <p className="mt-2 break-all">{provenance.source_path}</p>
-      </div>
+      <CatalogSourceDisclosure
+        revision={provenance.source_revision}
+        path={provenance.source_path}
+      />
     </aside>
   );
 }

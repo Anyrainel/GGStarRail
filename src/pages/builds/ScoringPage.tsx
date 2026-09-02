@@ -17,8 +17,8 @@ export default function ScoringPage() {
         <StatusCard
           titleKey="scoring.engine.title"
           bodyKey="scoring.engine.body"
-          statusKey="status.implemented"
-          status="implemented"
+          statusKey="status.scaffolded"
+          status="scaffolded"
           icon={CircleGauge}
         />
       </div>

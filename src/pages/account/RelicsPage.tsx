@@ -5,6 +5,7 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { InventoryToolbar } from "@/components/account/InventoryToolbar";
+import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -133,7 +134,11 @@ export default function RelicsPage({
     <>
       <PageHeader titleKey={titleKey} descriptionKey={descriptionKey} />
       {relics.length === 0 ? (
-        <EmptyState messageKey={emptyKey} icon={Icon} />
+        account ? (
+          <EmptyState messageKey={emptyKey} icon={Icon} />
+        ) : (
+          <WorkspaceStartState messageKey={emptyKey} icon={Icon} />
+        )
       ) : loading ? (
         <CatalogLoading />
       ) : error || !data ? (

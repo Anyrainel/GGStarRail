@@ -3,6 +3,7 @@ import {
   Archive,
   Boxes,
   CircleGauge,
+  Database,
   DatabaseZap,
   Filter,
   Gem,
@@ -40,30 +41,23 @@ export interface NavigationItem {
   icon: LucideIcon;
 }
 
-export interface NavigationGroup {
+export interface NavigationSection {
+  path: string;
   labelKey: MessageKey;
   items: readonly NavigationItem[];
 }
 
-export const NAV_GROUPS: readonly NavigationGroup[] = [
+export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
   {
-    labelKey: "nav.account",
+    path: "/account-data",
+    labelKey: "nav.accountData",
     items: [
       {
         path: APP_PATHS.characters,
         labelKey: "nav.characters",
         icon: UsersRound,
       },
-      {
-        path: APP_PATHS.inventory,
-        labelKey: "nav.inventory",
-        icon: Boxes,
-      },
-    ],
-  },
-  {
-    labelKey: "nav.equipment",
-    items: [
+      { path: APP_PATHS.inventory, labelKey: "nav.inventory", icon: Boxes },
       {
         path: APP_PATHS.lightCones,
         labelKey: "nav.lightCones",
@@ -78,6 +72,7 @@ export const NAV_GROUPS: readonly NavigationGroup[] = [
     ],
   },
   {
+    path: "/builds",
     labelKey: "nav.planning",
     items: [
       {
@@ -91,6 +86,7 @@ export const NAV_GROUPS: readonly NavigationGroup[] = [
     ],
   },
   {
+    path: "/archive",
     labelKey: "nav.archive",
     items: [
       {
@@ -111,3 +107,15 @@ export const NAV_GROUPS: readonly NavigationGroup[] = [
     ],
   },
 ];
+
+export const DATA_SOURCES_NAV: NavigationItem = {
+  path: APP_PATHS.imports,
+  labelKey: "nav.imports",
+  icon: Database,
+};
+
+export function navigationSection(pathname: string) {
+  return NAVIGATION_SECTIONS.find((section) =>
+    section.items.some((item) => item.path === pathname)
+  );
+}

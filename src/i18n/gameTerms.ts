@@ -8,6 +8,20 @@ export const TRAILBLAZER_TERMS = {
   "zh-CN": messagesZhCn["terms.trailblazer"],
 } as const satisfies Record<Locale, string>;
 
+export const TRAILBLAZER_VARIANT_TERMS = {
+  en: {
+    caelus: messagesEn["terms.caelus"],
+    stelle: messagesEn["terms.stelle"],
+  },
+  "zh-CN": {
+    caelus: messagesZhCn["terms.caelus"],
+    stelle: messagesZhCn["terms.stelle"],
+  },
+} as const satisfies Record<
+  Locale,
+  { readonly caelus: string; readonly stelle: string }
+>;
+
 export const KNOWN_PATH_MESSAGE_KEYS = {
   destruction: "terms.path.destruction",
   hunt: "terms.path.hunt",

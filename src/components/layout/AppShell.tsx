@@ -1,192 +1,363 @@
-import { Database, Languages, Orbit } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import {
+  Check,
+  ChevronDown,
+  ExternalLink,
+  Languages,
+  Menu,
+  MoreVertical,
+  Palette,
+  Sparkles,
+} from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { APP_PATHS, NAV_GROUPS } from "@/config/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuCheck,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  APP_PATHS,
+  DATA_SOURCES_NAV,
+  NAVIGATION_SECTIONS,
+  navigationSection,
+} from "@/config/navigation";
+import { THEME_IDS, useTheme } from "@/contexts/ThemeContext";
+import type { ThemeId } from "@/contexts/themeTypes";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
-function Brand() {
+const GENSHIN_SITE_URL =
+  import.meta.env.VITE_GENSHIN_SITE_URL ?? "https://ggartifact.com";
+
+function SiteSwitcher() {
   const { t } = useI18n();
   return (
-    <NavLink to={APP_PATHS.home} className="flex items-center gap-3">
-      <span className="grid h-10 w-10 place-items-center rounded-xl border border-primary/30 bg-primary/10 text-primary shadow-glow">
-        <Orbit className="h-5 w-5" aria-hidden="true" />
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-sm font-semibold tracking-wide">
-          {t("app.name")}
-        </span>
-        <span className="block truncate text-xs text-muted-foreground">
-          {t("app.foundation")}
-        </span>
-      </span>
-    </NavLink>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-10 min-w-0 gap-2 px-1.5 text-muted-foreground hover:bg-transparent hover:text-foreground sm:px-2"
+          aria-label={t("site.switcher.label")}
+        >
+          <img src="/assets/ggstarrail/mark.svg" className="h-8 w-8" alt="" />
+          <span className="hidden text-base font-semibold sm:inline">
+            GG Artifact
+          </span>
+          <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+            {t("site.starRail.short")}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-72">
+        <DropdownMenuLabel>{t("site.switcher.label")}</DropdownMenuLabel>
+        <DropdownMenuItem asChild>
+          <a href={GENSHIN_SITE_URL}>
+            <Sparkles className="h-7 w-7 text-primary" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">GGArtifact</span>
+              <span className="block text-xs text-muted-foreground">
+                {t("site.genshin")}
+              </span>
+            </span>
+            <ExternalLink
+              className="text-muted-foreground"
+              aria-hidden="true"
+            />
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={APP_PATHS.home} aria-current="page">
+            <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium">GGStarRail</span>
+              <span className="block text-xs text-muted-foreground">
+                {t("site.starRail")}
+              </span>
+            </span>
+            <Check className="text-primary" aria-hidden="true" />
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function LocaleSwitcher({ compact = false }: { compact?: boolean }) {
+function ThemeAndLocaleMenu() {
   const { locale, setLocale, t } = useI18n();
+  const { theme, setTheme } = useTheme();
+
+  const themeLabel = (themeId: ThemeId) => {
+    switch (themeId) {
+      case "astral":
+        return t("theme.astral");
+      case "express":
+        return t("theme.express");
+      case "dreamscape":
+        return t("theme.dreamscape");
+    }
+  };
+
   return (
-    <fieldset className="flex items-center gap-1 rounded-lg border border-border bg-background/60 p-1">
-      <legend className="sr-only">{t("app.locale")}</legend>
-      {!compact && <Languages className="mx-1 h-4 w-4 text-muted-foreground" />}
-      <Button
-        size="sm"
-        variant={locale === "en" ? "secondary" : "ghost"}
-        onClick={() => setLocale("en")}
-      >
-        EN
-      </Button>
-      <Button
-        size="sm"
-        variant={locale === "zh-CN" ? "secondary" : "ghost"}
-        onClick={() => setLocale("zh-CN")}
-      >
-        中文
-      </Button>
-    </fieldset>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" aria-label={t("common.more")}>
+          <MoreVertical className="h-4 w-4" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel className="flex items-center gap-2">
+          <Languages className="h-4 w-4" aria-hidden="true" />
+          {t("app.locale")}
+        </DropdownMenuLabel>
+        <DropdownMenuItem
+          onSelect={() => setLocale("en")}
+          role="menuitemradio"
+          aria-checked={locale === "en"}
+        >
+          <DropdownMenuCheck visible={locale === "en"} />
+          {t("app.locale.english")}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onSelect={() => setLocale("zh-CN")}
+          role="menuitemradio"
+          aria-checked={locale === "zh-CN"}
+        >
+          <DropdownMenuCheck visible={locale === "zh-CN"} />
+          {t("app.locale.chinese")}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="flex items-center gap-2">
+          <Palette className="h-4 w-4" aria-hidden="true" />
+          {t("theme.label")}
+        </DropdownMenuLabel>
+        {THEME_IDS.map((themeId) => (
+          <DropdownMenuItem
+            key={themeId}
+            onSelect={() => setTheme(themeId)}
+            role="menuitemradio"
+            aria-checked={theme === themeId}
+          >
+            <DropdownMenuCheck visible={theme === themeId} />
+            {themeLabel(themeId)}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
 function DesktopNavigation() {
+  const { pathname } = useLocation();
   const { t } = useI18n();
+  const activeSection = navigationSection(pathname);
   return (
-    <nav className="space-y-5" aria-label="Primary">
-      {NAV_GROUPS.map((group) => (
-        <section key={group.labelKey} className="space-y-1.5">
-          <h2 className="px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {t(group.labelKey)}
-          </h2>
-          {group.items.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors",
-                    isActive
-                      ? "border-primary/35 bg-primary/12 text-foreground"
-                      : "border-transparent text-muted-foreground hover:border-border hover:bg-secondary/70 hover:text-foreground"
-                  )
-                }
-              >
-                <Icon className="h-4 w-4" aria-hidden="true" />
-                <span>{t(item.labelKey)}</span>
-              </NavLink>
-            );
-          })}
-        </section>
-      ))}
-      <NavLink
-        to={APP_PATHS.imports}
-        className={({ isActive }) =>
-          cn(
-            "flex items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors",
-            isActive
-              ? "border-primary/35 bg-primary/12 text-foreground"
-              : "border-border/70 text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
-          )
-        }
+    <nav
+      className="hidden items-center gap-1 xl:flex"
+      aria-label={t("nav.primaryLabel")}
+    >
+      {NAVIGATION_SECTIONS.map((section) => {
+        const active = activeSection?.path === section.path;
+        return (
+          <Button
+            key={section.path}
+            variant={active ? "secondary" : "ghost"}
+            asChild
+            className={cn(
+              "h-9 px-3",
+              active && "bg-primary/10 text-primary hover:bg-primary/20"
+            )}
+          >
+            <Link
+              to={section.items[0]?.path ?? section.path}
+              aria-current={active ? "page" : undefined}
+            >
+              {t(section.labelKey)}
+            </Link>
+          </Button>
+        );
+      })}
+      <Button
+        variant={pathname === APP_PATHS.imports ? "secondary" : "ghost"}
+        asChild
+        className={cn(
+          "h-9 px-3",
+          pathname === APP_PATHS.imports &&
+            "bg-primary/10 text-primary hover:bg-primary/20"
+        )}
       >
-        <Database className="h-4 w-4" aria-hidden="true" />
-        {t("nav.imports")}
-      </NavLink>
+        <Link
+          to={APP_PATHS.imports}
+          aria-current={pathname === APP_PATHS.imports ? "page" : undefined}
+        >
+          {t(DATA_SOURCES_NAV.labelKey)}
+        </Link>
+      </Button>
     </nav>
   );
 }
 
-function MobileNavigation() {
+function MobileMenu() {
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
   const { t } = useI18n();
-  const location = useLocation();
-  const navigationRef = useRef<HTMLElement>(null);
-  const items = NAV_GROUPS.flatMap((group) => group.items);
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="-ml-2 xl:hidden">
+          <Menu className="h-5 w-5" aria-hidden="true" />
+          <span className="sr-only">{t("nav.menu")}</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="flex flex-col"
+        closeLabel={t("common.close")}
+      >
+        <SheetTitle className="flex items-center gap-2 pr-8">
+          <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
+          GG Artifact
+          <span className="text-sm font-normal text-primary">
+            {t("site.starRail.short")}
+          </span>
+        </SheetTitle>
+        <SheetDescription>{t("app.tagline")}</SheetDescription>
+        <nav
+          className="mt-5 min-h-0 flex-1 space-y-4 overflow-y-auto"
+          aria-label={t("nav.primaryLabel")}
+        >
+          {NAVIGATION_SECTIONS.map((section) => (
+            <section key={section.path}>
+              <h2
+                className={cn(
+                  "mb-1 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground",
+                  navigationSection(pathname)?.path === section.path &&
+                    "text-primary"
+                )}
+              >
+                {t(section.labelKey)}
+              </h2>
+              <div className="space-y-1 border-l border-border pl-2">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.path}
+                      variant={pathname === item.path ? "secondary" : "ghost"}
+                      asChild
+                      className="h-9 w-full justify-start"
+                      onClick={() => setOpen(false)}
+                    >
+                      <Link
+                        to={item.path}
+                        aria-current={
+                          pathname === item.path ? "page" : undefined
+                        }
+                      >
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                        {t(item.labelKey)}
+                      </Link>
+                    </Button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+          <Button
+            variant={pathname === APP_PATHS.imports ? "secondary" : "ghost"}
+            asChild
+            className="h-9 w-full justify-start"
+            onClick={() => setOpen(false)}
+          >
+            <Link
+              to={APP_PATHS.imports}
+              aria-current={pathname === APP_PATHS.imports ? "page" : undefined}
+            >
+              <DATA_SOURCES_NAV.icon className="h-4 w-4" aria-hidden="true" />
+              {t(DATA_SOURCES_NAV.labelKey)}
+            </Link>
+          </Button>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
 
-  useEffect(() => {
-    if (!location.pathname) return;
-    const activeLink = navigationRef.current?.querySelector<HTMLElement>(
-      '[aria-current="page"]'
-    );
-    activeLink?.scrollIntoView?.({
-      behavior: "auto",
-      block: "nearest",
-      inline: "center",
-    });
-  }, [location.pathname]);
+function SectionTabs() {
+  const { pathname } = useLocation();
+  const { t } = useI18n();
+  const section = navigationSection(pathname);
+  if (!section) return null;
 
   return (
-    <nav
-      ref={navigationRef}
-      className="scrollbar-none flex gap-2 overflow-x-auto border-b border-border px-3 py-2 lg:hidden"
-      aria-label="Primary"
-    >
-      {items.map((item) => {
-        const Icon = item.icon;
-        return (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              cn(
-                "flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium",
-                isActive
-                  ? "border-primary/40 bg-primary/15 text-foreground"
-                  : "border-border bg-card/70 text-muted-foreground"
-              )
-            }
-          >
-            <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-            {t(item.labelKey)}
-          </NavLink>
-        );
-      })}
-      <NavLink
-        to={APP_PATHS.imports}
-        className={({ isActive }) =>
-          cn(
-            "flex shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium",
-            isActive
-              ? "border-primary/40 bg-primary/15 text-foreground"
-              : "border-border bg-card/70 text-muted-foreground"
-          )
-        }
-      >
-        <Database className="h-3.5 w-3.5" aria-hidden="true" />
-        {t("nav.imports")}
-      </NavLink>
-    </nav>
+    <div className="shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-sm">
+      <div className="container mx-auto max-w-full overflow-x-auto px-4 pb-2 scrollbar-none">
+        <nav
+          className="mx-auto flex w-max items-center gap-1 rounded-lg bg-muted p-1"
+          aria-label={
+            section.path === "/archive"
+              ? t("archive.tabs.label")
+              : t(section.labelKey)
+          }
+        >
+          {section.items.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.path;
+            return (
+              <Button
+                key={item.path}
+                variant={active ? "default" : "ghost"}
+                asChild
+                className={cn(
+                  "h-9 gap-2 px-3 text-sm",
+                  active &&
+                    "bg-primary/60 text-primary-foreground hover:bg-primary/70"
+                )}
+              >
+                <NavLink to={item.path}>
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {t(item.labelKey)}
+                </NavLink>
+              </Button>
+            );
+          })}
+        </nav>
+      </div>
+    </div>
   );
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-dvh overflow-hidden bg-background text-foreground">
-      <aside className="hidden w-72 shrink-0 flex-col border-r border-border bg-card/55 lg:flex">
-        <div className="border-b border-border p-5">
-          <Brand />
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          <DesktopNavigation />
-        </div>
-        <div className="border-t border-border p-4">
-          <LocaleSwitcher />
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-3 border-b border-border bg-card/65 px-3 py-3 backdrop-blur lg:hidden">
-          <Brand />
-          <LocaleSwitcher compact />
-        </header>
-        <MobileNavigation />
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1440px] space-y-8 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
-            {children}
+    <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
+      <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
+        <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
+            <MobileMenu />
+            <SiteSwitcher />
+            <DesktopNavigation />
           </div>
-        </main>
-      </div>
+          <ThemeAndLocaleMenu />
+        </div>
+      </header>
+      <SectionTabs />
+      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="container mx-auto min-w-0 max-w-full space-y-4 px-4 py-3 2xl:py-4">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

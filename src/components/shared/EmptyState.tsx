@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Inbox } from "lucide-react";
+import type { ReactNode } from "react";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import { cn } from "@/lib/utils";
@@ -8,12 +9,14 @@ interface EmptyStateProps {
   messageKey: MessageKey;
   icon?: LucideIcon;
   className?: string;
+  children?: ReactNode;
 }
 
 export function EmptyState({
   messageKey,
   icon: Icon = Inbox,
   className,
+  children,
 }: EmptyStateProps) {
   const { t } = useI18n();
   return (
@@ -29,6 +32,7 @@ export function EmptyState({
       <p className="max-w-md text-sm leading-6 text-muted-foreground">
         {t(messageKey)}
       </p>
+      {children}
     </div>
   );
 }

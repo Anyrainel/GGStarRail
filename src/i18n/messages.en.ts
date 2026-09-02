@@ -5,7 +5,20 @@ export const messagesEn = {
   "app.locale": "Language",
   "app.locale.english": "English",
   "app.locale.chinese": "简体中文",
+  "site.switcher.label": "Switch game site",
+  "site.genshin": "Genshin Impact",
+  "site.starRail": "Honkai: Star Rail",
+  "site.starRail.short": "Star Rail",
+  "theme.label": "Theme",
+  "theme.astral": "Astral Night",
+  "theme.express": "Astral Express",
+  "theme.dreamscape": "Dreamscape",
+  "common.more": "More",
+  "common.close": "Close",
+  "nav.menu": "Menu",
+  "nav.primaryLabel": "Primary navigation",
   "nav.overview": "Overview",
+  "nav.accountData": "Account Data",
   "nav.account": "Account",
   "nav.characters": "Characters",
   "nav.inventory": "Inventory",
@@ -23,9 +36,23 @@ export const messagesEn = {
   "nav.archiveLightCones": "Light Cone Archive",
   "nav.archiveRelicSets": "Relic Set Archive",
   "nav.imports": "Data Sources",
-  "route.home.title": "Local Star Rail workspace",
+  "route.home.title": "Build better. Keep the relics that matter.",
   "route.home.description":
-    "Browse the audited bilingual catalog or load a reviewable local account without live credentials.",
+    "GGArtifact's familiar account and relic workflows, rebuilt for Honkai: Star Rail with local-first imports and a complete bilingual archive.",
+  "home.openAccount": "Open account data",
+  "home.openArchive": "Browse the archive",
+  "home.tools.title": "Star Rail tools",
+  "home.tools.body":
+    "The same task-focused structure as GGArtifact, adapted to Characters, Light Cones, Relics, and Planar Ornaments.",
+  "home.tool.account.title": "Review your account",
+  "home.tool.account.body":
+    "Browse imported Characters and equipment in one local workspace.",
+  "home.tool.builds.title": "Preview relic planning",
+  "home.tool.builds.body":
+    "Review the scoring, filter, and triage foundations while the editors are being built.",
+  "home.tool.archive.title": "Explore game data",
+  "home.tool.archive.body":
+    "Search Characters, Light Cones, and Relic sets with complete effects.",
   "route.characters.title": "Account characters",
   "route.characters.description":
     "Owned characters, progression, Eidolons, Traces, and equipped item references.",
@@ -43,25 +70,25 @@ export const messagesEn = {
     "Planar Spheres and Link Ropes are modeled as distinct HSR equipment slots.",
   "route.builds.title": "Build configuration",
   "route.builds.description":
-    "Character targets, set requirements, main-stat preferences, and scoring references.",
+    "Preview imported build targets. Editing set, main-stat, and scoring preferences is not available yet.",
   "route.scoring.title": "Relic scoring",
   "route.scoring.description":
-    "User-owned stat weights feed a deterministic, damage-agnostic score.",
+    "The deterministic scoring foundation is ready; profile editing and scored Relic results are not available yet.",
   "route.filters.title": "Computed filters",
   "route.filters.description":
-    "Compose typed predicates over rarity, level, score, lock, equip state, and category.",
+    "The typed filter foundation is ready; condition editing and filtered results are not available yet.",
   "route.triage.title": "Relic triage",
   "route.triage.description":
-    "Classify candidates for keep, review, or salvage review without mutating game data.",
+    "The advisory triage foundation is ready; the keep, review, and salvage-review workflow is not available yet.",
   "route.archiveCharacters.title": "Character archive",
   "route.archiveCharacters.description":
-    "All audited Characters with localized descriptions, Paths, Combat Types, skills, progression, and source details.",
+    "Browse Characters with descriptions, Paths, Combat Types, skills, Eidolons, Traces, and progression.",
   "route.archiveLightCones.title": "Light Cone archive",
   "route.archiveLightCones.description":
-    "All audited Light Cones with localized effects, Superimposition values, progression, and provenance.",
+    "Browse Light Cones with effects, Superimposition ranks, and progression.",
   "route.archiveRelicSets.title": "Relic set archive",
   "route.archiveRelicSets.description":
-    "Complete Cavern Relic and Planar Ornament sets, logical pieces, rarity variants, affixes, and scoring tables.",
+    "Browse Cavern Relic and Planar Ornament sets, pieces, rarities, and set effects.",
   "route.imports.title": "Data sources",
   "route.imports.description":
     "Review a local scanner export or load a real-ID demo account; files stay on this device.",
@@ -83,7 +110,7 @@ export const messagesEn = {
   "home.snapshot.counts":
     "{characters} characters · {lightCones} Light Cones · {relics} equipment pieces",
   "status.implemented": "Implemented",
-  "status.scaffolded": "Scaffolded",
+  "status.scaffolded": "Prototype",
   "status.excluded": "Excluded",
   "status.noLiveData": "No live data configured",
   "common.open": "Open",
@@ -123,16 +150,21 @@ export const messagesEn = {
   "empty.planar": "No Planar Ornaments are present in the local workspace.",
   "empty.filtered": "No items match these filters.",
   "empty.builds": "No custom build configurations have been created.",
+  "empty.builds.prototype":
+    "Build editing is not available in this prototype yet. You can review account data or manage imports while this workflow is being connected.",
+  "empty.openAccount": "View account data",
+  "empty.demoError":
+    "The built-in demo could not be loaded. Your account data was not changed.",
   "empty.archive": "No provenanced game-data bundle has been loaded.",
   "scoring.engine.title": "Neutral scoring service",
   "scoring.engine.body":
-    "The engine combines normalized stat values and user weights. It makes no damage or character-value claims.",
+    "The tested engine combines normalized stat values and user weights, but this prototype does not provide a profile editor or scored Relic view yet.",
   "filters.engine.title": "Typed filter evaluator",
   "filters.engine.body":
-    "All/any filters are implemented over stable HSR inventory fields and computed score.",
+    "The tested engine evaluates all/any conditions over stable HSR inventory fields, but this prototype does not provide a filter editor or results view yet.",
   "triage.engine.title": "Advisory triage only",
   "triage.engine.body":
-    "Locked and equipped pieces are protected. Results are labels only; this app cannot salvage items in-game.",
+    "The tested engine protects locked and equipped pieces, but this prototype does not provide the interactive triage workflow or change items in-game.",
   "archive.provenance.title": "Provenance required",
   "archive.provenance.body":
     "Every dataset must declare upstream source, revision, generation time, locale coverage, license note, and checksum.",
@@ -151,6 +183,8 @@ export const messagesEn = {
   "archive.characterList": "Character catalog results",
   "archive.lightConeList": "Light Cone catalog results",
   "archive.relicSetList": "Relic and Planar set catalog results",
+  "archive.dataDetails": "About the catalog data",
+  "archive.sourceDetails": "Source details",
   "archive.bundle.title": "GIlore reference bundle",
   "archive.bundle.bilingual": "English + 简体中文",
   "archive.bundle.summary":
@@ -168,7 +202,7 @@ export const messagesEn = {
   "archive.progression": "Progression and base stats",
   "archive.promotion": "Promotion",
   "archive.maxLevel": "Max level",
-  "archive.sourceScoring": "Source-derived Relic weights",
+  "archive.sourceScoring": "Advanced Relic scoring data",
   "archive.sourceScoringHint":
     "These source tables are transparent scoring inputs, not damage calculations, valuations, or build rankings.",
   "archive.sourceValueMissing": "Missing in the primary source",
@@ -182,7 +216,7 @@ export const messagesEn = {
   "archive.setBonuses": "Set bonuses",
   "archive.pieceBonus": "{value}-piece",
   "archive.logicalPieces": "Logical pieces ({value})",
-  "archive.referenceTables": "Complete reference tables",
+  "archive.referenceTables": "Advanced catalog data",
   "archive.referenceTablesHint":
     "The catalog keeps canonical IDs, localized labels, valid slots, full affix rolls, progression, and source-derived scoring tables inspectable.",
   "archive.taxonomyCounts":
@@ -206,7 +240,7 @@ export const messagesEn = {
     "1.1 detail model · {skills} base skills · {ranks} Eidolons · {traces} Trace nodes · {servants} Servants · {variants} seasonal variants · {superimpositions} Superimposition rows · {items} progression items",
   "archive.additiveUnavailable":
     "Detailed Eidolons, Traces, servants, seasonal variants, and progression-item resolution are unavailable in a schema 1.0.0 bundle. The common catalog remains available without invented records.",
-  "archive.baseSkills": "Base skills · {skills} skills · {levels} level rows",
+  "archive.baseSkills": "Skills ({skills})",
   "archive.skillSource.simple":
     "Display summary uses the primary source's simple description.",
   "archive.skillSource.fallback":
@@ -231,14 +265,14 @@ export const messagesEn = {
   "archive.eidolon": "E{value}",
   "archive.unlockCosts": "Unlock costs",
   "archive.skillLevelAdditions": "Skill-level additions",
-  "archive.traceTree": "Trace tree · {nodes} nodes · {levels} level rows",
+  "archive.traceTree": "Traces ({nodes})",
   "archive.traceNode": "Trace node {value}",
   "archive.defaultUnlocked": "Unlocked by default",
   "archive.prerequisites": "Prerequisite stable IDs",
   "archive.levelRequirements": "Level requirements",
   "archive.promotionRequired": "Promotion {value}",
   "archive.characterLevelRequired": "Character level {value}",
-  "archive.servants": "Servants · {servants} records · {skills} skills",
+  "archive.servants": "Servants ({servants})",
   "archive.servantBoundary":
     "Servants remain separate source records with their own stable IDs and skills; they are not merged into the Character's base skill list.",
   "archive.seasonalEnhancements":
@@ -258,12 +292,11 @@ export const messagesEn = {
   "archive.eidolonChanges": "Eidolon changes ({value})",
   "archive.before": "Before",
   "archive.after": "After",
-  "archive.rankUpMaterials": "Exact rank-up material IDs ({value})",
+  "archive.rankUpMaterials": "Rank-up materials ({value})",
   "archive.superimpositions": "Superimpositions ({value})",
   "archive.superimposition": "Superimposition {value}",
   "archive.abilityId": "Ability ID",
-  "archive.promotionsWithCosts":
-    "Progression · {promotions} promotions · {costs} material rows",
+  "archive.promotionsWithCosts": "Progression ({promotions} promotions)",
   "imports.gilore.title": "GIlore bundle",
   "imports.gilore.body":
     "The local bilingual bundle is accepted only after manifest, byte, hash, envelope, revision, count, and locale validation.",
@@ -336,6 +369,8 @@ export const messagesEn = {
     "Refresh the page. If the problem continues, copy the redacted details for diagnosis.",
   "error.redacted": "Sensitive-looking values are redacted from diagnostics.",
   "terms.trailblazer": "Trailblazer",
+  "terms.caelus": "Caelus",
+  "terms.stelle": "Stelle",
   "terms.path.destruction": "Destruction",
   "terms.path.hunt": "The Hunt",
   "terms.path.erudition": "Erudition",

@@ -5,6 +5,7 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { InventoryToolbar } from "@/components/account/InventoryToolbar";
+import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -96,7 +97,14 @@ export default function CharactersPage() {
         descriptionKey="route.characters.description"
       />
       {characters.length === 0 ? (
-        <EmptyState messageKey="empty.characters" icon={UsersRound} />
+        account ? (
+          <EmptyState messageKey="empty.characters" icon={UsersRound} />
+        ) : (
+          <WorkspaceStartState
+            messageKey="empty.characters"
+            icon={UsersRound}
+          />
+        )
       ) : loading ? (
         <CatalogLoading />
       ) : error || !data ? (

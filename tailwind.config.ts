@@ -46,6 +46,10 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -54,6 +58,11 @@ export default {
       },
       boxShadow: {
         glow: "0 0 40px hsl(var(--primary) / 0.12)",
+      },
+      backgroundImage: {
+        "gradient-page": "var(--gradient-page)",
+        "gradient-card": "var(--gradient-card)",
+        "gradient-select": "var(--gradient-select)",
       },
     },
   },

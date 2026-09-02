@@ -1,9 +1,8 @@
-import { type RefObject, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
-import { useMobileDetailFocus } from "@/hooks/useMobileDetailFocus";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 import {
@@ -27,6 +26,11 @@ import {
   CatalogSearch,
   CatalogSelect,
 } from "./CatalogControls";
+import {
+  CatalogDetailSheet,
+  useCatalogDetailSheet,
+} from "./CatalogDetailSheet";
+import { CatalogSourceDisclosure } from "./CatalogSourceDisclosure";
 
 async function loadRelicArchiveData() {
   const [relicSets, relicPieces, propertyTables, progression] =
@@ -77,8 +81,12 @@ export function RelicSetCatalog() {
   const [query, setQuery] = useState("");
   const [kind, setKind] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { detailRef, requestMobileDetailFocus } =
-    useMobileDetailFocus<HTMLElement>();
+  const {
+    open: detailOpen,
+    setOpen: setDetailOpen,
+    openOnNarrowScreen,
+    restoreTriggerFocus,
+  } = useCatalogDetailSheet();
 
   const filtered = useMemo(() => {
     if (!resource.data) return [];
@@ -127,6 +135,16 @@ export function RelicSetCatalog() {
   const selectedPieces = selected
     ? allLogicalPieces.filter((piece) => piece.setId === selected.id)
     : [];
+  const selectedName = selected
+    ? formatGameText(getLocalizedValue(selected.name, locale))
+    : "";
+  const selectedDetail = selected ? (
+    <RelicSetDetail
+      relicSet={selected}
+      pieces={selectedPieces}
+      propertyTables={propertyTables}
+    />
+  ) : null;
 
   return (
     <div className="space-y-6">
@@ -152,9 +170,9 @@ export function RelicSetCatalog() {
         })}
       </p>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(380px,0.8fr)]">
+      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(380px,0.8fr)]">
         <section
-          className="order-2 grid gap-3 sm:grid-cols-2 lg:order-1 xl:grid-cols-3"
+          className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
           aria-label={t("archive.relicSetList")}
         >
           {filtered.length === 0 ? (
@@ -165,21 +183,26 @@ export function RelicSetCatalog() {
                 key={set.id}
                 relicSet={set}
                 selected={set.id === selected?.id}
-                onSelect={() => {
+                onSelect={(trigger) => {
                   setSelectedId(set.id);
-                  requestMobileDetailFocus();
+                  openOnNarrowScreen(trigger);
                 }}
               />
             ))
           )}
         </section>
-        {selected && (
-          <RelicSetDetail
-            panelRef={detailRef}
-            relicSet={selected}
-            pieces={selectedPieces}
-            propertyTables={propertyTables}
-          />
+        {selectedDetail && (
+          <>
+            <div className="hidden min-w-0 lg:block">{selectedDetail}</div>
+            <CatalogDetailSheet
+              open={detailOpen}
+              onOpenChange={setDetailOpen}
+              onCloseAutoFocus={restoreTriggerFocus}
+              title={selectedName}
+            >
+              {selectedDetail}
+            </CatalogDetailSheet>
+          </>
         )}
       </div>
 
@@ -198,15 +221,16 @@ function RelicSetCard({
 }: {
   relicSet: RelicSetDefinition;
   selected: boolean;
-  onSelect: () => void;
+  onSelect: (trigger: HTMLButtonElement) => void;
 }) {
   const { locale, t } = useI18n();
   const name = formatGameText(getLocalizedValue(relicSet.name, locale));
   return (
     <button
       type="button"
-      onClick={onSelect}
+      onClick={(event) => onSelect(event.currentTarget)}
       aria-pressed={selected}
+      data-relic-set-id={relicSet.id}
       className="group overflow-hidden rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Card
@@ -231,9 +255,6 @@ function RelicSetCard({
                 ? t("archive.kind.cavern")
                 : t("archive.kind.planar")}
             </Badge>
-            <code className="block text-[11px] text-muted-foreground">
-              {relicSet.id}
-            </code>
           </span>
         </CardContent>
       </Card>
@@ -242,12 +263,10 @@ function RelicSetCard({
 }
 
 function RelicSetDetail({
-  panelRef,
   relicSet,
   pieces,
   propertyTables,
 }: {
-  panelRef: RefObject<HTMLElement | null>;
   relicSet: RelicSetDefinition;
   pieces: readonly LogicalRelicPiece[];
   propertyTables: PropertyCatalog;
@@ -257,10 +276,8 @@ function RelicSetDetail({
   const provenance = relicSet.name[locale].provenance;
   return (
     <aside
-      ref={panelRef}
-      tabIndex={-1}
       data-testid="relic-set-detail"
-      className="order-1 scroll-mt-4 space-y-5 rounded-xl border border-border bg-card/75 p-4 outline-none lg:order-2 lg:sticky lg:top-0"
+      className="min-w-0 space-y-5 overflow-hidden rounded-xl border border-border bg-card/75 p-4 lg:sticky lg:top-0"
     >
       <div className="flex items-center gap-4">
         <AssetImage
@@ -277,7 +294,6 @@ function RelicSetDetail({
               : t("archive.kind.planar")}
           </p>
           <h2 className="text-xl font-semibold">{name}</h2>
-          <code className="text-xs text-muted-foreground">{relicSet.id}</code>
           <p className="text-xs text-muted-foreground">
             {t("archive.releaseVersion", { value: relicSet.release_version })}
           </p>
@@ -294,7 +310,7 @@ function RelicSetDetail({
             <Badge>
               {t("archive.pieceBonus", { value: bonus.required_pieces })}
             </Badge>
-            <p className="mt-2 whitespace-pre-line text-sm leading-6 text-muted-foreground">
+            <p className="mt-2 break-words whitespace-pre-line text-sm leading-6 text-muted-foreground">
               {formatGameText(
                 getLocalizedValue(bonus.description, locale),
                 bonus.parameters
@@ -349,13 +365,10 @@ function RelicSetDetail({
         </div>
       </section>
 
-      <div className="rounded-lg border border-border bg-background/45 p-3 text-xs text-muted-foreground">
-        <p>{t("archive.provenance.primary")}</p>
-        <code className="mt-1 block break-all">
-          {provenance.source_revision}
-        </code>
-        <p className="mt-2 break-all">{provenance.source_path}</p>
-      </div>
+      <CatalogSourceDisclosure
+        revision={provenance.source_revision}
+        path={provenance.source_path}
+      />
     </aside>
   );
 }
@@ -369,221 +382,231 @@ function ReferenceTables({
 }) {
   const { locale, t } = useI18n();
   return (
-    <section className="space-y-4 rounded-xl border border-border bg-card/55 p-4">
-      <div>
-        <h2 className="text-lg font-semibold">
-          {t("archive.referenceTables")}
-        </h2>
+    <details className="rounded-xl border border-border bg-card/55 p-4">
+      <summary className="cursor-pointer font-semibold">
+        {t("archive.referenceTables")}
+      </summary>
+      <div className="mt-4 space-y-4">
         <p className="mt-1 text-sm text-muted-foreground">
           {t("archive.referenceTablesHint")}
         </p>
-      </div>
 
-      <details className="rounded-lg border border-border bg-background/45 p-3">
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.taxonomyCounts", {
-            paths: propertyTables.paths.length,
-            combatTypes: propertyTables.combatTypes.length,
-            slots: propertyTables.relicSlots.length,
-          })}
-        </summary>
-        <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <ReferenceIconList
-            title={t("archive.paths")}
-            entries={propertyTables.paths.map((path) => ({
-              kind: "path" as const,
-              id: path.id,
-              sourcePath: path.icon_path,
-              name: formatGameText(getLocalizedValue(path.name, locale)),
-            }))}
-          />
-          <ReferenceIconList
-            title={t("archive.combatTypes")}
-            entries={propertyTables.combatTypes.map((combatType) => ({
-              kind: "combat-type" as const,
-              id: combatType.id,
-              sourcePath: combatType.icon_path,
-              name: formatGameText(getLocalizedValue(combatType.name, locale)),
-            }))}
-          />
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold">{t("archive.slots")}</h3>
-            {propertyTables.relicSlots.map((slot) => (
-              <div
-                key={slot.id}
-                className="rounded-md border border-border px-2 py-1.5 text-xs"
-              >
-                <span>
-                  {formatGameText(getLocalizedValue(slot.name, locale))}
-                </span>
-                <code className="ml-2 text-muted-foreground">{slot.id}</code>
-              </div>
-            ))}
-          </div>
-        </div>
-      </details>
-
-      <details className="rounded-lg border border-border bg-background/45 p-3">
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.propertiesCount", {
-            value: propertyTables.properties.length,
-          })}
-        </summary>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {propertyTables.properties.map((property) => {
-            const propertyName = formatGameText(
-              getLocalizedValue(property.relic_name ?? property.name, locale) ??
-                t("archive.sourceValueMissing")
-            );
-            return (
-              <div
-                key={property.id}
-                className="flex items-center gap-2 rounded-md border border-border p-2"
-              >
-                <AssetImage
-                  kind="property"
-                  id={property.id}
-                  sourcePath={
-                    isPropertyDefinitionV1_1(property)
-                      ? property.usable_icon_path
-                      : property.icon_path === "0"
-                        ? null
-                        : property.icon_path
-                  }
-                  alt=""
-                  className="h-8 w-8 shrink-0 rounded object-contain"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-medium">{propertyName}</p>
-                  <code className="block truncate text-[10px] text-muted-foreground">
-                    {property.id}
-                  </code>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </details>
-
-      <details className="rounded-lg border border-border bg-background/45 p-3">
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.affixCounts", {
-            main: progression.relic_main_affixes.length,
-            sub: progression.relic_sub_affixes.length,
-          })}
-        </summary>
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          <AffixTable
-            title={t("archive.mainAffixes")}
-            rows={progression.relic_main_affixes.map((affix) => {
-              const property = propertyTables.propertyById.get(
-                affix.property_id
-              );
-              return {
-                key: `${affix.group_id}:${affix.affix_id}`,
-                property: formatGameText(
-                  getLocalizedValue(
-                    property?.relic_name ?? property?.name,
-                    locale
-                  ) ?? affix.property_id
-                ),
-                group: affix.group_id,
-                values: `${formatCatalogValue(
-                  affix.base_value,
-                  property?.value_kind ?? "unknown"
-                )} → ${formatCatalogValue(
-                  affix.level_values.at(-1) ?? affix.base_value,
-                  property?.value_kind ?? "unknown"
-                )}`,
-              };
+        <details className="rounded-lg border border-border bg-background/45 p-3">
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.taxonomyCounts", {
+              paths: propertyTables.paths.length,
+              combatTypes: propertyTables.combatTypes.length,
+              slots: propertyTables.relicSlots.length,
             })}
-          />
-          <AffixTable
-            title={t("archive.subAffixes")}
-            rows={progression.relic_sub_affixes.map((affix) => {
-              const property = propertyTables.propertyById.get(
-                affix.property_id
-              );
-              return {
-                key: `${affix.group_id}:${affix.affix_id}`,
-                property: formatGameText(
-                  getLocalizedValue(
-                    property?.relic_name ?? property?.name,
-                    locale
-                  ) ?? affix.property_id
-                ),
-                group: affix.group_id,
-                values: affix.roll_values
-                  .map((value) =>
-                    formatCatalogValue(value, property?.value_kind ?? "unknown")
-                  )
-                  .join(" · "),
-              };
-            })}
-          />
-        </div>
-      </details>
-
-      <details className="rounded-lg border border-border bg-background/45 p-3">
-        <summary className="cursor-pointer font-semibold">
-          {t("archive.scoringCounts", {
-            mainBases: progression.relic_scoring.main_affix_base_values.length,
-            subBases: progression.relic_scoring.sub_affix_base_values.length,
-            characters:
-              progression.relic_scoring.main_affix_character_weights.length,
-          })}
-        </summary>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          {t("archive.sourceScoringHint")}
-        </p>
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
-          <AffixTable
-            title={t("archive.mainScoreBases")}
-            rows={progression.relic_scoring.main_affix_base_values.map(
-              (row) => ({
-                key: row.property_id,
-                property: row.property_id,
-                group: row.score_type,
-                values: `${row.base_value} · ${row.value_per_level ?? "—"}`,
-              })
-            )}
-          />
-          <AffixTable
-            title={t("archive.subScoreBases")}
-            rows={progression.relic_scoring.sub_affix_base_values.map(
-              (row) => ({
-                key: row.property_id,
-                property: row.property_id,
-                group: row.score_type,
-                values: `${row.base_value}`,
-              })
-            )}
-          />
-        </div>
-        <details className="mt-4 rounded-md border border-border p-3">
-          <summary className="cursor-pointer text-sm font-medium">
-            {t("archive.characterWeights")}
           </summary>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {progression.relic_scoring.main_affix_character_weights.map(
-              (row) => (
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <ReferenceIconList
+              title={t("archive.paths")}
+              entries={propertyTables.paths.map((path) => ({
+                kind: "path" as const,
+                id: path.id,
+                sourcePath: path.icon_path,
+                name: formatGameText(getLocalizedValue(path.name, locale)),
+              }))}
+            />
+            <ReferenceIconList
+              title={t("archive.combatTypes")}
+              entries={propertyTables.combatTypes.map((combatType) => ({
+                kind: "combat-type" as const,
+                id: combatType.id,
+                sourcePath: combatType.icon_path,
+                name: formatGameText(
+                  getLocalizedValue(combatType.name, locale)
+                ),
+              }))}
+            />
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold">{t("archive.slots")}</h3>
+              {propertyTables.relicSlots.map((slot) => (
                 <div
-                  key={row.character_id}
-                  className="rounded-md bg-secondary/55 p-2 text-xs"
+                  key={slot.id}
+                  className="rounded-md border border-border px-2 py-1.5 text-xs"
                 >
-                  <code>{row.character_id}</code>
-                  <p className="mt-1 text-muted-foreground">
-                    {Object.entries(row.weights)
-                      .map(([key, value]) => `${key} ${value}`)
-                      .join(" · ")}
-                  </p>
+                  <span>
+                    {formatGameText(getLocalizedValue(slot.name, locale))}
+                  </span>
+                  <code className="ml-2 text-muted-foreground">{slot.id}</code>
                 </div>
-              )
-            )}
+              ))}
+            </div>
           </div>
         </details>
-      </details>
-    </section>
+
+        <details className="rounded-lg border border-border bg-background/45 p-3">
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.propertiesCount", {
+              value: propertyTables.properties.length,
+            })}
+          </summary>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {propertyTables.properties.map((property) => {
+              const propertyName = formatGameText(
+                getLocalizedValue(
+                  property.relic_name ?? property.name,
+                  locale
+                ) ?? t("archive.sourceValueMissing")
+              );
+              return (
+                <div
+                  key={property.id}
+                  className="flex items-center gap-2 rounded-md border border-border p-2"
+                >
+                  <AssetImage
+                    kind="property"
+                    id={property.id}
+                    sourcePath={
+                      isPropertyDefinitionV1_1(property)
+                        ? property.usable_icon_path
+                        : property.icon_path === "0"
+                          ? null
+                          : property.icon_path
+                    }
+                    alt=""
+                    className="h-8 w-8 shrink-0 rounded object-contain"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium">
+                      {propertyName}
+                    </p>
+                    <code className="block truncate text-[10px] text-muted-foreground">
+                      {property.id}
+                    </code>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+
+        <details className="rounded-lg border border-border bg-background/45 p-3">
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.affixCounts", {
+              main: progression.relic_main_affixes.length,
+              sub: progression.relic_sub_affixes.length,
+            })}
+          </summary>
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <AffixTable
+              title={t("archive.mainAffixes")}
+              rows={progression.relic_main_affixes.map((affix) => {
+                const property = propertyTables.propertyById.get(
+                  affix.property_id
+                );
+                return {
+                  key: `${affix.group_id}:${affix.affix_id}`,
+                  property: formatGameText(
+                    getLocalizedValue(
+                      property?.relic_name ?? property?.name,
+                      locale
+                    ) ?? affix.property_id
+                  ),
+                  group: affix.group_id,
+                  values: `${formatCatalogValue(
+                    affix.base_value,
+                    property?.value_kind ?? "unknown"
+                  )} → ${formatCatalogValue(
+                    affix.level_values.at(-1) ?? affix.base_value,
+                    property?.value_kind ?? "unknown"
+                  )}`,
+                };
+              })}
+            />
+            <AffixTable
+              title={t("archive.subAffixes")}
+              rows={progression.relic_sub_affixes.map((affix) => {
+                const property = propertyTables.propertyById.get(
+                  affix.property_id
+                );
+                return {
+                  key: `${affix.group_id}:${affix.affix_id}`,
+                  property: formatGameText(
+                    getLocalizedValue(
+                      property?.relic_name ?? property?.name,
+                      locale
+                    ) ?? affix.property_id
+                  ),
+                  group: affix.group_id,
+                  values: affix.roll_values
+                    .map((value) =>
+                      formatCatalogValue(
+                        value,
+                        property?.value_kind ?? "unknown"
+                      )
+                    )
+                    .join(" · "),
+                };
+              })}
+            />
+          </div>
+        </details>
+
+        <details className="rounded-lg border border-border bg-background/45 p-3">
+          <summary className="cursor-pointer font-semibold">
+            {t("archive.scoringCounts", {
+              mainBases:
+                progression.relic_scoring.main_affix_base_values.length,
+              subBases: progression.relic_scoring.sub_affix_base_values.length,
+              characters:
+                progression.relic_scoring.main_affix_character_weights.length,
+            })}
+          </summary>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            {t("archive.sourceScoringHint")}
+          </p>
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <AffixTable
+              title={t("archive.mainScoreBases")}
+              rows={progression.relic_scoring.main_affix_base_values.map(
+                (row) => ({
+                  key: row.property_id,
+                  property: row.property_id,
+                  group: row.score_type,
+                  values: `${row.base_value} · ${row.value_per_level ?? "—"}`,
+                })
+              )}
+            />
+            <AffixTable
+              title={t("archive.subScoreBases")}
+              rows={progression.relic_scoring.sub_affix_base_values.map(
+                (row) => ({
+                  key: row.property_id,
+                  property: row.property_id,
+                  group: row.score_type,
+                  values: `${row.base_value}`,
+                })
+              )}
+            />
+          </div>
+          <details className="mt-4 rounded-md border border-border p-3">
+            <summary className="cursor-pointer text-sm font-medium">
+              {t("archive.characterWeights")}
+            </summary>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {progression.relic_scoring.main_affix_character_weights.map(
+                (row) => (
+                  <div
+                    key={row.character_id}
+                    className="rounded-md bg-secondary/55 p-2 text-xs"
+                  >
+                    <code>{row.character_id}</code>
+                    <p className="mt-1 text-muted-foreground">
+                      {Object.entries(row.weights)
+                        .map(([key, value]) => `${key} ${value}`)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
+          </details>
+        </details>
+      </div>
+    </details>
   );
 }
 

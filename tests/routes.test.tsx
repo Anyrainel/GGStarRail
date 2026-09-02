@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import App from "@/App";
 import { ROUTE_REGISTRY } from "@/app/routeRegistry";
 import { APP_PATHS } from "@/config/navigation";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { messagesEn } from "@/i18n/messages.en";
 
@@ -17,11 +18,13 @@ describe("HSR route foundation", () => {
 
   it.each(ROUTE_REGISTRY)("renders $path", (route) => {
     render(
-      <I18nProvider>
-        <MemoryRouter initialEntries={[route.path]}>
-          <App />
-        </MemoryRouter>
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <MemoryRouter initialEntries={[route.path]}>
+            <App />
+          </MemoryRouter>
+        </I18nProvider>
+      </ThemeProvider>
     );
     expect(
       screen.getByRole("heading", {
@@ -33,11 +36,13 @@ describe("HSR route foundation", () => {
 
   it("renders a localized not-found route", () => {
     render(
-      <I18nProvider>
-        <MemoryRouter initialEntries={["/team-damage"]}>
-          <App />
-        </MemoryRouter>
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <MemoryRouter initialEntries={["/team-damage"]}>
+            <App />
+          </MemoryRouter>
+        </I18nProvider>
+      </ThemeProvider>
     );
     expect(
       screen.getByRole("heading", { name: "Page not found" })
