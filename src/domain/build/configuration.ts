@@ -215,22 +215,12 @@ export function createCharacterBuild(
   if (!defaultCavernId || !defaultPlanarId) {
     throw new Error("The Relic set catalog is incomplete");
   }
-  const hasTwoPlusTwo =
-    equippedCavern.length >= 2 &&
-    (equippedCavern[0]?.[1] ?? 0) >= 2 &&
-    (equippedCavern[1]?.[1] ?? 0) >= 2;
-
   return BuildConfigurationSchema.parse({
     id,
     name,
     characterDefinitionId: character.id,
     scoreProfileId,
-    cavern: hasTwoPlusTwo
-      ? {
-          mode: "two-plus-two",
-          setIds: [equippedCavern[0]?.[0], equippedCavern[1]?.[0]],
-        }
-      : { mode: "four-piece", setId: defaultCavernId },
+    cavern: { mode: "four-piece", setId: defaultCavernId },
     planarSetId: defaultPlanarId,
     preferredMainStats: preferredMainStats(character, progression, properties),
   });

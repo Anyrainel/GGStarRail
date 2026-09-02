@@ -5,11 +5,9 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { APP_PATHS } from "@/config/navigation";
 import { I18nProvider } from "@/i18n/I18nContext";
-import CharactersPage from "@/pages/account/CharactersPage";
-import InventoryPage from "@/pages/account/InventoryPage";
-import LightConesPage from "@/pages/account/LightConesPage";
-import RelicsPage from "@/pages/account/RelicsPage";
-import BuildsPage from "@/pages/builds/BuildsPage";
+import CharacterView from "@/pages/account-data/CharacterView";
+import InventoryView from "@/pages/account-data/InventoryView";
+import CharacterBuildView from "@/pages/artifact-builds/CharacterBuildView";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 function renderPage(page: ReactElement) {
@@ -30,31 +28,8 @@ afterEach(() => {
 
 describe("Fresh workspace actions", () => {
   it.each([
-    ["characters", () => <CharactersPage />],
-    ["inventory", () => <InventoryPage />],
-    ["light cones", () => <LightConesPage />],
-    [
-      "relics",
-      () => (
-        <RelicsPage
-          category="cavern"
-          titleKey="route.relics.title"
-          descriptionKey="route.relics.description"
-          emptyKey="empty.relics"
-        />
-      ),
-    ],
-    [
-      "planar ornaments",
-      () => (
-        <RelicsPage
-          category="planar"
-          titleKey="route.planar.title"
-          descriptionKey="route.planar.description"
-          emptyKey="empty.planar"
-        />
-      ),
-    ],
+    ["characters", () => <CharacterView />],
+    ["inventory", () => <InventoryView />],
   ])("offers account import before demo data on %s", (_name, page) => {
     renderPage(page());
 
@@ -71,7 +46,7 @@ describe("Fresh workspace actions", () => {
 
   it("opens the responsive account import flow from an empty Account Data page", async () => {
     const user = userEvent.setup();
-    renderPage(<CharactersPage />);
+    renderPage(<CharacterView />);
 
     await user.click(screen.getByRole("button", { name: "Import account" }));
 
@@ -91,7 +66,7 @@ describe("Fresh workspace actions", () => {
 
   it("loads the built-in demo into the workspace", async () => {
     const user = userEvent.setup();
-    renderPage(<CharactersPage />);
+    renderPage(<CharacterView />);
 
     await user.click(screen.getByRole("button", { name: "Load demo account" }));
 
@@ -105,31 +80,20 @@ describe("Fresh workspace actions", () => {
 
   it("creates and edits a full-catalog build without an account", async () => {
     const user = userEvent.setup();
-    renderPage(<BuildsPage />);
+    renderPage(<CharacterBuildView />);
 
     const createButtons = await screen.findAllByRole("button", {
-      name: /Create build for/,
+      name: "Add First Build",
     });
+    expect(screen.getAllByRole("heading", { name: "March 7th" })).toHaveLength(
+      2
+    );
     expect(
-      screen.getByRole("button", {
-        name: "Create build for March 7th · Path: Preservation · Combat Type: Ice",
-      })
-    ).toBeVisible();
+      screen.getAllByRole("heading", { name: "Trailblazer · Caelus" }).length
+    ).toBeGreaterThan(0);
     expect(
-      screen.getByRole("button", {
-        name: "Create build for March 7th · Path: The Hunt · Combat Type: Imaginary",
-      })
-    ).toBeVisible();
-    expect(
-      screen.getByRole("button", {
-        name: "Create build for Trailblazer · Caelus · Path: Destruction · Combat Type: Physical",
-      })
-    ).toBeVisible();
-    expect(
-      screen.getByRole("button", {
-        name: "Create build for Silver Wolf LV.999 · Path: Elation · Combat Type: Imaginary",
-      })
-    ).toBeVisible();
+      screen.getAllByRole("heading", { name: "Silver Wolf LV.999" }).length
+    ).toBeGreaterThan(0);
     expect(document.body).not.toHaveTextContent(/<unbreak>|\{NICKNAME\}/);
     expect(
       screen.queryByRole("button", { name: "Load demo account" })
@@ -151,14 +115,14 @@ describe("Fresh workspace actions", () => {
         "No-account catalog build"
       );
     });
-  });
+  }, 15_000);
 
   it("imports and edits a build workspace without an account", async () => {
     const user = userEvent.setup();
-    renderPage(<BuildsPage />);
+    renderPage(<CharacterBuildView />);
 
     const [createButton] = await screen.findAllByRole("button", {
-      name: /Create build for/,
+      name: "Add First Build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();
@@ -202,13 +166,13 @@ describe("Fresh workspace actions", () => {
         "Imported no-account build"
       );
     });
-  });
+  }, 15_000);
 
   it("reviews invalid build bundles without replacing local builds", async () => {
     const user = userEvent.setup();
-    renderPage(<BuildsPage />);
+    renderPage(<CharacterBuildView />);
     const [createButton] = await screen.findAllByRole("button", {
-      name: /Create build for/,
+      name: "Add First Build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();

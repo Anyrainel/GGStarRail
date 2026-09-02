@@ -89,19 +89,36 @@ afterEach(() => {
   act(() => useWorkspaceStore.getState().clearWorkspace());
 });
 
-describe("Build Lab route interactions", () => {
-  it("edits scoring and presents equipped filter acceptance", async () => {
+describe("Build route interactions", () => {
+  it("configures a 4+2 six-slot build and edits its scoring profile", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();
-    renderRoute(APP_PATHS.scoring);
+    renderRoute(APP_PATHS.builds);
 
-    await screen.findByText("Profile settings");
     expect(
-      screen.getByText(/All six meet filter criteria|Filter criteria not met/)
+      await screen.findByRole("textbox", { name: "Build name" })
+    ).toHaveValue("Route test build");
+    expect(
+      screen.getByRole("combobox", { name: "Cavern 4-piece set" })
     ).toBeVisible();
     expect(
-      screen.getByText("Equipped loadout · Route test build")
+      screen.getByRole("combobox", { name: "Planar 2-piece set" })
     ).toBeVisible();
+    for (const slot of [
+      "Head",
+      "Hands",
+      "Body",
+      "Feet",
+      "Planar Sphere",
+      "Link Rope",
+    ]) {
+      expect(screen.getByRole("group", { name: slot })).toBeVisible();
+    }
+    expect(screen.getAllByText("Fixed main stat")).toHaveLength(2);
+
+    await user.click(
+      screen.getByText("Configure scoring weights and grade thresholds")
+    );
 
     const hpFlat = screen.getByRole("slider", { name: "HP" });
     const hpRatio = screen.getByRole("slider", { name: "HP%" });
@@ -129,27 +146,22 @@ describe("Build Lab route interactions", () => {
     });
   });
 
-  it("keeps scoring editable and offers the account handoff without account data", async () => {
+  it("keeps catalog builds and scoring editable without account data", async () => {
     await prepareBuildWorkspace();
     act(() => useWorkspaceStore.setState({ account: null }));
-    renderRoute(APP_PATHS.scoring);
+    const user = userEvent.setup();
+    renderRoute(APP_PATHS.builds);
 
-    expect(await screen.findByText("Profile settings")).toBeVisible();
     expect(
-      screen.getByText(
-        "This scoring profile is ready. Import an account to score inventory Relics and evaluate the equipped build."
-      )
-    ).toBeVisible();
+      await screen.findByRole("textbox", { name: "Build name" })
+    ).toHaveValue("Route test build");
     expect(
-      screen.getByRole("button", { name: "Import account" })
-    ).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "Load demo account" })
-    ).toBeVisible();
-    expect(
-      screen.getByRole("link", { name: "Data source details" })
-    ).toHaveAttribute("href", APP_PATHS.imports);
-    expect(screen.queryByText("Scored Relics")).not.toBeInTheDocument();
+      screen.getByRole("checkbox", { name: /Owned Characters only/ })
+    ).toBeDisabled();
+    await user.click(
+      screen.getByText("Configure scoring weights and grade thresholds")
+    );
+    expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
   });
 
   it("switches a derived slot filter and opens the full recommendation view", async () => {
@@ -196,7 +208,7 @@ describe("Build Lab route interactions", () => {
     });
 
     const salvageFilter = screen.getByRole("button", {
-      name: /^Salvage review/,
+      name: "Filter triage decisions: Salvage review",
     });
     await user.click(salvageFilter);
     expect(salvageFilter).toHaveAttribute("aria-pressed", "true");

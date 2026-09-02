@@ -1,6 +1,7 @@
 import type { RelicScoringContext } from "@/domain/build/scoring";
 import {
   loadCharacters,
+  loadLightCones,
   loadProgression,
   loadPropertyTables,
   loadRelicPieces,
@@ -8,15 +9,29 @@ import {
 } from "@/providers/gilore/catalog";
 
 export async function loadBuildReferences() {
-  const [characters, relicPieces, relicSets, properties, progression] =
-    await Promise.all([
-      loadCharacters(),
-      loadRelicPieces(),
-      loadRelicSets(),
-      loadPropertyTables(),
-      loadProgression(),
-    ]);
-  return { characters, relicPieces, relicSets, properties, progression };
+  const [
+    characters,
+    lightCones,
+    relicPieces,
+    relicSets,
+    properties,
+    progression,
+  ] = await Promise.all([
+    loadCharacters(),
+    loadLightCones(),
+    loadRelicPieces(),
+    loadRelicSets(),
+    loadPropertyTables(),
+    loadProgression(),
+  ]);
+  return {
+    characters,
+    lightCones,
+    relicPieces,
+    relicSets,
+    properties,
+    progression,
+  };
 }
 
 export type BuildReferences = Awaited<ReturnType<typeof loadBuildReferences>>;

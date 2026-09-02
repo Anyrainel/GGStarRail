@@ -1,6 +1,7 @@
 import {
   Check,
   ChevronDown,
+  Database,
   ExternalLink,
   Languages,
   Menu,
@@ -119,6 +120,13 @@ function ThemeAndLocaleMenu() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuItem asChild>
+          <Link to={APP_PATHS.imports}>
+            <Database className="h-4 w-4" aria-hidden="true" />
+            {t("nav.imports")}
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuLabel className="flex items-center gap-2">
           <Languages className="h-4 w-4" aria-hidden="true" />
           {t("app.locale")}
@@ -190,22 +198,6 @@ function DesktopNavigation() {
           </Button>
         );
       })}
-      <Button
-        variant={pathname === APP_PATHS.imports ? "secondary" : "ghost"}
-        asChild
-        className={cn(
-          "h-9 px-3",
-          pathname === APP_PATHS.imports &&
-            "bg-primary/10 text-primary hover:bg-primary/20"
-        )}
-      >
-        <Link
-          to={APP_PATHS.imports}
-          aria-current={pathname === APP_PATHS.imports ? "page" : undefined}
-        >
-          {t(DATA_SOURCES_NAV.labelKey)}
-        </Link>
-      </Button>
     </nav>
   );
 }

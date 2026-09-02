@@ -52,7 +52,7 @@ const DOMAIN_SLOT_TO_CATALOG = {
   linkRope: "OBJECT",
 } as const satisfies Record<(typeof BUILD_SLOT_ORDER)[number], RelicSlotId>;
 
-export default function FiltersPage() {
+export default function ArtifactBuildsView() {
   const { locale, t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
@@ -127,6 +127,7 @@ export default function FiltersPage() {
       <PageHeader
         titleKey="route.filters.title"
         descriptionKey="route.filters.description"
+        visuallyHidden
       />
       <BuildWorkspaceActions references={data} />
       <SourceCoverageNotice account={account} />

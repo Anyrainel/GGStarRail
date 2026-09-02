@@ -1,8 +1,10 @@
 import type {
   AccountSnapshot,
   Relic,
+  RelicCategory,
   RelicSlot,
 } from "@/domain/account/schemas";
+import { relicCategory } from "@/domain/account/schemas";
 import {
   type BuildRelicFilter,
   deriveBuildFilters,
@@ -56,6 +58,18 @@ export interface RelicTriageEvaluation {
   matchingBuildIds: readonly string[];
   result: TriageResult;
 }
+
+export interface AccountTriageSummary {
+  total: number;
+  decisions: Record<TriageResult["decision"], number>;
+  categories: Record<RelicCategory, number>;
+}
+
+const TRIAGE_DECISION_ORDER: Record<TriageResult["decision"], number> = {
+  keep: 0,
+  review: 1,
+  "salvage-review": 2,
+};
 
 function round(value: number): number {
   return Number(value.toFixed(2));
@@ -344,8 +358,24 @@ export function evaluateAccountTriage(
     })
     .sort(
       (left, right) =>
-        left.result.decision.localeCompare(right.result.decision) ||
+        TRIAGE_DECISION_ORDER[left.result.decision] -
+          TRIAGE_DECISION_ORDER[right.result.decision] ||
         right.score - left.score ||
         left.relic.key.localeCompare(right.relic.key)
     );
+}
+
+export function summarizeAccountTriage(
+  evaluations: readonly RelicTriageEvaluation[]
+): AccountTriageSummary {
+  const summary: AccountTriageSummary = {
+    total: evaluations.length,
+    decisions: { keep: 0, review: 0, "salvage-review": 0 },
+    categories: { cavern: 0, planar: 0 },
+  };
+  for (const evaluation of evaluations) {
+    summary.decisions[evaluation.result.decision] += 1;
+    summary.categories[relicCategory(evaluation.relic.slot)] += 1;
+  }
+  return summary;
 }

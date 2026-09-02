@@ -5,18 +5,19 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PRODUCT_NAME } from "@/config/identity";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
-import CharactersPage from "@/pages/account/CharactersPage";
-import InventoryPage from "@/pages/account/InventoryPage";
-import LightConesPage from "@/pages/account/LightConesPage";
-import RelicsPage from "@/pages/account/RelicsPage";
+import CharacterView from "@/pages/account-data/CharacterView";
+import InventoryView from "@/pages/account-data/InventoryView";
+import { ResourceView } from "@/pages/account-data/ResourceView";
+import { TriageView } from "@/pages/account-data/TriageView";
 import ArchivePage from "@/pages/archive/ArchivePage";
-import BuildsPage from "@/pages/builds/BuildsPage";
-import FiltersPage from "@/pages/builds/FiltersPage";
-import ScoringPage from "@/pages/builds/ScoringPage";
-import TriagePage from "@/pages/builds/TriagePage";
+import ArtifactBuildsView from "@/pages/artifact-builds/ArtifactBuildsView";
+import CharacterBuildView from "@/pages/artifact-builds/CharacterBuildView";
 import DataSourcesPage from "@/pages/DataSourcesPage";
 import HomePage from "@/pages/HomePage";
 import NotFoundPage from "@/pages/NotFoundPage";
+import CharacterTierListView from "@/pages/tier-list/CharacterTierListView";
+import LightConeTierListView from "@/pages/tier-list/LightConeTierListView";
+import RelicTierListView from "@/pages/tier-list/RelicTierListView";
 
 export default function App() {
   const location = useLocation();
@@ -37,43 +38,49 @@ export default function App() {
           path="/account-data"
           element={<Navigate to={APP_PATHS.characters} replace />}
         />
-        <Route path={APP_PATHS.characters} element={<CharactersPage />} />
-        <Route path={APP_PATHS.inventory} element={<InventoryPage />} />
-        <Route path={APP_PATHS.lightCones} element={<LightConesPage />} />
+        <Route path={APP_PATHS.characters} element={<CharacterView />} />
+        <Route path={APP_PATHS.inventory} element={<InventoryView />} />
+        <Route path={APP_PATHS.resources} element={<ResourceView />} />
         <Route
-          path={APP_PATHS.relics}
-          element={
-            <RelicsPage
-              category="cavern"
-              titleKey="route.relics.title"
-              descriptionKey="route.relics.description"
-              emptyKey="empty.relics"
-            />
-          }
+          path="/account-data/light-cones"
+          element={<Navigate to={APP_PATHS.inventory} replace />}
         />
         <Route
-          path={APP_PATHS.planarOrnaments}
-          element={
-            <RelicsPage
-              category="planar"
-              titleKey="route.planar.title"
-              descriptionKey="route.planar.description"
-              emptyKey="empty.planar"
-            />
-          }
+          path="/account-data/relics"
+          element={<Navigate to={APP_PATHS.inventory} replace />}
+        />
+        <Route
+          path="/account-data/planar-ornaments"
+          element={<Navigate to={APP_PATHS.inventory} replace />}
         />
         <Route
           path="/builds"
           element={<Navigate to={APP_PATHS.builds} replace />}
         />
-        <Route path={APP_PATHS.builds} element={<BuildsPage />} />
-        <Route path={APP_PATHS.scoring} element={<ScoringPage />} />
-        <Route path={APP_PATHS.filters} element={<FiltersPage />} />
-        <Route path={APP_PATHS.triage} element={<TriagePage />} />
+        <Route path={APP_PATHS.builds} element={<CharacterBuildView />} />
+        <Route path={APP_PATHS.filters} element={<ArtifactBuildsView />} />
+        <Route path={APP_PATHS.triage} element={<TriageView />} />
+        <Route
+          path="/builds/scoring"
+          element={<Navigate to={APP_PATHS.builds} replace />}
+        />
         <Route
           path="/builds/triage"
           element={<Navigate to={APP_PATHS.triage} replace />}
         />
+        <Route
+          path="/tier-list"
+          element={<Navigate to={APP_PATHS.tierCharacters} replace />}
+        />
+        <Route
+          path={APP_PATHS.tierCharacters}
+          element={<CharacterTierListView />}
+        />
+        <Route
+          path={APP_PATHS.tierLightCones}
+          element={<LightConeTierListView />}
+        />
+        <Route path={APP_PATHS.tierRelics} element={<RelicTierListView />} />
         <Route
           path="/archive"
           element={<Navigate to={APP_PATHS.archiveCharacters} replace />}

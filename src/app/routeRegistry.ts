@@ -6,13 +6,13 @@ export interface RouteDefinition {
     | "home"
     | "characters"
     | "inventory"
-    | "light-cones"
-    | "relics"
-    | "planar-ornaments"
+    | "resources"
     | "builds"
-    | "scoring"
     | "filters"
     | "triage"
+    | "tier-characters"
+    | "tier-light-cones"
+    | "tier-relics"
     | "archive-characters"
     | "archive-light-cones"
     | "archive-relic-sets"
@@ -42,22 +42,10 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     descriptionKey: "route.inventory.description",
   },
   {
-    id: "light-cones",
-    path: APP_PATHS.lightCones,
-    titleKey: "route.lightCones.title",
-    descriptionKey: "route.lightCones.description",
-  },
-  {
-    id: "relics",
-    path: APP_PATHS.relics,
-    titleKey: "route.relics.title",
-    descriptionKey: "route.relics.description",
-  },
-  {
-    id: "planar-ornaments",
-    path: APP_PATHS.planarOrnaments,
-    titleKey: "route.planar.title",
-    descriptionKey: "route.planar.description",
+    id: "resources",
+    path: APP_PATHS.resources,
+    titleKey: "route.resources.title",
+    descriptionKey: "route.resources.description",
   },
   {
     id: "triage",
@@ -72,16 +60,28 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     descriptionKey: "route.builds.description",
   },
   {
-    id: "scoring",
-    path: APP_PATHS.scoring,
-    titleKey: "route.scoring.title",
-    descriptionKey: "route.scoring.description",
-  },
-  {
     id: "filters",
     path: APP_PATHS.filters,
     titleKey: "route.filters.title",
     descriptionKey: "route.filters.description",
+  },
+  {
+    id: "tier-characters",
+    path: APP_PATHS.tierCharacters,
+    titleKey: "route.tierCharacters.title",
+    descriptionKey: "route.tierCharacters.description",
+  },
+  {
+    id: "tier-light-cones",
+    path: APP_PATHS.tierLightCones,
+    titleKey: "route.tierLightCones.title",
+    descriptionKey: "route.tierLightCones.description",
+  },
+  {
+    id: "tier-relics",
+    path: APP_PATHS.tierRelics,
+    titleKey: "route.tierRelics.title",
+    descriptionKey: "route.tierRelics.description",
   },
   {
     id: "archive-characters",

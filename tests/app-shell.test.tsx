@@ -64,14 +64,17 @@ describe("GGArtifact family shell", () => {
     for (const label of [
       "Characters",
       "Inventory",
-      "Light Cones",
-      "Relics",
-      "Planar Ornaments",
-      "Triage",
+      "Resources",
+      "Relic Triage",
     ]) {
       expect(
         within(accountTabs).getByRole("link", { name: label })
       ).toBeVisible();
+    }
+    for (const obsolete of ["Light Cones", "Relics", "Planar Ornaments"]) {
+      expect(
+        within(accountTabs).queryByRole("link", { name: obsolete })
+      ).toBeNull();
     }
   });
 
@@ -122,13 +125,14 @@ describe("GGArtifact family shell", () => {
     await user.click(screen.getByRole("button", { name: "Menu" }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Account Data")).toBeVisible();
-    expect(within(dialog).getByText("Build Lab")).toBeVisible();
+    expect(within(dialog).getByText("Builds")).toBeVisible();
+    expect(within(dialog).getByText("Tier List")).toBeVisible();
     expect(within(dialog).getByText("Archive")).toBeVisible();
     expect(
       within(dialog).getByRole("link", { name: "Data Sources" })
     ).toBeVisible();
     expect(
-      within(dialog).getByRole("link", { name: "Triage" })
+      within(dialog).getByRole("link", { name: "Relic Triage" })
     ).toHaveAttribute("href", APP_PATHS.triage);
   });
 
@@ -139,10 +143,13 @@ describe("GGArtifact family shell", () => {
       "hidden",
       "md:block"
     );
-    const buildTabs = screen.getByRole("navigation", { name: "Build Lab" });
-    expect(within(buildTabs).getAllByRole("link")).toHaveLength(3);
+    const buildTabs = screen.getByRole("navigation", { name: "Builds" });
+    expect(within(buildTabs).getAllByRole("link")).toHaveLength(2);
     expect(
-      within(buildTabs).queryByRole("link", { name: "Triage" })
+      within(buildTabs).queryByRole("link", { name: "Relic Triage" })
+    ).toBeNull();
+    expect(
+      within(buildTabs).queryByRole("link", { name: "Scoring" })
     ).toBeNull();
   });
 

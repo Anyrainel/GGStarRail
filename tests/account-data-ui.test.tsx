@@ -5,9 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { createDemoAccount } from "@/lib/demoAccount";
-import InventoryPage from "@/pages/account/InventoryPage";
-import LightConesPage from "@/pages/account/LightConesPage";
-import RelicsPage from "@/pages/account/RelicsPage";
+import InventoryView from "@/pages/account-data/InventoryView";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 function renderPage(page: ReactElement) {
@@ -34,7 +32,7 @@ describe("Account Data source and lock-state presentation", () => {
     };
     useWorkspaceStore.getState().replaceAccount(account);
 
-    renderPage(<InventoryPage />);
+    renderPage(<InventoryView />);
 
     const coverage = screen.getByRole("region", {
       name: "Imported source coverage",
@@ -56,17 +54,27 @@ describe("Account Data source and lock-state presentation", () => {
     useWorkspaceStore.getState().replaceAccount(account);
     const user = userEvent.setup();
 
-    renderPage(<LightConesPage />);
-    const status = await screen.findByRole("combobox", { name: "Status" });
+    renderPage(<InventoryView />);
+    const lightConeSection = screen
+      .getByRole("heading", { name: "Light Cones" })
+      .closest("section");
+    if (!lightConeSection) throw new Error("Light Cone section missing");
+    const status = await within(lightConeSection).findByRole("combobox", {
+      name: "Status",
+    });
 
     await user.selectOptions(status, "unknown-lock");
     await waitFor(() => {
-      expect(screen.getAllByText("Lock state unknown")).toHaveLength(2);
+      expect(
+        within(lightConeSection).getAllByText("Lock state unknown")
+      ).toHaveLength(2);
     });
 
     await user.selectOptions(status, "unlocked");
     await waitFor(() => {
-      expect(screen.getAllByText("Lock state unknown")).toHaveLength(1);
+      expect(
+        within(lightConeSection).getAllByText("Lock state unknown")
+      ).toHaveLength(1);
     });
   });
 
@@ -83,19 +91,19 @@ describe("Account Data source and lock-state presentation", () => {
     useWorkspaceStore.getState().replaceAccount(account);
     const user = userEvent.setup();
 
-    renderPage(
-      <RelicsPage
-        category="cavern"
-        titleKey="route.relics.title"
-        descriptionKey="route.relics.description"
-        emptyKey="empty.relics"
-      />
-    );
-    const status = await screen.findByRole("combobox", { name: "Status" });
+    renderPage(<InventoryView />);
+    const relicSection = screen
+      .getByRole("heading", { name: "Relics and Planar Ornaments" })
+      .closest("section");
+    if (!relicSection) throw new Error("Relic section missing");
+    const status = await within(relicSection).findByRole("combobox", {
+      name: "Status",
+    });
     await user.selectOptions(status, "unknown-lock");
 
     await waitFor(() => {
-      const unknownLabels = screen.getAllByText("Lock state unknown");
+      const unknownLabels =
+        within(relicSection).getAllByText("Lock state unknown");
       expect(unknownLabels.length).toBeGreaterThan(1);
     });
     expect(

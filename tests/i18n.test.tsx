@@ -49,7 +49,7 @@ describe("typed bilingual catalog", () => {
       </I18nProvider>
     );
     fireEvent.click(screen.getByRole("button", { name: "switch" }));
-    expect(screen.getByText("账号角色")).toBeInTheDocument();
+    expect(screen.getByText("角色")).toBeInTheDocument();
     expect(document.documentElement.lang).toBe("zh-CN");
     expect(localStorage.getItem("ggstarrail:locale:v1")).toBe("zh-CN");
   });

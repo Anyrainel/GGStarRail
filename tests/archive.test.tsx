@@ -93,9 +93,7 @@ describe("Archive catalogs", () => {
     expect(screen.getByText("Showing 169 of 169 records")).toBeInTheDocument();
 
     tabs = screen.getByRole("navigation", { name: "Archive catalogs" });
-    await user.click(
-      within(tabs).getByRole("link", { name: "Relic Set Archive" })
-    );
+    await user.click(within(tabs).getByRole("link", { name: "Relic Archive" }));
     await catalogRegion("Relic and Planar set catalog results", 60);
     expect(
       screen.getByText(
@@ -549,9 +547,11 @@ describe("Archive catalogs", () => {
       60
     );
 
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "Set type" }),
-      "planar_ornament"
+    await user.click(
+      within(screen.getByRole("group", { name: "Set type" })).getByRole(
+        "button",
+        { name: "Planar Ornament" }
+      )
     );
     expect(
       await screen.findByText(
@@ -707,9 +707,7 @@ describe("Archive catalogs", () => {
     expect(selectedCard).toHaveFocus();
 
     tabs = screen.getByRole("navigation", { name: "Archive catalogs" });
-    await user.click(
-      within(tabs).getByRole("link", { name: "Relic Set Archive" })
-    );
+    await user.click(within(tabs).getByRole("link", { name: "Relic Archive" }));
     region = await catalogRegion("Relic and Planar set catalog results", 60);
     inlineDetail = await screen.findByTestId(
       "relic-set-detail",

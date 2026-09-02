@@ -12,7 +12,12 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
-import { NumberField, ToggleField } from "@/components/builds/BuildControls";
+import {
+  ChoiceChip,
+  NumberField,
+  SelectField,
+  ToggleField,
+} from "@/components/builds/BuildControls";
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { StatusBanner } from "@/components/builds/StatusBanner";
@@ -29,33 +34,61 @@ import {
 } from "@/components/ui/card";
 import { APP_PATHS } from "@/config/navigation";
 import {
+  type RelicCategory,
+  type RelicSlot,
+  relicCategory,
+} from "@/domain/account/schemas";
+import {
+  BUILD_SLOT_ORDER,
   evaluateAccountTriage,
   type RelicTriageEvaluation,
+  summarizeAccountTriage,
 } from "@/domain/build/evaluation";
 import type { TriageRules } from "@/domain/build/schemas";
 import type { TriageDecision, TriageReason } from "@/domain/build/triage";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { createRelicScoringContext } from "@/lib/buildReferences";
+import { localizedName } from "@/lib/catalogPresentation";
 import {
   createManagerInstructionPreview,
   type ManagerInstructionPreview,
   serializeManagerInstructionEnvelope,
 } from "@/lib/managerInstructions";
 import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
+import type { RelicSlotId } from "@/providers/gilore/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 type DecisionFilter = "all" | TriageDecision;
+type CategoryFilter = "all" | RelicCategory;
+type SlotFilter = "all" | RelicSlot;
 
-export default function TriagePage() {
-  const { t } = useI18n();
+const DOMAIN_SLOT_TO_CATALOG = {
+  head: "HEAD",
+  hands: "HAND",
+  body: "BODY",
+  feet: "FOOT",
+  planarSphere: "NECK",
+  linkRope: "OBJECT",
+} as const satisfies Record<RelicSlot, RelicSlotId>;
+
+const DECISIONS: readonly TriageDecision[] = [
+  "keep",
+  "review",
+  "salvage-review",
+];
+
+export function TriageView() {
+  const { locale, t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
   const profiles = useWorkspaceStore((state) => state.scoreProfiles);
   const rules = useWorkspaceStore((state) => state.triageRules);
   const setRules = useWorkspaceStore((state) => state.setTriageRules);
   const { data, error, loading } = useBuildReferences();
-  const [filter, setFilter] = useState<DecisionFilter>("all");
+  const [decisionFilter, setDecisionFilter] = useState<DecisionFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [slotFilter, setSlotFilter] = useState<SlotFilter>("all");
   const [managerPreview, setManagerPreview] =
     useState<ManagerInstructionPreview | null>(null);
   const [managerBusy, setManagerBusy] = useState(false);
@@ -77,24 +110,29 @@ export default function TriagePage() {
         : [],
     [account, builds, profiles, rules, scoringContext]
   );
-
-  const counts = useMemo(
-    () => ({
-      all: evaluations.length,
-      keep: evaluations.filter(({ result }) => result.decision === "keep")
-        .length,
-      review: evaluations.filter(({ result }) => result.decision === "review")
-        .length,
-      "salvage-review": evaluations.filter(
-        ({ result }) => result.decision === "salvage-review"
-      ).length,
-    }),
+  const summary = useMemo(
+    () => summarizeAccountTriage(evaluations),
     [evaluations]
   );
   const visible = evaluations.filter(
-    ({ result }) => filter === "all" || result.decision === filter
+    ({ relic, result }) =>
+      (decisionFilter === "all" || result.decision === decisionFilter) &&
+      (categoryFilter === "all" ||
+        relicCategory(relic.slot) === categoryFilter) &&
+      (slotFilter === "all" || relic.slot === slotFilter)
   );
   const managerActionability = managerPreview?.actionability ?? null;
+  const slotOptions = [
+    { value: "all", label: t("triage.allSlots") },
+    ...BUILD_SLOT_ORDER.map((slot) => ({
+      value: slot,
+      label: localizedName(
+        data?.properties.relicSlotById.get(DOMAIN_SLOT_TO_CATALOG[slot])?.name,
+        locale,
+        slot
+      ),
+    })),
+  ];
 
   function updateRules(next: TriageRules) {
     setRules(next);
@@ -137,6 +175,7 @@ export default function TriagePage() {
       <PageHeader
         titleKey="route.triage.title"
         descriptionKey="route.triage.description"
+        visuallyHidden
       />
       <SourceCoverageNotice account={account} />
       {!account ? (
@@ -155,7 +194,51 @@ export default function TriagePage() {
           </Button>
         </EmptyState>
       ) : (
-        <>
+        <div className="space-y-4">
+          <section
+            aria-labelledby="triage-summary-heading"
+            className="space-y-3"
+          >
+            <div>
+              <h2 id="triage-summary-heading" className="text-sm font-semibold">
+                {t("triage.summaryTitle")}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {t("triage.summaryHelp")}
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {DECISIONS.map((decision) => (
+                <button
+                  key={decision}
+                  type="button"
+                  aria-label={`${t("triage.filterLabel")}: ${decisionLabel(
+                    decision,
+                    t
+                  )}`}
+                  aria-pressed={decisionFilter === decision}
+                  className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() =>
+                    setDecisionFilter((current) =>
+                      current === decision ? "all" : decision
+                    )
+                  }
+                >
+                  <Card className="h-full transition-colors hover:border-primary/45">
+                    <CardContent className="p-3 sm:p-4">
+                      <p className="text-[11px] leading-4 text-muted-foreground sm:text-xs">
+                        {decisionLabel(decision, t)}
+                      </p>
+                      <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">
+                        {summary.decisions[decision]}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </button>
+              ))}
+            </div>
+          </section>
+
           <Card className="overflow-hidden">
             <CardHeader className="border-b border-border bg-gradient-select p-4">
               <CardTitle className="text-sm">
@@ -255,7 +338,7 @@ export default function TriagePage() {
                 <StatusBanner message={managerError} tone="error" />
               )}
               {managerPreview && (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <PreviewMetric
                     label={t("triage.managerInstructions")}
                     value={managerActionability?.instructions.length ?? 0}
@@ -289,7 +372,11 @@ export default function TriagePage() {
                       0
                     }
                   />
-                  <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-3">
+                  <PreviewMetric
+                    label={t("triage.managerBlockedLockedDiscard")}
+                    value={managerPreview.omittedInstructionIds.length}
+                  />
+                  <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-4">
                     {(managerActionability?.instructions.length ?? 0) === 0
                       ? t("triage.managerNoInstructions")
                       : (managerActionability?.previewOnlyCount ?? 0) > 0
@@ -303,44 +390,83 @@ export default function TriagePage() {
 
           <Card className="overflow-hidden">
             <CardHeader className="border-b border-border bg-gradient-select p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <CardTitle className="text-sm">
-                    {t("triage.resultsTitle")}
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {t("triage.resultsHelp")}
-                  </CardDescription>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <CardTitle className="text-sm">
+                      {t("triage.resultsTitle")}
+                    </CardTitle>
+                    <CardDescription className="space-y-1 text-xs">
+                      <span className="block">{t("triage.resultsHelp")}</span>
+                      <span className="block tabular-nums">
+                        {t("triage.visibleCount", {
+                          shown: visible.length,
+                          total: summary.total,
+                        })}
+                      </span>
+                    </CardDescription>
+                  </div>
+                  <SelectField
+                    label={t("triage.filterSlot")}
+                    value={slotFilter}
+                    options={slotOptions}
+                    onChange={(value) => setSlotFilter(value as SlotFilter)}
+                    className="w-full sm:w-48"
+                  />
                 </div>
-                <fieldset className="flex flex-wrap gap-2">
-                  <legend className="sr-only">{t("triage.filterLabel")}</legend>
-                  {(
-                    [
-                      ["all", t("triage.all")],
-                      ["keep", t("triage.keep")],
-                      ["review", t("triage.review")],
-                      ["salvage-review", t("triage.salvageReview")],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <Button
-                      key={value}
-                      type="button"
-                      size="sm"
-                      variant={filter === value ? "secondary" : "outline"}
-                      aria-pressed={filter === value}
-                      onClick={() => setFilter(value)}
+                <fieldset className="flex flex-wrap items-center gap-2">
+                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                    {t("triage.filterLabel")}
+                  </legend>
+                  <ChoiceChip
+                    selected={decisionFilter === "all"}
+                    onClick={() => setDecisionFilter("all")}
+                  >
+                    {t("triage.all")}
+                  </ChoiceChip>
+                  {DECISIONS.map((decision) => (
+                    <ChoiceChip
+                      key={decision}
+                      selected={decisionFilter === decision}
+                      onClick={() => setDecisionFilter(decision)}
                     >
-                      {label}
-                      <Badge variant="outline" className="tabular-nums">
-                        {counts[value]}
-                      </Badge>
-                    </Button>
+                      {decisionLabel(decision, t)}
+                    </ChoiceChip>
                   ))}
+                </fieldset>
+                <fieldset className="flex flex-wrap items-center gap-2">
+                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                    {t("triage.filterCategory")}
+                  </legend>
+                  <ChoiceChip
+                    selected={categoryFilter === "all"}
+                    onClick={() => setCategoryFilter("all")}
+                  >
+                    {t("triage.all")}
+                  </ChoiceChip>
+                  <ChoiceChip
+                    selected={categoryFilter === "cavern"}
+                    onClick={() => setCategoryFilter("cavern")}
+                  >
+                    {t("triage.category.cavern")}
+                    <Badge variant="outline" className="tabular-nums">
+                      {summary.categories.cavern}
+                    </Badge>
+                  </ChoiceChip>
+                  <ChoiceChip
+                    selected={categoryFilter === "planar"}
+                    onClick={() => setCategoryFilter("planar")}
+                  >
+                    {t("triage.category.planar")}
+                    <Badge variant="outline" className="tabular-nums">
+                      {summary.categories.planar}
+                    </Badge>
+                  </ChoiceChip>
                 </fieldset>
               </div>
             </CardHeader>
             <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-              {visible.slice(0, 60).map((evaluation) => (
+              {visible.map((evaluation) => (
                 <TriageRelic
                   key={evaluation.relic.key}
                   evaluation={evaluation}
@@ -353,17 +479,9 @@ export default function TriagePage() {
                   {t("triage.noResults")}
                 </div>
               )}
-              {visible.length > 60 && (
-                <p className="text-xs text-muted-foreground md:col-span-2 xl:col-span-3">
-                  {t("triage.showingFirst", {
-                    shown: 60,
-                    total: visible.length,
-                  })}
-                </p>
-              )}
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
     </>
   );
@@ -386,6 +504,7 @@ function TriageRelic({
   references: NonNullable<ReturnType<typeof useBuildReferences>["data"]>;
 }) {
   const { locale, t } = useI18n();
+  const category = relicCategory(evaluation.relic.slot);
   return (
     <RelicScoreCard
       relic={evaluation.relic}
@@ -395,9 +514,16 @@ function TriageRelic({
       selected={evaluation.result.decision === "keep"}
     >
       <div className="space-y-2">
-        <Badge variant={decisionVariant(evaluation.result.decision)}>
-          {decisionLabel(evaluation.result.decision, t)}
-        </Badge>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant={decisionVariant(evaluation.result.decision)}>
+            {decisionLabel(evaluation.result.decision, t)}
+          </Badge>
+          <Badge variant="outline">
+            {category === "cavern"
+              ? t("triage.category.cavern")
+              : t("triage.category.planar")}
+          </Badge>
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {evaluation.result.reasons.map((reason) => (
             <Badge key={reason} variant="outline">
@@ -416,8 +542,7 @@ function TriageRelic({
 }
 
 function decisionVariant(decision: TriageDecision): "secondary" | "outline" {
-  if (decision === "keep") return "secondary";
-  return "outline";
+  return decision === "keep" ? "secondary" : "outline";
 }
 
 function decisionLabel(

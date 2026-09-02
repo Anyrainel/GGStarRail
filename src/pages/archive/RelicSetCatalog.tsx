@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
@@ -24,7 +25,6 @@ import {
   CatalogFailure,
   CatalogLoading,
   CatalogSearch,
-  CatalogSelect,
 } from "./CatalogControls";
 import {
   CatalogDetailSheet,
@@ -148,17 +148,34 @@ export function RelicSetCatalog() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card/55 p-3 xl:flex-row xl:items-end">
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-card/55 p-3 xl:flex-row xl:items-center">
         <CatalogSearch
           value={query}
           onChange={setQuery}
           placeholderKey="archive.search.relicSets"
         />
-        <CatalogSelect labelKey="filter.kind" value={kind} onChange={setKind}>
-          <option value="all">{t("filter.allKinds")}</option>
-          <option value="cavern_relic">{t("archive.kind.cavern")}</option>
-          <option value="planar_ornament">{t("archive.kind.planar")}</option>
-        </CatalogSelect>
+        <fieldset
+          className="m-0 flex min-w-0 gap-1.5 overflow-x-auto border-0 p-0 pb-1 scrollbar-none"
+          aria-label={t("filter.kind")}
+        >
+          {[
+            ["all", t("filter.allKinds")],
+            ["cavern_relic", t("archive.kind.cavern")],
+            ["planar_ornament", t("archive.kind.planar")],
+          ].map(([value, label]) => (
+            <Button
+              key={value}
+              type="button"
+              size="sm"
+              variant={kind === value ? "default" : "outline"}
+              className="shrink-0 rounded-full"
+              aria-pressed={kind === value}
+              onClick={() => setKind(value)}
+            >
+              {label}
+            </Button>
+          ))}
+        </fieldset>
       </div>
 
       <p className="text-sm text-muted-foreground" aria-live="polite">
