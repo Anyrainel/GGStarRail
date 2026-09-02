@@ -1,0 +1,83 @@
+{
+  "source": "HSR-Scanner",
+  "build": "v1.5.0",
+  "version": 4,
+  "metadata": {
+    "uid": 601869216,
+    "trailblazer": "Stelle"
+  },
+  "light_cones": [
+    {
+      "id": "23005",
+      "name": "Moment of Victory",
+      "level": 80,
+      "ascension": 6,
+      "superimposition": 3,
+      "location": "1101",
+      "lock": true,
+      "_uid": "light_cone_999"
+    }
+  ],
+  "relics": [
+    {
+      "set_id": "102",
+      "name": "Musketeer of Wild Wheat",
+      "slot": "Hands",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "ATK",
+      "substats": [
+        {
+          "key": "DEF",
+          "value": 16
+        },
+        {
+          "key": "DEF_",
+          "value": 5.4
+        },
+        {
+          "key": "CRIT Rate_",
+          "value": 5.1
+        },
+        {
+          "key": "CRIT DMG_",
+          "value": 31.7
+        }
+      ],
+      "preview_substats": [
+        {
+          "key": "HP_",
+          "value": 4.3
+        }
+      ],
+      "location": "1101",
+      "lock": true,
+      "discard": false,
+      "_uid": "relic_999"
+    }
+  ],
+  "characters": [
+    {
+      "id": "1101",
+      "name": "Bronya",
+      "path": "Harmony",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 1,
+      "ability_version": 0,
+      "skills": {
+        "basic": 6,
+        "skill": 10,
+        "ult": 10,
+        "talent": 10
+      },
+      "traces": {
+        "ability_1": true,
+        "ability_2": true,
+        "ability_3": true,
+        "stat_1": true,
+        "stat_2": false
+      }
+    }
+  ]
+}

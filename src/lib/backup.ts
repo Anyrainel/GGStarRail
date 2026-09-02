@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BACKUP_IDENTITY } from "@/config/identity";
+import { parseVersionedWorkspace } from "@/stores/migration/workspace";
 import {
   type PersistedWorkspace,
   PersistedWorkspaceSchema,
@@ -17,6 +18,16 @@ export const BackupEnvelopeSchema = z
   .strict();
 
 export type BackupEnvelope = z.infer<typeof BackupEnvelopeSchema>;
+
+const BackupEnvelopeContainerSchema = z
+  .object({
+    product: z.literal(BACKUP_IDENTITY.product),
+    kind: z.literal(BACKUP_IDENTITY.kind),
+    schemaVersion: z.literal(BACKUP_IDENTITY.schemaVersion),
+    createdAt: z.string().datetime(),
+    payload: z.unknown(),
+  })
+  .strict();
 
 export function createBackupEnvelope(
   workspace: PersistedWorkspace,
@@ -38,5 +49,9 @@ export function serializeBackup(workspace: PersistedWorkspace): string {
 export function parseBackup(input: string): BackupEnvelope {
   const parsed: unknown = JSON.parse(input);
   assertNoSensitiveFields(parsed);
-  return BackupEnvelopeSchema.parse(parsed);
+  const envelope = BackupEnvelopeContainerSchema.parse(parsed);
+  return BackupEnvelopeSchema.parse({
+    ...envelope,
+    payload: parseVersionedWorkspace(envelope.payload),
+  });
 }

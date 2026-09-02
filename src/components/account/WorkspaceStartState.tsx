@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { Database, FlaskConical, UsersRound } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { AccountImportAction } from "@/components/account/AccountImportAction";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/config/navigation";
@@ -15,14 +16,14 @@ interface WorkspaceStartStateProps {
   messageKey: MessageKey;
   icon: LucideIcon;
   detailKey?: MessageKey;
-  primaryAction?: "load-demo" | "open-account";
+  primaryAction?: "import-account" | "open-account";
 }
 
 export function WorkspaceStartState({
   messageKey,
   icon,
   detailKey,
-  primaryAction = "load-demo",
+  primaryAction = "import-account",
 }: WorkspaceStartStateProps) {
   const { t } = useI18n();
   const replaceAccount = useWorkspaceStore((state) => state.replaceAccount);
@@ -49,23 +50,29 @@ export function WorkspaceStartState({
         </p>
       )}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
-        {primaryAction === "load-demo" ? (
-          <Button type="button" onClick={loadDemo} disabled={busy}>
-            <FlaskConical className="h-4 w-4" aria-hidden />
-            {busy ? t("common.loading") : t("imports.demo.load")}
-          </Button>
-        ) : (
+        {primaryAction === "open-account" ? (
           <Button asChild>
             <Link to={APP_PATHS.characters}>
               <UsersRound className="h-4 w-4" aria-hidden />
               {t("empty.openAccount")}
             </Link>
           </Button>
+        ) : (
+          <AccountImportAction />
         )}
-        <Button asChild variant="outline">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={loadDemo}
+          disabled={busy}
+        >
+          <FlaskConical className="h-4 w-4" aria-hidden />
+          {busy ? t("common.loading") : t("imports.demo.load")}
+        </Button>
+        <Button asChild variant="ghost">
           <Link to={APP_PATHS.imports}>
             <Database className="h-4 w-4" aria-hidden />
-            {t("nav.imports")}
+            {t("imports.help.open")}
           </Link>
         </Button>
       </div>

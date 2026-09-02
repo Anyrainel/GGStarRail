@@ -1,5 +1,6 @@
 import { UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AccountCoverageNotice } from "@/components/account/AccountCoverageNotice";
 import {
   CatalogLoadError,
   CatalogLoading,
@@ -96,6 +97,7 @@ export default function CharactersPage() {
         titleKey="route.characters.title"
         descriptionKey="route.characters.description"
       />
+      <AccountCoverageNotice account={account} />
       {characters.length === 0 ? (
         account ? (
           <EmptyState messageKey="empty.characters" icon={UsersRound} />

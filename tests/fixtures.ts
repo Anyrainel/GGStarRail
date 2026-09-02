@@ -14,13 +14,14 @@ export function makeRelic(overrides: Partial<Relic> = {}): Relic {
       { statId: "crit-dmg", value: 6.4 },
     ],
     locked: false,
+    discarded: false,
     ...overrides,
   };
 }
 
 export function makeAccountSnapshot(): AccountSnapshot {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     profileId: "profile:local",
     uid: "600000001",
     region: "prod_official_usa",
@@ -36,6 +37,7 @@ export function makeAccountSnapshot(): AccountSnapshot {
         ascension: 6,
         eidolon: 6,
         traces: { skill: 10 },
+        lightConeKey: "light-cone:1",
         relicKeys: ["relic:1"],
       },
     ],
@@ -57,6 +59,11 @@ export function makeAccountSnapshot(): AccountSnapshot {
       formatVersion: 1,
       sourceVersion: "0.1.0",
       importedAt: "2026-08-30T00:00:00.000Z",
+      coverage: {
+        characters: "complete",
+        lightCones: "complete",
+        relics: "complete",
+      },
       warnings: [],
     },
   };

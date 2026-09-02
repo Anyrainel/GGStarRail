@@ -2,7 +2,10 @@ import { z } from "zod";
 import {
   type AccountSnapshot,
   AccountSnapshotSchema,
+  AccountSnapshotV1Schema,
   type Character,
+  ImportCoverageSchema,
+  migrateAccountSnapshotV1,
   type RelicSlot,
   StableIdSchema,
 } from "@/domain/account/schemas";
@@ -11,12 +14,23 @@ import {
   HSR_REFERENCE_MANIFEST,
   loadCharacters,
   loadLightCones,
+  loadProgression,
   loadPropertyTables,
   loadRelicPieces,
   loadRelicSets,
 } from "@/providers/gilore/catalog";
-import type { HsrReferenceCatalog } from "@/providers/gilore/types";
+import type {
+  HsrReferenceCatalog,
+  ProgressionTables,
+} from "@/providers/gilore/types";
+import { validateRelicMainStatDisplayValue } from "@/providers/relicMainStat";
 import type { AccountImportDraft } from "../types";
+import {
+  isInteroperableScannerV4Export,
+  parseInteroperableScannerV4Export,
+} from "./interopV4";
+import { validateNativeScannerAccount } from "./nativeValidation";
+import { canonicalVisibleRelicPiece } from "./visibleRelicIdentity";
 
 const NativeScannerExportSchema = z
   .object({
@@ -29,7 +43,7 @@ const NativeScannerExportSchema = z
       })
       .strict(),
     exportedAt: z.string().datetime(),
-    account: AccountSnapshotSchema,
+    account: z.union([AccountSnapshotSchema, AccountSnapshotV1Schema]),
   })
   .strict();
 
@@ -40,10 +54,18 @@ const BilingualNameSchema = z
   })
   .strict();
 
-const GoodScannerStatSchema = z
+const GoodScannerStatV1Schema = z
   .object({
     key: StableIdSchema,
     gameId: z.number().int().positive(),
+    name: BilingualNameSchema,
+    value: z.number().finite(),
+  })
+  .strict();
+
+const GoodScannerStatV2Schema = z
+  .object({
+    key: StableIdSchema,
     name: BilingualNameSchema,
     value: z.number().finite(),
   })
@@ -79,7 +101,16 @@ const GoodScannerLightConeSchema = z
   })
   .strict();
 
-const GoodScannerGearSchema = z
+const GoodScannerSlotSchema = z.enum([
+  "Head",
+  "Hands",
+  "Body",
+  "Feet",
+  "PlanarSphere",
+  "LinkRope",
+]);
+
+const GoodScannerGearIdentitySchema = z
   .object({
     localId: StableIdSchema,
     key: StableIdSchema,
@@ -88,17 +119,33 @@ const GoodScannerGearSchema = z
     setKey: StableIdSchema,
     setName: BilingualNameSchema,
     rarity: z.number().int().min(1).max(5),
-    slot: z.enum(["Head", "Hands", "Body", "Feet", "PlanarSphere", "LinkRope"]),
+    slot: GoodScannerSlotSchema,
     level: z.number().int().min(0).max(15),
-    mainStat: GoodScannerStatSchema,
-    substats: z.array(GoodScannerStatSchema).max(5),
     locationKey: StableIdSchema.nullable(),
     lock: z.boolean().nullable(),
     discard: z.boolean().nullable(),
   })
   .strict();
 
-export const GoodScannerExperimentalExportSchema = z
+const GoodScannerGearV1Schema = GoodScannerGearIdentitySchema.extend({
+  mainStat: GoodScannerStatV1Schema,
+  substats: z.array(GoodScannerStatV1Schema).max(4),
+});
+
+const GoodScannerGearV2Schema = GoodScannerGearIdentitySchema.extend({
+  mainStat: GoodScannerStatV2Schema,
+  substats: z.array(GoodScannerStatV2Schema).max(4),
+});
+
+const ScannerCoverageSchema = z
+  .object({
+    characters: ImportCoverageSchema,
+    lightCones: ImportCoverageSchema,
+    relics: ImportCoverageSchema,
+  })
+  .strict();
+
+export const GoodScannerExperimentalExportV1Schema = z
   .object({
     schema: z.literal("goodscanner.hsr.experimental"),
     schemaVersion: z.literal(1),
@@ -123,21 +170,71 @@ export const GoodScannerExperimentalExportSchema = z
       .strict(),
     characters: z.array(GoodScannerCharacterSchema),
     lightCones: z.array(GoodScannerLightConeSchema),
-    relics: z.array(GoodScannerGearSchema),
-    planarOrnaments: z.array(GoodScannerGearSchema),
+    relics: z.array(GoodScannerGearV1Schema),
+    planarOrnaments: z.array(GoodScannerGearV1Schema),
   })
   .strict();
+
+export const GoodScannerExperimentalExportV2Schema = z
+  .object({
+    schema: z.literal("goodscanner.hsr.experimental"),
+    schemaVersion: z.literal(2),
+    source: z
+      .object({
+        kind: z.enum(["screenCapture", "packetCapture", "sanitizedFixture"]),
+        revision: z.string().min(1),
+        coverage: ScannerCoverageSchema,
+      })
+      .strict(),
+    reference: z
+      .object({
+        schemaVersion: z.literal(1),
+        provider: z.literal("gilore.ggstarrail-reference"),
+        revision: z.string().min(1),
+      })
+      .strict(),
+    privacy: z
+      .object({
+        accountIdentifiersIncluded: z.literal(false),
+        rawPacketDataIncluded: z.literal(false),
+        serverItemIdentifiersIncluded: z.literal(false),
+      })
+      .strict(),
+    characters: z.array(GoodScannerCharacterSchema),
+    lightCones: z.array(GoodScannerLightConeSchema),
+    relics: z.array(GoodScannerGearV2Schema),
+    planarOrnaments: z.array(GoodScannerGearV2Schema),
+  })
+  .strict();
+
+export const GoodScannerExperimentalExportSchema = z.discriminatedUnion(
+  "schemaVersion",
+  [GoodScannerExperimentalExportV1Schema, GoodScannerExperimentalExportV2Schema]
+);
 
 export type GoodScannerExperimentalExport = z.infer<
   typeof GoodScannerExperimentalExportSchema
 >;
 
 export const SCANNER_WARNING_TRACES_NOT_INCLUDED =
-  "SCANNER_V1_TRACES_NOT_INCLUDED";
+  "SCANNER_TRACES_NOT_INCLUDED";
+export const SCANNER_WARNING_UNKNOWN_LOCK_STATE = "SCANNER_LOCK_STATE_PARTIAL";
+export const SCANNER_WARNING_UNKNOWN_DISCARD_STATE =
+  "SCANNER_DISCARD_STATE_PARTIAL";
+export const SCANNER_WARNING_REFERENCE_REVISION_MISMATCH =
+  "SCANNER_REFERENCE_REVISION_MISMATCH";
+export const SCANNER_WARNING_V1_COVERAGE_UNKNOWN =
+  "SCANNER_V1_COVERAGE_UNKNOWN";
+export const SCANNER_WARNING_PARTIAL_COVERAGE = "SCANNER_PARTIAL_COVERAGE";
+export const SCANNER_WARNING_SANITIZED_FIXTURE =
+  "SCANNER_SANITIZED_FIXTURE_SOURCE";
+
+/** @deprecated Use SCANNER_WARNING_UNKNOWN_LOCK_STATE. */
 export const SCANNER_WARNING_UNKNOWN_LOCK_DEFAULTED =
-  "SCANNER_V1_UNKNOWN_LOCK_DEFAULTED_UNLOCKED";
+  SCANNER_WARNING_UNKNOWN_LOCK_STATE;
+/** @deprecated Use SCANNER_WARNING_UNKNOWN_DISCARD_STATE. */
 export const SCANNER_WARNING_DISCARD_NOT_IMPORTED =
-  "SCANNER_V1_DISCARD_STATE_NOT_IMPORTED";
+  SCANNER_WARNING_UNKNOWN_DISCARD_STATE;
 
 type ScannerReferenceCatalog = Pick<
   HsrReferenceCatalog,
@@ -147,7 +244,7 @@ type ScannerReferenceCatalog = Pick<
   | "relicSets"
   | "relicPieces"
   | "properties"
->;
+> & { progression: ProgressionTables };
 
 const GOODSCANNER_SLOT_TO_DOMAIN = {
   Head: "head",
@@ -156,10 +253,7 @@ const GOODSCANNER_SLOT_TO_DOMAIN = {
   Feet: "feet",
   PlanarSphere: "planarSphere",
   LinkRope: "linkRope",
-} as const satisfies Record<
-  GoodScannerExperimentalExport["relics"][number]["slot"],
-  RelicSlot
->;
+} as const satisfies Record<z.infer<typeof GoodScannerSlotSchema>, RelicSlot>;
 
 const CATALOG_SLOT_TO_DOMAIN = {
   HEAD: "head",
@@ -243,6 +337,37 @@ function resolveStatId(
   throw new Error(`Unknown Relic property: ${key}`);
 }
 
+function resolveGearStats(
+  record: {
+    mainStat: { key: string; value: number };
+    substats: readonly { key: string; value: number }[];
+  },
+  propertyById: ReadonlyMap<string, HsrReferenceCatalog["properties"][number]>
+): {
+  mainStat: { statId: string; value: number };
+  substats: { statId: string; value: number }[];
+} {
+  const mainStatId = resolveStatId(record.mainStat.key, propertyById);
+  const seenSubstats = new Set<string>();
+  const substats = record.substats.map((stat) => {
+    const statId = resolveStatId(stat.key, propertyById);
+    if (statId === mainStatId) {
+      throw new Error(
+        `Relic property ${statId} cannot be both main and substat`
+      );
+    }
+    if (seenSubstats.has(statId)) {
+      throw new Error(`Duplicate Relic substat property: ${statId}`);
+    }
+    seenSubstats.add(statId);
+    return { statId, value: stat.value };
+  });
+  return {
+    mainStat: { statId: mainStatId, value: record.mainStat.value },
+    substats,
+  };
+}
+
 function bindCharacterAlias(
   aliases: Map<string, string>,
   alias: string,
@@ -266,9 +391,13 @@ export function isGoodScannerExperimentalExport(input: unknown): boolean {
 export function parseScannerExport(input: unknown): AccountImportDraft {
   assertNoSensitiveFields(input);
   const parsed = NativeScannerExportSchema.parse(input);
+  const account =
+    parsed.account.schemaVersion === 1
+      ? migrateAccountSnapshotV1(parsed.account)
+      : parsed.account;
   return {
-    account: parsed.account,
-    warnings: parsed.account.source.warnings,
+    account,
+    warnings: account.source.warnings,
   };
 }
 
@@ -279,12 +408,6 @@ export function parseGoodScannerExperimentalExport(
 ): AccountImportDraft {
   assertNoSensitiveFields(input);
   const parsed = GoodScannerExperimentalExportSchema.parse(input);
-
-  if (parsed.reference.revision !== catalog.manifest.source.revision) {
-    throw new Error(
-      `Scanner reference revision ${parsed.reference.revision} does not match catalog revision ${catalog.manifest.source.revision}`
-    );
-  }
 
   const schemaMajor = Number.parseInt(
     catalog.manifest.schema_version.split(".")[0] ?? "",
@@ -399,7 +522,7 @@ export function parseGoodScannerExperimentalExport(
       level: record.level,
       ascension: record.ascension,
       superimposition: record.superimposition,
-      locked: record.lock ?? false,
+      locked: record.lock,
       ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
     };
     if (equippedCharacterKey) {
@@ -420,27 +543,50 @@ export function parseGoodScannerExperimentalExport(
   });
 
   const relics = allGear.map((record) => {
-    const definition = requiredByPublicId(
+    const suppliedDefinition = requiredByPublicId(
       relicPieceById,
       record.key,
       record.gameId,
       "Relic piece"
     );
-    if (record.setKey !== definition.set_id) {
+    if (record.setKey !== suppliedDefinition.set_id) {
       const scannerSet = relicSetById.get(record.setKey);
-      if (!scannerSet || scannerSet.id !== definition.set_id) {
-        throw new Error(`Relic set mismatch for ${definition.id}`);
+      if (!scannerSet || scannerSet.id !== suppliedDefinition.set_id) {
+        throw new Error(`Relic set mismatch for ${suppliedDefinition.id}`);
       }
     }
-    if (record.rarity !== definition.rarity) {
-      throw new Error(`Relic rarity mismatch for ${definition.id}`);
+    if (record.rarity !== suppliedDefinition.rarity) {
+      throw new Error(`Relic rarity mismatch for ${suppliedDefinition.id}`);
     }
     const scannerSlot = GOODSCANNER_SLOT_TO_DOMAIN[record.slot];
-    const catalogSlot = CATALOG_SLOT_TO_DOMAIN[definition.slot];
+    const catalogSlot = CATALOG_SLOT_TO_DOMAIN[suppliedDefinition.slot];
     if (scannerSlot !== catalogSlot) {
-      throw new Error(`Relic slot mismatch for ${definition.id}`);
+      throw new Error(`Relic slot mismatch for ${suppliedDefinition.id}`);
     }
     const equippedCharacterKey = resolveLocation(record.locationKey);
+    const { mainStat, substats } = resolveGearStats(record, propertyById);
+    const definition = canonicalVisibleRelicPiece(
+      {
+        setId: suppliedDefinition.set_id,
+        slot: suppliedDefinition.slot,
+        rarity: suppliedDefinition.rarity,
+        mainPropertyId: mainStat.statId,
+      },
+      catalog,
+      suppliedDefinition
+    );
+    if (record.level > definition.max_level) {
+      throw new Error(
+        `Relic level ${record.level} exceeds definition ${definition.id} maximum ${definition.max_level}`
+      );
+    }
+    validateRelicMainStatDisplayValue(
+      definition,
+      mainStat,
+      record.level,
+      catalog.properties,
+      catalog.progression.relic_main_affixes
+    );
     const relic = {
       key: record.localId,
       definitionId: definition.id,
@@ -448,15 +594,10 @@ export function parseGoodScannerExperimentalExport(
       slot: catalogSlot,
       rarity: record.rarity,
       level: record.level,
-      mainStat: {
-        statId: resolveStatId(record.mainStat.key, propertyById),
-        value: record.mainStat.value,
-      },
-      substats: record.substats.map((stat) => ({
-        statId: resolveStatId(stat.key, propertyById),
-        value: stat.value,
-      })),
-      locked: record.lock ?? false,
+      mainStat,
+      substats,
+      locked: record.lock,
+      discarded: record.discard,
       ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
     };
     if (equippedCharacterKey) {
@@ -471,19 +612,38 @@ export function parseGoodScannerExperimentalExport(
     return relic;
   });
 
-  const warnings = [SCANNER_WARNING_TRACES_NOT_INCLUDED];
+  const coverage =
+    parsed.schemaVersion === 2
+      ? parsed.source.coverage
+      : {
+          characters: "unknown" as const,
+          lightCones: "unknown" as const,
+          relics: "unknown" as const,
+        };
+  const warnings: string[] = [SCANNER_WARNING_TRACES_NOT_INCLUDED];
+  if (parsed.schemaVersion === 1) {
+    warnings.push(SCANNER_WARNING_V1_COVERAGE_UNKNOWN);
+  } else if (Object.values(coverage).some((value) => value !== "complete")) {
+    warnings.push(SCANNER_WARNING_PARTIAL_COVERAGE);
+  }
+  if (parsed.source.kind === "sanitizedFixture") {
+    warnings.push(SCANNER_WARNING_SANITIZED_FIXTURE);
+  }
+  if (parsed.reference.revision !== catalog.manifest.source.revision) {
+    warnings.push(SCANNER_WARNING_REFERENCE_REVISION_MISMATCH);
+  }
   if (
     parsed.lightCones.some((lightCone) => lightCone.lock === null) ||
     allGear.some((relic) => relic.lock === null)
   ) {
-    warnings.push(SCANNER_WARNING_UNKNOWN_LOCK_DEFAULTED);
+    warnings.push(SCANNER_WARNING_UNKNOWN_LOCK_STATE);
   }
-  if (allGear.some((relic) => relic.discard !== false)) {
-    warnings.push(SCANNER_WARNING_DISCARD_NOT_IMPORTED);
+  if (allGear.some((relic) => relic.discard === null)) {
+    warnings.push(SCANNER_WARNING_UNKNOWN_DISCARD_STATE);
   }
 
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 1,
+    schemaVersion: 2,
     profileId: "scanner:local",
     characters,
     lightCones,
@@ -494,6 +654,7 @@ export function parseGoodScannerExperimentalExport(
       sourceVersion: `goodscanner-hsr-experimental-v${parsed.schemaVersion}`,
       sourceRevision: parsed.reference.revision,
       importedAt: now.toISOString(),
+      coverage,
       warnings,
     },
   });
@@ -506,29 +667,45 @@ export async function parseVersionedScannerExport(
   now = new Date()
 ): Promise<AccountImportDraft> {
   assertNoSensitiveFields(input);
-  if (!isGoodScannerExperimentalExport(input)) {
-    return parseScannerExport(input);
+  const isGoodScanner = isGoodScannerExperimentalExport(input);
+  const isInteroperableV4 = isInteroperableScannerV4Export(input);
+  const nativeDraft =
+    !isGoodScanner && !isInteroperableV4 ? parseScannerExport(input) : null;
+
+  const [
+    characters,
+    lightCones,
+    relicSets,
+    relicPieces,
+    propertyTables,
+    progression,
+  ] = await Promise.all([
+    loadCharacters(),
+    loadLightCones(),
+    loadRelicSets(),
+    loadRelicPieces(),
+    loadPropertyTables(),
+    loadProgression(),
+  ]);
+
+  const catalog: ScannerReferenceCatalog = {
+    manifest: HSR_REFERENCE_MANIFEST,
+    characters: characters.values,
+    lightCones: lightCones.values,
+    relicSets: relicSets.values,
+    relicPieces: relicPieces.values,
+    properties: propertyTables.properties,
+    progression,
+  };
+
+  if (nativeDraft) {
+    validateNativeScannerAccount(nativeDraft.account, catalog);
+    return nativeDraft;
   }
 
-  const [characters, lightCones, relicSets, relicPieces, propertyTables] =
-    await Promise.all([
-      loadCharacters(),
-      loadLightCones(),
-      loadRelicSets(),
-      loadRelicPieces(),
-      loadPropertyTables(),
-    ]);
+  if (isInteroperableV4) {
+    return parseInteroperableScannerV4Export(input, catalog, now);
+  }
 
-  return parseGoodScannerExperimentalExport(
-    input,
-    {
-      manifest: HSR_REFERENCE_MANIFEST,
-      characters: characters.values,
-      lightCones: lightCones.values,
-      relicSets: relicSets.values,
-      relicPieces: relicPieces.values,
-      properties: propertyTables.properties,
-    },
-    now
-  );
+  return parseGoodScannerExperimentalExport(input, catalog, now);
 }

@@ -1,0 +1,37 @@
+{
+  "retcode": 0,
+  "message": "OK",
+  "data": {
+    "avatar_list": [
+      {
+        "id": 1001,
+        "level": 80,
+        "rank": 2,
+        "skills": [{ "point_id": 100101, "level": 6 }],
+        "equip": {
+          "id": 20003,
+          "level": 80,
+          "rank": 3,
+          "rarity": 3
+        },
+        "relics": [
+          {
+            "id": 61011,
+            "level": 15,
+            "pos": 1,
+            "rarity": 5,
+            "main_property": {
+              "property_type": 27,
+              "value": "705"
+            },
+            "properties": [
+              { "property_type": 52, "value": "5.8%" },
+              { "property_type": 29, "value": "42" }
+            ]
+          }
+        ],
+        "ornaments": []
+      }
+    ]
+  }
+}

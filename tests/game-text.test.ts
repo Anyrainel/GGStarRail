@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  formatCatalogValue,
-  formatCharacterDisplayName,
-  formatGameText,
-} from "@/lib/gameText";
+import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 
 describe("GIlore display text", () => {
   it("renders parameters while removing game markup and preserving lines", () => {
@@ -43,17 +39,6 @@ describe("GIlore display text", () => {
     ).toBe("The Cerces reached 999.");
   });
 
-  it("uses an honest localized Trailblazer name for source nickname tokens", () => {
-    for (let id = 8001; id <= 8010; id += 1) {
-      expect(
-        formatCharacterDisplayName(String(id), "{NICKNAME}", "Trailblazer")
-      ).toBe(`Trailblazer · ${id}`);
-    }
-    expect(formatCharacterDisplayName("8010", "{NICKNAME}", "开拓者")).toBe(
-      "开拓者 · 8010"
-    );
-  });
-
   it("normalizes nickname tokens in descriptions with the active locale term", () => {
     const source = "Isn't that right, {NICKNAME}?";
     expect(formatGameText(source, [], "Trailblazer")).toBe(
@@ -63,18 +48,6 @@ describe("GIlore display text", () => {
       "Isn't that right, 开拓者?"
     );
     expect(source).toContain("{NICKNAME}");
-  });
-
-  it("does not rewrite real names or nickname tokens outside Trailblazer ids", () => {
-    expect(formatCharacterDisplayName("8001", "Stelle", "Trailblazer")).toBe(
-      "Stelle"
-    );
-    expect(
-      formatCharacterDisplayName("8000", "{NICKNAME}", "Trailblazer")
-    ).toBe("{NICKNAME}");
-    expect(
-      formatCharacterDisplayName("8011", "{NICKNAME}", "Trailblazer")
-    ).toBe("{NICKNAME}");
   });
 
   it("formats ratio and flat catalog values without changing source data", () => {

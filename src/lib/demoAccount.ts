@@ -12,11 +12,11 @@ import {
   loadRelicPieces,
 } from "@/providers/gilore/catalog";
 import type {
-  MainAffixDefinition,
   PropertyDefinition,
   RelicPieceDefinition,
   SubAffixDefinition,
 } from "@/providers/gilore/types";
+import { generatedRelicMainStatDisplayValues } from "@/providers/relicMainStat";
 
 const DEMO_CHARACTER_IDS = ["1001", "1002", "1003", "1004", "1005", "1006"];
 
@@ -112,30 +112,12 @@ function accountStatValue(
   return Number(normalized.toFixed(3));
 }
 
-function mainStatValue(
-  piece: RelicPieceDefinition,
-  property: PropertyDefinition,
-  mainAffixes: readonly MainAffixDefinition[]
-): number {
-  const affix = required(
-    mainAffixes.find(
-      (candidate) =>
-        candidate.group_id === piece.main_affix_group &&
-        candidate.property_id === property.id
-    ),
-    `main affix ${piece.id}/${property.id}`
-  );
-  return accountStatValue(
-    property,
-    required(affix.level_values.at(-1), `main affix level ${piece.id}`)
-  );
-}
-
 function demoSubstats(
   piece: RelicPieceDefinition,
   mainStatId: string,
   propertyById: ReadonlyMap<string, PropertyDefinition>,
   subAffixes: readonly SubAffixDefinition[],
+  level: number,
   seed: number
 ) {
   const affixByProperty = new Map(
@@ -147,24 +129,42 @@ function demoSubstats(
     ...SUBSTAT_PRIORITY.slice(seed % SUBSTAT_PRIORITY.length),
     ...SUBSTAT_PRIORITY.slice(0, seed % SUBSTAT_PRIORITY.length),
   ];
-  return orderedIds
+  const available = orderedIds
     .filter((propertyId) => propertyId !== mainStatId)
-    .flatMap((propertyId, index) => {
+    .flatMap((propertyId) => {
       const property = propertyById.get(propertyId);
       const affix = affixByProperty.get(propertyId);
       if (!property || !affix) return [];
-      const roll = required(
-        affix.roll_values[(seed + index) % affix.roll_values.length],
-        `substat roll ${piece.id}/${propertyId}`
-      );
-      return [
-        {
-          statId: propertyId,
-          value: accountStatValue(property, roll),
-        },
-      ];
+      return [{ property, affix }];
     })
     .slice(0, 4);
+  const minimumInitialLines = Math.max(1, Math.min(4, piece.rarity - 2));
+  const maximumInitialLines = Math.max(1, Math.min(4, piece.rarity - 1));
+  const initialLineCount =
+    seed % 2 === 0 ? minimumInitialLines : maximumInitialLines;
+  const selected = available
+    .slice(0, initialLineCount)
+    .map((entry) => ({ ...entry, rollCount: 1 }));
+  const upgradeRolls = Math.floor(Math.min(level, piece.max_level) / 3);
+  for (let upgrade = 0; upgrade < upgradeRolls; upgrade += 1) {
+    if (selected.length < 4) {
+      const unlocked = available[selected.length];
+      if (unlocked) selected.push({ ...unlocked, rollCount: 1 });
+      continue;
+    }
+    const target = selected[(seed + upgrade) % selected.length];
+    if (target) target.rollCount += 1;
+  }
+  return selected.map(({ property, affix, rollCount }) => {
+    const roll = required(
+      affix.roll_values.at(-1),
+      `substat roll ${piece.id}/${property.id}`
+    );
+    return {
+      statId: property.id,
+      value: accountStatValue(property, roll * rollCount),
+    };
+  });
 }
 
 export async function createDemoAccount(
@@ -224,17 +224,58 @@ export async function createDemoAccount(
       level: piece.max_level,
       mainStat: {
         statId: property.id,
-        value: mainStatValue(piece, property, progression.relic_main_affixes),
+        value: generatedRelicMainStatDisplayValues(
+          piece,
+          property.id,
+          piece.max_level,
+          properties.properties,
+          progression.relic_main_affixes
+        ).exact,
       },
       substats: demoSubstats(
         piece,
         property.id,
         properties.propertyById,
         progression.relic_sub_affixes,
+        piece.max_level,
         index
       ),
       locked: index % 3 === 0,
+      discarded: false,
       equippedCharacterKey,
+    };
+  });
+  const spareRelics = relics.slice(0, 8).map((relic, index) => {
+    const level = index % 3 === 0 ? 0 : index % 3 === 1 ? 6 : 15;
+    const piece = required(
+      relicPieceCatalog.byId.get(relic.definitionId),
+      `Relic piece ${relic.definitionId}`
+    );
+    return {
+      ...relic,
+      key: `demo-relic:spare:${index + 1}`,
+      level,
+      mainStat: {
+        ...relic.mainStat,
+        value: generatedRelicMainStatDisplayValues(
+          piece,
+          relic.mainStat.statId,
+          level,
+          properties.properties,
+          progression.relic_main_affixes
+        ).exact,
+      },
+      substats: demoSubstats(
+        piece,
+        relic.mainStat.statId,
+        properties.propertyById,
+        progression.relic_sub_affixes,
+        level,
+        index
+      ),
+      locked: false,
+      discarded: index === 7,
+      equippedCharacterKey: undefined,
     };
   });
 
@@ -287,18 +328,23 @@ export async function createDemoAccount(
   });
 
   return AccountSnapshotSchema.parse({
-    schemaVersion: 1,
-    profileId: "demo-account:v1",
+    schemaVersion: 2,
+    profileId: "demo-account:v2",
     trailblazeLevel: 70,
     characters,
     lightCones,
-    relics,
+    relics: [...relics, ...spareRelics],
     source: {
       provider: "demo-account",
       formatVersion: 1,
       sourceVersion: HSR_REFERENCE_MANIFEST.schema_version,
       sourceRevision: HSR_REFERENCE_MANIFEST.source.revision,
       importedAt: now.toISOString(),
+      coverage: {
+        characters: "complete",
+        lightCones: "complete",
+        relics: "complete",
+      },
       warnings: [],
     },
   });

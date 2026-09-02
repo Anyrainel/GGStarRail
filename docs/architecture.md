@@ -37,9 +37,11 @@ Identity is centralized in `src/config/identity.ts`:
 - backup kind: `ggstarrail.backup`
 - Worker name: `ggstarrail-worker`
 
-There is no fallback to GenshinTools keys or backup formats. Unknown store
-versions reset to a safe empty workspace; a future migration must be explicit,
-pure, and fixture-tested.
+There is no fallback to GenshinTools keys or backup formats. The v1 to v2
+workspace migration covers canonical account tri-state fields and the current
+build/scoring model through the public hydration and backup paths. Unknown
+store versions reset to a safe empty workspace; every later migration must
+remain explicit, pure, and fixture-tested.
 
 ## Locale model
 
@@ -54,9 +56,10 @@ account schema accepts stable IDs rather than a closed English-name enum.
 
 ## State and backup
 
-`useWorkspaceStore` persists source records and user-authored configuration
-only. Actions and future derived caches are excluded through `partialize`.
-Hydration parses the versioned payload with Zod.
+`useWorkspaceStore` persists source records and user-authored build, scoring,
+and triage configuration only. Actions and derived scoring/filter results are
+excluded through `partialize`. Hydration parses the versioned payload with
+Zod.
 
 Backups serialize a normalized, validated workspace inside a separately
 versioned GGStarRail envelope. The serializer checks for credential-shaped
@@ -68,20 +71,38 @@ Provider DTOs stay outside the canonical domain:
 
 1. A provider validates its external envelope.
 2. It converts to a locale-neutral `AccountImportDraft` or data manifest.
-3. The local import review presents counts and safe warnings before applying.
-4. One store-owned action applies the accepted snapshot.
+3. The Account Data import review presents counts, source coverage, and safe
+   warnings before applying.
+4. Identity resolution distinguishes an empty workspace, the same UID, a
+   different UID, and an unknown identity. A different UID requires confirmed
+   replacement; an unknown identity requires an explicit merge or replacement
+   choice.
+5. One store-owned action applies the accepted merge or replacement.
 
 The current provider boundary includes:
 
 - verified GIlore reference-bundle sync and lazy catalog loaders;
-- native GGStarRail and explicit GOODScanner experimental-envelope adapters,
-  with review-before-apply local file import;
-- HoYoLAB injected transport with one-use credential handling only.
+- native GGStarRail, GOODScanner experimental v1/v2, and interoperable HSR
+  scanner-file adapters, with review-before-apply local file import;
+- Enka raw with a separately normalized MiHoMo raw failover for public UID
+  showcase data;
+- separate Global and CN Battle Chronicle adapters with one-use credential
+  handling and equipped-only inventory semantics.
+
+The primary import action lives in Account Data and uses a responsive dialog.
+The Data Sources route is secondary help and transport diagnostics, not a
+required import step. Account source and section coverage remain visible in
+Account Data, Scoring, Filters, and Triage so an equipped-only or showcase-only
+snapshot cannot look like a complete inventory.
 
 No GGStarRail provider performs a live network request for reference data.
 
 ## Worker
 
-The Worker is intentionally standalone and resource-free. It responds to
-`GET`/`HEAD /api/health`, rejects mutations, and declares no D1, R2, KV, route,
-cron, account, authentication provider, or secret configuration.
+The Worker is intentionally standalone and storage-free. It responds to
+`GET`/`HEAD /api/health`, a GET-only nine-digit UID route, and separate POST
+routes for the Global and CN Battle Chronicle contracts. Paths, methods,
+origins, bodies, upstream hosts, response sizes, and timeouts are allowlisted.
+It declares no D1, R2, KV, route, cron, account, authentication provider, or
+secret binding. See [Account imports](account-imports.md) for coverage and
+live-validation limits.

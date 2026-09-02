@@ -60,6 +60,12 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     descriptionKey: "route.planar.description",
   },
   {
+    id: "triage",
+    path: APP_PATHS.triage,
+    titleKey: "route.triage.title",
+    descriptionKey: "route.triage.description",
+  },
+  {
     id: "builds",
     path: APP_PATHS.builds,
     titleKey: "route.builds.title",
@@ -76,12 +82,6 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.filters,
     titleKey: "route.filters.title",
     descriptionKey: "route.filters.description",
-  },
-  {
-    id: "triage",
-    path: APP_PATHS.triage,
-    titleKey: "route.triage.title",
-    descriptionKey: "route.triage.description",
   },
   {
     id: "archive-characters",

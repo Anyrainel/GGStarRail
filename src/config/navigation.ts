@@ -23,10 +23,10 @@ export const APP_PATHS = {
   lightCones: "/account-data/light-cones",
   relics: "/account-data/relics",
   planarOrnaments: "/account-data/planar-ornaments",
+  triage: "/account-data/triage",
   builds: "/builds/configure",
   scoring: "/builds/scoring",
   filters: "/builds/filters",
-  triage: "/builds/triage",
   archiveCharacters: "/archive/characters",
   archiveLightCones: "/archive/light-cones",
   archiveRelicSets: "/archive/relic-sets",
@@ -69,6 +69,7 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         labelKey: "nav.planarOrnaments",
         icon: Sparkles,
       },
+      { path: APP_PATHS.triage, labelKey: "nav.triage", icon: DatabaseZap },
     ],
   },
   {
@@ -82,7 +83,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
       },
       { path: APP_PATHS.scoring, labelKey: "nav.scoring", icon: CircleGauge },
       { path: APP_PATHS.filters, labelKey: "nav.filters", icon: Filter },
-      { path: APP_PATHS.triage, labelKey: "nav.triage", icon: DatabaseZap },
     ],
   },
   {

@@ -1,5 +1,6 @@
 import { WandSparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AccountCoverageNotice } from "@/components/account/AccountCoverageNotice";
 import {
   CatalogLoadError,
   CatalogLoading,
@@ -20,6 +21,7 @@ type EquipmentStatus =
   | "all"
   | "locked"
   | "unlocked"
+  | "unknown-lock"
   | "equipped"
   | "unequipped";
 
@@ -39,9 +41,11 @@ export default function LightConesPage() {
       .filter((lightCone) => {
         switch (status) {
           case "locked":
-            return lightCone.locked;
+            return lightCone.locked === true;
           case "unlocked":
-            return !lightCone.locked;
+            return lightCone.locked === false;
+          case "unknown-lock":
+            return lightCone.locked === null;
           case "equipped":
             return lightCone.equippedCharacterKey !== undefined;
           case "unequipped":
@@ -95,6 +99,7 @@ export default function LightConesPage() {
         titleKey="route.lightCones.title"
         descriptionKey="route.lightCones.description"
       />
+      <AccountCoverageNotice account={account} />
       {lightCones.length === 0 ? (
         account ? (
           <EmptyState messageKey="empty.lightCones" icon={WandSparkles} />
@@ -134,6 +139,7 @@ export default function LightConesPage() {
                   { value: "all", label: t("filter.allStatuses") },
                   { value: "locked", label: t("filter.locked") },
                   { value: "unlocked", label: t("filter.unlocked") },
+                  { value: "unknown-lock", label: t("filter.unknownLock") },
                   { value: "equipped", label: t("filter.equipped") },
                   { value: "unequipped", label: t("filter.unequipped") },
                 ],
@@ -199,8 +205,13 @@ export default function LightConesPage() {
                         })}
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {lightCone.locked && (
+                        {lightCone.locked === true && (
                           <Badge variant="outline">{t("field.locked")}</Badge>
+                        )}
+                        {lightCone.locked === null && (
+                          <Badge variant="outline">
+                            {t("field.lockUnknown")}
+                          </Badge>
                         )}
                         {lightCone.equippedCharacterKey && (
                           <Badge variant="outline">{t("field.equipped")}</Badge>

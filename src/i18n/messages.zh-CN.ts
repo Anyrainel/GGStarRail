@@ -48,8 +48,9 @@ export const messagesZhCn = {
     "延续 GGArtifact 以玩家任务为核心的结构，适配角色、光锥、遗器和位面饰品。",
   "home.tool.account.title": "查看账号数据",
   "home.tool.account.body": "在同一本地工作台中浏览已导入的角色与装备。",
-  "home.tool.builds.title": "预览遗器配装规划",
-  "home.tool.builds.body": "先查看评分、筛选与整理基础；完整编辑器仍在开发中。",
+  "home.tool.builds.title": "规划遗器配装",
+  "home.tool.builds.body":
+    "配置角色配装、调整评分、生成筛选并安全复核遗器整理建议。",
   "home.tool.archive.title": "浏览游戏图鉴",
   "home.tool.archive.body": "搜索角色、光锥和遗器套装，并查看完整效果。",
   "route.characters.title": "账号角色",
@@ -66,16 +67,16 @@ export const messagesZhCn = {
   "route.planar.description": "位面球和连结绳作为独立的星铁装备部位建模。",
   "route.builds.title": "配装配置",
   "route.builds.description":
-    "预览已导入的配装目标；套装、主词条和评分方案编辑器尚未开放。",
+    "为角色配置常规 4+2 遗器目标，也可进阶选择隧洞遗器 2+2，并编辑主词条偏好。",
   "route.scoring.title": "遗器评分",
   "route.scoring.description":
-    "评分引擎基础已就绪；权重编辑与遗器评分结果页面尚未开放。",
+    "调整来自数据表的词条权重与评级门槛，查看每件遗器和当前配装的确定性评分。",
   "route.filters.title": "计算筛选",
   "route.filters.description":
-    "筛选引擎基础已就绪；条件编辑与筛选结果页面尚未开放。",
+    "把每套配装转成六个部位筛选，并从已导入账号中推荐匹配度最高的整套遗器。",
   "route.triage.title": "遗器整理",
   "route.triage.description":
-    "整理引擎基础已就绪；保留、复核和建议分解的交互流程尚未开放。",
+    "在保护已装备、已锁定和状态不明遗器的前提下，分类为保留、人工复核或分解复核。",
   "route.archiveCharacters.title": "角色图鉴",
   "route.archiveCharacters.description":
     "浏览角色描述、命途、战斗属性、技能、星魂、行迹与养成信息。",
@@ -86,15 +87,15 @@ export const messagesZhCn = {
     "浏览隧洞遗器与位面饰品套装、部位、稀有度和套装效果。",
   "route.imports.title": "数据来源",
   "route.imports.description":
-    "预览本地扫描器导出，或加载采用真实图鉴 ID 的演示账号；文件始终留在本机。",
+    "预览扫描器文件、导入公开 UID 展示，或通过本地 Worker 请求自己的已装备账号数据。",
   "route.notFound.title": "页面不存在",
   "route.notFound.description": "此路径不属于 GGStarRail 当前基础范围。",
   "home.ready.title": "现已实现",
   "home.ready.body":
-    "已校验双语图鉴、响应式图鉴页面、本地账号预览导入、真实 ID 演示数据、持久化和安全备份。",
-  "home.scaffolded.title": "后续接入",
+    "已校验双语图鉴、响应式资料库、本地与部分账号导入、可编辑配装、评分、筛选、整理、持久化和安全备份。",
+  "home.scaffolded.title": "仍需外部验证",
   "home.scaffolded.body":
-    "实时扫描、HoYoLAB 传输、云备份和生产 Worker 绑定仍保持断开。",
+    "真实登录凭据成功、打开游戏客户端后的扫描实测、生产 Worker 配置和云备份仍不会被提前宣称完成。",
   "home.excluded.title": "明确排除",
   "home.excluded.body": "队伍伤害优化、原神伤害引擎和充能计算器均未引入。",
   "home.snapshot.title": "本地工作区",
@@ -135,6 +136,7 @@ export const messagesZhCn = {
   "field.importedAt": "导入于 {value}",
   "field.target": "角色 ID：{value}",
   "field.locked": "已锁定",
+  "field.lockUnknown": "锁定状态未知",
   "field.equipped": "已装备",
   "empty.characters": "导入账号快照后即可查看已拥有角色。",
   "empty.inventory": "通过校验的导入完成后将在此显示背包汇总。",
@@ -157,6 +159,243 @@ export const messagesZhCn = {
   "triage.engine.title": "仅提供整理建议",
   "triage.engine.body":
     "整理引擎已通过测试，并会保护锁定或已装备物品；本原型暂不提供交互整理流程，也不会修改游戏内物品。",
+  "build.needsAccount":
+    "无需导入账号即可使用完整角色图鉴创建配装；账号数据只用于可选的持有筛选和当前装备预设。",
+  "build.backupTitle": "配装工作区文件",
+  "build.backupHelp":
+    "可导出或恢复配装、评分方案和整理规则；不会包含账号数据或登录凭据。",
+  "build.export": "导出配装",
+  "build.import": "导入配装",
+  "build.exported": "配装工作区已导出。",
+  "build.workspaceSummary":
+    "{builds} 套配装 · {profiles} 个评分方案 · 不含账号数据",
+  "build.clear": "清空配装工作区",
+  "build.cleared": "已清空配装工作区。",
+  "build.importReviewTitle": "确认导入配装工作区",
+  "build.importApply": "替换配装工作区",
+  "build.clearConfirm":
+    "要从此设备删除所有配装、评分方案和整理设置吗？账号数据不会改变。",
+  "build.importConfirm":
+    "要用导入的 {count} 套配装替换当前配装工作区吗？账号数据不会改变。",
+  "build.imported": "已导入 {count} 套配装。",
+  "build.importError": "无法验证此配装文件；当前工作区没有任何变化。",
+  "build.importReferenceUnavailable":
+    "参考图鉴仍在载入，请稍候再重新选择文件。",
+  "build.importIssueDuplicateId":
+    "文件重复使用了 ID“{id}”；每套配装和每个评分方案都必须使用唯一 ID。",
+  "build.importIssueOrphanProfile":
+    "某套配装引用了不存在的评分方案“{id}”，工作区没有任何变化。",
+  "build.importIssueThreshold":
+    "评分与整理门槛都必须在 0 到 100 之间，且高评级及保留门槛必须高于较低一级。",
+  "build.importIssueCharacter": "当前参考图鉴中不存在角色“{id}”。",
+  "build.importIssueCavernSet":
+    "当前参考图鉴中不存在“{id}”，或它不是隧洞遗器套装。",
+  "build.importIssuePlanarSet":
+    "当前参考图鉴中不存在“{id}”，或它不是位面饰品套装。",
+  "build.importIssueMainStat": "主词条“{id}”不适用于所配置的遗器部位。",
+  "build.newTitle": "新建角色配装",
+  "build.newHelp": "可选择任意角色；已拥有角色还会以当前装备套装作为起点。",
+  "build.catalogTitle": "角色图鉴",
+  "build.catalogFilterHelp": "可搜索完整图鉴，或按命途、属性和持有情况筛选。",
+  "build.searchPlaceholder": "搜索角色",
+  "build.ownedOnly": "只看已拥有角色",
+  "build.ownedOnlyHelp": "只显示当前账号快照中包含的角色。",
+  "build.ownedOnlyUnavailable":
+    "导入账号后可使用此筛选；未导入时仍可配置所有角色。",
+  "build.catalogCount": "当前显示 {shown} / {total} 名角色",
+  "build.createFor": "为{character}创建配装",
+  "build.characterIdentity": "{character} · 命途：{path} · 属性：{combatType}",
+  "build.characterMeta": "命途：{path} · 属性：{combatType}",
+  "build.owned": "已拥有",
+  "build.buildCount": "{count} 套配装",
+  "build.noCatalogMatches": "没有角色符合当前图鉴筛选条件。",
+  "build.character": "角色",
+  "build.characterChangeHelp":
+    "更换角色会重新生成套装、主词条和数据表评分预设。",
+  "build.create": "创建配装",
+  "build.created": "已创建配装和评分方案。",
+  "build.createError": "无法使用当前参考图鉴创建配装。",
+  "build.noOwnedCharacters": "此账号来源没有提供可配置的角色。",
+  "build.savedTitle": "已保存配装（{count}）",
+  "build.savedLocally": "更改已保存在此设备。",
+  "build.defaultProfileName": "{character}评分",
+  "build.defaultBuildName": "{character}配装",
+  "build.name": "配装名称",
+  "build.scoreProfile": "评分方案",
+  "build.scoreProfileMissing": "请先创建评分方案，再将其分配给此配装。",
+  "build.delete": "删除配装",
+  "build.deleteConfirm": "要从此设备删除“{name}”吗？",
+  "build.deleted": "配装已删除。",
+  "build.setPlanTitle": "套装方案",
+  "build.setPlanHelp": "常规目标为一套隧洞遗器 4 件套加一套位面饰品 2 件套。",
+  "build.advancedTwoPlusTwo": "进阶：使用两套隧洞遗器 2 件套",
+  "build.advancedTwoPlusTwoHelp":
+    "部分角色仍适合混搭两个不同的隧洞 2 件套，可在这里启用；位面 2 件套保持不变。",
+  "build.cavernFourPiece": "隧洞遗器 4 件套",
+  "build.cavernFirstTwoPiece": "第一套隧洞遗器 2 件套",
+  "build.cavernSecondTwoPiece": "第二套隧洞遗器 2 件套",
+  "build.planarTwoPiece": "位面饰品 2 件套",
+  "build.mainStatsTitle": "主词条偏好",
+  "build.mainStatsHelp":
+    "头部和手部主词条由游戏固定；可为躯干、脚部、位面球和连结绳选择一个或多个可接受主词条。",
+  "build.slotHead": "头部",
+  "build.slotHands": "手部",
+  "build.fixed": "固定",
+  "build.lockUnknown": "锁定状态未知",
+  "build.coverageNoticeTitle": "结果受导入来源覆盖范围限制",
+  "build.coverageNoticeBody":
+    "评分、筛选和整理只会使用当前本地快照中的遗器。个人展示和仅已装备来源无法证明未出现的物品不存在于完整背包中。",
+  "scoring.needsAccount":
+    "可为任意角色创建评分方案；只有查看背包和当前装备评分时才需要导入账号。",
+  "scoring.profile": "评分方案",
+  "scoring.noProfiles": "尚无评分方案。",
+  "scoring.profileCharacter": "按角色创建",
+  "scoring.createProfile": "创建方案",
+  "scoring.profileCreated": "评分方案已创建。",
+  "scoring.profileDeleted": "评分方案已删除。",
+  "scoring.createFirst": "创建方案后即可编辑词条权重、评级门槛并查看遗器评分。",
+  "scoring.settingsTitle": "方案设置",
+  "scoring.linkedBuilds": "有 {count} 套配装使用",
+  "scoring.profileName": "方案名称",
+  "scoring.deleteProfile": "删除评分方案",
+  "scoring.deleteConfirm":
+    "要删除“{name}”吗？同时会删除关联的 {count} 套配装。",
+  "scoring.includeMain": "将主词条养成度计入评分",
+  "scoring.includeMainHelp":
+    "不符合配装要求的可变主词条仍不评级；符合要求的主词条可按遗器等级计分。",
+  "scoring.mainWeight": "主词条占比",
+  "scoring.gradesTitle": "评级门槛",
+  "scoring.gradesHelp": "门槛必须按 S 到 C 依次降低；低于 C 的评分为 D。",
+  "scoring.gradeThreshold": "{grade} 级起始分",
+  "scoring.weightsTitle": "副词条权重",
+  "scoring.weightsHelp":
+    "每项权重均可在 0% 至 100% 之间调整；默认值来自生成的角色属性表。",
+  "scoring.normalizationNote":
+    "评分把词条换算为最高档强化次数，再与该遗器可达到的最佳合法副词条分布比较；小攻击、小生命等固定值词条保留数据表中的相对权重。",
+  "scoring.contextTitle": "配装上下文",
+  "scoring.contextHelp":
+    "配装会提供可接受主词条，并用于评估该角色当前装备的六件遗器。",
+  "scoring.buildContext": "要评估的配装",
+  "scoring.noBuildContext":
+    "此评分方案尚未分配给配装。仍可查看背包遗器评分，但不会按具体配装判断主词条。",
+  "scoring.openBuilds": "配置配装",
+  "scoring.equippedTitle": "当前配装 · {name}",
+  "scoring.equippedHelp": "平均分使用导入账号中当前关联到该角色的六件遗器。",
+  "scoring.sixSlotsComplete": "六个部位齐全",
+  "scoring.slotsMissing": "缺少 {count} 个部位",
+  "scoring.setsComplete": "套装方案达成",
+  "scoring.setsIncomplete": "套装方案未达成",
+  "scoring.mainStatsComplete": "主词条符合要求",
+  "scoring.mainStatsIncomplete": "主词条需要复核",
+  "scoring.filterCriteriaComplete": "六件遗器均符合筛选条件",
+  "scoring.filterCriteriaIncomplete": "未满足完整筛选条件",
+  "scoring.average": "平均 {value}",
+  "scoring.missingSlot": "未装备{slot}",
+  "scoring.inventoryTitle": "遗器评分",
+  "scoring.inventoryHelp": "结果由当前评分方案和配装上下文确定，并按分数排序。",
+  "scoring.showingTop": "显示前 {shown} / {total} 件",
+  "scoring.substatScore": "副词条评分",
+  "scoring.mainStatScore": "主词条评分",
+  "scoring.offTargetMain": "此可变主词条不在所选配装的接受范围内，因此不评级。",
+  "scoring.noRelics": "此账号来源没有提供可评分的遗器。",
+  "filters.needsBuild": "请先创建配装，再生成各部位的遗器筛选。",
+  "filters.openBuilds": "配置配装",
+  "filters.missingProfile":
+    "所选配装引用的评分方案不存在。请导入有效配装工作区或重新分配评分方案。",
+  "filters.needsAccount":
+    "筛选已经生成。载入账号后即可查找匹配遗器并推荐整套配装。",
+  "filters.build": "配装",
+  "filters.generatedCount": "已生成 {count} 个部位筛选",
+  "filters.rulesTitle": "配装生成的筛选规则",
+  "filters.rulesHelp":
+    "套装、部位和主词条来自配装；权重不低于 60% 的副词条视为有效，权重达到 90% 时至少要命中其中一项。",
+  "filters.matchCount": "{count} 件匹配",
+  "filters.sets": "可用套装",
+  "filters.mainStats": "可接受主词条",
+  "filters.weightedStats": "有效副词条",
+  "filters.mustHaveStats": "必备副词条",
+  "filters.noneRequired": "无硬性要求",
+  "filters.desiredStats": "需命中有效词条",
+  "filters.minimumStats": "至少 {count} 项",
+  "filters.minimumScore": "最低评分",
+  "filters.recommendationTitle": "推荐配装",
+  "filters.recommendationHelp":
+    "为每个部位选择评分最高的合法候选；使用 2+2 时会评估所有隧洞遗器分配方式。",
+  "filters.loadoutComplete": "六个部位均有候选",
+  "filters.loadoutMissing": "缺少 {count} 个候选",
+  "filters.noCandidate": "没有匹配的{slot}",
+  "filters.inventoryTitle": "账号遗器候选",
+  "filters.inventoryHelp":
+    "查看已导入遗器如何通过当前部位规则；最多显示前 18 件。",
+  "filters.matchesOnly": "只显示匹配项",
+  "filters.matches": "匹配",
+  "filters.doesNotMatch": "不匹配",
+  "filters.noMatches": "没有已导入遗器符合此部位筛选。",
+  "filters.reason.slot": "部位匹配",
+  "filters.reason.set": "套装匹配",
+  "filters.reason.mainStat": "主词条可用",
+  "filters.reason.substats": "有效副词条达标",
+  "filters.reason.score": "评分达标",
+  "filters.reason.slotMissing": "部位不符",
+  "filters.reason.setMissing": "套装不符",
+  "filters.reason.mainStatMissing": "主词条不符",
+  "filters.reason.substatsMissing": "有效副词条不足",
+  "filters.reason.scoreMissing": "评分未达标",
+  "triage.needsAccount": "请先载入账号，再查看遗器保留和分解建议。",
+  "triage.needsBuild": "请至少创建一套配装，以保护符合已配置目标的遗器。",
+  "triage.openBuilds": "配置配装",
+  "triage.rulesTitle": "整理规则",
+  "triage.rulesHelp":
+    "只有匹配配装后才会应用分数门槛；已装备、已锁定和锁定状态未知的遗器会优先处理。",
+  "triage.keepThreshold": "达到此分保留",
+  "triage.reviewThreshold": "达到此分人工复核",
+  "triage.protectLocked": "保护已锁定遗器",
+  "triage.protectLockedHelp": "启用后，已锁定遗器会在评分前归为保留。",
+  "triage.protectEquipped": "保护已装备遗器",
+  "triage.protectEquippedHelp": "启用后，已装备遗器会在评分前归为保留。",
+  "triage.managerTitle": "GOODScanner 管理器预览",
+  "triage.managerHelp":
+    "生成用于复核锁定或弃置标记的隐私安全指令文件；文件只包含画面可见的遗器匹配信息，不含本地或服务器物品 ID。",
+  "triage.managerPreview": "准备预览",
+  "triage.managerPreparing": "正在准备…",
+  "triage.managerDownload": "下载指令",
+  "triage.managerBoundary":
+    "GGStarRail 只生成复核文件，不会修改游戏。GOODScanner 必须重新扫描，并且只匹配到一件画面可见遗器后才可执行。已锁定遗器的弃置标记必须保持仅预览：解锁与弃置标记必须分两次复核执行。文件绝不会包含分解、装备、删除或解锁指令。",
+  "triage.managerError": "无法生成管理器预览；没有下载任何文件。",
+  "triage.managerInstructions": "指令数",
+  "triage.managerPreviewOnly": "仅预览",
+  "triage.managerExecutable": "可执行",
+  "triage.managerReasonUnknownBefore": "操作前状态未知",
+  "triage.managerReasonEquipped": "已装备遗器",
+  "triage.managerReasonLocked": "弃置前仍为锁定",
+  "triage.managerReasonAmbiguous": "匹配结果不唯一",
+  "triage.managerReasonHelp":
+    "同一条指令可能同时计入多种仅预览原因。即使关闭已锁定遗器保护，也不能在同一次执行中为其标记弃置。下载内容仍是复核文件；GOODScanner 只有重新扫描画面可见物品后才能判断是否可执行。",
+  "triage.managerNoInstructions": "当前整理结果没有提出锁定或弃置标记变更。",
+  "triage.managerUnknownBefore":
+    "有 {count} 条指令没有观测到操作前状态，必须保持仅预览，直到完整的新扫描确认状态。",
+  "triage.managerFreshEvidence":
+    "每条指令都包含完整扫描导入的操作前状态；GOODScanner 执行前仍会重新核对画面可见信息。",
+  "triage.resultsTitle": "整理结果",
+  "triage.resultsHelp":
+    "每项结果都会说明判定依据；分解复核只是候选清单，绝不会自动分解。",
+  "triage.filterLabel": "筛选整理结果",
+  "triage.all": "全部",
+  "triage.keep": "保留",
+  "triage.review": "人工复核",
+  "triage.salvageReview": "分解复核",
+  "triage.matchingBuilds": "匹配 {count} 套配装",
+  "triage.noResults": "此分类中没有遗器。",
+  "triage.showingFirst": "显示前 {shown} / {total} 项结果。",
+  "triage.reason.locked": "已锁定",
+  "triage.reason.equipped": "已装备",
+  "triage.reason.unknownLock": "锁定状态未知",
+  "triage.reason.noBuilds": "没有已配置配装",
+  "triage.reason.buildMatch": "匹配配装",
+  "triage.reason.noBuildMatch": "不匹配任何配装",
+  "triage.reason.keepScore": "达到保留分数",
+  "triage.reason.reviewScore": "达到复核分数",
+  "triage.reason.lowScore": "低于复核分数",
   "archive.provenance.title": "必须提供来源信息",
   "archive.provenance.body":
     "每份数据都必须声明上游来源、修订版本、生成时间、语言覆盖、许可说明和校验和。",
@@ -292,17 +531,26 @@ export const messagesZhCn = {
     "本地双语数据包只有在清单、字节数、哈希、封装、修订、数量和语言全部通过校验后才会被接受。",
   "imports.scanner.title": "扫描器导出",
   "imports.scanner.body":
-    "原生导出与隔离的 GOODScanner 星铁 v1 封装分别使用严格适配器，并拒绝疑似凭据字段。",
+    "原生导出与隔离的 GOODScanner 星铁 v1/v2 封装分别使用严格适配器，并拒绝疑似凭据字段。",
   "imports.hoyolab.title": "HoYoLAB 账号导入",
-  "imports.hoyolab.body": "目前仅建立临时凭据边界；网络传输和界面均未接通。",
+  "imports.hoyolab.body":
+    "本地 Worker 分开处理国际服与国服契约，可请求本人账号的角色列表及已装备物品；未经授权凭据实测，不会宣称登录导入已经验证成功。",
   "imports.security.title": "身份 Cookie 安全",
   "imports.security.body":
     "Cookie 只允许在单次请求期间保留于内存，随后清除；绝不持久化、备份或写入日志。",
   "imports.boundary.ready": "契约已就绪",
-  "imports.boundary.future": "适配器待实现",
+  "imports.boundary.future": "尚未用真实凭据验证",
+  "imports.open": "导入账号",
+  "imports.dialog.title": "导入账号数据",
+  "imports.dialog.description":
+    "选择在线账号来源或本地扫描器导出，确认覆盖范围与账号身份后，再决定如何更新当前工作区。",
+  "imports.help.open": "查看数据来源说明",
+  "imports.help.title": "从账号数据导入",
+  "imports.help.body":
+    "“数据来源”页面用于说明各来源的覆盖范围、隐私边界与诊断状态。你也可以在这里开始导入，或在任意“账号数据”页面使用“导入账号”。",
   "imports.account.title": "本地账号导入",
   "imports.account.body":
-    "选择带版本的 GGStarRail 或兼容的 GOODScanner 星铁 JSON 导出文件。文件通过校验并完成预览后，才会替换本地账号数据。",
+    "选择带版本的 GGStarRail 或兼容的 GOODScanner 星铁 JSON 导出文件。文件通过校验并完成预览后，才会合并到本地账号数据。",
   "imports.selectFile": "选择 JSON 文件",
   "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",
   "imports.review.title": "导入前确认",
@@ -310,26 +558,119 @@ export const messagesZhCn = {
   "imports.review.revision": "参考数据修订：{revision}",
   "imports.review.counts":
     "{characters} 名角色 · {lightCones} 个光锥 · {relics} 件遗器",
+  "imports.review.coverageCharacters": "角色：{coverage}",
+  "imports.review.coverageLightCones": "光锥：{coverage}",
+  "imports.review.coverageRelics": "遗器：{coverage}",
+  "imports.coverage.complete": "完整",
+  "imports.coverage.equipped-only": "仅已装备",
+  "imports.coverage.showcase-only": "仅个人展示",
+  "imports.coverage.unknown": "覆盖范围未知",
   "imports.review.warnings": "导入提醒",
-  "imports.apply": "替换本地账号数据",
+  "imports.apply": "应用已确认数据",
+  "imports.identity.empty": "本地暂无账号",
+  "imports.identity.same": "UID 相同（可安全合并）",
+  "imports.identity.different": "UID 不同（必须替换）",
+  "imports.identity.unknown": "无法确认账号身份",
+  "imports.identity.emptyHelp": "当前没有会与本次导入冲突的本地账号快照。",
+  "imports.identity.sameHelp":
+    "UID 一致，可合并本次出现的记录，同时保留本地更完整的背包数据。",
+  "imports.identity.differentHelp":
+    "UID 不一致。为避免混合两个账号的数据，必须替换当前账号快照。",
+  "imports.identity.unknownHelp":
+    "一个或两个来源没有提供 UID，因此无法确认它们是否属于同一账号。",
+  "imports.identity.replaceConfirm": "我了解此操作会替换当前本地账号快照。",
+  "imports.apply.merge": "合并至匹配账号",
+  "imports.apply.replace": "替换当前账号",
+  "imports.apply.mergeUnknown": "按同一账号合并",
   "imports.cancel": "取消预览",
-  "imports.success": "账号数据已导入。",
-  "imports.error.title": "无法预览导入文件",
-  "imports.error.hint": "文件未通过校验，当前账号数据没有任何变化。",
+  "imports.success": "已应用确认后的账号数据。",
+  "imports.error.title": "无法预览导入数据",
+  "imports.error.hint": "数据来源未通过校验，当前账号数据没有任何变化。",
   "imports.demo.title": "演示账号",
   "imports.demo.body":
     "加载一个由真实图鉴 ID 构建、可直接查看的本地演示账号。仅替换本地账号快照，不会连接游戏。",
   "imports.demo.load": "加载演示账号",
   "imports.demo.replace": "替换为演示账号",
   "imports.demo.loaded": "演示账号已加载。",
-  "imports.existingWarning": "此操作会替换当前的本地账号快照。",
+  "imports.demo.confirmTitle": "用演示数据替换当前账号？",
+  "imports.demo.confirmBody":
+    "此操作会删除当前本地账号快照并替换为内置演示数据，不会修改配装与评分方案。",
+  "imports.demo.confirmAction": "替换为演示账号",
+  "imports.existingWarning":
+    "网站的部分导入会与本地数据合并，不会删除更完整的背包；完整文件导入可替换其覆盖范围，演示账号会替换整个快照。",
   "imports.warning.traces":
-    "扫描器 v1 不包含行迹等级；导入角色的行迹记录将保持为空。",
+    "此扫描器导出不包含行迹等级；导入角色的行迹记录将保持为空。",
   "imports.warning.unknownLock":
-    "扫描器 v1 未能识别所有锁定状态；未知值将按未锁定导入。",
+    "此来源未能观测所有锁定状态；未知值会保持未知，不能作为管理器执行依据。",
   "imports.warning.discard":
-    "扫描器 v1 的弃置标记不在当前账号契约内，因此未导入。",
+    "此来源未能观测所有弃置标记；未知值会保持未知，相关指令只能预览。",
+  "imports.uid.title": "UID 个人展示导入",
+  "imports.uid.body":
+    "匿名读取公开展示，优先使用 Enka，失败时改用 MiHoMo 原始接口。",
+  "imports.uid.label": "星铁 UID",
+  "imports.uid.placeholder": "9 位 UID",
+  "imports.uid.help":
+    "只导入当前个人展示中的角色，以及这些角色已装备的光锥和遗器；绝不是完整背包导入。",
+  "imports.uid.action": "预览 UID 展示",
+  "imports.credentials.title": "HoYoLAB / 米游社凭据导入",
+  "imports.credentials.body":
+    "只请求本人账号的角色列表及各角色已装备物品，无法获得未装备背包。截至 2026 年 9 月 2 日，登录成功及最低 Cookie 字段要求仍未经过授权真实凭据验证。",
+  "imports.credentials.region": "账号服务",
+  "imports.credentials.global": "国际服 · HoYoLAB",
+  "imports.credentials.cn": "国服 · 米游社",
+  "imports.credentials.cookie": "Cookie 请求头",
+  "imports.credentials.deviceId": "设备 ID",
+  "imports.credentials.deviceFp": "设备指纹",
+  "imports.credentials.help":
+    "原始 Cookie、设备 ID 和设备指纹只会经本地 Worker 用于一次请求，随后立即清空；绝不会保存、导出、写入日志或放入网址。",
+  "imports.credentials.action": "预览已装备账号数据",
+  "imports.error.verification":
+    "HoYoLAB 或米游社要求账号验证。请在官方应用或网站完成验证后重试；GGStarRail 无法代办或绕过验证。",
+  "imports.error.riskBlocked":
+    "HoYoLAB 或米游社将本次请求判定为风险请求。请先在官方应用或网站检查账号安全，再重试。",
+  "imports.warning.legacyCoverage":
+    "此 v1 扫描器导出未声明背包覆盖范围；缺失物品不会删除本地更完整的数据。",
+  "imports.warning.partialCoverage":
+    "扫描器报告此次覆盖不完整；会导入已出现的物品，并保留本地未出现的背包数据。",
+  "imports.warning.fixture":
+    "这是已脱敏的测试样例，不能作为真实扫描已经完成的依据。",
+  "imports.warning.referenceMismatch":
+    "扫描器使用的参考数据修订与本站不同；使用管理器指令前请复核解析出的物品身份。",
+  "imports.warning.v4CoverageUnknown":
+    "此兼容扫描器文件未声明各部分的覆盖范围；缺少记录不能视为该物品不存在。",
+  "imports.warning.v4PreviewStats":
+    "部分仅供预览的遗器缺少精确词条数值，因此未导入这些不完整记录。",
+  "imports.warning.v4EquippedCharacter":
+    "部分装备位置指向了扫描器文件中不存在的角色，这些装备关系将保持未解析状态。",
+  "imports.warning.v4Traces":
+    "此扫描器格式可能只包含实际可见的行迹等级；系统不会补造缺失行迹。",
+  "imports.warning.merged":
+    "此次部分导入已与本地较完整的数据合并，不会删除来源无法观测的物品。",
+  "imports.warning.showcaseOnly":
+    "公开 UID 只提供个人展示角色及其已装备物品，并非完整背包。",
+  "imports.warning.emptyShowcase":
+    "个人展示为空或未公开。这是有效的部分结果，不能据此判断账号没有物品。",
+  "imports.warning.mihomoFallback":
+    "Enka 暂时不可用，本次展示由单独适配的 MiHoMo 原始接口提供。",
+  "imports.warning.hoyolabEquippedOnly":
+    "战绩工具只返回已拥有角色及已装备物品，没有返回未装备背包。",
+  "imports.warning.hoyolabUnverified":
+    "此凭据契约已通过样例测试，但尚未使用授权的真实凭据验证登录导入。",
+  "imports.warning.ascensionInferred":
+    "来源未直接提供部分晋阶值，系统按显示等级进行了推断。",
+  "imports.warning.previewOmitted":
+    "来源预览缺少部分遗器的精确副词条；系统没有编造这些不完整物品。",
+  "imports.warning.emptyAccount":
+    "来源没有返回角色；这可能是隐私或访问状态所致，不代表账号确实为空。",
+  "imports.warning.technical": "来源提醒：{code}",
   "source.demo": "内置演示",
+  "source.scanner": "扫描器导出",
+  "source.uidShowcase": "公开 UID 个人展示",
+  "source.hoyolab": "HoYoLAB / 米游社",
+  "account.coverage.title": "导入来源覆盖范围",
+  "account.coverage.partialBody":
+    "此来源并非完整背包。数量、筛选、评分与整理建议仅覆盖当前工作区已有记录，不能视为账号总量。",
+  "account.coverage.completeBody": "此来源声明已完整覆盖角色、光锥与遗器。",
   "filter.path": "命途",
   "filter.combatType": "战斗属性",
   "filter.slot": "部位",
@@ -344,6 +685,7 @@ export const messagesZhCn = {
   "filter.allKinds": "全部套装类型",
   "filter.locked": "已锁定",
   "filter.unlocked": "未锁定",
+  "filter.unknownLock": "锁定状态未知",
   "filter.equipped": "已装备",
   "filter.unequipped": "未装备",
   "search.characters": "搜索已拥有角色",

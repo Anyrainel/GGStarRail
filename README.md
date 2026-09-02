@@ -1,8 +1,8 @@
 # GGStarRail
 
 GGStarRail is a local-first Honkai: Star Rail account, inventory, build, and
-relic-triage workspace. This repository contains an independent application
-foundation; it does not contain GenshinTools game engines, data, assets,
+relic-triage workspace. This repository contains an independent application;
+it does not contain GenshinTools game engines, data, assets,
 imports, persisted schemas, or cloud resources.
 
 The UI ships with typed English and Simplified Chinese catalogs from the first
@@ -31,9 +31,10 @@ is committed by GGStarRail.
 stays available after the launching terminal closes. It validates the page
 identity before reusing a listener and writes timestamped logs under
 `%TEMP%\ggstarrail-demo`; it is not a reboot-persistent Windows service. Use
-`npm run dev` for an attached Vite session on its default port. The placeholder
-Worker can be run separately with `npm run dev:worker`; it exposes only
-`GET /api/health` and has no live bindings.
+`npm run dev` for an attached Vite session on its default port. The local
+Worker can be run separately with `npm run dev:worker`; it exposes the health
+check plus tightly allowlisted account-import proxy routes and has no storage
+bindings.
 
 ## Developer commands
 
@@ -41,7 +42,7 @@ Worker can be run separately with `npm run dev:worker`; it exposes only
 | --- | --- |
 | `npm run dev` | Start the React/Vite app |
 | `npm run demo:start` | Start or reuse the detached demo on port 41737 |
-| `npm run dev:worker` | Start the resource-free Worker shell |
+| `npm run dev:worker` | Start the local account-import Worker |
 | `npm run data:sync` | Verify and import the sibling GIlore reference bundle |
 | `npm run data:verify` | Verify the source bundle without publishing it |
 | `npm run data:check` | Verify the ignored generated bundle used by the app |
@@ -55,10 +56,10 @@ Worker can be run separately with `npm run dev:worker`; it exposes only
 | `npm run test` | Run browser/domain tests |
 | `npm run test:worker` | Run Worker tests in Node |
 | `npm run depcheck` | Enforce dependency boundaries |
-| `npm run check:worker` | Validate, type-check, and test the Worker shell |
+| `npm run check:worker` | Validate, type-check, and test the Worker |
 | `npm run check` | Run the complete local validation stack |
 
-There is intentionally no deployment command in the foundation.
+There is intentionally no deployment command in this project.
 
 ## Honest product boundary
 
@@ -69,27 +70,43 @@ Implemented now:
 - Typed `en` and `zh-CN` catalogs with key and placeholder parity tests.
 - Locale-neutral HSR account, Character, Light Cone, and six-slot Relic models.
 - Versioned local workspace storage and a GGStarRail-only backup envelope.
-- Pure, user-weighted scoring; computed-filter evaluation; advisory triage.
+- Editable per-Character 4+2 builds, with an advanced 2+2 Cavern alternative,
+  fixed Head/Hands main stats, and configurable main stats for the other four
+  slots.
+- Editable scoring profiles backed by generated HSR affix tables, normalized
+  per-Relic and equipped-build scores, grades, derived filters, recommendations,
+  and advisory triage.
 - Complete, lazily loaded GIlore reference catalogs with strict integrity,
   provenance, diagnostics, and bilingual-identity checks.
 - Functional Character, Light Cone, and Relic/Planar Archives with localized
   search, filters, selectable details, progression, materials, and provenance.
-- Functional local Account Data inventory views plus an explicit real-ID demo
-  account loader.
-- Review-before-apply JSON import for the native GGStarRail envelope and the
-  isolated GOODScanner HSR experimental envelope; rejected imports are atomic.
+- Functional Account Data views with a primary responsive import action for
+  public UID, transient HoYoLAB/米游社 credentials, and scanner JSON. The
+  explicit real-ID demo loader remains a secondary development aid.
+- Review-before-apply JSON import for the native GGStarRail envelope,
+  GOODScanner HSR experimental v1/v2, and interoperable Reliquary,
+  HSR-Scanner, Kel, and Fribbels v4 files; rejected imports are atomic.
 - Deterministic local GIlore sync plus strict scanner-envelope validation.
 - Complete local asset-cache resolution with deterministic visual fallbacks.
-- One-use, memory-only HoYoLAB authentication-material boundary.
-- Redacted error handling, a binding-free Worker health endpoint, and tests.
+- Enka/MiHoMo public showcase import and separate Global/CN Battle Chronicle
+  adapters with prominent section coverage and non-destructive partial
+  merging. Unknown account identity requires an explicit merge or replacement
+  choice, and a different UID requires confirmed replacement.
+- One-use, memory-only HoYoLAB authentication-material handling through a
+  no-storage local Worker boundary.
+- GOODScanner manager preview/export for lock and discard-mark review; the site
+  never claims to mutate the game.
+- Redacted error handling, fixture-backed Worker routes, migrations, and tests.
 
-Scaffolded, not connected:
+Known external boundaries:
 
 - Live scanner capture and a production scanner-to-GGStarRail handoff.
-- HoYoLAB request transport, credential UI, and upstream response conversion.
-- Build/profile editors, product-calibrated scoring presets, and triage
-  controls beyond the transparent source-derived tables in this prototype.
-- Backup file UI, authentication, cloud backup, Worker storage, or secrets.
+- Authenticated Battle Chronicle success and the minimum accepted cookie fields
+  remain unverified without a user-authorized credential test.
+- Browser/app verification challenges must be completed in HoYoLAB or 米游社;
+  GGStarRail does not automate them.
+- Full-workspace backup file UI, authentication, cloud backup, Worker storage,
+  or production secrets.
 
 Explicitly excluded:
 
@@ -103,5 +120,6 @@ Explicitly excluded:
 - [MVP scope](docs/mvp-scope.md)
 - [Source provenance](docs/source-provenance.md)
 - [Security and imports](docs/security.md)
+- [Account import contracts](docs/account-imports.md)
 - [Follow-up milestones](docs/milestones.md)
 - [简体中文说明](README.zh-CN.md)

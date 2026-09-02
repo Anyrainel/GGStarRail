@@ -63,12 +63,16 @@ describe("provider and credential boundaries", () => {
   });
 
   it("parses the GGStarRail scanner envelope and rejects credential fields", () => {
+    const account = makeAccountSnapshot();
+    if (account.characters[0]) {
+      account.characters[0].lightConeKey = "light-cone:1";
+    }
     const input = {
       format: "ggstarrail-scanner-export",
       schemaVersion: 1,
       sourceApp: { name: "FutureScanner", version: "0.1.0" },
       exportedAt: "2026-08-30T00:00:00.000Z",
-      account: makeAccountSnapshot(),
+      account,
     };
     expect(parseScannerExport(input).account.profileId).toBe("profile:local");
     expect(() =>
@@ -82,23 +86,60 @@ describe("provider and credential boundaries", () => {
   });
 
   it("uses credential material once, clears it, and exposes only a safe error", async () => {
-    const auth = new EphemeralAuthMaterial(credentialMarker);
-    const transport = vi.fn(async () => {
+    const deviceMarker = "DEVICE_PRIVATE_MARKER_2026";
+    const auth = new EphemeralAuthMaterial({
+      credentials: {
+        kind: "fields",
+        fields: {
+          ltuid_v2: "600000001",
+          ltmid_v2: "mid-private",
+          ltoken_v2: credentialMarker,
+        },
+      },
+      device: {
+        deviceId: deviceMarker,
+        deviceFp: "1234567890123",
+      },
+    });
+    const transport = vi.fn(async (request) => {
+      expect(request.credentials).toEqual({
+        kind: "fields",
+        fields: {
+          ltuid_v2: "600000001",
+          ltmid_v2: "mid-private",
+          ltoken_v2: credentialMarker,
+        },
+      });
+      expect(request.device.deviceId).toBe(deviceMarker);
       throw new Error(`network failed ${credentialMarker}`);
     });
     const error = await importFromHoYoLab(
-      { uid: "600000001", region: "prod_official_usa", auth },
-      transport
+      { uid: "600000001", region: "os", auth },
+      { transport }
     ).catch((reason: unknown) => reason);
 
     expect(transport).toHaveBeenCalledOnce();
     expect(String(error)).toContain("HOYOLAB_IMPORT_FAILED");
     expect(String(error)).not.toContain(credentialMarker);
+    expect(String(error)).not.toContain(deviceMarker);
     expect(JSON.stringify(auth)).toBe('"[REDACTED]"');
     await expect(auth.consumeOnce(async () => "nope")).rejects.toThrow(
       /cleared/
     );
     expect(JSON.stringify(localStorage)).not.toContain(credentialMarker);
+  });
+
+  it("reports absent transient device material as configuration required", () => {
+    expect(
+      () =>
+        new EphemeralAuthMaterial({
+          credentials: {
+            kind: "fields",
+            fields: { cookie_token_v2: credentialMarker },
+          },
+          device: undefined as never,
+        })
+    ).toThrow("HOYOLAB_CONFIGURATION_REQUIRED");
   });
 
   it("prevents persisted modules from importing ephemeral credentials", () => {

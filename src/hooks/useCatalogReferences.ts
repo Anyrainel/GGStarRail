@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { loadBuildReferences } from "@/lib/buildReferences";
 import {
   loadCharacters,
   loadLightCones,
@@ -73,4 +74,8 @@ export function useLightConeReferences() {
 
 export function useRelicReferences() {
   return useCatalogLoad(loadRelicReferences);
+}
+
+export function useBuildReferences() {
+  return useCatalogLoad(loadBuildReferences);
 }

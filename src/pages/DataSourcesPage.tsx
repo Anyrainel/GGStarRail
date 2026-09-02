@@ -1,9 +1,10 @@
 import { Database, ScanLine, ShieldCheck } from "lucide-react";
-import { AccountImportPanel } from "@/components/account/AccountImportPanel";
+import { AccountImportAction } from "@/components/account/AccountImportAction";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusCard } from "@/components/shared/StatusCard";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -36,12 +37,20 @@ export default function DataSourcesPage() {
         <StatusCard
           titleKey="imports.hoyolab.title"
           bodyKey="imports.hoyolab.body"
-          statusKey="imports.boundary.future"
-          status="scaffolded"
+          statusKey="imports.boundary.ready"
+          status="implemented"
           icon={ShieldCheck}
         />
       </section>
-      <AccountImportPanel />
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("imports.help.title")}</CardTitle>
+          <CardDescription>{t("imports.help.body")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AccountImportAction variant="outline" />
+        </CardContent>
+      </Card>
       <Card className="border-primary/25">
         <CardHeader>
           <CardTitle>{t("imports.security.title")}</CardTitle>

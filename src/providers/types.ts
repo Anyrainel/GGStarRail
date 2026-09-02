@@ -3,6 +3,7 @@ import type { AccountSnapshot } from "@/domain/account/schemas";
 export type ImportProviderId =
   | "gilore-bundle"
   | "scanner-export"
+  | "uid-showcase"
   | "hoyolab-account";
 
 export interface AccountImportDraft {
@@ -28,8 +29,13 @@ export const PROVIDER_REGISTRY: readonly ProviderDescriptor[] = [
     acceptsCredentials: false,
   },
   {
+    id: "uid-showcase",
+    status: "contract-ready",
+    acceptsCredentials: false,
+  },
+  {
     id: "hoyolab-account",
-    status: "adapter-pending",
+    status: "contract-ready",
     acceptsCredentials: true,
   },
 ];

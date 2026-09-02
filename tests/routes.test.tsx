@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import App from "@/App";
@@ -16,7 +16,7 @@ describe("HSR route foundation", () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it.each(ROUTE_REGISTRY)("renders $path", (route) => {
+  it.each(ROUTE_REGISTRY)("renders $path", async (route) => {
     render(
       <ThemeProvider>
         <I18nProvider>
@@ -32,6 +32,13 @@ describe("HSR route foundation", () => {
         name: messagesEn[route.titleKey],
       })
     ).toBeInTheDocument();
+    if (route.path === APP_PATHS.home) {
+      await waitFor(() => {
+        expect(document.querySelectorAll("[data-asset-source]")).toHaveLength(
+          3
+        );
+      });
+    }
   });
 
   it("renders a localized not-found route", () => {

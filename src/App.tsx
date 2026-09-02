@@ -71,6 +71,10 @@ export default function App() {
         <Route path={APP_PATHS.filters} element={<FiltersPage />} />
         <Route path={APP_PATHS.triage} element={<TriagePage />} />
         <Route
+          path="/builds/triage"
+          element={<Navigate to={APP_PATHS.triage} replace />}
+        />
+        <Route
           path="/archive"
           element={<Navigate to={APP_PATHS.archiveCharacters} replace />}
         />

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { AccountImportAction } from "@/components/account/AccountImportAction";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -302,7 +303,10 @@ function SectionTabs() {
   if (!section) return null;
 
   return (
-    <div className="shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-sm">
+    <div
+      className="hidden shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-sm md:block"
+      data-testid="section-tabs"
+    >
       <div className="container mx-auto max-w-full overflow-x-auto px-4 pb-2 scrollbar-none">
         <nav
           className="mx-auto flex w-max items-center gap-1 rounded-lg bg-muted p-1"
@@ -340,6 +344,10 @@ function SectionTabs() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const showAccountImport =
+    navigationSection(pathname)?.path === "/account-data";
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
       <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
@@ -349,7 +357,16 @@ export function AppShell({ children }: { children: ReactNode }) {
             <SiteSwitcher />
             <DesktopNavigation />
           </div>
-          <ThemeAndLocaleMenu />
+          <div className="flex shrink-0 items-center gap-2">
+            {showAccountImport && (
+              <AccountImportAction
+                variant="outline"
+                compactOnMobile
+                className="bg-background/70"
+              />
+            )}
+            <ThemeAndLocaleMenu />
+          </div>
         </div>
       </header>
       <SectionTabs />

@@ -67,11 +67,52 @@ describe("GGArtifact family shell", () => {
       "Light Cones",
       "Relics",
       "Planar Ornaments",
+      "Triage",
     ]) {
       expect(
         within(accountTabs).getByRole("link", { name: label })
       ).toBeVisible();
     }
+  });
+
+  it("opens account import directly from the Account Data app bar", async () => {
+    const user = userEvent.setup();
+    renderApp(APP_PATHS.inventory);
+
+    const [appBarImport] = screen.getAllByRole("button", {
+      name: "Import account",
+    });
+    await user.click(appBarImport);
+
+    expect(
+      screen.getByRole("dialog", { name: "Import account data" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "UID profile showcase" })
+    ).toBeInTheDocument();
+
+    const cookie = screen.getByLabelText("Cookie header");
+    await user.type(cookie, "ltoken_v2=transient-only");
+    await user.click(
+      within(
+        screen.getByRole("dialog", { name: "Import account data" })
+      ).getByRole("button", { name: "Close" })
+    );
+    await user.click(appBarImport);
+    expect(screen.getByLabelText("Cookie header")).toHaveValue("");
+  });
+
+  it("keeps Data Sources as secondary diagnostics until import is requested", async () => {
+    const user = userEvent.setup();
+    renderApp(APP_PATHS.imports);
+
+    expect(
+      screen.queryByRole("heading", { name: "UID profile showcase" })
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Import account" }));
+    expect(
+      screen.getByRole("heading", { name: "UID profile showcase" })
+    ).toBeInTheDocument();
   });
 
   it("groups every section in the mobile navigation dialog", async () => {
@@ -86,6 +127,23 @@ describe("GGArtifact family shell", () => {
     expect(
       within(dialog).getByRole("link", { name: "Data Sources" })
     ).toBeVisible();
+    expect(
+      within(dialog).getByRole("link", { name: "Triage" })
+    ).toHaveAttribute("href", APP_PATHS.triage);
+  });
+
+  it("hides the redundant section tabs at mobile widths", () => {
+    renderApp(APP_PATHS.builds);
+
+    expect(screen.getByTestId("section-tabs")).toHaveClass(
+      "hidden",
+      "md:block"
+    );
+    const buildTabs = screen.getByRole("navigation", { name: "Build Lab" });
+    expect(within(buildTabs).getAllByRole("link")).toHaveLength(3);
+    expect(
+      within(buildTabs).queryByRole("link", { name: "Triage" })
+    ).toBeNull();
   });
 
   it("switches locale through the GGArtifact-style utility menu", async () => {

@@ -1,0 +1,81 @@
+{
+  "source": "reliquary_archiver",
+  "build": "0.18.0",
+  "version": 4,
+  "metadata": {
+    "uid": null,
+    "trailblazer": "Stelle"
+  },
+  "coverage": {
+    "characters": "complete",
+    "lightCones": "complete",
+    "relics": "complete"
+  },
+  "gacha": {
+    "stellar_jade": 0,
+    "oneric_shards": 0
+  },
+  "materials": [],
+  "light_cones": [],
+  "relics": [
+    {
+      "set_id": "101",
+      "name": "Passerby of Wandering Cloud",
+      "slot": "Head",
+      "rarity": 5,
+      "level": 15,
+      "mainstat": "HP",
+      "substats": [
+        {
+          "key": "CRIT Rate_",
+          "value": 8.7,
+          "count": 3,
+          "step": 4
+        },
+        {
+          "key": "SPD",
+          "value": 5.1,
+          "count": 2,
+          "step": 2
+        }
+      ],
+      "location": "",
+      "lock": false,
+      "discard": false,
+      "_uid": "3456789012"
+    }
+  ],
+  "characters": [
+    {
+      "id": "1001",
+      "name": "March 7th",
+      "path": "Preservation",
+      "level": 80,
+      "ascension": 6,
+      "eidolon": 2,
+      "skills": {
+        "basic": 6,
+        "skill": 10,
+        "ult": 10,
+        "talent": 10
+      },
+      "traces": {
+        "ability_1": true,
+        "ability_2": true,
+        "ability_3": true,
+        "stat_1": true,
+        "stat_2": true,
+        "stat_3": true,
+        "stat_4": true,
+        "stat_5": true,
+        "stat_6": true,
+        "stat_7": true,
+        "stat_8": true,
+        "stat_9": true,
+        "stat_10": true,
+        "special": false
+      },
+      "ability_version": 0
+    }
+  ]
+}

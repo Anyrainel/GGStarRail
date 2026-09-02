@@ -1,0 +1,43 @@
+{
+  "format": "ggstarrail-scanner-export",
+  "schemaVersion": 1,
+  "sourceApp": {
+    "name": "GGStarRail Scanner",
+    "version": "0.1.0"
+  },
+  "exportedAt": "2026-08-30T12:00:00.000Z",
+  "account": {
+    "schemaVersion": 1,
+    "profileId": "scanner:legacy",
+    "characters": [],
+    "lightCones": [],
+    "relics": [
+      {
+        "key": "legacy-relic-001",
+        "definitionId": "61011",
+        "setId": "101",
+        "slot": "head",
+        "rarity": 5,
+        "level": 15,
+        "mainStat": {
+          "statId": "HPDelta",
+          "value": 705.6
+        },
+        "substats": [
+          {
+            "statId": "CriticalChanceBase",
+            "value": 8.7
+          }
+        ],
+        "locked": true
+      }
+    ],
+    "source": {
+      "provider": "scanner-export",
+      "formatVersion": 1,
+      "sourceVersion": "native-scanner-v1",
+      "importedAt": "2026-08-30T12:00:00.000Z",
+      "warnings": ["LEGACY_SCANNER_IMPORT"]
+    }
+  }
+}

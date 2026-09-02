@@ -1,5 +1,6 @@
 import { Gem, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AccountCoverageNotice } from "@/components/account/AccountCoverageNotice";
 import {
   CatalogLoadError,
   CatalogLoading,
@@ -38,6 +39,7 @@ type EquipmentStatus =
   | "all"
   | "locked"
   | "unlocked"
+  | "unknown-lock"
   | "equipped"
   | "unequipped";
 
@@ -77,9 +79,11 @@ export default function RelicsPage({
       .filter((relic) => {
         switch (status) {
           case "locked":
-            return relic.locked;
+            return relic.locked === true;
           case "unlocked":
-            return !relic.locked;
+            return relic.locked === false;
+          case "unknown-lock":
+            return relic.locked === null;
           case "equipped":
             return relic.equippedCharacterKey !== undefined;
           case "unequipped":
@@ -133,6 +137,7 @@ export default function RelicsPage({
   return (
     <>
       <PageHeader titleKey={titleKey} descriptionKey={descriptionKey} />
+      <AccountCoverageNotice account={account} />
       {relics.length === 0 ? (
         account ? (
           <EmptyState messageKey={emptyKey} icon={Icon} />
@@ -167,6 +172,7 @@ export default function RelicsPage({
                   { value: "all", label: t("filter.allStatuses") },
                   { value: "locked", label: t("filter.locked") },
                   { value: "unlocked", label: t("filter.unlocked") },
+                  { value: "unknown-lock", label: t("filter.unknownLock") },
                   { value: "equipped", label: t("filter.equipped") },
                   { value: "unequipped", label: t("filter.unequipped") },
                 ],
@@ -228,8 +234,13 @@ export default function RelicsPage({
                             relic.slot
                           )}
                         </Badge>
-                        {relic.locked && (
+                        {relic.locked === true && (
                           <Badge variant="outline">{t("field.locked")}</Badge>
+                        )}
+                        {relic.locked === null && (
+                          <Badge variant="outline">
+                            {t("field.lockUnknown")}
+                          </Badge>
                         )}
                         {relic.equippedCharacterKey && (
                           <Badge variant="outline">{t("field.equipped")}</Badge>

@@ -1,9 +1,9 @@
 # Source provenance
 
 GGStarRail consumes GIlore's normalized `ggstarrail-reference` bundle without
-renaming fields or replacing primary values. The audited local prototype is
+renaming fields or replacing primary values. The audited local integration is
 pinned to TurnBasedGameData revision
-`014e33e2404f8cd668bf06fc2ea6db53b6bc3992`. The current prototype consumes
+`014e33e2404f8cd668bf06fc2ea6db53b6bc3992`. The current application consumes
 schema `1.1.0`; the validator also keeps explicit support for the legacy
 `1.0.0` member/count contract. Other versions, including unknown `1.x`
 minors, are rejected.

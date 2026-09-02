@@ -3,8 +3,9 @@ import { AssetImage } from "@/components/shared/AssetImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
-import { TRAILBLAZER_TERMS, TRAILBLAZER_VARIANT_TERMS } from "@/i18n/gameTerms";
+import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
+import { characterCatalogName as characterDisplayName } from "@/lib/catalogPresentation";
 import { formatGameText } from "@/lib/gameText";
 import {
   getLocalizedValue,
@@ -18,7 +19,6 @@ import type {
   CharacterDefinition,
   ProgressionTables,
   PropertyCatalog,
-  ReferenceLocale,
 } from "@/providers/gilore/types";
 import {
   CatalogEmpty,
@@ -52,22 +52,6 @@ async function loadCharacterArchiveData() {
 
 function searchText(value: string): string {
   return value.trim().toLocaleLowerCase();
-}
-
-function characterDisplayName(
-  character: CharacterDefinition,
-  locale: ReferenceLocale,
-  trailblazerFallback: string
-): string {
-  const sourceName = getLocalizedValue(character.name, locale);
-  if (sourceName === "{NICKNAME}" && /^80(?:0[1-9]|10)$/.test(character.id)) {
-    const variant =
-      Number(character.id) % 2 === 1
-        ? TRAILBLAZER_VARIANT_TERMS[locale].caelus
-        : TRAILBLAZER_VARIANT_TERMS[locale].stelle;
-    return `${trailblazerFallback} · ${variant}`;
-  }
-  return formatGameText(sourceName, [], trailblazerFallback);
 }
 
 export function CharacterCatalog() {

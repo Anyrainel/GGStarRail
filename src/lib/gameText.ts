@@ -6,8 +6,6 @@ function formatParameter(value: number, percent: boolean): string {
   }).format(displayValue);
 }
 
-const TRAILBLAZER_CHARACTER_ID = /^80(?:0[1-9]|10)$/;
-
 function formatChoiceTokens(source: string): string {
   return source
     .replace(
@@ -51,20 +49,6 @@ export function formatGameText(
     .replace(/<[^>]+>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-}
-
-export function formatCharacterDisplayName(
-  characterId: string,
-  sourceName: string,
-  trailblazerFallback: string
-): string {
-  if (
-    sourceName === "{NICKNAME}" &&
-    TRAILBLAZER_CHARACTER_ID.test(characterId)
-  ) {
-    return `${trailblazerFallback} · ${characterId}`;
-  }
-  return sourceName;
 }
 
 export function formatCatalogValue(
