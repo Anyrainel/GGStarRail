@@ -89,52 +89,101 @@ function withoutLightConeAssignment(lightCone: LightCone): LightCone {
   return unequipped;
 }
 
+function planCurrentRecordMatches<T extends { key: string }>(
+  current: readonly T[],
+  incoming: readonly T[],
+  sameVisibleIdentity: (left: T, right: T) => boolean,
+  sameEquippedTarget: (left: T, right: T) => boolean
+): readonly (number | null)[] {
+  // `current` is the frozen candidate pool for this import pass. Records that
+  // are appended while applying the plan become eligible only on a later import.
+  const plannedMatches = Array<number | null>(incoming.length).fill(null);
+  const consumedCurrentIndexes = new Set<number>();
+
+  function claimUniqueMatch(
+    sourceIndex: number,
+    predicate: (candidate: T) => boolean
+  ): void {
+    if (plannedMatches[sourceIndex] !== null) return;
+    const matches: number[] = [];
+    for (
+      let candidateIndex = 0;
+      candidateIndex < current.length;
+      candidateIndex += 1
+    ) {
+      const candidate = current[candidateIndex];
+      if (
+        candidate &&
+        !consumedCurrentIndexes.has(candidateIndex) &&
+        predicate(candidate)
+      ) {
+        matches.push(candidateIndex);
+      }
+    }
+    if (matches.length !== 1) return;
+    const [match] = matches;
+    if (match === undefined) return;
+    plannedMatches[sourceIndex] = match;
+    consumedCurrentIndexes.add(match);
+  }
+
+  // Resolve strong identities for the entire batch before allowing a weaker
+  // visible-only match to consume a record needed by a later incoming item.
+  incoming.forEach((source, sourceIndex) => {
+    claimUniqueMatch(
+      sourceIndex,
+      (candidate) =>
+        candidate.key === source.key && sameVisibleIdentity(candidate, source)
+    );
+  });
+  incoming.forEach((source, sourceIndex) => {
+    claimUniqueMatch(
+      sourceIndex,
+      (candidate) =>
+        sameEquippedTarget(candidate, source) &&
+        sameVisibleIdentity(candidate, source)
+    );
+  });
+  incoming.forEach((source, sourceIndex) => {
+    claimUniqueMatch(sourceIndex, (candidate) =>
+      sameVisibleIdentity(candidate, source)
+    );
+  });
+
+  return plannedMatches;
+}
+
 function mergeLightCones(
   current: readonly LightCone[],
   incoming: readonly LightCone[],
   incomingKeyMap: ReadonlyMap<string, string>
 ): LightCone[] {
   const merged = [...current];
-  for (const source of incoming) {
+  const normalizedIncoming = incoming.map((source) => {
     const { equippedCharacterKey: sourceCharacterKey, ...sourceWithoutEquip } =
       source;
     const equippedCharacterKey = remapCharacterKey(
       sourceCharacterKey,
       incomingKeyMap
     );
-    const lightCone = {
+    return {
       ...sourceWithoutEquip,
       ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
     };
-    const fingerprint = visibleLightConeFingerprint(lightCone);
-    const equippedMatches = equippedCharacterKey
-      ? merged
-          .map((candidate, index) => ({ candidate, index }))
-          .filter(
-            ({ candidate }) =>
-              candidate.equippedCharacterKey === equippedCharacterKey &&
-              visibleLightConeFingerprint(candidate) === fingerprint
-          )
-      : [];
-    const byKey = merged.findIndex(
-      (candidate) =>
-        candidate.key === lightCone.key &&
-        visibleLightConeFingerprint(candidate) === fingerprint
-    );
-    const visibleMatches = merged
-      .map((candidate, index) => ({ candidate, index }))
-      .filter(
-        ({ candidate }) =>
-          visibleLightConeFingerprint(candidate) === fingerprint
-      );
-    const index =
-      byKey >= 0
-        ? byKey
-        : equippedMatches.length === 1
-          ? (equippedMatches[0]?.index ?? -1)
-          : visibleMatches.length === 1
-            ? (visibleMatches[0]?.index ?? -1)
-            : -1;
+  });
+  const plannedMatches = planCurrentRecordMatches(
+    current,
+    normalizedIncoming,
+    (left, right) =>
+      visibleLightConeFingerprint(left) === visibleLightConeFingerprint(right),
+    (left, right) =>
+      right.equippedCharacterKey !== undefined &&
+      left.equippedCharacterKey === right.equippedCharacterKey
+  );
+
+  normalizedIncoming.forEach((lightCone, sourceIndex) => {
+    const equippedCharacterKey = lightCone.equippedCharacterKey;
+    const index = plannedMatches[sourceIndex] ?? -1;
 
     if (equippedCharacterKey) {
       for (
@@ -157,17 +206,17 @@ function mergeLightCones(
         ...lightCone,
         key: distinctInstanceKey(lightCone.key, merged),
       });
-      continue;
+      return;
     }
     const existing = merged[index];
-    if (!existing) continue;
+    if (!existing) return;
     merged[index] = {
       ...existing,
       ...lightCone,
       key: existing.key,
       locked: lightCone.locked ?? existing.locked,
     };
-  }
+  });
   return merged;
 }
 
@@ -196,46 +245,32 @@ function mergeRelics(
   incomingKeyMap: ReadonlyMap<string, string>
 ): Relic[] {
   const merged = [...current];
-  for (const source of incoming) {
+  const normalizedIncoming = incoming.map((source) => {
     const { equippedCharacterKey: sourceCharacterKey, ...sourceWithoutEquip } =
       source;
     const equippedCharacterKey = remapCharacterKey(
       sourceCharacterKey,
       incomingKeyMap
     );
-    const relic = {
+    return {
       ...sourceWithoutEquip,
       ...(equippedCharacterKey ? { equippedCharacterKey } : {}),
     };
-    const fingerprint = visibleRelicFingerprint(relic);
-    const equippedMatches = equippedCharacterKey
-      ? merged
-          .map((candidate, index) => ({ candidate, index }))
-          .filter(
-            ({ candidate }) =>
-              candidate.equippedCharacterKey === equippedCharacterKey &&
-              candidate.slot === relic.slot &&
-              visibleRelicFingerprint(candidate) === fingerprint
-          )
-      : [];
-    const byKey = merged.findIndex(
-      (candidate) =>
-        candidate.key === relic.key &&
-        visibleRelicFingerprint(candidate) === fingerprint
-    );
-    const visibleMatches = merged
-      .map((candidate, index) => ({ candidate, index }))
-      .filter(
-        ({ candidate }) => visibleRelicFingerprint(candidate) === fingerprint
-      );
-    const index =
-      byKey >= 0
-        ? byKey
-        : equippedMatches.length === 1
-          ? (equippedMatches[0]?.index ?? -1)
-          : visibleMatches.length === 1
-            ? (visibleMatches[0]?.index ?? -1)
-            : -1;
+  });
+  const plannedMatches = planCurrentRecordMatches(
+    current,
+    normalizedIncoming,
+    (left, right) =>
+      visibleRelicFingerprint(left) === visibleRelicFingerprint(right),
+    (left, right) =>
+      right.equippedCharacterKey !== undefined &&
+      left.equippedCharacterKey === right.equippedCharacterKey &&
+      left.slot === right.slot
+  );
+
+  normalizedIncoming.forEach((relic, sourceIndex) => {
+    const equippedCharacterKey = relic.equippedCharacterKey;
+    const index = plannedMatches[sourceIndex] ?? -1;
 
     if (equippedCharacterKey) {
       for (
@@ -259,10 +294,10 @@ function mergeRelics(
         ...relic,
         key: distinctInstanceKey(relic.key, merged),
       });
-      continue;
+      return;
     }
     const existing = merged[index];
-    if (!existing) continue;
+    if (!existing) return;
     merged[index] = {
       ...existing,
       ...relic,
@@ -270,7 +305,7 @@ function mergeRelics(
       locked: relic.locked ?? existing.locked,
       discarded: relic.discarded ?? existing.discarded,
     };
-  }
+  });
   return merged;
 }
 

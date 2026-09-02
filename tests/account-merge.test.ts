@@ -3,7 +3,7 @@ import {
   applyAccountImport,
   resolveAccountImportIdentity,
 } from "@/domain/account/merge";
-import type { AccountSnapshot } from "@/domain/account/schemas";
+import type { AccountSnapshot, RelicSlot } from "@/domain/account/schemas";
 import { makeAccountSnapshot, makeRelic } from "./fixtures";
 
 function showcaseAccount(): AccountSnapshot {
@@ -234,6 +234,165 @@ describe("source-aware account merging", () => {
         (relic) => relic.equippedCharacterKey === "character:1"
       )?.key
     ).toBe("partial:relic:merge:1");
+  });
+
+  it("matches identical equipment one-to-one across two Characters and repeated partial imports", () => {
+    const slots = [
+      "head",
+      "hands",
+      "body",
+      "feet",
+      "planarSphere",
+      "linkRope",
+    ] as const satisfies readonly RelicSlot[];
+    const mainStats: Record<RelicSlot, { statId: string; value: number }> = {
+      head: { statId: "hp", value: 705 },
+      hands: { statId: "attack", value: 352 },
+      body: { statId: "crit-rate", value: 32.4 },
+      feet: { statId: "speed", value: 25 },
+      planarSphere: { statId: "ice-damage", value: 38.8 },
+      linkRope: { statId: "energy-regeneration-rate", value: 19.4 },
+    };
+    const current = makeAccountSnapshot();
+    current.characters = [
+      {
+        ...current.characters[0]!,
+        lightConeKey: undefined,
+        relicKeys: [],
+      },
+      {
+        ...current.characters[0]!,
+        key: "character:2",
+        definitionId: "character:aglaea",
+        combatTypeId: "lightning",
+        lightConeKey: undefined,
+        relicKeys: [],
+      },
+    ];
+    current.lightCones = [
+      {
+        ...current.lightCones[0]!,
+        key: "showcase:light-cone:2",
+        equippedCharacterKey: undefined,
+      },
+    ];
+    current.relics = slots.map((slot) =>
+      makeRelic({
+        key: `showcase:relic:2:${slot}`,
+        definitionId: `relic-definition:${slot}`,
+        setId:
+          slot === "planarSphere" || slot === "linkRope"
+            ? "relic-set:planar"
+            : "relic-set:cavern",
+        slot,
+        mainStat: mainStats[slot],
+        substats: [
+          { statId: "effect-hit-rate", value: 3.8 },
+          { statId: "effect-res", value: 3.8 },
+        ],
+        equippedCharacterKey: undefined,
+      })
+    );
+
+    const incomingCharacterKeys = [
+      "showcase:character:1",
+      "showcase:character:2",
+    ] as const;
+    const incomingLightConeKeys = [
+      "showcase:light-cone:1",
+      "showcase:light-cone:2",
+    ] as const;
+    const incomingRelicKeys = incomingCharacterKeys.map((_, characterIndex) =>
+      slots.map((slot) => `showcase:relic:${characterIndex + 1}:${slot}`)
+    );
+    const incoming: AccountSnapshot = {
+      ...showcaseAccount(),
+      characters: current.characters.map((character, characterIndex) => ({
+        ...character,
+        key: incomingCharacterKeys[characterIndex]!,
+        lightConeKey: incomingLightConeKeys[characterIndex]!,
+        relicKeys: incomingRelicKeys[characterIndex]!,
+      })),
+      lightCones: incomingCharacterKeys.map((characterKey, characterIndex) => ({
+        ...current.lightCones[0]!,
+        key: incomingLightConeKeys[characterIndex]!,
+        locked: null,
+        equippedCharacterKey: characterKey,
+      })),
+      relics: incomingCharacterKeys.flatMap((characterKey, characterIndex) =>
+        current.relics.map((relic, slotIndex) => ({
+          ...relic,
+          key: incomingRelicKeys[characterIndex]![slotIndex]!,
+          locked: null,
+          discarded: null,
+          equippedCharacterKey: characterKey,
+        }))
+      ),
+    };
+
+    const merged = applyAccountImport(current, incoming, "merge");
+    expect(merged.lightCones).toHaveLength(2);
+    expect(merged.relics).toHaveLength(12);
+    for (const character of merged.characters) {
+      const equippedLightCones = merged.lightCones.filter(
+        (lightCone) => lightCone.equippedCharacterKey === character.key
+      );
+      const equippedRelics = merged.relics.filter(
+        (relic) => relic.equippedCharacterKey === character.key
+      );
+      expect(equippedLightCones).toHaveLength(1);
+      expect(equippedRelics).toHaveLength(6);
+      expect(new Set(equippedRelics.map((relic) => relic.slot))).toEqual(
+        new Set(slots)
+      );
+      expect(character.lightConeKey).toBe(equippedLightCones[0]?.key);
+      expect(new Set(character.relicKeys)).toEqual(
+        new Set(equippedRelics.map((relic) => relic.key))
+      );
+    }
+    expect(merged.lightCones[0]).toMatchObject({
+      key: "showcase:light-cone:2",
+      locked: true,
+      equippedCharacterKey: "character:2",
+    });
+    expect(merged.lightCones[1]).toMatchObject({
+      key: "showcase:light-cone:1",
+      locked: null,
+      equippedCharacterKey: "character:1",
+    });
+    expect(
+      merged.relics.slice(0, 6).every((relic) => relic.locked === false)
+    ).toBe(true);
+    expect(
+      merged.relics
+        .slice(0, 6)
+        .every((relic) => relic.equippedCharacterKey === "character:2")
+    ).toBe(true);
+    expect(merged.relics.slice(6).every((relic) => relic.locked === null)).toBe(
+      true
+    );
+    expect(
+      merged.relics
+        .slice(6)
+        .every((relic) => relic.equippedCharacterKey === "character:1")
+    ).toBe(true);
+
+    const repeated = applyAccountImport(merged, incoming, "merge");
+    expect(repeated.lightCones).toEqual(merged.lightCones);
+    expect(repeated.relics).toEqual(merged.relics);
+    expect(
+      repeated.characters.map((character) => ({
+        key: character.key,
+        lightConeKey: character.lightConeKey,
+        relicKeys: character.relicKeys,
+      }))
+    ).toEqual(
+      merged.characters.map((character) => ({
+        key: character.key,
+        lightConeKey: character.lightConeKey,
+        relicKeys: character.relicKeys,
+      }))
+    );
   });
 
   it("does not guess between duplicate visible identities during a key collision", () => {
