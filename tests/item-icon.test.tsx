@@ -3,6 +3,27 @@ import { describe, expect, it } from "vitest";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 
 describe("ItemIcon", () => {
+  it.each([
+    [5, "linear-gradient(180deg, #a35d55, #d0aa6e)"],
+    [4, "linear-gradient(180deg, #3f4064, #9c65d7)"],
+    [3, "linear-gradient(180deg, #3a3b62, #4c86c9)"],
+    [2, "linear-gradient(180deg, #374760, #44908c)"],
+    [1, "linear-gradient(180deg, #3e404e, #88888e)"],
+  ])("uses the HoYoWiki %s-star background", (rarity, backgroundImage) => {
+    const { container } = render(
+      <ItemIcon
+        kind="relic-set"
+        id={`rarity-${rarity}`}
+        alt={`${rarity}-star item`}
+        rarity={rarity}
+      />
+    );
+
+    expect(container.querySelector("[data-item-artwork]")).toHaveStyle({
+      backgroundImage,
+    });
+  });
+
   it("composes rarity, rank, level, and lock state into one portrait", () => {
     const { container } = render(
       <ItemIcon

@@ -93,15 +93,15 @@ export interface ItemIconProps
 function rarityBackground(rarity: number): string {
   switch (rarity) {
     case 5:
-      return "bg-gradient-to-br from-amber-300 via-orange-600 to-violet-950";
+      return "linear-gradient(180deg, #a35d55, #d0aa6e)";
     case 4:
-      return "bg-gradient-to-br from-fuchsia-400 via-violet-700 to-indigo-950";
+      return "linear-gradient(180deg, #3f4064, #9c65d7)";
     case 3:
-      return "bg-gradient-to-br from-sky-300 via-blue-600 to-indigo-950";
+      return "linear-gradient(180deg, #3a3b62, #4c86c9)";
     case 2:
-      return "bg-gradient-to-br from-emerald-300 via-emerald-700 to-slate-950";
+      return "linear-gradient(180deg, #374760, #44908c)";
     default:
-      return "bg-gradient-to-br from-slate-300 via-slate-600 to-slate-950";
+      return "linear-gradient(180deg, #3e404e, #88888e)";
   }
 }
 
@@ -137,11 +137,10 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
     const artwork = (
       <div
-        className={cn(
-          "relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-white/15",
-          rarityBackground(rarity)
-        )}
+        className="relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-white/15"
+        data-item-artwork
         style={{
+          backgroundImage: rarityBackground(rarity),
           width: config.icon,
           height: config.icon,
           borderTopLeftRadius:
