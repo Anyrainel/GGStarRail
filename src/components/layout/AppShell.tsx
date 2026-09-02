@@ -299,7 +299,7 @@ function SectionTabs() {
       className="hidden shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-sm md:block"
       data-testid="section-tabs"
     >
-      <div className="container mx-auto max-w-full overflow-x-auto px-4 pb-2 scrollbar-none">
+      <div className="container mx-auto overflow-x-auto pb-2 scrollbar-none">
         <nav
           className="mx-auto flex w-max items-center gap-1 rounded-lg bg-muted p-1"
           aria-label={
@@ -363,7 +363,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
       <SectionTabs />
       <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-        <div className="container mx-auto min-w-0 max-w-full space-y-4 px-4 py-3 2xl:py-4">
+        <div
+          className={cn(
+            "min-w-0 space-y-4 py-3 2xl:py-4",
+            pathname === "/" ? "container mx-auto px-4" : "wide-container"
+          )}
+          data-testid="app-content"
+        >
           {children}
         </div>
       </main>

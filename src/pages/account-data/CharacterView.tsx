@@ -1,4 +1,4 @@
-import { UsersRound } from "lucide-react";
+import { SlidersHorizontal, UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AccountCoverageNotice } from "@/components/account/AccountCoverageNotice";
 import {
@@ -6,14 +6,26 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
-import { CharacterCard } from "@/components/account-data/CharacterCard";
+import {
+  type CardLayout,
+  CharacterCard,
+} from "@/components/account-data/CharacterCard";
 import {
   type CharacterFilterOption,
   CharacterFilterPanel,
 } from "@/components/account-data/CharacterFilterPanel";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import {
   characterCatalogName,
@@ -31,6 +43,19 @@ export default function CharacterView() {
   const [query, setQuery] = useState("");
   const [pathId, setPathId] = useState("all");
   const [combatTypeId, setCombatTypeId] = useState("all");
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isVeryNarrow = useMediaQuery("(max-width: 560px)");
+  const isTwoColumnCompact = useMediaQuery(
+    "(min-width: 1536px) and (max-width: 2047px)"
+  );
+  const cardLayout = useMemo<CardLayout>(
+    () => ({
+      isMobile,
+      isVeryNarrow,
+      isRelicCompact: isVeryNarrow || isTwoColumnCompact,
+    }),
+    [isMobile, isTwoColumnCompact, isVeryNarrow]
+  );
 
   const characters = account?.characters ?? [];
   const references = buildReferences.data;
@@ -143,6 +168,36 @@ export default function CharacterView() {
     setPathId("all");
     setCombatTypeId("all");
   };
+  const activeFilterCount =
+    Number(query.trim().length > 0) +
+    Number(pathId !== "all") +
+    Number(combatTypeId !== "all");
+
+  const renderFilterPanel = (className?: string) => (
+    <CharacterFilterPanel
+      className={className}
+      query={query}
+      pathId={pathId}
+      combatTypeId={combatTypeId}
+      pathOptions={pathOptions}
+      combatTypeOptions={combatTypeOptions}
+      countLabel={t("common.count", {
+        count: visibleCharacters.length,
+      })}
+      labels={{
+        filters: t("characterLoadout.filters"),
+        search: t("common.search"),
+        searchPlaceholder: t("search.characters"),
+        path: t("filter.path"),
+        combatType: t("filter.combatType"),
+        clear: t("characterLoadout.clearFilters"),
+      }}
+      onQueryChange={setQuery}
+      onPathChange={setPathId}
+      onCombatTypeChange={setCombatTypeId}
+      onClear={clearFilters}
+    />
+  );
 
   return (
     <>
@@ -166,34 +221,45 @@ export default function CharacterView() {
       ) : buildReferences.error || !references ? (
         <CatalogLoadError error={buildReferences.error} />
       ) : (
-        <div className="grid min-w-0 gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
-          <CharacterFilterPanel
-            query={query}
-            pathId={pathId}
-            combatTypeId={combatTypeId}
-            pathOptions={pathOptions}
-            combatTypeOptions={combatTypeOptions}
-            countLabel={t("common.count", {
-              count: visibleCharacters.length,
-            })}
-            labels={{
-              filters: t("characterLoadout.filters"),
-              search: t("common.search"),
-              searchPlaceholder: t("search.characters"),
-              path: t("filter.path"),
-              combatType: t("filter.combatType"),
-              clear: t("characterLoadout.clearFilters"),
-            }}
-            onQueryChange={setQuery}
-            onPathChange={setPathId}
-            onCombatTypeChange={setCombatTypeId}
-            onClear={clearFilters}
-          />
+        <div className="min-w-0 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-2 xl:grid-cols-[17.5rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)] 3xl:grid-cols-[17.5rem_minmax(0,1fr)] 3xl:gap-3">
+          <div className="mb-3 lg:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button type="button" variant="outline" size="sm">
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+                  {t("characterLoadout.filters")}
+                  {activeFilterCount > 0 && (
+                    <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground tabular-nums">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="left"
+                closeLabel={t("common.close")}
+                className="overflow-y-auto"
+              >
+                <SheetTitle>{t("characterLoadout.filters")}</SheetTitle>
+                <SheetDescription>
+                  {t("route.characters.description")}
+                </SheetDescription>
+                {renderFilterPanel(
+                  "mt-4 border-0 bg-transparent p-0 lg:static"
+                )}
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          <div className="hidden min-w-0 lg:block">{renderFilterPanel()}</div>
           <div className="min-w-0">
             {visibleCharacters.length === 0 ? (
               <EmptyState messageKey="empty.filtered" icon={UsersRound} />
             ) : (
-              <section className="grid min-w-0 gap-4">
+              <section
+                className="grid min-w-0 items-stretch gap-3 2xl:grid-cols-[repeat(2,minmax(32rem,1fr))]"
+                data-character-grid
+              >
                 {visibleCharacters.map((character) => {
                   const build = buildByCharacterId.get(character.definitionId);
                   return (
@@ -217,6 +283,7 @@ export default function CharacterView() {
                       }
                       references={references}
                       locale={locale}
+                      layout={cardLayout}
                     />
                   );
                 })}

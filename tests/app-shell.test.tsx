@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
 import App from "@/App";
+import { AppShell } from "@/components/layout/AppShell";
 import { STORAGE_KEYS } from "@/config/identity";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -151,6 +152,29 @@ describe("GGArtifact family shell", () => {
     expect(
       within(buildTabs).queryByRole("link", { name: "Scoring" })
     ).toBeNull();
+  });
+
+  it("uses the GGArtifact adaptive content container on tool pages", () => {
+    const { unmount } = renderApp(APP_PATHS.characters);
+
+    expect(screen.getByTestId("app-content")).toHaveClass("wide-container");
+
+    unmount();
+    render(
+      <ThemeProvider>
+        <I18nProvider>
+          <MemoryRouter initialEntries={[APP_PATHS.home]}>
+            <AppShell>Home</AppShell>
+          </MemoryRouter>
+        </I18nProvider>
+      </ThemeProvider>
+    );
+    expect(screen.getByTestId("app-content")).toHaveClass(
+      "container",
+      "mx-auto",
+      "px-4"
+    );
+    expect(screen.getByTestId("app-content")).not.toHaveClass("wide-container");
   });
 
   it("switches locale through the GGArtifact-style utility menu", async () => {

@@ -1,5 +1,6 @@
 import { Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface CharacterFilterOption {
   value: string;
@@ -7,6 +8,7 @@ export interface CharacterFilterOption {
 }
 
 interface CharacterFilterPanelProps {
+  className?: string;
   query: string;
   pathId: string;
   combatTypeId: string;
@@ -28,6 +30,7 @@ interface CharacterFilterPanelProps {
 }
 
 export function CharacterFilterPanel({
+  className,
   query,
   pathId,
   combatTypeId,
@@ -46,7 +49,10 @@ export function CharacterFilterPanel({
   return (
     <aside
       aria-label={labels.filters}
-      className="rounded-xl border border-border bg-card/70 p-4 lg:sticky lg:top-4 lg:self-start"
+      className={cn(
+        "rounded-xl border border-border bg-card/70 p-4 lg:sticky lg:top-4 lg:self-start",
+        className
+      )}
     >
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
         <label className="relative col-span-2 block lg:col-span-1">

@@ -1,5 +1,36 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 import tailwindcssAnimate from "tailwindcss-animate";
+
+const wideContainerPlugin = plugin(({ addComponents }) => {
+  addComponents({
+    ".wide-container": {
+      width: "100%",
+      marginLeft: "auto",
+      marginRight: "auto",
+      paddingLeft: "0.5rem",
+      paddingRight: "0.5rem",
+      "@media (min-width: 768px)": {
+        paddingLeft: "1rem",
+        paddingRight: "1rem",
+      },
+      "@media (min-width: 1024px)": {
+        maxWidth: "980px",
+        paddingLeft: "1.5rem",
+        paddingRight: "1.5rem",
+      },
+      "@media (min-width: 1280px)": {
+        maxWidth: "1160px",
+      },
+      "@media (min-width: 1536px)": {
+        maxWidth: "1350px",
+      },
+      "@media (min-width: 2048px)": {
+        maxWidth: "1680px",
+      },
+    },
+  });
+});
 
 export default {
   darkMode: ["class"],
@@ -8,14 +39,23 @@ export default {
     container: {
       center: true,
       padding: {
-        DEFAULT: "1rem",
-        lg: "1.5rem",
+        DEFAULT: "0.5rem",
+        md: "1.5rem",
+        lg: "2rem",
+        "2xl": "3rem",
       },
       screens: {
-        "2xl": "1440px",
+        sm: "100%",
+        md: "100%",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
       },
     },
     extend: {
+      screens: {
+        "3xl": "2048px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -66,5 +106,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
+  plugins: [tailwindcssAnimate, wideContainerPlugin],
 } satisfies Config;
