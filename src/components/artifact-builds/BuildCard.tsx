@@ -1,30 +1,47 @@
-import { ChevronDown, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { MoreVertical, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ChoiceChip,
   NumberField,
   TextField,
   ToggleField,
 } from "@/components/builds/BuildControls";
-import { ItemIcon } from "@/components/shared/ItemIcon";
-import { Badge } from "@/components/ui/badge";
+import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog";
 import type { RelicSlot } from "@/domain/account/schemas";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
+import type { MessageKey } from "@/i18n/messages.en";
 import type { BuildReferences } from "@/lib/buildReferences";
 import {
   localizedName,
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
 import { createRelicSetRarityMap } from "@/lib/relicRarity";
-import type { RelicSetDefinition, RelicSlotId } from "@/providers/gilore/types";
+import { cn } from "@/lib/utils";
+import type { RelicSlotId } from "@/providers/gilore/types";
 
 const BUILD_SLOTS = [
   ["head", "HEAD", false],
@@ -35,6 +52,50 @@ const BUILD_SLOTS = [
   ["linkRope", "OBJECT", true],
 ] as const satisfies readonly [RelicSlot, RelicSlotId, boolean][];
 
+const COMPACT_PROPERTY_KEYS: Readonly<Record<string, MessageKey>> = {
+  MaxHP: "stat.short.hp",
+  HPDelta: "stat.short.hp",
+  HPAddedRatio: "stat.short.hpPercent",
+  Attack: "stat.short.atk",
+  AttackDelta: "stat.short.atk",
+  AttackAddedRatio: "stat.short.atkPercent",
+  Defence: "stat.short.def",
+  DefenceDelta: "stat.short.def",
+  DefenceAddedRatio: "stat.short.defPercent",
+  Speed: "stat.short.spd",
+  SpeedDelta: "stat.short.spd",
+  CriticalChance: "stat.short.critRate",
+  CriticalChanceBase: "stat.short.critRate",
+  CriticalDamage: "stat.short.critDamage",
+  CriticalDamageBase: "stat.short.critDamage",
+  BreakDamageAddedRatio: "stat.short.breakEffect",
+  BreakDamageAddedRatioBase: "stat.short.breakEffect",
+  HealRatio: "stat.short.healing",
+  HealRatioBase: "stat.short.healing",
+  SPRatio: "stat.short.energyRegen",
+  SPRatioBase: "stat.short.energyRegen",
+  StatusProbability: "stat.short.effectHit",
+  StatusProbabilityBase: "stat.short.effectHit",
+  StatusResistance: "stat.short.effectRes",
+  StatusResistanceBase: "stat.short.effectRes",
+  PhysicalAddedRatio: "stat.short.physicalDamage",
+  FireAddedRatio: "stat.short.fireDamage",
+  IceAddedRatio: "stat.short.iceDamage",
+  ThunderAddedRatio: "stat.short.lightningDamage",
+  WindAddedRatio: "stat.short.windDamage",
+  QuantumAddedRatio: "stat.short.quantumDamage",
+  ImaginaryAddedRatio: "stat.short.imaginaryDamage",
+};
+
+function compactPropertyName(
+  propertyId: string,
+  fallback: string,
+  translate: (key: MessageKey) => string
+): string {
+  const key = COMPACT_PROPERTY_KEYS[propertyId];
+  return key ? translate(key) : fallback;
+}
+
 interface BuildCardProps {
   build: BuildConfiguration;
   profile: ScoreProfile;
@@ -44,61 +105,373 @@ interface BuildCardProps {
   onDelete: () => void;
 }
 
+interface SetOption {
+  value: string;
+  label: string;
+  iconPath: string;
+  rarity: number | null;
+}
+
 interface SetPickerProps {
   label: string;
   pieceCount: 2 | 4;
-  rarity: number | null;
+  iconSize: ItemIconSize;
+  mobile: boolean;
   value: string;
-  options: readonly {
-    value: string;
-    label: string;
-    iconPath: string;
-  }[];
-  set: RelicSetDefinition | undefined;
+  options: readonly SetOption[];
+  searchLabel: string;
+  emptyLabel: string;
+  closeLabel: string;
   onChange: (value: string) => void;
 }
 
 function SetPicker({
   label,
   pieceCount,
-  rarity,
+  iconSize,
+  mobile,
   value,
   options,
-  set,
+  searchLabel,
+  emptyLabel,
+  closeLabel,
   onChange,
 }: SetPickerProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const selected = options.find((option) => option.value === value);
   const name = selected?.label ?? value;
+  const needle = query.trim().toLocaleLowerCase();
+  const filteredOptions = options.filter(
+    (option) => !needle || option.label.toLocaleLowerCase().includes(needle)
+  );
 
-  return (
-    <label className="group flex min-w-0 cursor-pointer flex-col items-center gap-1">
-      <span className="relative rounded-lg outline-none transition-transform group-hover:scale-105 group-focus-within:scale-105 group-focus-within:ring-2 group-focus-within:ring-ring">
-        <ItemIcon
-          kind="relic-set"
-          id={set?.id ?? value}
-          sourcePath={set?.icon_path ?? selected?.iconPath ?? ""}
-          alt={`${label}: ${name}`}
-          rarity={rarity}
-          badge={pieceCount}
-          size="md"
-        />
-        <select
-          value={value}
-          aria-label={label}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-[0.01]"
-          onChange={(event) => onChange(event.target.value)}
-        >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </span>
-      <span className="line-clamp-2 max-w-20 text-center text-[0.68rem] font-medium leading-tight text-foreground">
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+    if (!nextOpen) setQuery("");
+  }
+
+  function handleSelect(nextValue: string) {
+    onChange(nextValue);
+    setOpen(false);
+  }
+
+  const trigger = (
+    <button
+      type="button"
+      aria-label={`${label}: ${name}`}
+      className="group flex w-12 shrink-0 cursor-pointer select-none flex-col items-center gap-1 rounded-lg outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring md:w-16 md:gap-2"
+    >
+      <ItemIcon
+        kind="relic-set"
+        id={selected?.value ?? value}
+        sourcePath={selected?.iconPath ?? ""}
+        alt=""
+        aria-hidden="true"
+        rarity={selected?.rarity ?? null}
+        badge={pieceCount}
+        size={iconSize}
+      />
+      <span className="line-clamp-2 max-w-12 text-center text-[0.65rem] font-medium leading-tight text-foreground md:max-w-16">
         {name}
       </span>
-    </label>
+    </button>
+  );
+  const searchControl = (
+    <div className="relative px-3 pb-3">
+      <Search
+        className="pointer-events-none absolute left-5 top-2.5 h-4 w-4 text-muted-foreground"
+        aria-hidden="true"
+      />
+      <input
+        type="search"
+        value={query}
+        aria-label={searchLabel}
+        className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") event.stopPropagation();
+        }}
+      />
+    </div>
+  );
+  const optionContent = (option: SetOption) => (
+    <>
+      <span
+        className={cn(
+          "rounded-md",
+          option.value === value && "ring-2 ring-primary"
+        )}
+      >
+        <ItemIcon
+          kind="relic-set"
+          id={option.value}
+          sourcePath={option.iconPath}
+          alt=""
+          aria-hidden="true"
+          rarity={option.rarity}
+          size="md"
+        />
+      </span>
+      <span className="line-clamp-2 w-full text-[0.62rem] leading-tight">
+        {option.label}
+      </span>
+    </>
+  );
+
+  if (mobile) {
+    return (
+      <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
+        <ResponsiveDialogTrigger asChild>{trigger}</ResponsiveDialogTrigger>
+        <ResponsiveDialogContent
+          closeLabel={closeLabel}
+          className="flex h-[85dvh] max-h-[85dvh] flex-col p-0"
+        >
+          <ResponsiveDialogHeader className="px-4 pb-2 pt-4">
+            <ResponsiveDialogTitle>{label}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription className="sr-only">
+              {searchLabel}
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          {searchControl}
+          <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] gap-1 overflow-y-auto border-t border-border p-2">
+            {filteredOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-label={option.label}
+                aria-current={option.value === value ? "true" : undefined}
+                className="flex min-w-0 flex-col items-center gap-1 rounded-md p-1 text-center outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
+                onClick={() => handleSelect(option.value)}
+              >
+                {optionContent(option)}
+              </button>
+            ))}
+            {filteredOptions.length === 0 && (
+              <span className="col-span-full px-2 py-6 text-center text-xs text-muted-foreground">
+                {emptyLabel}
+              </span>
+            )}
+          </div>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+    );
+  }
+
+  return (
+    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        collisionPadding={8}
+        side="right"
+        className="w-[30rem] max-w-[calc(100vw-1rem)] p-0"
+      >
+        <DropdownMenuLabel className="px-3 pt-2">{label}</DropdownMenuLabel>
+        {searchControl}
+        <DropdownMenuSeparator className="my-0" />
+        <div className="grid max-h-[32rem] grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] gap-1 overflow-y-auto p-2">
+          {filteredOptions.map((option) => (
+            <DropdownMenuItem
+              key={option.value}
+              aria-label={option.label}
+              aria-current={option.value === value ? "true" : undefined}
+              className="relative flex min-w-0 flex-col gap-1 p-1 text-center"
+              onSelect={() => handleSelect(option.value)}
+            >
+              {optionContent(option)}
+            </DropdownMenuItem>
+          ))}
+          {filteredOptions.length === 0 && (
+            <span className="col-span-full px-2 py-6 text-center text-xs text-muted-foreground">
+              {emptyLabel}
+            </span>
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+interface StatOption {
+  value: string;
+  label: string;
+  compactLabel: string;
+}
+
+interface StatMultiPickerProps {
+  label: string;
+  values: readonly string[];
+  options: readonly StatOption[];
+  fixed: boolean;
+  fixedLabel: string;
+  onChange: (values: string[]) => void;
+}
+
+function StatMultiPicker({
+  label,
+  values,
+  options,
+  fixed,
+  fixedLabel,
+  onChange,
+}: StatMultiPickerProps) {
+  const selectedOptions = options.filter((option) =>
+    values.includes(option.value)
+  );
+  const selectedLabel = selectedOptions[0]?.compactLabel ?? "—";
+  const extraCount = Math.max(0, selectedOptions.length - 1);
+  const accessibleValue = selectedOptions
+    .map((option) => option.label)
+    .join(", ");
+  const trigger = (
+    <button
+      type="button"
+      disabled={fixed}
+      aria-label={`${label}: ${accessibleValue}`}
+      title={accessibleValue}
+      className="flex h-7 w-full min-w-0 items-center gap-1 rounded-md border border-border/60 bg-gradient-select py-1 pl-2 pr-1 text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default disabled:opacity-100 md:h-8"
+    >
+      <span className="min-w-0 flex-1 truncate text-left">{selectedLabel}</span>
+      {extraCount > 0 && (
+        <span className="shrink-0 border-l border-white/10 px-1 font-mono text-[0.62rem] text-amber-400">
+          +{extraCount}
+        </span>
+      )}
+    </button>
+  );
+
+  return (
+    <div className="min-w-0 space-y-0.5">
+      <span className="block truncate text-[0.62rem] font-medium text-muted-foreground md:text-xs">
+        {label}
+      </span>
+      {fixed ? (
+        <>
+          {trigger}
+          <span className="sr-only">{fixedLabel}</span>
+        </>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            collisionPadding={8}
+            className="max-h-72 min-w-44 overflow-y-auto"
+          >
+            {options.map((option) => {
+              const selected = values.includes(option.value);
+              return (
+                <DropdownMenuCheckboxItem
+                  key={option.value}
+                  checked={selected}
+                  disabled={selected && values.length === 1}
+                  onSelect={(event) => {
+                    event.preventDefault();
+                  }}
+                  onCheckedChange={() => {
+                    const next = selected
+                      ? values.filter((value) => value !== option.value)
+                      : [...values, option.value];
+                    if (next.length > 0) onChange(next);
+                  }}
+                >
+                  {option.label}
+                </DropdownMenuCheckboxItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
+
+interface WeightTokenProps {
+  label: string;
+  propertyName: string;
+  accessibleName: string;
+  weight: number;
+  onChange: (weight: number) => void;
+}
+
+function WeightToken({
+  label,
+  propertyName,
+  accessibleName,
+  weight,
+  onChange,
+}: WeightTokenProps) {
+  const percentage = Math.round(weight * 100);
+  const weightClass = cn(
+    percentage === 100 && "font-bold text-amber-500",
+    percentage >= 75 && percentage < 100 && "text-amber-400",
+    percentage >= 50 && percentage < 75 && "text-amber-200",
+    percentage >= 25 && percentage < 50 && "text-foreground",
+    percentage < 25 && "text-muted-foreground"
+  );
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={`${accessibleName}: ${percentage}%`}
+          className="flex h-7 max-w-full items-center rounded-md border border-border/60 bg-gradient-select text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          <span className="max-w-20 truncate px-2">{propertyName}</span>
+          <span className="h-4 w-px shrink-0 bg-white/10" aria-hidden="true" />
+          <span
+            className={cn(
+              "min-w-8 px-1.5 font-mono text-[0.68rem]",
+              weightClass
+            )}
+          >
+            {percentage}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" collisionPadding={8} className="w-64 p-4">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {label}
+            </span>
+            <span className="font-mono text-lg font-bold text-amber-100">
+              {percentage}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={100}
+            step={1}
+            value={percentage}
+            aria-label={`${label}: ${accessibleName}`}
+            className="w-full accent-primary"
+            onChange={(event) => onChange(Number(event.target.value) / 100)}
+          />
+          <div className="flex gap-1">
+            {[50, 75, 90, 100].map((preset) => (
+              <Button
+                key={preset}
+                type="button"
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-6 flex-1 px-0 text-xs",
+                  percentage === preset &&
+                    "border-amber-500/50 bg-amber-500/20 text-amber-100"
+                )}
+                onClick={() => onChange(preset / 100)}
+              >
+                {preset}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -111,12 +484,18 @@ export function BuildCard({
   onDelete,
 }: BuildCardProps) {
   const { locale, t } = useI18n();
+  const useCompactSetIcons = useMediaQuery("(max-width: 767px)");
   const [nameDraft, setNameDraft] = useState(build.name);
+  const [scoringOpen, setScoringOpen] = useState(false);
 
   useEffect(() => {
     setNameDraft(build.name);
   }, [build.name]);
 
+  const setRarityById = useMemo(
+    () => createRelicSetRarityMap(references.relicPieces.values),
+    [references.relicPieces.values]
+  );
   const cavernSets = useMemo(
     () =>
       references.relicSets.values
@@ -125,9 +504,10 @@ export function BuildCard({
           value: set.id,
           label: localizedName(set.name, locale, set.id),
           iconPath: set.icon_path,
+          rarity: setRarityById.get(set.id) ?? null,
         }))
         .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    [locale, references.relicSets.values]
+    [locale, references.relicSets.values, setRarityById]
   );
   const planarSets = useMemo(
     () =>
@@ -137,26 +517,30 @@ export function BuildCard({
           value: set.id,
           label: localizedName(set.name, locale, set.id),
           iconPath: set.icon_path,
+          rarity: setRarityById.get(set.id) ?? null,
         }))
         .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    [locale, references.relicSets.values]
-  );
-  const setRarityById = useMemo(
-    () => createRelicSetRarityMap(references.relicPieces.values),
-    [references.relicPieces.values]
+    [locale, references.relicSets.values, setRarityById]
   );
   const fourPieceSetId =
     build.cavern.mode === "four-piece"
       ? build.cavern.setId
       : build.cavern.setIds[0];
-  const cavernSet = references.relicSets.byId.get(fourPieceSetId);
-  const planarSet = references.relicSets.byId.get(build.planarSetId);
   const weightedProperties = Object.entries(profile.statWeights)
-    .map(([propertyId, weight]) => ({
-      propertyId,
-      weight,
-      property: references.properties.propertyById.get(propertyId),
-    }))
+    .map(([propertyId, weight]) => {
+      const name = localizedPropertyName(
+        propertyId,
+        references.properties,
+        locale
+      );
+      return {
+        propertyId,
+        weight,
+        property: references.properties.propertyById.get(propertyId),
+        name,
+        compactName: compactPropertyName(propertyId, name, t),
+      };
+    })
     .sort(
       (left, right) =>
         right.weight - left.weight ||
@@ -164,21 +548,15 @@ export function BuildCard({
           (right.property?.display_order ?? 999)
     );
 
-  function changeMainStat(
+  function setMainStats(
     slot: keyof BuildConfiguration["preferredMainStats"],
-    propertyId: string
+    values: string[]
   ) {
-    const selected = build.preferredMainStats[slot];
-    const next = selected.includes(propertyId)
-      ? selected.length > 1
-        ? selected.filter((id) => id !== propertyId)
-        : selected
-      : [...selected, propertyId];
     onBuildChange({
       ...build,
       preferredMainStats: {
         ...build.preferredMainStats,
-        [slot]: next,
+        [slot]: values,
       },
     });
   }
@@ -205,319 +583,296 @@ export function BuildCard({
   }
 
   return (
-    <article
-      className="overflow-hidden rounded-lg border border-border/50 bg-muted/30"
-      data-build-card
-    >
-      <div className="px-2 pt-2 md:px-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <label className="min-w-0 flex-1 px-1 md:px-2">
-            <span className="sr-only">{t("build.name")}</span>
-            <input
-              value={nameDraft}
-              aria-label={t("build.name")}
-              className="h-8 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-3 md:text-base 2xl:px-2 2xl:text-sm 3xl:px-3 3xl:text-base"
-              onChange={(event) => setNameDraft(event.target.value)}
-              onBlur={() => {
-                const nextName = nameDraft.trim();
-                if (nextName) onBuildChange({ ...build, name: nextName });
-                else setNameDraft(build.name);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") event.currentTarget.blur();
-              }}
-            />
-          </label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 shrink-0 p-1 md:h-8 md:w-8"
-                aria-label={t("common.more")}
-              >
-                <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onSelect={onDelete}
-              >
-                <Trash2 />
-                {t("build.delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <>
+      <article
+        className="overflow-hidden rounded-lg border border-border/50 bg-muted/30"
+        data-build-card
+      >
+        <div className="px-2 pt-2 md:px-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <label className="min-w-0 flex-1 px-1 md:px-2">
+              <span className="sr-only">{t("build.name")}</span>
+              <input
+                value={nameDraft}
+                aria-label={t("build.name")}
+                className="h-8 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-3 md:text-base 2xl:px-2 2xl:text-sm 3xl:px-3 3xl:text-base"
+                onChange={(event) => setNameDraft(event.target.value)}
+                onBlur={() => {
+                  const nextName = nameDraft.trim();
+                  if (nextName) onBuildChange({ ...build, name: nextName });
+                  else setNameDraft(build.name);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") event.currentTarget.blur();
+                }}
+              />
+            </label>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 shrink-0 p-1 md:h-8 md:w-8"
+                  aria-label={t("common.more")}
+                >
+                  <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setScoringOpen(true)}>
+                  <SlidersHorizontal />
+                  {t("build.scoringConfigure")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={onDelete}
+                >
+                  <Trash2 />
+                  {t("build.delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
 
-      <div className="px-2 py-1.5 md:py-2">
-        <div className="border-t border-border/30 pt-2">
-          <div className="flex min-w-0 flex-col items-center justify-center gap-2 sm:flex-row sm:items-start md:gap-3 2xl:gap-2 3xl:gap-3">
-            <section className="grid w-full shrink-0 grid-cols-2 gap-2 sm:w-44 2xl:w-40 2xl:gap-1 3xl:w-44 3xl:gap-2">
-              <SetPicker
-                label={t("build.cavernFourPiece")}
-                pieceCount={4}
-                rarity={setRarityById.get(fourPieceSetId) ?? null}
-                value={fourPieceSetId}
-                options={cavernSets}
-                set={cavernSet}
-                onChange={(setId) =>
-                  onBuildChange({
-                    ...build,
-                    cavern: { mode: "four-piece", setId },
-                  })
-                }
-              />
-              <SetPicker
-                label={t("build.planarTwoPiece")}
-                pieceCount={2}
-                rarity={setRarityById.get(build.planarSetId) ?? null}
-                value={build.planarSetId}
-                options={planarSets}
-                set={planarSet}
-                onChange={(planarSetId) =>
-                  onBuildChange({ ...build, planarSetId })
-                }
-              />
-            </section>
+        <div className="px-2 py-1.5 md:py-2">
+          <div className="border-t border-border/30 pt-1.5">
+            <div className="flex min-w-0 items-start justify-center gap-2 md:gap-3 2xl:gap-2 3xl:gap-3">
+              <section
+                aria-label={t("build.setPlanTitle")}
+                className="flex w-[6.25rem] shrink-0 justify-center gap-1 md:w-[8.25rem]"
+              >
+                <SetPicker
+                  label={t("build.cavernFourPiece")}
+                  pieceCount={4}
+                  iconSize={useCompactSetIcons ? "sm" : "lg"}
+                  mobile={useCompactSetIcons}
+                  value={fourPieceSetId}
+                  options={cavernSets}
+                  searchLabel={`${t("common.search")}: ${t("build.cavernFourPiece")}`}
+                  emptyLabel={t("empty.filtered")}
+                  closeLabel={t("common.close")}
+                  onChange={(setId) =>
+                    onBuildChange({
+                      ...build,
+                      cavern: { mode: "four-piece", setId },
+                    })
+                  }
+                />
+                <SetPicker
+                  label={t("build.planarTwoPiece")}
+                  pieceCount={2}
+                  iconSize={useCompactSetIcons ? "sm" : "lg"}
+                  mobile={useCompactSetIcons}
+                  value={build.planarSetId}
+                  options={planarSets}
+                  searchLabel={`${t("common.search")}: ${t("build.planarTwoPiece")}`}
+                  emptyLabel={t("empty.filtered")}
+                  closeLabel={t("common.close")}
+                  onChange={(planarSetId) =>
+                    onBuildChange({ ...build, planarSetId })
+                  }
+                />
+              </section>
 
-            <section className="w-full min-w-0 flex-1 space-y-1.5 md:space-y-2 2xl:space-y-1 3xl:space-y-2">
-              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:gap-2 xl:grid-cols-6 2xl:grid-cols-3 2xl:gap-1 3xl:grid-cols-6 3xl:gap-2">
-                {BUILD_SLOTS.map(([slot, catalogSlot, configurable]) => {
-                  const slotDefinition =
-                    references.properties.relicSlotById.get(catalogSlot);
-                  const validProperties =
-                    slotDefinition?.valid_main_properties ?? [];
-                  const selectedProperties = configurable
-                    ? build.preferredMainStats[
-                        slot as keyof BuildConfiguration["preferredMainStats"]
-                      ]
-                    : validProperties.slice(0, 1);
-                  const availableProperties = validProperties.filter(
-                    (propertyId) => !selectedProperties.includes(propertyId)
-                  );
-                  const slotName = localizedName(
-                    slotDefinition?.name,
-                    locale,
-                    slot
-                  );
-                  return (
-                    <fieldset
-                      key={slot}
-                      className="min-w-0 space-y-0.5"
-                      data-build-slot={slot}
-                    >
-                      <legend className="max-w-full truncate text-[0.65rem] font-medium text-muted-foreground md:text-xs 2xl:text-[0.65rem] 3xl:text-xs">
-                        {slotName}
-                      </legend>
-                      <div className="flex min-h-8 flex-wrap items-center gap-1 [&_button:disabled]:cursor-default [&_button:disabled]:opacity-100 [&_button]:min-h-7 [&_button]:px-2 [&_button]:text-[0.68rem] md:[&_button]:min-h-8 md:[&_button]:px-2.5 md:[&_button]:text-xs 2xl:[&_button]:min-h-7 2xl:[&_button]:px-2 2xl:[&_button]:text-[0.68rem] 3xl:[&_button]:min-h-8 3xl:[&_button]:px-2.5 3xl:[&_button]:text-xs">
-                        {selectedProperties.map((propertyId) => (
-                          <ChoiceChip
-                            key={propertyId}
-                            selected
-                            disabled={
-                              !configurable || selectedProperties.length === 1
-                            }
-                            onClick={() => {
-                              if (configurable) {
-                                changeMainStat(
-                                  slot as keyof BuildConfiguration["preferredMainStats"],
-                                  propertyId
-                                );
-                              }
-                            }}
-                          >
-                            {localizedPropertyName(
+              <section className="min-w-0 flex-1 space-y-1">
+                <div className="grid grid-cols-3 gap-1 xl:grid-cols-6 xl:gap-1.5 2xl:grid-cols-3 2xl:gap-1 3xl:grid-cols-6 3xl:gap-1.5">
+                  {BUILD_SLOTS.map(([slot, catalogSlot, configurable]) => {
+                    const slotDefinition =
+                      references.properties.relicSlotById.get(catalogSlot);
+                    const validProperties =
+                      slotDefinition?.valid_main_properties ?? [];
+                    const selectedProperties = configurable
+                      ? build.preferredMainStats[
+                          slot as keyof BuildConfiguration["preferredMainStats"]
+                        ]
+                      : validProperties.slice(0, 1);
+                    const slotName = localizedName(
+                      slotDefinition?.name,
+                      locale,
+                      slot
+                    );
+                    return (
+                      <div key={slot} data-build-slot={slot}>
+                        <StatMultiPicker
+                          label={slotName}
+                          values={selectedProperties}
+                          options={validProperties.map((propertyId) => {
+                            const label = localizedPropertyName(
                               propertyId,
                               references.properties,
                               locale
-                            )}
-                          </ChoiceChip>
-                        ))}
-                        {configurable && availableProperties.length > 0 && (
-                          <label className="relative flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-dashed border-border/60 text-muted-foreground transition-colors hover:border-border hover:bg-muted/40 hover:text-foreground">
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                            <select
-                              value=""
-                              aria-label={`${slotName}: ${t("build.mainStatsTitle")}`}
-                              className="absolute inset-0 cursor-pointer opacity-0"
-                              onChange={(event) => {
-                                if (event.target.value) {
-                                  changeMainStat(
-                                    slot as keyof BuildConfiguration["preferredMainStats"],
-                                    event.target.value
-                                  );
-                                }
-                              }}
-                            >
-                              <option value="">+</option>
-                              {availableProperties.map((propertyId) => (
-                                <option key={propertyId} value={propertyId}>
-                                  {localizedPropertyName(
-                                    propertyId,
-                                    references.properties,
-                                    locale
-                                  )}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        )}
+                            );
+                            return {
+                              value: propertyId,
+                              label,
+                              compactLabel: compactPropertyName(
+                                propertyId,
+                                label,
+                                t
+                              ),
+                            };
+                          })}
+                          fixed={!configurable}
+                          fixedLabel={t("build.fixedMainStat")}
+                          onChange={(values) => {
+                            if (configurable) {
+                              setMainStats(
+                                slot as keyof BuildConfiguration["preferredMainStats"],
+                                values
+                              );
+                            }
+                          }}
+                        />
                       </div>
-                      {!configurable && (
-                        <span className="sr-only">
-                          {t("build.fixedMainStat")}
-                        </span>
-                      )}
-                    </fieldset>
-                  );
-                })}
-              </div>
-
-              <div className="flex min-h-8 flex-wrap items-center gap-1 text-xs text-muted-foreground md:gap-1.5 2xl:gap-1 3xl:gap-1.5">
-                <span className="font-medium">
-                  {t("scoring.weightsTitle")}:
-                </span>
-                {weightedProperties
-                  .filter(({ weight }) => weight > 0)
-                  .slice(0, 6)
-                  .map(({ propertyId, weight }) => (
-                    <Badge
-                      key={propertyId}
-                      variant="secondary"
-                      className="h-6 px-2 text-[0.68rem] 3xl:text-xs"
-                    >
-                      {localizedPropertyName(
-                        propertyId,
-                        references.properties,
-                        locale
-                      )}{" "}
-                      {Math.round(weight * 100)}
-                    </Badge>
-                  ))}
-              </div>
-            </section>
-          </div>
-
-          {build.cavern.mode === "two-plus-two" && (
-            <p className="mt-2 rounded-md border border-border bg-background/40 p-2 text-xs leading-5 text-muted-foreground">
-              {t("build.legacyTwoPlusTwo")}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <details className="group border-t border-border/70">
-        <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
-          {t("build.scoringConfigure")}
-        </summary>
-        <div className="grid min-w-0 gap-4 border-t border-border/50 p-3 xl:grid-cols-[minmax(15rem,0.45fr)_minmax(0,1fr)]">
-          <div className="space-y-3">
-            <TextField
-              label={t("scoring.profileName")}
-              value={profile.name}
-              onChange={(name) => {
-                if (name.trim()) onProfileChange({ ...profile, name });
-              }}
-            />
-            <ToggleField
-              label={t("scoring.includeMain")}
-              description={t("scoring.includeMainHelp")}
-              checked={profile.includeMainStat}
-              onChange={(includeMainStat) =>
-                onProfileChange({ ...profile, includeMainStat })
-              }
-            />
-            {profile.includeMainStat && (
-              <label className="block rounded-lg border border-border bg-background/40 p-3 text-sm">
-                <span className="flex items-center justify-between gap-2">
-                  <span>{t("scoring.mainWeight")}</span>
-                  <span className="tabular-nums">
-                    {Math.round(profile.mainStatWeight * 100)}%
-                  </span>
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={Math.round(profile.mainStatWeight * 100)}
-                  className="mt-2 w-full accent-primary"
-                  aria-label={t("scoring.mainWeight")}
-                  onChange={(event) =>
-                    onProfileChange({
-                      ...profile,
-                      mainStatWeight: Number(event.target.value) / 100,
-                    })
-                  }
-                />
-              </label>
-            )}
-            <div className="grid grid-cols-2 gap-2">
-              {(["s", "a", "b", "c"] as const).map((grade) => (
-                <NumberField
-                  key={grade}
-                  label={t("scoring.gradeThreshold", {
-                    grade: grade.toUpperCase(),
+                    );
                   })}
-                  value={profile.gradeThresholds[grade]}
-                  min={0}
-                  max={100}
-                  suffix="%"
-                  onChange={(value) => updateThreshold(grade, value)}
-                />
+                </div>
+
+                <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-1">
+                  <span className="shrink-0 text-[0.62rem] font-medium text-muted-foreground md:text-xs">
+                    {t("scoring.weightsTitle")}
+                  </span>
+                  {weightedProperties
+                    .filter(({ weight }) => weight > 0)
+                    .slice(0, 5)
+                    .map(({ propertyId, weight, name, compactName }) => (
+                      <WeightToken
+                        key={propertyId}
+                        label={t("scoring.weightsTitle")}
+                        propertyName={compactName}
+                        accessibleName={name}
+                        weight={weight}
+                        onChange={(nextWeight) =>
+                          onProfileChange({
+                            ...profile,
+                            statWeights: {
+                              ...profile.statWeights,
+                              [propertyId]: nextWeight,
+                            },
+                          })
+                        }
+                      />
+                    ))}
+                </div>
+              </section>
+            </div>
+
+            {build.cavern.mode === "two-plus-two" && (
+              <p className="mt-1.5 rounded-md border border-border bg-background/40 p-1.5 text-xs leading-5 text-muted-foreground">
+                {t("build.legacyTwoPlusTwo")}
+              </p>
+            )}
+          </div>
+        </div>
+      </article>
+
+      <ResponsiveDialog open={scoringOpen} onOpenChange={setScoringOpen}>
+        <ResponsiveDialogContent closeLabel={t("common.close")}>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>
+              {t("build.scoringConfigure")}
+            </ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
+              {t("scoring.weightsHelp")}
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(15rem,0.45fr)_minmax(0,1fr)]">
+            <div className="space-y-3">
+              <TextField
+                label={t("scoring.profileName")}
+                value={profile.name}
+                onChange={(name) => {
+                  if (name.trim()) onProfileChange({ ...profile, name });
+                }}
+              />
+              <ToggleField
+                label={t("scoring.includeMain")}
+                description={t("scoring.includeMainHelp")}
+                checked={profile.includeMainStat}
+                onChange={(includeMainStat) =>
+                  onProfileChange({ ...profile, includeMainStat })
+                }
+              />
+              {profile.includeMainStat && (
+                <label className="block rounded-lg border border-border bg-background/40 p-3 text-sm">
+                  <span className="flex items-center justify-between gap-2">
+                    <span>{t("scoring.mainWeight")}</span>
+                    <span className="tabular-nums">
+                      {Math.round(profile.mainStatWeight * 100)}%
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={Math.round(profile.mainStatWeight * 100)}
+                    className="mt-2 w-full accent-primary"
+                    aria-label={t("scoring.mainWeight")}
+                    onChange={(event) =>
+                      onProfileChange({
+                        ...profile,
+                        mainStatWeight: Number(event.target.value) / 100,
+                      })
+                    }
+                  />
+                </label>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                {(["s", "a", "b", "c"] as const).map((grade) => (
+                  <NumberField
+                    key={grade}
+                    label={t("scoring.gradeThreshold", {
+                      grade: grade.toUpperCase(),
+                    })}
+                    value={profile.gradeThresholds[grade]}
+                    min={0}
+                    max={100}
+                    suffix="%"
+                    onChange={(value) => updateThreshold(grade, value)}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="grid min-w-0 gap-2 sm:grid-cols-2">
+              {weightedProperties.map(({ propertyId, weight, name }) => (
+                <label
+                  key={propertyId}
+                  className="min-w-0 rounded-lg border border-border bg-background/40 p-2 text-sm"
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="truncate">{name}</span>
+                    <span className="shrink-0 tabular-nums">
+                      {Math.round(weight * 100)}%
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={Math.round(weight * 100)}
+                    className="mt-2 w-full accent-primary"
+                    aria-label={name}
+                    onChange={(event) =>
+                      onProfileChange({
+                        ...profile,
+                        statWeights: {
+                          ...profile.statWeights,
+                          [propertyId]: Number(event.target.value) / 100,
+                        },
+                      })
+                    }
+                  />
+                </label>
               ))}
             </div>
           </div>
-          <div className="grid min-w-0 gap-2 sm:grid-cols-2">
-            {weightedProperties.map(({ propertyId, weight }) => (
-              <label
-                key={propertyId}
-                className="min-w-0 rounded-lg border border-border bg-background/40 p-2 text-sm"
-              >
-                <span className="flex items-center justify-between gap-2">
-                  <span className="truncate">
-                    {localizedPropertyName(
-                      propertyId,
-                      references.properties,
-                      locale
-                    )}
-                  </span>
-                  <span className="shrink-0 tabular-nums">
-                    {Math.round(weight * 100)}%
-                  </span>
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={Math.round(weight * 100)}
-                  className="mt-2 w-full accent-primary"
-                  aria-label={localizedPropertyName(
-                    propertyId,
-                    references.properties,
-                    locale
-                  )}
-                  onChange={(event) =>
-                    onProfileChange({
-                      ...profile,
-                      statWeights: {
-                        ...profile.statWeights,
-                        [propertyId]: Number(event.target.value) / 100,
-                      },
-                    })
-                  }
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-      </details>
-    </article>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
+    </>
   );
 }

@@ -53,18 +53,26 @@ describe("BuildCard", () => {
     expect(card).not.toBeNull();
     expect(card?.querySelectorAll("[data-build-slot]")).toHaveLength(6);
 
-    const cavernIcon = screen.getByRole("img", {
+    const cavernTrigger = screen.getByRole("button", {
       name: /Cavern 4-piece set:/,
     });
-    const planarIcon = screen.getByRole("img", {
+    const planarTrigger = screen.getByRole("button", {
       name: /Planar 2-piece set:/,
     });
+    const cavernIcon = cavernTrigger.querySelector(
+      '[data-item-icon-kind="relic-set"]'
+    );
+    const planarIcon = planarTrigger.querySelector(
+      '[data-item-icon-kind="relic-set"]'
+    );
+    expect(cavernIcon).not.toBeNull();
+    expect(planarIcon).not.toBeNull();
     expect(cavernIcon).toHaveAttribute("data-item-icon-kind", "relic-set");
-    expect(within(cavernIcon).getByText("4")).toHaveAttribute(
+    expect(within(cavernIcon as HTMLElement).getByText("4")).toHaveAttribute(
       "data-item-badge",
       "4"
     );
-    expect(within(planarIcon).getByText("2")).toHaveAttribute(
+    expect(within(planarIcon as HTMLElement).getByText("2")).toHaveAttribute(
       "data-item-badge",
       "2"
     );
@@ -73,27 +81,30 @@ describe("BuildCard", () => {
       build.cavern.mode === "four-piece"
         ? build.cavern.setId
         : build.cavern.setIds[0];
-    const expectedCavernRarity = Math.max(
-      1,
-      ...references.relicPieces.values
-        .filter((piece) => piece.set_id === cavernSetId)
-        .map((piece) => piece.rarity)
-    );
+    const cavernRarities = references.relicPieces.values
+      .filter((piece) => piece.set_id === cavernSetId)
+      .map((piece) => piece.rarity);
+    const expectedCavernRarity =
+      cavernRarities.length > 0 ? Math.max(...cavernRarities) : "unknown";
     expect(cavernIcon).toHaveAttribute(
       "data-item-rarity",
       String(expectedCavernRarity)
     );
 
     for (const slot of [
-      "Head",
-      "Hands",
-      "Body",
-      "Feet",
-      "Planar Sphere",
-      "Link Rope",
+      "head",
+      "hands",
+      "body",
+      "feet",
+      "planarSphere",
+      "linkRope",
     ]) {
-      expect(screen.getByRole("group", { name: slot })).toBeVisible();
+      const slotNode = card?.querySelector(`[data-build-slot="${slot}"]`);
+      expect(slotNode).not.toBeNull();
+      expect(slotNode?.querySelectorAll("button")).toHaveLength(1);
     }
+    expect(card?.querySelector("fieldset")).toBeNull();
+    expect(card?.querySelector("select")).toBeNull();
   });
 
   it("keeps set selection, naming, scoring, and delete actions editable", async () => {
@@ -126,14 +137,30 @@ describe("BuildCard", () => {
     });
     if (!replacement) throw new Error("Second Cavern set reference missing");
 
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "Cavern 4-piece set" }),
-      replacement.id
+    await user.click(
+      screen.getByRole("button", { name: /Cavern 4-piece set:/ })
+    );
+    expect(
+      await screen.findByRole("searchbox", {
+        name: "Search: Cavern 4-piece set",
+      })
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("menuitem", { name: replacement.name.en.value })
     );
     expect(onBuildChange).toHaveBeenCalledWith({
       ...build,
       cavern: { mode: "four-piece", setId: replacement.id },
     });
+
+    const bodyTrigger = screen.getByRole("button", { name: /^Body:/ });
+    await user.click(bodyTrigger);
+    expect(await screen.findByRole("menu")).toBeVisible();
+    expect(screen.getAllByRole("menuitemcheckbox").length).toBeGreaterThan(1);
+    expect(
+      screen.getAllByRole("menuitemcheckbox", { checked: true }).length
+    ).toBeGreaterThan(0);
+    await user.keyboard("{Escape}");
 
     await user.click(screen.getByRole("button", { name: "More" }));
     await user.click(
@@ -141,9 +168,13 @@ describe("BuildCard", () => {
     );
     expect(onDelete).toHaveBeenCalledOnce();
 
+    await user.click(screen.getByRole("button", { name: "More" }));
     await user.click(
-      screen.getByText("Configure scoring weights and grade thresholds")
+      await screen.findByRole("menuitem", {
+        name: "Configure scoring weights and grade thresholds",
+      })
     );
+    expect(screen.getByRole("dialog")).toBeVisible();
     expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
   });
 });

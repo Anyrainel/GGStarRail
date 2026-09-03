@@ -99,25 +99,23 @@ describe("Build route interactions", () => {
       await screen.findByRole("textbox", { name: "Build name" })
     ).toHaveValue("Route test build");
     expect(
-      screen.getByRole("combobox", { name: "Cavern 4-piece set" })
+      screen.getByRole("button", { name: /^Cavern 4-piece set:/ })
     ).toBeVisible();
     expect(
-      screen.getByRole("combobox", { name: "Planar 2-piece set" })
+      screen.getByRole("button", { name: /^Planar 2-piece set:/ })
     ).toBeVisible();
-    for (const slot of [
-      "Head",
-      "Hands",
-      "Body",
-      "Feet",
-      "Planar Sphere",
-      "Link Rope",
-    ]) {
-      expect(screen.getByRole("group", { name: slot })).toBeVisible();
-    }
+    expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(6);
     expect(screen.getAllByText("Fixed main stat")).toHaveLength(2);
 
+    const buildCard = document.querySelector("[data-build-card]");
+    if (!buildCard) throw new Error("Build card missing");
     await user.click(
-      screen.getByText("Configure scoring weights and grade thresholds")
+      within(buildCard as HTMLElement).getByRole("button", { name: "More" })
+    );
+    await user.click(
+      await screen.findByRole("menuitem", {
+        name: "Configure scoring weights and grade thresholds",
+      })
     );
 
     const hpFlat = screen.getByRole("slider", { name: "HP" });
@@ -158,8 +156,15 @@ describe("Build route interactions", () => {
     expect(
       screen.getByRole("checkbox", { name: /Owned Characters only/ })
     ).toBeDisabled();
+    const buildCard = document.querySelector("[data-build-card]");
+    if (!buildCard) throw new Error("Build card missing");
     await user.click(
-      screen.getByText("Configure scoring weights and grade thresholds")
+      within(buildCard as HTMLElement).getByRole("button", { name: "More" })
+    );
+    await user.click(
+      await screen.findByRole("menuitem", {
+        name: "Configure scoring weights and grade thresholds",
+      })
     );
     expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
   });
