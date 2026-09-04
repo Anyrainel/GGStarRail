@@ -90,7 +90,7 @@ afterEach(() => {
 });
 
 describe("Build route interactions", () => {
-  it("configures a 4+2 six-slot build and edits its scoring profile", async () => {
+  it("configures a 4+2 build with four variable slots and edits its scoring profile", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();
     renderRoute(APP_PATHS.builds);
@@ -104,8 +104,8 @@ describe("Build route interactions", () => {
     expect(
       screen.getByRole("button", { name: /^Planar 2-piece set:/ })
     ).toBeVisible();
-    expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(6);
-    expect(screen.getAllByText("Fixed main stat")).toHaveLength(2);
+    expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(4);
+    expect(screen.queryByText("Fixed main stat")).not.toBeInTheDocument();
 
     const buildCard = document.querySelector("[data-build-card]");
     if (!buildCard) throw new Error("Build card missing");

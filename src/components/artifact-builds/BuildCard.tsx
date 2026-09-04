@@ -1,5 +1,6 @@
 import { MoreVertical, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { StatSelect } from "@/components/artifact-builds/StatSelect";
 import {
   NumberField,
   TextField,
@@ -9,7 +10,6 @@ import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -29,7 +29,6 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
 } from "@/components/ui/responsive-dialog";
-import type { RelicSlot } from "@/domain/account/schemas";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
@@ -44,13 +43,14 @@ import { cn } from "@/lib/utils";
 import type { RelicSlotId } from "@/providers/gilore/types";
 
 const BUILD_SLOTS = [
-  ["head", "HEAD", false],
-  ["hands", "HAND", false],
-  ["body", "BODY", true],
-  ["feet", "FOOT", true],
-  ["planarSphere", "NECK", true],
-  ["linkRope", "OBJECT", true],
-] as const satisfies readonly [RelicSlot, RelicSlotId, boolean][];
+  ["body", "BODY"],
+  ["feet", "FOOT"],
+  ["planarSphere", "NECK"],
+  ["linkRope", "OBJECT"],
+] as const satisfies readonly [
+  keyof BuildConfiguration["preferredMainStats"],
+  RelicSlotId,
+][];
 
 const COMPACT_PROPERTY_KEYS: Readonly<Record<string, MessageKey>> = {
   MaxHP: "stat.short.hp",
@@ -290,100 +290,6 @@ function SetPicker({
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-interface StatOption {
-  value: string;
-  label: string;
-  compactLabel: string;
-}
-
-interface StatMultiPickerProps {
-  label: string;
-  values: readonly string[];
-  options: readonly StatOption[];
-  fixed: boolean;
-  fixedLabel: string;
-  onChange: (values: string[]) => void;
-}
-
-function StatMultiPicker({
-  label,
-  values,
-  options,
-  fixed,
-  fixedLabel,
-  onChange,
-}: StatMultiPickerProps) {
-  const selectedOptions = options.filter((option) =>
-    values.includes(option.value)
-  );
-  const selectedLabel = selectedOptions[0]?.compactLabel ?? "—";
-  const extraCount = Math.max(0, selectedOptions.length - 1);
-  const accessibleValue = selectedOptions
-    .map((option) => option.label)
-    .join(", ");
-  const trigger = (
-    <button
-      type="button"
-      disabled={fixed}
-      aria-label={`${label}: ${accessibleValue}`}
-      title={accessibleValue}
-      className="flex h-7 w-full min-w-0 items-center gap-1 rounded-md border border-border/60 bg-gradient-select py-1 pl-2 pr-1 text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default disabled:opacity-100 md:h-8"
-    >
-      <span className="min-w-0 flex-1 truncate text-left">{selectedLabel}</span>
-      {extraCount > 0 && (
-        <span className="shrink-0 border-l border-white/10 px-1 font-mono text-[0.62rem] text-amber-400">
-          +{extraCount}
-        </span>
-      )}
-    </button>
-  );
-
-  return (
-    <div className="min-w-0 space-y-0.5">
-      <span className="block truncate text-[0.62rem] font-medium text-muted-foreground md:text-xs">
-        {label}
-      </span>
-      {fixed ? (
-        <>
-          {trigger}
-          <span className="sr-only">{fixedLabel}</span>
-        </>
-      ) : (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            collisionPadding={8}
-            className="max-h-72 min-w-44 overflow-y-auto"
-          >
-            {options.map((option) => {
-              const selected = values.includes(option.value);
-              return (
-                <DropdownMenuCheckboxItem
-                  key={option.value}
-                  checked={selected}
-                  disabled={selected && values.length === 1}
-                  onSelect={(event) => {
-                    event.preventDefault();
-                  }}
-                  onCheckedChange={() => {
-                    const next = selected
-                      ? values.filter((value) => value !== option.value)
-                      : [...values, option.value];
-                    if (next.length > 0) onChange(next);
-                  }}
-                >
-                  {option.label}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
   );
 }
 
@@ -678,17 +584,12 @@ export function BuildCard({
               </section>
 
               <section className="min-w-0 flex-1 space-y-1">
-                <div className="grid grid-cols-3 gap-1 xl:grid-cols-6 xl:gap-1.5 2xl:grid-cols-3 2xl:gap-1 3xl:grid-cols-6 3xl:gap-1.5">
-                  {BUILD_SLOTS.map(([slot, catalogSlot, configurable]) => {
+                <div className="grid grid-cols-2 gap-1 xl:grid-cols-4 xl:gap-1.5 2xl:grid-cols-2 2xl:gap-1 3xl:grid-cols-4 3xl:gap-1.5">
+                  {BUILD_SLOTS.map(([slot, catalogSlot]) => {
                     const slotDefinition =
                       references.properties.relicSlotById.get(catalogSlot);
                     const validProperties =
                       slotDefinition?.valid_main_properties ?? [];
-                    const selectedProperties = configurable
-                      ? build.preferredMainStats[
-                          slot as keyof BuildConfiguration["preferredMainStats"]
-                        ]
-                      : validProperties.slice(0, 1);
                     const slotName = localizedName(
                       slotDefinition?.name,
                       locale,
@@ -696,9 +597,9 @@ export function BuildCard({
                     );
                     return (
                       <div key={slot} data-build-slot={slot}>
-                        <StatMultiPicker
+                        <StatSelect
                           label={slotName}
-                          values={selectedProperties}
+                          values={build.preferredMainStats[slot]}
                           options={validProperties.map((propertyId) => {
                             const label = localizedPropertyName(
                               propertyId,
@@ -715,16 +616,14 @@ export function BuildCard({
                               ),
                             };
                           })}
-                          fixed={!configurable}
-                          fixedLabel={t("build.fixedMainStat")}
-                          onChange={(values) => {
-                            if (configurable) {
-                              setMainStats(
-                                slot as keyof BuildConfiguration["preferredMainStats"],
-                                values
-                              );
-                            }
-                          }}
+                          maxLength={3}
+                          minimumLength={1}
+                          compact={useCompactSetIcons}
+                          addLabel={t("build.addMainStat", { slot: slotName })}
+                          deselectLabel={t("build.deselectMainStat")}
+                          onValuesChange={(values) =>
+                            setMainStats(slot, values)
+                          }
                         />
                       </div>
                     );
