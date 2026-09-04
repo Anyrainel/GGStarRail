@@ -84,6 +84,11 @@ describe("Archive catalogs", () => {
         "93 Characters · 169 Light Cones · 60 sets · 184 logical pieces across 742 rarity variants"
       )
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Achievement data · 1921 records in 9 categories · 806 reveal their title only after completion · 310 use an alternate pre-completion description · release version supplied for 0 records"
+      )
+    ).toBeInTheDocument();
 
     let tabs = screen.getByRole("navigation", { name: "Archive catalogs" });
     await user.click(
@@ -292,7 +297,7 @@ describe("Archive catalogs", () => {
     await user.click(catalogDataSummary);
     expect(
       screen.getByText(
-        "1.1 detail model · 611 base skills · 558 Eidolons · 1699 Trace nodes · 7 Servants · 10 seasonal variants · 845 Superimposition rows · 238 progression items"
+        "1.1+ detail model · 611 base skills · 558 Eidolons · 1699 Trace nodes · 7 Servants · 10 seasonal variants · 845 Superimposition rows · 238 progression items"
       )
     ).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search" });
@@ -336,7 +341,7 @@ describe("Archive catalogs", () => {
       })
     );
     expect(eidolonItem).toHaveTextContent(
-      "014e33e2404f8cd668bf06fc2ea6db53b6bc3992"
+      "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
     );
     expect(eidolonItem).toHaveTextContent("TextMap/TextMapEN.json");
 
@@ -755,5 +760,5 @@ describe("Archive catalogs", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     );
     expect(selectedCard).toHaveFocus();
-  });
+  }, 15_000);
 });

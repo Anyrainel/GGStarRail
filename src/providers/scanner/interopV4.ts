@@ -630,7 +630,7 @@ export async function parseInteroperableScannerV4Export(
 
   const uid = parsed.metadata.uid ? String(parsed.metadata.uid) : undefined;
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     profileId: `scanner:v4:${sourceKind}`,
     ...(uid ? { uid } : {}),
     characters,

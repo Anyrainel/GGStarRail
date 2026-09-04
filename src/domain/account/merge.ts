@@ -372,6 +372,11 @@ function mergeAccountSections(
     characters,
     lightCones,
     relics,
+    ...(incoming.achievementCompletion !== undefined
+      ? { achievementCompletion: incoming.achievementCompletion }
+      : current.achievementCompletion !== undefined
+        ? { achievementCompletion: current.achievementCompletion }
+        : {}),
     source: {
       ...incoming.source,
       warnings: [

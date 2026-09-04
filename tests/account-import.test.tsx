@@ -83,6 +83,7 @@ describe("Account import and demo workflows", () => {
       SCANNER_WARNING_TRACES_NOT_INCLUDED,
       SCANNER_WARNING_V1_COVERAGE_UNKNOWN,
       SCANNER_WARNING_SANITIZED_FIXTURE,
+      SCANNER_WARNING_REFERENCE_REVISION_MISMATCH,
       SCANNER_WARNING_UNKNOWN_LOCK_STATE,
       SCANNER_WARNING_UNKNOWN_DISCARD_STATE,
     ]);
@@ -178,6 +179,7 @@ describe("Account import and demo workflows", () => {
 
   it("reviews a valid file before applying it to the store", async () => {
     const existing = makeAccountSnapshot();
+    existing.achievementCompletion = { completedIds: [101] };
     useWorkspaceStore.getState().replaceAccount(existing);
     const user = userEvent.setup();
     render(
@@ -196,6 +198,11 @@ describe("Account import and demo workflows", () => {
     });
 
     expect(await screen.findByText("Review before import")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Achievements: Not included (merge keeps current progress; replace clears it)"
+      )
+    ).toBeInTheDocument();
     expect(useWorkspaceStore.getState().account).toEqual(existing);
     expect(
       screen.getByText("Account identity cannot be verified")
@@ -207,7 +214,50 @@ describe("Account import and demo workflows", () => {
       expect(useWorkspaceStore.getState().account?.profileId).toBe(
         "profile:local"
       );
+      expect(
+        useWorkspaceStore.getState().account?.achievementCompletion
+          ?.completedIds
+      ).toEqual([101]);
     });
+  });
+
+  it("does not overstate captured achievement completion after local edits", async () => {
+    const imported = makeAccountSnapshot();
+    imported.achievementCompletion = {
+      completedIds: [101],
+      capture: {
+        coverage: "complete",
+        source: {
+          kind: "packetCapture",
+          revision: "auto-reliquary-1.2.0",
+        },
+        importedAt: "2026-09-04T04:00:00.000Z",
+      },
+      locallyModifiedAt: "2026-09-04T04:30:00.000Z",
+    };
+    const uidImporter = async () => ({ account: imported, warnings: [] });
+    const user = userEvent.setup();
+    render(
+      <I18nProvider>
+        <AccountImportPanel uidImporter={uidImporter} />
+      </I18nProvider>
+    );
+
+    await user.type(
+      screen.getAllByLabelText("Star Rail UID")[0] as HTMLInputElement,
+      "600000001"
+    );
+    await act(async () => {
+      await user.click(
+        screen.getByRole("button", { name: "Review UID showcase" })
+      );
+    });
+
+    expect(
+      await screen.findByText(
+        "Achievements: Complete capture with local edits (1 marked completed)"
+      )
+    ).toBeInTheDocument();
   });
 
   it("reviews a UID showcase and merges it without deleting fuller local inventory", async () => {
@@ -269,9 +319,14 @@ describe("Account import and demo workflows", () => {
 
   it("requires an explicit confirmation before replacing a different UID", async () => {
     const existing = makeAccountSnapshot();
+    existing.achievementCompletion = { completedIds: [101] };
     useWorkspaceStore.getState().replaceAccount(existing);
+    const {
+      achievementCompletion: _achievementCompletion,
+      ...incomingWithoutCompletion
+    } = existing;
     const incoming = {
-      ...existing,
+      ...incomingWithoutCompletion,
       profileId: "account:700000001",
       uid: "700000001",
       source: {
@@ -323,6 +378,9 @@ describe("Account import and demo workflows", () => {
     expect(replace).toBeEnabled();
     await user.click(replace);
     expect(useWorkspaceStore.getState().account?.uid).toBe("700000001");
+    expect(
+      useWorkspaceStore.getState().account?.achievementCompletion
+    ).toBeUndefined();
   });
 
   it("clears transient credential fields after one reviewed request", async () => {

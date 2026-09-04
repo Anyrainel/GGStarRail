@@ -2,11 +2,13 @@
 
 GGStarRail consumes GIlore's normalized `ggstarrail-reference` bundle without
 renaming fields or replacing primary values. The audited local integration is
-pinned to TurnBasedGameData revision
-`014e33e2404f8cd668bf06fc2ea6db53b6bc3992`. The current application consumes
-schema `1.1.0`; the validator also keeps explicit support for the legacy
-`1.0.0` member/count contract. Other versions, including unknown `1.x`
-minors, are rejected.
+pinned to GIlore producer commit
+`7ef3650a63622c204b89234406c99dc221e01d85` and TurnBasedGameData source
+revision `8cdb905dc2f8e6fffa9be4eb07af3e34435d6091`. The current application
+consumes schema `1.2.0`; the validator also keeps explicit support for the
+legacy `1.0.0` and `1.1.0` member/count contracts. Other versions, including
+unknown `1.x` minors, are rejected. The audited manifest SHA-256 is
+`9899cc8fdde578cdbd744ec9f8b2705cd2f11d43670232e871f489fc3d549b5f`.
 
 The primary TurnBasedGameData repository had no formal license declared at the
 audited revision. Public access is not a license grant. GGStarRail preserves
@@ -25,7 +27,7 @@ syncing:
 
 ```powershell
 Set-Location ../GIlore
-uv run python -m hsr_data reference --expected-revision 014e33e2404f8cd668bf06fc2ea6db53b6bc3992
+uv run python -m hsr_data reference --expected-revision 8cdb905dc2f8e6fffa9be4eb07af3e34435d6091
 Set-Location ../GGStarRail
 npm run data:sync
 ```
@@ -41,6 +43,26 @@ npm run data:sync -- --source D:/verified/hsr-reference/v1
 `npm run data:verify` verifies the source without publishing it.
 `npm run data:check` verifies the ignored generated output used by the current
 build. The full `npm run check` stack includes `data:check`.
+
+## GOODScanner achievement import boundary
+
+Production achievement captures use `schema: "goodscanner.hsr"` with
+`schemaVersion: 3`. The optional top-level `achievements` member has its own
+packet-capture source and accepts only a safe 1–128 character ASCII revision,
+`coverage: "complete"`, and sorted unique entries shaped as a numeric nonzero
+u32 `achievementId` plus `status: "completed"`. IDs are checked against the
+loaded schema 1.2 achievement reference before any account mutation.
+
+Achievement coverage is independent from inventory coverage. An omitted
+`achievements` member means completion was not observed and a merge preserves
+the existing completion state. A present complete member is authoritative and
+replaces only the completed-ID set; an empty `entries` array therefore records
+a confirmed zero and clears only achievement completion. Unknown schema
+versions, source kinds, coverage values, statuses, duplicate or unsorted IDs,
+unsafe revisions, unknown reference IDs, and extra fields are rejected rather
+than reinterpreted. The import never accepts account/session/device identifiers,
+timestamps, progress, raw protocol status, or packet bytes in achievement
+evidence.
 
 ## Accepted manifest and members
 
@@ -68,7 +90,10 @@ skills, Light Cone effects, progression tables, and property definitions keep
 their original member shapes. They are exposed through schema-discriminated
 catalogs and type guards; `1.1.0` ranks, Traces, servants, enhancement rows,
 per-Superimposition text, progression items, and usable property icons are
-only available after the matching guard. Missing additive families are never
+only available after the matching guard. Schema `1.2.0` adds separate
+`achievement_categories.json` and `achievements.json` members with numeric
+nonzero-u32 IDs, localized visibility-aware text, chain metadata, completion
+conditions, and reward definitions. Missing additive families are never
 fabricated as empty source data.
 
 The audited catalogs contain 93 Characters, 169 Light Cones, 60 Relic/Planar
@@ -81,7 +106,13 @@ and 500 Trace levels remain separate from the base forms. Every Light Cone has
 all five Superimposition rows (845 total), including localized effect text,
 parameters, properties, and rank-up material IDs. Progression includes 238
 referenced items plus every declared XP, affix-roll, and source-derived scoring
-table.
+table. Schema 1.2 adds 1,921 achievements in nine categories. Of those, 806
+hide their title and every description until completion, 310 expose an
+alternate pre-completion description, all current chains are singleton, and
+none has source-provided release-version data. The category and achievement
+member SHA-256 values are
+`bee059be3811dd98f893e5f066678e531099262670bd8e022a588c8cd5465f70` and
+`361a8825eee06b0614c94101b26574d5c619140665bc03a0172ab832dc53fd78`.
 
 ## Localization and diagnostics
 
@@ -91,7 +122,7 @@ path, source revision, and source-reference provenance. Display helpers return
 the selected value without discarding the underlying provenance.
 
 The audited diagnostics contain zero unresolved mappings, four warning-level
-source disagreements, and fourteen explicit source gaps. Missing optional
+source disagreements, and sixteen explicit source gaps. Missing optional
 property labels and two skill tag/type labels remain `null`; scoring rows for
 four non-exported character IDs remain present with
 `character_exported=false`. A property icon sentinel remains preserved in the
@@ -127,7 +158,7 @@ commands are:
 - `npm run assets:check` validates the ignored cache and compact runtime
   lookup used by the app.
 
-The asset consumer accepts only `ggstarrail-assets` schema `1.0.0`. It verifies
+The asset consumer accepts only `ggstarrail-assets` schema `1.1.0`. It verifies
 the sidecar digest, exact manifest identity and publication contract, linked
 reference schema/revision/hash, immutable snapshot identity, safe relative
 paths, every declared byte count and SHA-256, and every PNG signature and IHDR
@@ -137,14 +168,19 @@ Failed validation leaves the previous cache intact.
 
 The audited mapping covers all 93 Characters, 169 Light Cones, 60 Relic and
 Planar sets, 184 logical Relic pieces representing 742 rarity variants, 9
-Paths, 7 combat types, and 55 of 56 properties. The sole explicit exclusion is
-`StanceBreakAddedRatio`, whose upstream icon is not real. These 577 logical
-mappings resolve to 550 content-addressed PNG blobs. Six Relic slots and the
-excluded property use deterministic generated text/shape fallbacks. A failed
-image decode also switches to that visible fallback, so a missing file cannot
-leave a silent broken-image grid. Property asset selection uses schema 1.1's
-normalized `usable_icon_path`; the preserved raw `icon_path` sentinel is never
-treated as a URL.
+Paths, 7 combat types, 55 of 56 properties, and the Stellar Jade achievement
+reward. The sole property exclusion is `StanceBreakAddedRatio`, whose upstream
+icon is not real. Per-achievement IDs are validated against all 1,921
+definitions but are not mapped because StarRailRes has no exact indexed icon;
+the nine category icons are explicit no-exact-index exclusions. These 578
+logical mappings resolve to 551 content-addressed PNG blobs. Six Relic slots,
+achievement rows/categories, and the excluded property use deterministic
+generated text/shape fallbacks. A failed image decode also switches to that
+visible fallback, so a missing file cannot leave a silent broken-image grid.
+Property asset selection uses schema 1.1's normalized `usable_icon_path`; the
+preserved raw `icon_path` sentinel is never treated as a URL. The audited asset
+manifest SHA-256 is
+`835203c0d78e71125bac8d752c57dbb8e393d2c3af7ec6dcb78b74b42665dd19`.
 
 The full asset manifest is never imported into the application shell. Catalog
 routes fetch a compact local lookup only when their data loads, then resolve

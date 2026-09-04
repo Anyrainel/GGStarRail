@@ -3,15 +3,22 @@ import {
   type AccountSnapshot,
   AccountSnapshotSchema,
   AccountSnapshotV1Schema,
+  AccountSnapshotV2Schema,
+  AchievementCaptureRevisionSchema,
+  type AchievementCompletion,
+  AchievementCompletionSchema,
+  AchievementIdSchema,
   type Character,
   ImportCoverageSchema,
   migrateAccountSnapshotV1,
+  migrateAccountSnapshotV2,
   type RelicSlot,
   StableIdSchema,
 } from "@/domain/account/schemas";
 import { assertNoSensitiveFields } from "@/lib/security";
 import {
   HSR_REFERENCE_MANIFEST,
+  loadAchievementIds,
   loadCharacters,
   loadLightCones,
   loadProgression,
@@ -43,7 +50,11 @@ const NativeScannerExportSchema = z
       })
       .strict(),
     exportedAt: z.string().datetime(),
-    account: z.union([AccountSnapshotSchema, AccountSnapshotV1Schema]),
+    account: z.union([
+      AccountSnapshotSchema,
+      AccountSnapshotV2Schema,
+      AccountSnapshotV1Schema,
+    ]),
   })
   .strict();
 
@@ -207,9 +218,94 @@ export const GoodScannerExperimentalExportV2Schema = z
   })
   .strict();
 
+const GoodScannerAchievementEntryV3Schema = z
+  .object({
+    achievementId: AchievementIdSchema,
+    status: z.literal("completed"),
+  })
+  .strict();
+
+const GoodScannerAchievementEntriesV3Schema = z
+  .array(GoodScannerAchievementEntryV3Schema)
+  .superRefine((entries, context) => {
+    const seen = new Set<number>();
+    entries.forEach((entry, index) => {
+      if (seen.has(entry.achievementId)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate completed achievement ID: ${entry.achievementId}`,
+          path: [index, "achievementId"],
+        });
+      }
+      const previous = entries[index - 1];
+      if (previous && entry.achievementId < previous.achievementId) {
+        context.addIssue({
+          code: "custom",
+          message: "Completed achievement entries must be sorted ascending",
+          path: [index, "achievementId"],
+        });
+      }
+      seen.add(entry.achievementId);
+    });
+  });
+
+export const GoodScannerHsrExportV3Schema = z
+  .object({
+    schema: z.literal("goodscanner.hsr"),
+    schemaVersion: z.literal(3),
+    source: z
+      .object({
+        kind: z.enum(["screenCapture", "packetCapture", "sanitizedFixture"]),
+        revision: z.string().min(1),
+        coverage: ScannerCoverageSchema,
+      })
+      .strict(),
+    reference: z
+      .object({
+        schemaVersion: z.literal(1),
+        provider: z.literal("gilore.ggstarrail-reference"),
+        revision: z.string().min(1),
+      })
+      .strict(),
+    privacy: z
+      .object({
+        accountIdentifiersIncluded: z.literal(false),
+        rawPacketDataIncluded: z.literal(false),
+        serverItemIdentifiersIncluded: z.literal(false),
+      })
+      .strict(),
+    characters: z.array(GoodScannerCharacterSchema),
+    lightCones: z.array(GoodScannerLightConeSchema),
+    relics: z.array(GoodScannerGearV2Schema),
+    planarOrnaments: z.array(GoodScannerGearV2Schema),
+    achievements: z
+      .object({
+        source: z
+          .object({
+            kind: z.literal("packetCapture"),
+            revision: AchievementCaptureRevisionSchema,
+          })
+          .strict(),
+        coverage: z.literal("complete"),
+        entries: GoodScannerAchievementEntriesV3Schema,
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
 export const GoodScannerExperimentalExportSchema = z.discriminatedUnion(
   "schemaVersion",
   [GoodScannerExperimentalExportV1Schema, GoodScannerExperimentalExportV2Schema]
+);
+
+export const GoodScannerHsrExportSchema = z.discriminatedUnion(
+  "schemaVersion",
+  [
+    GoodScannerExperimentalExportV1Schema,
+    GoodScannerExperimentalExportV2Schema,
+    GoodScannerHsrExportV3Schema,
+  ]
 );
 
 export type GoodScannerExperimentalExport = z.infer<
@@ -244,7 +340,10 @@ type ScannerReferenceCatalog = Pick<
   | "relicSets"
   | "relicPieces"
   | "properties"
-> & { progression: ProgressionTables };
+> & {
+  progression: ProgressionTables;
+  achievementIds: ReadonlySet<number>;
+};
 
 const GOODSCANNER_SLOT_TO_DOMAIN = {
   Head: "head",
@@ -388,13 +487,23 @@ export function isGoodScannerExperimentalExport(input: unknown): boolean {
   );
 }
 
+export function isGoodScannerHsrExport(input: unknown): boolean {
+  if (!input || typeof input !== "object") return false;
+  const schema = (input as { schema?: unknown }).schema;
+  return (
+    schema === "goodscanner.hsr.experimental" || schema === "goodscanner.hsr"
+  );
+}
+
 export function parseScannerExport(input: unknown): AccountImportDraft {
   assertNoSensitiveFields(input);
   const parsed = NativeScannerExportSchema.parse(input);
   const account =
     parsed.account.schemaVersion === 1
       ? migrateAccountSnapshotV1(parsed.account)
-      : parsed.account;
+      : parsed.account.schemaVersion === 2
+        ? migrateAccountSnapshotV2(parsed.account)
+        : parsed.account;
   return {
     account,
     warnings: account.source.warnings,
@@ -407,7 +516,7 @@ export function parseGoodScannerExperimentalExport(
   now = new Date()
 ): AccountImportDraft {
   assertNoSensitiveFields(input);
-  const parsed = GoodScannerExperimentalExportSchema.parse(input);
+  const parsed = GoodScannerHsrExportSchema.parse(input);
 
   const schemaMajor = Number.parseInt(
     catalog.manifest.schema_version.split(".")[0] ?? "",
@@ -613,13 +722,13 @@ export function parseGoodScannerExperimentalExport(
   });
 
   const coverage =
-    parsed.schemaVersion === 2
-      ? parsed.source.coverage
-      : {
+    parsed.schemaVersion === 1
+      ? {
           characters: "unknown" as const,
           lightCones: "unknown" as const,
           relics: "unknown" as const,
-        };
+        }
+      : parsed.source.coverage;
   const warnings: string[] = [SCANNER_WARNING_TRACES_NOT_INCLUDED];
   if (parsed.schemaVersion === 1) {
     warnings.push(SCANNER_WARNING_V1_COVERAGE_UNKNOWN);
@@ -642,16 +751,43 @@ export function parseGoodScannerExperimentalExport(
     warnings.push(SCANNER_WARNING_UNKNOWN_DISCARD_STATE);
   }
 
+  let achievementCompletion: AchievementCompletion | undefined;
+  if (parsed.schemaVersion === 3 && parsed.achievements !== undefined) {
+    if (!catalog.achievementIds) {
+      throw new Error("Scanner achievement reference is unavailable");
+    }
+    const completedIds = parsed.achievements.entries.map(
+      ({ achievementId }) => achievementId
+    );
+    for (const achievementId of completedIds) {
+      if (!catalog.achievementIds.has(achievementId)) {
+        throw new Error(`Unknown HSR achievement: ${achievementId}`);
+      }
+    }
+    achievementCompletion = AchievementCompletionSchema.parse({
+      completedIds: [...completedIds].sort((left, right) => left - right),
+      capture: {
+        coverage: parsed.achievements.coverage,
+        source: parsed.achievements.source,
+        importedAt: now.toISOString(),
+      },
+    });
+  }
+
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     profileId: "scanner:local",
     characters,
     lightCones,
     relics,
+    ...(achievementCompletion ? { achievementCompletion } : {}),
     source: {
       provider: "scanner-export",
       formatVersion: parsed.schemaVersion,
-      sourceVersion: `goodscanner-hsr-experimental-v${parsed.schemaVersion}`,
+      sourceVersion:
+        parsed.schemaVersion === 3
+          ? "goodscanner-hsr-v3"
+          : `goodscanner-hsr-experimental-v${parsed.schemaVersion}`,
       sourceRevision: parsed.reference.revision,
       importedAt: now.toISOString(),
       coverage,
@@ -667,7 +803,7 @@ export async function parseVersionedScannerExport(
   now = new Date()
 ): Promise<AccountImportDraft> {
   assertNoSensitiveFields(input);
-  const isGoodScanner = isGoodScannerExperimentalExport(input);
+  const isGoodScanner = isGoodScannerHsrExport(input);
   const isInteroperableV4 = isInteroperableScannerV4Export(input);
   const nativeDraft =
     !isGoodScanner && !isInteroperableV4 ? parseScannerExport(input) : null;
@@ -679,6 +815,7 @@ export async function parseVersionedScannerExport(
     relicPieces,
     propertyTables,
     progression,
+    achievementIds,
   ] = await Promise.all([
     loadCharacters(),
     loadLightCones(),
@@ -686,6 +823,7 @@ export async function parseVersionedScannerExport(
     loadRelicPieces(),
     loadPropertyTables(),
     loadProgression(),
+    loadAchievementIds(),
   ]);
 
   const catalog: ScannerReferenceCatalog = {
@@ -696,6 +834,7 @@ export async function parseVersionedScannerExport(
     relicPieces: relicPieces.values,
     properties: propertyTables.properties,
     progression,
+    achievementIds,
   };
 
   if (nativeDraft) {

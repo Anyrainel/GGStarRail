@@ -62,6 +62,7 @@ describe("demo Relic progression", () => {
     const spares = account.relics.filter((relic) =>
       relic.key.startsWith("demo-relic:spare:")
     );
+    expect(account.achievementCompletion).toBeUndefined();
 
     expect(new Set(spares.map((relic) => relic.level))).toEqual(
       new Set([0, 6, 15])
@@ -95,7 +96,7 @@ describe("demo Relic progression", () => {
         exportedAt: "2026-09-02T12:00:00.000Z",
         account,
       })
-    ).resolves.toMatchObject({ account: { profileId: "demo-account:v2" } });
+    ).resolves.toMatchObject({ account: { profileId: "demo-account:v3" } });
 
     const invalidNativeAccount = structuredClone(account);
     const levelSix = invalidNativeAccount.relics.find(

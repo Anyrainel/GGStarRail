@@ -10,14 +10,24 @@ interface AssetManifestFixture {
   asset_schema_version: string;
   assets: Array<{
     dimensions: { height: number; width: number };
+    entity_id: string;
     local_path: string;
+    logical_kind: string;
+    sha256: string;
+    upstream_path: string;
   }>;
   coverage: {
     character: { mapped_entity_count: number };
   } & Record<string, { mapped_entity_count: number }>;
   files: Record<string, { byte_size: number; sha256: string }>;
+  excluded_assets: Array<{
+    entity_id: string;
+    logical_kind: string;
+    reason: string;
+  }>;
   publication_contract: string;
   snapshot_id: string;
+  validation_only_entity_ids: { achievement: string[] };
 }
 
 const generatedManifestPath = path.resolve(
@@ -59,8 +69,16 @@ describe("GIlore asset sync regressions", () => {
     };
     const lookup = assetSync.createRuntimeLookup(validatedWithDigest);
 
-    expect(validated.assets).toHaveLength(577);
-    expect(validated.assetPaths.size).toBe(550);
+    expect(validated.assets).toHaveLength(578);
+    expect(validated.assetPaths.size).toBe(551);
+    expect(lookup.entries).toContainEqual(["achievement-category", "1", null]);
+    expect(lookup.entries).toContainEqual([
+      "achievement-reward",
+      "1",
+      expect.stringContaining(
+        "55fe37d5cd4bca96d9da243469a4f2dd0d948833a57628a53eadc0c6d12cf1a9.png"
+      ),
+    ]);
     expect(lookup.entries).toContainEqual([
       "property",
       "StanceBreakAddedRatio",
@@ -70,6 +88,36 @@ describe("GIlore asset sync regressions", () => {
     expect(() =>
       assetSync.validateRuntimeLookupDocument(lookup, validatedWithDigest)
     ).not.toThrow();
+  });
+
+  it("locks validation-only achievement IDs and explicit category gaps", () => {
+    const invalidAchievementId = cloneManifest();
+    invalidAchievementId.validation_only_entity_ids.achievement[0] = "0";
+    expect(() =>
+      assetSync.validateAssetManifestDocument(invalidAchievementId)
+    ).toThrow("not a canonical positive u32 ID");
+
+    const categoryGapDrift = cloneManifest();
+    const categoryGap = categoryGapDrift.excluded_assets.find(
+      (entry) => entry.logical_kind === "achievement_category"
+    );
+    if (!categoryGap) throw new Error("fixture has no category gap");
+    categoryGap.reason = "guessed_generic_icon";
+    expect(() =>
+      assetSync.validateAssetManifestDocument(categoryGapDrift)
+    ).toThrow("does not match the audited exclusion");
+  });
+
+  it("locks the source-backed Stellar Jade reward icon", () => {
+    const manifest = cloneManifest();
+    const reward = manifest.assets.find(
+      (asset) => asset.logical_kind === "achievement_reward"
+    );
+    if (!reward) throw new Error("fixture has no achievement reward asset");
+    reward.upstream_path = "icon/item/guessed.png";
+    expect(() => assetSync.validateAssetManifestDocument(manifest)).toThrow(
+      "Stellar Jade achievement reward asset drift"
+    );
   });
 
   it("rejects unsupported asset schemas and incomplete coverage", () => {

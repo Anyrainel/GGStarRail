@@ -36,8 +36,15 @@ const V1_COUNT_KEYS = [
 ] as const;
 
 describe("provider and credential boundaries", () => {
-  it("accepts only the two exact audited GIlore v1 manifest shapes", () => {
+  it("accepts only the exact audited GIlore manifest shapes", () => {
     expect(parseGIloreManifest(manifest).locales).toEqual(["en", "zh-CN"]);
+    const legacyFiles = Object.fromEntries(
+      Object.entries(manifest.files).filter(
+        ([fileName]) =>
+          fileName !== "achievement_categories.json" &&
+          fileName !== "achievements.json"
+      )
+    );
     const v1Counts = Object.fromEntries(
       V1_COUNT_KEYS.map((key) => [key, manifest.counts[key]])
     );
@@ -45,11 +52,25 @@ describe("provider and credential boundaries", () => {
       parseGIloreManifest({
         ...manifest,
         counts: v1Counts,
+        files: legacyFiles,
         schema_version: "1.0.0",
       }).schema_version
     ).toBe("1.0.0");
+    const v1_1Counts = Object.fromEntries(
+      Object.entries(manifest.counts).filter(
+        ([key]) => !key.startsWith("achievement")
+      )
+    );
+    expect(
+      parseGIloreManifest({
+        ...manifest,
+        counts: v1_1Counts,
+        files: legacyFiles,
+        schema_version: "1.1.0",
+      }).schema_version
+    ).toBe("1.1.0");
     expect(() =>
-      parseGIloreManifest({ ...manifest, schema_version: "1.2.0" })
+      parseGIloreManifest({ ...manifest, schema_version: "1.3.0" })
     ).toThrow(/schema_version/);
     expect(() =>
       parseGIloreManifest({

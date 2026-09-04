@@ -59,6 +59,7 @@ export const messagesZhCn = {
   "nav.archiveCharacters": "角色图鉴",
   "nav.archiveLightCones": "光锥图鉴",
   "nav.archiveRelicSets": "遗器图鉴",
+  "nav.archiveAchievements": "成就图鉴",
   "nav.tierList": "优先级",
   "nav.tierCharacters": "角色优先级",
   "nav.tierLightCones": "光锥优先级",
@@ -78,7 +79,8 @@ export const messagesZhCn = {
   "home.tool.builds.body":
     "配置角色配装、调整评分、生成筛选并安全复核遗器整理建议。",
   "home.tool.archive.title": "浏览游戏图鉴",
-  "home.tool.archive.body": "搜索角色、光锥和遗器套装，并查看完整效果。",
+  "home.tool.archive.body":
+    "搜索角色、光锥、遗器套装与成就，并查看有来源依据的完整资料。",
   "route.characters.title": "角色",
   "route.characters.description":
     "已拥有角色、养成、星魂、行迹和已装备物品引用。",
@@ -115,6 +117,9 @@ export const messagesZhCn = {
   "route.archiveRelicSets.title": "遗器图鉴",
   "route.archiveRelicSets.description":
     "浏览隧洞遗器与位面饰品套装、部位、稀有度和套装效果。",
+  "route.archiveAchievements.title": "成就图鉴",
+  "route.archiveAchievements.description":
+    "按分类、完成状态与来源支持的版本信息浏览星铁成就，并查看捕获或本地记录的完成进度。",
   "route.tierCharacters.title": "角色优先级",
   "route.tierCharacters.description":
     "按战斗属性整理全部角色，制作属于自己的养成规划。",
@@ -509,6 +514,44 @@ export const messagesZhCn = {
   "archive.search.characters": "使用任一语言搜索角色",
   "archive.search.lightCones": "搜索光锥或光锥效果",
   "archive.search.relicSets": "搜索遗器与位面饰品套装",
+  "archive.achievement.searchLabel": "搜索成就",
+  "archive.achievement.searchPlaceholder": "搜索成就名称与描述",
+  "archive.achievement.filtersLabel": "成就筛选",
+  "archive.achievement.categories": "成就分类",
+  "archive.achievement.categoryList": "成就分类列表",
+  "archive.achievement.detail": "当前分类成就",
+  "archive.achievement.noResults": "没有符合筛选条件的成就。",
+  "archive.achievement.status.unfinished": "未完成",
+  "archive.achievement.status.finished": "已完成",
+  "archive.achievement.version.unknown": "版本未知",
+  "archive.achievement.completion.noAccount":
+    "导入账号后即可记录成就完成情况。",
+  "archive.achievement.completion.availableToTrack":
+    "当前账号来源未包含成就数据。手动标记任一成就即可开始本地记录，也可以导入完整捕获。",
+  "archive.achievement.completion.manual": "正在本地记录",
+  "archive.achievement.completion.captured": "已导入完整成就捕获",
+  "archive.achievement.completion.capturedEdited":
+    "已导入成就捕获，之后在本地修改",
+  "archive.achievement.completion.progressUnavailable":
+    "此账号来源未提供成就完成情况",
+  "archive.achievement.completion.progressUnavailableShort": "暂无完成进度",
+  "archive.achievement.progressLabel":
+    "{category}：已完成 {completed} / {total}",
+  "archive.achievement.visibility.showAfterFinish": "完成前隐藏",
+  "archive.achievement.visibility.hiddenDescription": "隐藏描述",
+  "archive.achievement.concealedName": "隐藏成就",
+  "archive.achievement.concealedAccessibleName": "隐藏成就 {id}",
+  "archive.achievement.concealedDescription":
+    "完成该成就后即可揭晓名称与描述。",
+  "archive.achievement.dynamicTextFallback": "【游戏内动态文本】",
+  "archive.achievement.stellarJade": "星琼",
+  "archive.achievement.markFinished": "将“{name}”标记为已完成",
+  "archive.achievement.markUnfinished": "将“{name}”标记为未完成",
+  "archive.achievement.startTrackingAndMarkFinished":
+    "开始本地记录并将“{name}”标记为已完成",
+  "archive.achievement.trackingUnavailable": "导入账号后才能记录成就完成情况。",
+  "archive.achievement.searchYouTube": "在 YouTube 上搜索“{name}”",
+  "archive.achievement.searchBilibili": "在哔哩哔哩上搜索“{name}”",
   "archive.results": "显示 {shown} / {total} 条记录",
   "archive.relicResults":
     "显示 {shown} / {total} 套 · {logical} 件逻辑部位 · {variants} 个稀有度变体",
@@ -569,7 +612,9 @@ export const messagesZhCn = {
   "archive.group": "组别 / 类型",
   "archive.values": "数值",
   "archive.bundle.additiveSummary":
-    "1.1 详细数据 · {skills} 个基础技能 · {ranks} 个星魂 · {traces} 个行迹节点 · {servants} 个召唤物 · {variants} 个赛季强化变体 · {superimpositions} 行叠影数据 · {items} 个养成道具",
+    "1.1+ 详细数据 · {skills} 个基础技能 · {ranks} 个星魂 · {traces} 个行迹节点 · {servants} 个召唤物 · {variants} 个赛季强化变体 · {superimpositions} 行叠影数据 · {items} 个养成道具",
+  "archive.bundle.achievementSummary":
+    "成就数据 · {categories} 个分类共 {achievements} 项 · {showAfterFinish} 项完成前隐藏名称 · {hiddenDescriptions} 项使用完成前替代描述 · {versions} 项提供实装版本",
   "archive.additiveUnavailable":
     "架构 1.0.0 数据包不包含详细星魂、行迹、召唤物、赛季强化与养成道具解析；仍会显示通用图鉴数据，不会虚构缺失记录。",
   "archive.baseSkills": "技能（{skills}）",
@@ -632,7 +677,7 @@ export const messagesZhCn = {
     "本地双语数据包只有在清单、字节数、哈希、封装、修订、数量和语言全部通过校验后才会被接受。",
   "imports.scanner.title": "扫描器导出",
   "imports.scanner.body":
-    "原生导出与隔离的 GOODScanner 星铁 v1/v2 封装分别使用严格适配器，并拒绝疑似凭据字段。",
+    "原生导出、旧版 GOODScanner 星铁 v1/v2 封装与正式版 v3 导出均使用严格适配器。v3 可在不包含账号标识的情况下携带抓包取得的完整成就进度，并会拒绝疑似凭据字段。",
   "imports.hoyolab.title": "HoYoLAB 账号导入",
   "imports.hoyolab.body":
     "本地 Worker 分开处理国际服与国服契约，可请求本人账号的角色列表及已装备物品；未经授权凭据实测，不会宣称登录导入已经验证成功。",
@@ -662,6 +707,12 @@ export const messagesZhCn = {
   "imports.review.coverageCharacters": "角色：{coverage}",
   "imports.review.coverageLightCones": "光锥：{coverage}",
   "imports.review.coverageRelics": "遗器：{coverage}",
+  "imports.review.achievementComplete": "成就：完整（已完成 {count} 项）",
+  "imports.review.achievementCapturedEdited":
+    "成就：完整采集后有本地修改（已标记 {count} 项）",
+  "imports.review.achievementTracked": "成就：本地记录（已标记 {count} 项）",
+  "imports.review.achievementUnavailable":
+    "成就：未包含（合并会保留现有进度，替换会清除）",
   "imports.coverage.complete": "完整",
   "imports.coverage.equipped-only": "仅已装备",
   "imports.coverage.showcase-only": "仅个人展示",

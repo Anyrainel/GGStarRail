@@ -5,6 +5,9 @@ import {
   isCharacterDefinitionV1_1,
   isProgressionTablesV1_1,
   isPropertyDefinitionV1_1,
+  loadAchievementCategories,
+  loadAchievementIds,
+  loadAchievements,
   loadCharacters,
   loadDiagnostics,
   loadLightCones,
@@ -17,19 +20,33 @@ import type { CharacterDefinitionV1_1 } from "@/providers/gilore/types";
 
 describe("lazy GIlore catalog provider", () => {
   it("loads complete typed catalogs with stable bilingual identities", async () => {
-    const [characters, lightCones, relicSets, relicPieces, propertyTables] =
-      await Promise.all([
-        loadCharacters(),
-        loadLightCones(),
-        loadRelicSets(),
-        loadRelicPieces(),
-        loadPropertyTables(),
-      ]);
+    const [
+      achievementCategories,
+      achievements,
+      achievementIds,
+      characters,
+      lightCones,
+      relicSets,
+      relicPieces,
+      propertyTables,
+    ] = await Promise.all([
+      loadAchievementCategories(),
+      loadAchievements(),
+      loadAchievementIds(),
+      loadCharacters(),
+      loadLightCones(),
+      loadRelicSets(),
+      loadRelicPieces(),
+      loadPropertyTables(),
+    ]);
 
     expect(HSR_REFERENCE_MANIFEST.source.revision).toBe(
-      "014e33e2404f8cd668bf06fc2ea6db53b6bc3992"
+      "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
     );
-    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("1.1.0");
+    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("1.2.0");
+    expect(achievementCategories.values).toHaveLength(9);
+    expect(achievements.values).toHaveLength(1921);
+    expect(achievementIds.size).toBe(1921);
     expect(characters.values).toHaveLength(93);
     expect(lightCones.values).toHaveLength(169);
     expect(relicSets.values).toHaveLength(60);
@@ -38,9 +55,39 @@ describe("lazy GIlore catalog provider", () => {
     expect(propertyTables.paths).toHaveLength(9);
     expect(propertyTables.combatTypes).toHaveLength(7);
     expect(propertyTables.relicSlots).toHaveLength(6);
-    expect(characters.schemaVersion).toBe("1.1.0");
-    expect(lightCones.schemaVersion).toBe("1.1.0");
-    expect(propertyTables.schemaVersion).toBe("1.1.0");
+    expect(achievementCategories.schemaVersion).toBe("1.2.0");
+    expect(achievements.schemaVersion).toBe("1.2.0");
+    expect(characters.schemaVersion).toBe("1.2.0");
+    expect(lightCones.schemaVersion).toBe("1.2.0");
+    expect(propertyTables.schemaVersion).toBe("1.2.0");
+
+    const trailblazerCategory = achievementCategories.byId.get(1);
+    expect(getLocalizedValue(trailblazerCategory?.name, "en")).toBe(
+      "I, Trailblazer"
+    );
+    const everBurningAmber = achievements.byId.get(4_010_101);
+    expect(getLocalizedValue(everBurningAmber?.name, "en")).toBe(
+      "Ever-Burning Amber"
+    );
+    expect(everBurningAmber).toMatchObject({
+      category_id: 1,
+      chain_ids: [4_010_101],
+      chain_index: 0,
+      previous_id: null,
+      next_ids: [],
+      release_version: null,
+      reward: { item_id: 1, count: 20 },
+    });
+    expect(achievementIds.has(4_010_101)).toBe(true);
+    const hidden = achievements.values.find(
+      (achievement) => achievement.visibility === "hidden_description"
+    );
+    expect(hidden?.hidden_description).not.toBeNull();
+    expect(
+      achievements.values.some(
+        (achievement) => achievement.description_parameters.length > 0
+      )
+    ).toBe(true);
 
     const march = characters.byId.get("1001");
     expect(getLocalizedValue(march?.name, "en")).toBe("March 7th");
@@ -176,6 +223,6 @@ describe("lazy GIlore catalog provider", () => {
     expect(getLocalizedValue(progression.items[0].name, "en")).toBe("Credit");
     expect(diagnostics.unresolved_deobfuscation).toEqual([]);
     expect(diagnostics.source_disagreements).toHaveLength(4);
-    expect(diagnostics.source_gaps).toHaveLength(14);
+    expect(diagnostics.source_gaps).toHaveLength(16);
   });
 });

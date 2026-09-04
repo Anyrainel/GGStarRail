@@ -15,6 +15,27 @@ describe("GIlore display text", () => {
     expect(formatGameText("Value #2[i]%", [0.1])).toBe("Value #2[i]%");
   });
 
+  it("formats achievement bare parameters without scaling source percentages", () => {
+    expect(formatGameText("Win #1 battle(s).", [3])).toBe("Win 3 battle(s).");
+    expect(formatGameText("Keep HP below #1%.", [66])).toBe(
+      "Keep HP below 66%."
+    );
+  });
+
+  it("supports integer and magnitude markers in achievement text", () => {
+    expect(
+      formatGameText("Reach #1[i] wins and #2[m] fans.", [3, 1000000])
+    ).toBe("Reach 3 wins and 1000000 fans.");
+  });
+
+  it("preserves literal hashes and unresolved dynamic text joins", () => {
+    const parameters = Array.from({ length: 87 }, (_, index) => index + 1);
+    expect(
+      formatGameText("Route #55, value #1, {TEXTJOIN#87}", parameters)
+    ).toBe("Route #55, value 1, {TEXTJOIN#87}");
+    expect(formatGameText("Unresolved #12[i]", [1])).toBe("Unresolved #12[i]");
+  });
+
   it("renders both Trailblazer gender choices without leaking source tokens", () => {
     const source =
       "A {F#girl}{M#boy}. {F#She}{M#He} can rely on {F#herself}{M#himself}.";

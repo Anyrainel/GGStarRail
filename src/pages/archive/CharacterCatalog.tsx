@@ -426,7 +426,7 @@ function CharacterDetail({
     ? progression
     : null;
   const additivePropertyTables =
-    propertyTables.schemaVersion === "1.1.0" ? propertyTables : null;
+    propertyTables.schemaVersion === "1.0.0" ? null : propertyTables;
   const itemById = additiveProgression
     ? createProgressionItemIndex(additiveProgression.items)
     : null;

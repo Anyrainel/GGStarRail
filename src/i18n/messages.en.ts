@@ -57,6 +57,7 @@ export const messagesEn = {
   "nav.archiveCharacters": "Character Archive",
   "nav.archiveLightCones": "Light Cone Archive",
   "nav.archiveRelicSets": "Relic Archive",
+  "nav.archiveAchievements": "Achievement Archive",
   "nav.tierList": "Tier List",
   "nav.tierCharacters": "Character Priority",
   "nav.tierLightCones": "Light Cone Priority",
@@ -78,7 +79,7 @@ export const messagesEn = {
     "Configure builds, tune scoring, compute filters, and review safe Relic triage suggestions.",
   "home.tool.archive.title": "Explore game data",
   "home.tool.archive.body":
-    "Search Characters, Light Cones, and Relic sets with complete effects.",
+    "Search Characters, Light Cones, Relic sets, and achievements with complete source-backed details.",
   "route.characters.title": "Characters",
   "route.characters.description":
     "Owned characters, progression, Eidolons, Traces, and equipped item references.",
@@ -118,6 +119,9 @@ export const messagesEn = {
   "route.archiveRelicSets.title": "Relic Archive",
   "route.archiveRelicSets.description":
     "Browse Cavern Relic and Planar Ornament sets, pieces, rarities, and set effects.",
+  "route.archiveAchievements.title": "Achievement archive",
+  "route.archiveAchievements.description":
+    "Browse Star Rail achievements by category, completion status, and source-supported version data, with captured or locally tracked progress.",
   "route.tierCharacters.title": "Character Priority",
   "route.tierCharacters.description":
     "Arrange every Character by Combat Type in a personal planning list.",
@@ -545,6 +549,47 @@ export const messagesEn = {
   "archive.search.characters": "Search Characters in either language",
   "archive.search.lightCones": "Search Light Cones or effects",
   "archive.search.relicSets": "Search Relic and Planar sets",
+  "archive.achievement.searchLabel": "Search achievements",
+  "archive.achievement.searchPlaceholder":
+    "Search achievement names and descriptions",
+  "archive.achievement.filtersLabel": "Achievement filters",
+  "archive.achievement.categories": "Achievement categories",
+  "archive.achievement.categoryList": "Achievement category list",
+  "archive.achievement.detail": "Selected category achievements",
+  "archive.achievement.noResults": "No achievements match these filters.",
+  "archive.achievement.status.unfinished": "Unfinished",
+  "archive.achievement.status.finished": "Finished",
+  "archive.achievement.version.unknown": "Version unknown",
+  "archive.achievement.completion.noAccount":
+    "Import an account to track achievement completion.",
+  "archive.achievement.completion.availableToTrack":
+    "This account source did not include achievements. Mark one to start local tracking, or import a complete capture.",
+  "archive.achievement.completion.manual": "Tracked locally",
+  "archive.achievement.completion.captured": "Complete achievement capture",
+  "archive.achievement.completion.capturedEdited":
+    "Captured completion, edited locally",
+  "archive.achievement.completion.progressUnavailable":
+    "Completion is unavailable for this account source",
+  "archive.achievement.completion.progressUnavailableShort":
+    "Progress unavailable",
+  "archive.achievement.progressLabel":
+    "{category}: {completed} of {total} completed",
+  "archive.achievement.visibility.showAfterFinish": "Hidden until completed",
+  "archive.achievement.visibility.hiddenDescription": "Hidden description",
+  "archive.achievement.concealedName": "Hidden achievement",
+  "archive.achievement.concealedAccessibleName": "Hidden achievement {id}",
+  "archive.achievement.concealedDescription":
+    "Complete this achievement to reveal its name and description.",
+  "archive.achievement.dynamicTextFallback": "[dynamic in-game text]",
+  "archive.achievement.stellarJade": "Stellar Jade",
+  "archive.achievement.markFinished": "Mark {name} finished",
+  "archive.achievement.markUnfinished": "Mark {name} unfinished",
+  "archive.achievement.startTrackingAndMarkFinished":
+    "Start local tracking and mark {name} finished",
+  "archive.achievement.trackingUnavailable":
+    "Import an account before tracking achievement completion.",
+  "archive.achievement.searchYouTube": "Search YouTube for {name}",
+  "archive.achievement.searchBilibili": "Search Bilibili for {name}",
   "archive.results": "Showing {shown} of {total} records",
   "archive.relicResults":
     "Showing {shown} of {total} sets · {logical} logical pieces · {variants} rarity variants",
@@ -605,7 +650,9 @@ export const messagesEn = {
   "archive.group": "Group / type",
   "archive.values": "Values",
   "archive.bundle.additiveSummary":
-    "1.1 detail model · {skills} base skills · {ranks} Eidolons · {traces} Trace nodes · {servants} Servants · {variants} seasonal variants · {superimpositions} Superimposition rows · {items} progression items",
+    "1.1+ detail model · {skills} base skills · {ranks} Eidolons · {traces} Trace nodes · {servants} Servants · {variants} seasonal variants · {superimpositions} Superimposition rows · {items} progression items",
+  "archive.bundle.achievementSummary":
+    "Achievement data · {achievements} records in {categories} categories · {showAfterFinish} reveal their title only after completion · {hiddenDescriptions} use an alternate pre-completion description · release version supplied for {versions} records",
   "archive.additiveUnavailable":
     "Detailed Eidolons, Traces, servants, seasonal variants, and progression-item resolution are unavailable in a schema 1.0.0 bundle. The common catalog remains available without invented records.",
   "archive.baseSkills": "Skills ({skills})",
@@ -670,7 +717,7 @@ export const messagesEn = {
     "The local bilingual bundle is accepted only after manifest, byte, hash, envelope, revision, count, and locale validation.",
   "imports.scanner.title": "Scanner export",
   "imports.scanner.body":
-    "Native exports and isolated GOODScanner HSR v1/v2 envelopes use strict adapters and reject credential-shaped fields.",
+    "Native exports, legacy GOODScanner HSR v1/v2 envelopes, and production v3 exports use strict adapters. V3 can include complete packet-captured achievement completion without account identifiers, and credential-shaped fields are rejected.",
   "imports.hoyolab.title": "HoYoLAB account import",
   "imports.hoyolab.body":
     "The local Worker supports separate global and CN request contracts for an owned account's Character roster and equipped gear. Authenticated live success is not claimed without an authorized credential test.",
@@ -701,6 +748,14 @@ export const messagesEn = {
   "imports.review.coverageCharacters": "Characters: {coverage}",
   "imports.review.coverageLightCones": "Light Cones: {coverage}",
   "imports.review.coverageRelics": "Relics: {coverage}",
+  "imports.review.achievementComplete":
+    "Achievements: Complete ({count} completed)",
+  "imports.review.achievementCapturedEdited":
+    "Achievements: Complete capture with local edits ({count} marked completed)",
+  "imports.review.achievementTracked":
+    "Achievements: Locally tracked ({count} marked completed)",
+  "imports.review.achievementUnavailable":
+    "Achievements: Not included (merge keeps current progress; replace clears it)",
   "imports.coverage.complete": "Complete",
   "imports.coverage.equipped-only": "Equipped only",
   "imports.coverage.showcase-only": "Profile showcase only",

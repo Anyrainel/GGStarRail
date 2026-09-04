@@ -562,7 +562,7 @@ describe("source-aware account merging", () => {
   it("marks UID-less to known imports unknown until the caller chooses", () => {
     const uidless = {
       ...makeAccountSnapshot(),
-      profileId: "demo-account:v2",
+      profileId: "demo-account:v3",
       uid: undefined,
       region: undefined,
     };
@@ -576,10 +576,87 @@ describe("source-aware account merging", () => {
     expect(replaced.uid).toBe("600000001");
 
     const explicitlyMerged = applyAccountImport(uidless, incoming, "merge");
-    expect(explicitlyMerged.profileId).toBe("demo-account:v2");
+    expect(explicitlyMerged.profileId).toBe("demo-account:v3");
     expect(explicitlyMerged.uid).toBe("600000001");
     expect(explicitlyMerged.source.warnings).toContain(
       "PARTIAL_IMPORT_MERGED_WITH_LOCAL_DATA"
+    );
+  });
+
+  it("preserves omitted completion only for merges and replaces present snapshots", () => {
+    const current = makeAccountSnapshot();
+    current.achievementCompletion = {
+      completedIds: [101, 102],
+      capture: {
+        coverage: "complete",
+        source: { kind: "packetCapture", revision: "capture-v1" },
+        importedAt: "2026-09-03T00:00:00.000Z",
+      },
+    };
+    const incoming = showcaseAccount();
+
+    const preserved = applyAccountImport(current, incoming, "merge");
+    expect(preserved.achievementCompletion).toEqual(
+      current.achievementCompletion
+    );
+
+    incoming.achievementCompletion = {
+      completedIds: [],
+      capture: {
+        coverage: "complete",
+        source: { kind: "packetCapture", revision: "capture-v2" },
+        importedAt: "2026-09-04T00:00:00.000Z",
+      },
+    };
+    const confirmedZero = applyAccountImport(current, incoming, "merge");
+    expect(confirmedZero.achievementCompletion).toEqual(
+      incoming.achievementCompletion
+    );
+
+    const replacement = showcaseAccount();
+    expect(
+      applyAccountImport(current, replacement, "replace").achievementCompletion
+    ).toBeUndefined();
+  });
+
+  it("merges an achievement-only capture without clearing unknown inventory sections", () => {
+    const current = makeAccountSnapshot();
+    current.achievementCompletion = { completedIds: [101, 102] };
+    const incoming: AccountSnapshot = {
+      ...makeAccountSnapshot(),
+      profileId: "scanner:local",
+      characters: [],
+      lightCones: [],
+      relics: [],
+      achievementCompletion: {
+        completedIds: [],
+        capture: {
+          coverage: "complete",
+          source: { kind: "packetCapture", revision: "capture-v3" },
+          importedAt: "2026-09-04T04:00:00.000Z",
+        },
+      },
+      source: {
+        provider: "scanner-export",
+        formatVersion: 3,
+        sourceVersion: "goodscanner-hsr-v3",
+        importedAt: "2026-09-04T04:00:00.000Z",
+        coverage: {
+          characters: "unknown",
+          lightCones: "unknown",
+          relics: "unknown",
+        },
+        warnings: [],
+      },
+    };
+
+    const merged = applyAccountImport(current, incoming, "merge");
+
+    expect(merged.characters).toEqual(current.characters);
+    expect(merged.lightCones).toEqual(current.lightCones);
+    expect(merged.relics).toEqual(current.relics);
+    expect(merged.achievementCompletion).toEqual(
+      incoming.achievementCompletion
     );
   });
 });

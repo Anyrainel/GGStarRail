@@ -35,5 +35,18 @@ describe("lazy GIlore asset runtime adapter", () => {
         sourcePath: "0",
       })
     ).toMatchObject({ startsWithFallback: true });
+    expect(
+      resolveCatalogAsset({ kind: "achievement-category", id: "1" })
+    ).toMatchObject({ startsWithFallback: true });
+    expect(
+      resolveCatalogAsset({ kind: "achievement-reward", id: "1" })
+    ).toMatchObject({
+      startsWithFallback: false,
+      entry: {
+        cachePath: expect.stringContaining(
+          "55fe37d5cd4bca96d9da243469a4f2dd0d948833a57628a53eadc0c6d12cf1a9.png"
+        ),
+      },
+    });
   });
 });

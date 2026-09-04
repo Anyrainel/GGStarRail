@@ -16,6 +16,7 @@ export interface RouteDefinition {
     | "archive-characters"
     | "archive-light-cones"
     | "archive-relic-sets"
+    | "archive-achievements"
     | "imports";
   path: AppPath;
   titleKey: MessageKey;
@@ -100,6 +101,12 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.archiveRelicSets,
     titleKey: "route.archiveRelicSets.title",
     descriptionKey: "route.archiveRelicSets.description",
+  },
+  {
+    id: "archive-achievements",
+    path: APP_PATHS.archiveAchievements,
+    titleKey: "route.archiveAchievements.title",
+    descriptionKey: "route.archiveAchievements.description",
   },
   {
     id: "imports",

@@ -10,15 +10,27 @@ import { makeAccountSnapshot } from "./fixtures";
 
 describe("independent persistence and backup identity", () => {
   it("round-trips only the GGStarRail envelope", () => {
+    const account = makeAccountSnapshot();
+    account.achievementCompletion = {
+      completedIds: [101, 102],
+      capture: {
+        coverage: "complete",
+        source: { kind: "packetCapture", revision: "capture-v1" },
+        importedAt: "2026-09-03T00:00:00.000Z",
+      },
+    };
     const workspace = {
       ...structuredClone(DEFAULT_WORKSPACE),
-      account: makeAccountSnapshot(),
+      account,
     };
     const serialized = serializeBackup(workspace);
     const parsed = parseBackup(serialized);
     expect(parsed.product).toBe("GGStarRail");
     expect(parsed.kind).toBe("ggstarrail.backup");
     expect(parsed.payload.account?.characters).toHaveLength(1);
+    expect(parsed.payload.account?.achievementCompletion?.completedIds).toEqual(
+      [101, 102]
+    );
     expect(serialized).not.toContain("GenshinTools");
     expect(serialized).not.toContain("GGArtifact");
   });
@@ -98,8 +110,8 @@ describe("independent persistence and backup identity", () => {
     });
 
     const parsed = parseBackup(serialized);
-    expect(parsed.payload.schemaVersion).toBe(2);
-    expect(parsed.payload.account?.schemaVersion).toBe(2);
+    expect(parsed.payload.schemaVersion).toBe(3);
+    expect(parsed.payload.account?.schemaVersion).toBe(3);
     expect(parsed.payload.account?.relics[0]?.discarded).toBeNull();
     expect(parsed.payload.account?.source.coverage.relics).toBe("unknown");
     expect(parsed.payload.builds[0]?.cavern).toEqual({
@@ -116,6 +128,33 @@ describe("independent persistence and backup identity", () => {
       b: 30,
       c: 20,
     });
+  });
+
+  it("migrates a v2 workspace without inventing achievement completion", () => {
+    const currentAccount = makeAccountSnapshot();
+    const {
+      achievementCompletion: _achievementCompletion,
+      ...accountWithoutCompletion
+    } = currentAccount;
+    const serialized = JSON.stringify({
+      product: "GGStarRail",
+      kind: "ggstarrail.backup",
+      schemaVersion: 1,
+      createdAt: "2026-09-03T00:00:00.000Z",
+      payload: {
+        ...structuredClone(DEFAULT_WORKSPACE),
+        schemaVersion: 2,
+        account: {
+          ...accountWithoutCompletion,
+          schemaVersion: 2,
+        },
+      },
+    });
+
+    const parsed = parseBackup(serialized);
+    expect(parsed.payload.schemaVersion).toBe(3);
+    expect(parsed.payload.account?.schemaVersion).toBe(3);
+    expect(parsed.payload.account?.achievementCompletion).toBeUndefined();
   });
 
   it("drops incomplete v1 builds and preserves an explicit three-set split", () => {

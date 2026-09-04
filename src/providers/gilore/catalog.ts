@@ -2,6 +2,10 @@ import manifestJson from "@/generated/hsr-reference/manifest.json";
 import { loadCatalogAssetLookup } from "./assets";
 import { parseGIloreManifest } from "./manifest";
 import type {
+  AchievementCatalog,
+  AchievementCategoryCatalog,
+  AchievementCategoryDefinition,
+  AchievementDefinition,
   BundleSchemaVersion,
   CharacterCatalog,
   CharacterDefinition,
@@ -41,16 +45,18 @@ import type {
 export const HSR_REFERENCE_MANIFEST = parseGIloreManifest(manifestJson);
 
 function createDefinitionCatalog<
-  T extends { id: string },
+  T extends { id: string | number },
   TSchemaVersion extends BundleSchemaVersion,
 >(
   values: readonly T[],
   schemaVersion: TSchemaVersion
 ): DefinitionCatalog<T, TSchemaVersion> {
+  const byId = new Map<T["id"], T>();
+  for (const entry of values) byId.set(entry.id, entry);
   return {
     schemaVersion,
     values,
-    byId: new Map(values.map((entry) => [entry.id, entry])),
+    byId,
   };
 }
 
@@ -110,6 +116,41 @@ export function getLocalizedValue(
   return text?.[locale].value ?? null;
 }
 
+export async function loadAchievementCategories(): Promise<AchievementCategoryCatalog> {
+  const [module] = await Promise.all([
+    import("@/generated/hsr-reference/achievement_categories.json"),
+    loadCatalogAssetLookup(),
+  ]);
+  const document = module.default as unknown as MemberDocument<
+    readonly AchievementCategoryDefinition[],
+    "1.2.0"
+  >;
+  assertMemberSchema(document, "achievement_categories");
+  return createDefinitionCatalog(document.value, document.schema_version);
+}
+
+export async function loadAchievements(): Promise<AchievementCatalog> {
+  const [module] = await Promise.all([
+    import("@/generated/hsr-reference/achievements.json"),
+    loadCatalogAssetLookup(),
+  ]);
+  const document = module.default as unknown as MemberDocument<
+    readonly AchievementDefinition[],
+    "1.2.0"
+  >;
+  assertMemberSchema(document, "achievements");
+  return createDefinitionCatalog(document.value, document.schema_version);
+}
+
+let achievementIdsPromise: Promise<ReadonlySet<number>> | null = null;
+
+export function loadAchievementIds(): Promise<ReadonlySet<number>> {
+  achievementIdsPromise ??= loadAchievements().then(
+    (catalog) => new Set(catalog.byId.keys())
+  );
+  return achievementIdsPromise;
+}
+
 export async function loadCharacters(): Promise<CharacterCatalog> {
   const [module] = await Promise.all([
     import("@/generated/hsr-reference/characters.json"),
@@ -117,7 +158,8 @@ export async function loadCharacters(): Promise<CharacterCatalog> {
   ]);
   const document = module.default as unknown as
     | MemberDocument<readonly CharacterDefinitionV1[], "1.0.0">
-    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.1.0">;
+    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.1.0">
+    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.2.0">;
   assertMemberSchema(document, "characters");
   return document.schema_version === "1.0.0"
     ? createDefinitionCatalog(document.value, document.schema_version)
@@ -131,7 +173,8 @@ export async function loadLightCones(): Promise<LightConeCatalog> {
   ]);
   const document = module.default as unknown as
     | MemberDocument<readonly LightConeDefinitionV1[], "1.0.0">
-    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.1.0">;
+    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.1.0">
+    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.2.0">;
   assertMemberSchema(document, "light_cones");
   return document.schema_version === "1.0.0"
     ? createDefinitionCatalog(document.value, document.schema_version)
@@ -173,7 +216,8 @@ export async function loadPropertyTables(): Promise<PropertyCatalog> {
   ]);
   const document = module.default as unknown as
     | MemberDocument<PropertyTablesV1, "1.0.0">
-    | MemberDocument<PropertyTablesV1_1, "1.1.0">;
+    | MemberDocument<PropertyTablesV1_1, "1.1.0">
+    | MemberDocument<PropertyTablesV1_1, "1.2.0">;
   assertMemberSchema(document, "property_tables");
   if (document.schema_version === "1.0.0") {
     const {
@@ -235,7 +279,8 @@ export async function loadProgression(): Promise<ProgressionTables> {
   const module = await import("@/generated/hsr-reference/progression.json");
   const document = module.default as unknown as
     | MemberDocument<ProgressionTablesV1, "1.0.0">
-    | MemberDocument<ProgressionTablesV1_1, "1.1.0">;
+    | MemberDocument<ProgressionTablesV1_1, "1.1.0">
+    | MemberDocument<ProgressionTablesV1_1, "1.2.0">;
   assertMemberSchema(document, "progression");
   return document.value;
 }

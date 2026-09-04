@@ -1,12 +1,16 @@
 import { z } from "zod";
 import {
   AccountSnapshotV1Schema,
+  AccountSnapshotV2Schema,
   migrateAccountSnapshotV1,
+  migrateAccountSnapshotV2,
   RelicSlotSchema,
   StableIdSchema,
 } from "@/domain/account/schemas";
 import {
+  BuildConfigurationSchema,
   ComputedFilterSchema,
+  ScoreProfileSchema,
   TriageRulesSchema,
 } from "@/domain/build/schemas";
 import {
@@ -15,7 +19,19 @@ import {
   PersistedWorkspaceSchema,
 } from "../schemas";
 
-export const WORKSPACE_STORE_VERSION = 2;
+export const WORKSPACE_STORE_VERSION = 3;
+
+// Store v2 used AccountSnapshot v2 and otherwise had the current build,
+// score-profile, and triage shapes. Achievement completion did not exist.
+const PersistedWorkspaceV2Schema = z
+  .object({
+    schemaVersion: z.literal(2),
+    account: AccountSnapshotV2Schema.nullable(),
+    builds: z.array(BuildConfigurationSchema),
+    scoreProfiles: z.array(ScoreProfileSchema),
+    triageRules: TriageRulesSchema,
+  })
+  .strict();
 
 // Store v1 used AccountSnapshot v1, raw-value ScoreProfiles, and a Build shape
 // with `requiredSetIds`, all six slots in `preferredMainStats`, and cached
@@ -140,7 +156,7 @@ function migrateV1(
   });
 
   return PersistedWorkspaceSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     account: input.account ? migrateAccountSnapshotV1(input.account) : null,
     builds,
     scoreProfiles,
@@ -153,9 +169,21 @@ function migrateV1(
   });
 }
 
+function migrateV2(
+  input: z.infer<typeof PersistedWorkspaceV2Schema>
+): PersistedWorkspace {
+  return PersistedWorkspaceSchema.parse({
+    ...input,
+    schemaVersion: 3,
+    account: input.account ? migrateAccountSnapshotV2(input.account) : null,
+  });
+}
+
 export function parseVersionedWorkspace(input: unknown): PersistedWorkspace {
   const current = PersistedWorkspaceSchema.safeParse(input);
   if (current.success) return current.data;
+  const versionTwo = PersistedWorkspaceV2Schema.safeParse(input);
+  if (versionTwo.success) return migrateV2(versionTwo.data);
   const previous = PersistedWorkspaceV1Schema.safeParse(input);
   if (previous.success) return migrateV1(previous.data);
   throw new Error("Unsupported or invalid GGStarRail workspace schema");
@@ -169,6 +197,13 @@ export function migrateWorkspace(
     const previous = PersistedWorkspaceV1Schema.safeParse(persistedState);
     return previous.success
       ? migrateV1(previous.data)
+      : structuredClone(DEFAULT_WORKSPACE);
+  }
+
+  if (persistedVersion === 2) {
+    const previous = PersistedWorkspaceV2Schema.safeParse(persistedState);
+    return previous.success
+      ? migrateV2(previous.data)
       : structuredClone(DEFAULT_WORKSPACE);
   }
 

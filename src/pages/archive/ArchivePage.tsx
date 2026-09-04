@@ -8,11 +8,16 @@ import {
   HSR_REFERENCE_MANIFEST,
   loadDiagnostics,
 } from "@/providers/gilore/catalog";
+import { AchievementArchiveView } from "./AchievementArchiveView";
 import { CharacterCatalog } from "./CharacterCatalog";
 import { LightConeCatalog } from "./LightConeCatalog";
 import { RelicSetCatalog } from "./RelicSetCatalog";
 
-export type ArchiveKind = "characters" | "lightCones" | "relicSets";
+export type ArchiveKind =
+  | "characters"
+  | "lightCones"
+  | "relicSets"
+  | "achievements";
 
 interface ArchivePageProps {
   kind: ArchiveKind;
@@ -35,6 +40,7 @@ export default function ArchivePage({
       {kind === "characters" && <CharacterCatalog />}
       {kind === "lightCones" && <LightConeCatalog />}
       {kind === "relicSets" && <RelicSetCatalog />}
+      {kind === "achievements" && <AchievementArchiveView />}
       <CatalogProvenance />
     </>
   );
@@ -71,7 +77,7 @@ function CatalogProvenance() {
                   variants: manifest.counts.relic_piece_variants,
                 })}
               </p>
-              {manifest.schema_version === "1.1.0" && (
+              {manifest.schema_version !== "1.0.0" && (
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
                   {t("archive.bundle.additiveSummary", {
                     skills: manifest.counts.character_skills,
@@ -82,6 +88,19 @@ function CatalogProvenance() {
                     superimpositions:
                       manifest.counts.light_cone_superimpositions,
                     items: manifest.counts.progression_items,
+                  })}
+                </p>
+              )}
+              {manifest.schema_version === "1.2.0" && (
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  {t("archive.bundle.achievementSummary", {
+                    categories: manifest.counts.achievement_categories,
+                    achievements: manifest.counts.achievements,
+                    showAfterFinish:
+                      manifest.counts.achievements_show_after_finish,
+                    hiddenDescriptions:
+                      manifest.counts.achievements_hidden_description,
+                    versions: manifest.counts.achievements_with_release_version,
                   })}
                 </p>
               )}

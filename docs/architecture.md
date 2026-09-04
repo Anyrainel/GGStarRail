@@ -82,8 +82,9 @@ Provider DTOs stay outside the canonical domain:
 The current provider boundary includes:
 
 - verified GIlore reference-bundle sync and lazy catalog loaders;
-- native GGStarRail, GOODScanner experimental v1/v2, and interoperable HSR
-  scanner-file adapters, with review-before-apply local file import;
+- native GGStarRail, GOODScanner experimental v1/v2 and production v3, and
+  interoperable HSR scanner-file adapters, with review-before-apply local file
+  import and optional authoritative achievement completion;
 - Enka raw with a separately normalized MiHoMo raw failover for public UID
   showcase data;
 - separate Global and CN Battle Chronicle adapters with one-use credential

@@ -10,6 +10,7 @@ import {
   Library,
   Lightbulb,
   SlidersHorizontal,
+  Trophy,
   UserRound,
   UsersRound,
   WandSparkles,
@@ -30,6 +31,7 @@ export const APP_PATHS = {
   archiveCharacters: "/archive/characters",
   archiveLightCones: "/archive/light-cones",
   archiveRelicSets: "/archive/relic-sets",
+  archiveAchievements: "/archive/achievements",
   imports: "/data-sources",
 } as const;
 
@@ -117,6 +119,11 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         path: APP_PATHS.archiveRelicSets,
         labelKey: "nav.archiveRelicSets",
         icon: Archive,
+      },
+      {
+        path: APP_PATHS.archiveAchievements,
+        labelKey: "nav.archiveAchievements",
+        icon: Trophy,
       },
     ],
   },

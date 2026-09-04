@@ -328,8 +328,8 @@ export async function createDemoAccount(
   });
 
   return AccountSnapshotSchema.parse({
-    schemaVersion: 2,
-    profileId: "demo-account:v2",
+    schemaVersion: 3,
+    profileId: "demo-account:v3",
     trailblazeLevel: 70,
     characters,
     lightCones,

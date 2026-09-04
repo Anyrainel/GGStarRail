@@ -10,7 +10,10 @@ import { validateRelicMainStatDisplayValue } from "@/providers/relicMainStat";
 type NativeScannerCatalog = Pick<
   HsrReferenceCatalog,
   "characters" | "lightCones" | "relicSets" | "relicPieces" | "properties"
-> & { progression: ProgressionTables };
+> & {
+  progression: ProgressionTables;
+  achievementIds: ReadonlySet<number>;
+};
 
 const CATALOG_SLOT_TO_DOMAIN = {
   HEAD: "head",
@@ -80,6 +83,14 @@ export function validateNativeScannerAccount(
   account: AccountSnapshot,
   catalog: NativeScannerCatalog
 ): void {
+  if (account.achievementCompletion) {
+    for (const achievementId of account.achievementCompletion.completedIds) {
+      if (!catalog.achievementIds.has(achievementId)) {
+        throw new Error(`Unknown HSR achievement: ${achievementId}`);
+      }
+    }
+  }
+
   const characterById = new Map(
     catalog.characters.map((definition) => [definition.id, definition])
   );

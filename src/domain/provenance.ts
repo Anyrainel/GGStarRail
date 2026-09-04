@@ -17,7 +17,7 @@ const BundleFileEntrySchema = z
 
 export const ReferenceLocaleSchema = z.enum(["en", "zh-CN"]);
 
-export const BundleSchemaVersionSchema = z.enum(["1.0.0", "1.1.0"]);
+export const BundleSchemaVersionSchema = z.enum(["1.0.0", "1.1.0", "1.2.0"]);
 
 const CommonCountsShape = {
   cavern_relic_sets: z.number().int().nonnegative(),
@@ -42,39 +42,57 @@ const CommonCountsShape = {
   relic_sub_affixes: z.number().int().nonnegative(),
 } as const;
 
+const ExpandedCountsShape = {
+  ...CommonCountsShape,
+  character_enhancement_variants: z.number().int().nonnegative(),
+  character_ranks: z.number().int().nonnegative(),
+  character_servant_attachments: z.number().int().nonnegative(),
+  character_servant_skills: z.number().int().nonnegative(),
+  character_servants: z.number().int().nonnegative(),
+  character_skills: z.number().int().nonnegative(),
+  character_skills_using_description_fallback: z.number().int().nonnegative(),
+  character_trace_levels: z.number().int().nonnegative(),
+  character_trace_nodes: z.number().int().nonnegative(),
+  enhanced_character_ranks: z.number().int().nonnegative(),
+  enhanced_character_skills: z.number().int().nonnegative(),
+  enhanced_character_trace_levels: z.number().int().nonnegative(),
+  enhanced_character_trace_nodes: z.number().int().nonnegative(),
+  light_cone_superimpositions: z.number().int().nonnegative(),
+  progression_items: z.number().int().nonnegative(),
+  properties_with_real_icons: z.number().int().nonnegative(),
+} as const;
+
 const V1CountsSchema = z.object(CommonCountsShape).strict();
-const V1_1CountsSchema = z
+const V1_1CountsSchema = z.object(ExpandedCountsShape).strict();
+const V1_2CountsSchema = z
   .object({
-    ...CommonCountsShape,
-    character_enhancement_variants: z.number().int().nonnegative(),
-    character_ranks: z.number().int().nonnegative(),
-    character_servant_attachments: z.number().int().nonnegative(),
-    character_servant_skills: z.number().int().nonnegative(),
-    character_servants: z.number().int().nonnegative(),
-    character_skills: z.number().int().nonnegative(),
-    character_skills_using_description_fallback: z.number().int().nonnegative(),
-    character_trace_levels: z.number().int().nonnegative(),
-    character_trace_nodes: z.number().int().nonnegative(),
-    enhanced_character_ranks: z.number().int().nonnegative(),
-    enhanced_character_skills: z.number().int().nonnegative(),
-    enhanced_character_trace_levels: z.number().int().nonnegative(),
-    enhanced_character_trace_nodes: z.number().int().nonnegative(),
-    light_cone_superimpositions: z.number().int().nonnegative(),
-    progression_items: z.number().int().nonnegative(),
-    properties_with_real_icons: z.number().int().nonnegative(),
+    ...ExpandedCountsShape,
+    achievement_categories: z.number().int().nonnegative(),
+    achievement_linear_quests: z.number().int().nonnegative(),
+    achievements: z.number().int().nonnegative(),
+    achievements_hidden_description: z.number().int().nonnegative(),
+    achievements_show_after_finish: z.number().int().nonnegative(),
+    achievements_with_release_version: z.number().int().nonnegative(),
   })
   .strict();
 
-const ManifestFilesSchema = z
+const CommonManifestFilesShape = {
+  "characters.json": BundleFileEntrySchema,
+  "corroboration.json": BundleFileEntrySchema,
+  "diagnostics.json": BundleFileEntrySchema,
+  "light_cones.json": BundleFileEntrySchema,
+  "progression.json": BundleFileEntrySchema,
+  "property_tables.json": BundleFileEntrySchema,
+  "relic_pieces.json": BundleFileEntrySchema,
+  "relic_sets.json": BundleFileEntrySchema,
+} as const;
+
+const ManifestFilesSchema = z.object(CommonManifestFilesShape).strict();
+const ManifestFilesV1_2Schema = z
   .object({
-    "characters.json": BundleFileEntrySchema,
-    "corroboration.json": BundleFileEntrySchema,
-    "diagnostics.json": BundleFileEntrySchema,
-    "light_cones.json": BundleFileEntrySchema,
-    "progression.json": BundleFileEntrySchema,
-    "property_tables.json": BundleFileEntrySchema,
-    "relic_pieces.json": BundleFileEntrySchema,
-    "relic_sets.json": BundleFileEntrySchema,
+    ...CommonManifestFilesShape,
+    "achievement_categories.json": BundleFileEntrySchema,
+    "achievements.json": BundleFileEntrySchema,
   })
   .strict();
 
@@ -93,7 +111,6 @@ const ManifestSourceSchema = z
 
 const CommonManifestShape = {
   bundle_id: z.literal("ggstarrail-reference"),
-  files: ManifestFilesSchema,
   game_id: z.literal("honkai_star_rail"),
   locales: z.tuple([z.literal("en"), z.literal("zh-CN")]),
   source: ManifestSourceSchema,
@@ -105,6 +122,7 @@ export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
     .object({
       ...CommonManifestShape,
       counts: V1CountsSchema,
+      files: ManifestFilesSchema,
       schema_version: z.literal("1.0.0"),
     })
     .strict(),
@@ -112,7 +130,16 @@ export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
     .object({
       ...CommonManifestShape,
       counts: V1_1CountsSchema,
+      files: ManifestFilesSchema,
       schema_version: z.literal("1.1.0"),
+    })
+    .strict(),
+  z
+    .object({
+      ...CommonManifestShape,
+      counts: V1_2CountsSchema,
+      files: ManifestFilesV1_2Schema,
+      schema_version: z.literal("1.2.0"),
     })
     .strict(),
 ]);

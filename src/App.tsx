@@ -25,9 +25,14 @@ export default function App() {
 
   useEffect(() => {
     const route = routeDefinition(location.pathname);
-    document.title = route
-      ? `${t(route.titleKey)} — ${PRODUCT_NAME}`
-      : `${t("route.notFound.title")} — ${PRODUCT_NAME}`;
+    const title = route ? t(route.titleKey) : t("route.notFound.title");
+    const description = route
+      ? t(route.descriptionKey)
+      : t("route.notFound.description");
+    document.title = `${title} — ${PRODUCT_NAME}`;
+    document
+      .querySelector<HTMLMetaElement>('meta[name="description"]')
+      ?.setAttribute("content", description);
   }, [location.pathname, t]);
 
   return (
@@ -112,6 +117,16 @@ export default function App() {
               kind="relicSets"
               titleKey="route.archiveRelicSets.title"
               descriptionKey="route.archiveRelicSets.description"
+            />
+          }
+        />
+        <Route
+          path={APP_PATHS.archiveAchievements}
+          element={
+            <ArchivePage
+              kind="achievements"
+              titleKey="route.archiveAchievements.title"
+              descriptionKey="route.archiveAchievements.description"
             />
           }
         />

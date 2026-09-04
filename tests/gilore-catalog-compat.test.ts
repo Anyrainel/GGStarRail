@@ -41,11 +41,19 @@ afterEach(() => {
 
 describe("GIlore schema-versioned runtime catalogs", () => {
   it("loads legacy v1 shapes without claiming v1.1 expansions exist", async () => {
+    const legacyFiles = Object.fromEntries(
+      Object.entries(currentManifest.files).filter(
+        ([fileName]) =>
+          fileName !== "achievement_categories.json" &&
+          fileName !== "achievements.json"
+      )
+    );
     const legacyManifest = {
       ...currentManifest,
       counts: Object.fromEntries(
         V1_COUNT_KEYS.map((key) => [key, currentManifest.counts[key]])
       ),
+      files: legacyFiles,
       schema_version: "1.0.0",
     };
     vi.doMock("@/generated/hsr-reference/manifest.json", () => ({

@@ -43,13 +43,13 @@ describe("GGArtifact family shell", () => {
   });
 
   it("derives the active top-level section and archive tab from the route", () => {
-    renderApp(APP_PATHS.archiveLightCones);
+    renderApp(APP_PATHS.archiveAchievements);
 
     const archiveTabs = screen.getByRole("navigation", {
       name: "Archive catalogs",
     });
     expect(
-      within(archiveTabs).getByRole("link", { name: "Light Cone Archive" })
+      within(archiveTabs).getByRole("link", { name: "Achievement Archive" })
     ).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Archive" })).toHaveClass(
       "text-primary"

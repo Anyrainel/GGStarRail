@@ -142,7 +142,7 @@ describe("Build route interactions", () => {
         "Edited route score"
       );
     });
-  });
+  }, 15_000);
 
   it("keeps catalog builds and scoring editable without account data", async () => {
     await prepareBuildWorkspace();

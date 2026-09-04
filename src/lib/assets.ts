@@ -13,6 +13,9 @@ export interface ResolvedCatalogAsset {
 }
 
 const FALLBACK_LABELS: Record<CatalogAssetKind, string> = {
+  achievement: "AC",
+  "achievement-category": "AS",
+  "achievement-reward": "SJ",
   character: "CH",
   "light-cone": "LC",
   "relic-set": "RS",

@@ -72,7 +72,7 @@ describe("Fresh workspace actions", () => {
 
     await waitFor(() => {
       expect(useWorkspaceStore.getState().account).toMatchObject({
-        profileId: "demo-account:v2",
+        profileId: "demo-account:v3",
         source: { provider: "demo-account" },
       });
     });

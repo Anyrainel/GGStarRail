@@ -28,13 +28,17 @@ unverified without a user-authorized live credential test.
 ## File imports
 
 Scanner imports validate the versioned outer format and canonical account
-snapshot with Zod. GOODScanner experimental v1/v2 and third-party v4 files use
-explicit adapters instead of weakening the canonical schema. A recursive guard
-rejects credential-shaped field names before parsing. The UI produces a review
-draft; only a separate apply action reaches the source-aware account merge or
-confirmed replacement, so parse failures cannot mutate the store. A different
-UID cannot merge, and an unknown identity requires an explicit user choice.
-Partial sources cannot delete a richer scanner inventory.
+snapshot with Zod. GOODScanner experimental v1/v2, production v3, and
+third-party v4 files use explicit adapters instead of weakening the canonical
+schema. Production v3 achievement evidence additionally requires the exact
+packet-capture source, a safe revision, complete coverage, normalized status,
+sorted unique public IDs, and a match in the generated reference. A recursive
+guard rejects credential-shaped field names before parsing. The UI produces a
+review draft; only a separate apply action reaches the source-aware account
+merge or confirmed replacement, so parse failures cannot mutate the store. A
+different UID cannot merge, and an unknown identity requires an explicit user
+choice. Partial sources cannot delete a richer scanner inventory; omitted
+achievement evidence also preserves existing completion during a merge.
 
 The triage manager export contains public visible Relic identity and observed
 state only. Its three privacy literals forbid account identifiers, raw packets,

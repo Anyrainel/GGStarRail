@@ -1,4 +1,7 @@
 export type CatalogAssetKind =
+  | "achievement"
+  | "achievement-category"
+  | "achievement-reward"
   | "character"
   | "light-cone"
   | "relic-set"

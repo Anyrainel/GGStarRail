@@ -37,6 +37,7 @@ describe("HSR account provider normalization", () => {
       relics: "showcase-only",
     });
     expect(result.account.source.sourceVersion).toBe("enka-hsr-showcase-v1");
+    expect(result.account.achievementCompletion).toBeUndefined();
     expect(result.account.source.sourceRevision).toMatch(
       /^gilore-ref:[a-f0-9]{40}$/
     );
@@ -189,6 +190,7 @@ describe("HSR account provider normalization", () => {
     expect(result.account.source.sourceVersion).toBe(
       "hoyolab-hkrpg-avatar-info-global-primary-v1"
     );
+    expect(result.account.achievementCompletion).toBeUndefined();
     expect(result.warnings).toContain(HOYOLAB_WARNING_AUTH_LIVE_UNVERIFIED);
   });
 

@@ -55,4 +55,28 @@ describe("HSR route foundation", () => {
       screen.getByRole("heading", { name: "Page not found" })
     ).toBeInTheDocument();
   });
+
+  it("publishes localized achievement page metadata", async () => {
+    const description = document.createElement("meta");
+    description.name = "description";
+    document.head.append(description);
+
+    render(
+      <ThemeProvider>
+        <I18nProvider>
+          <MemoryRouter initialEntries={[APP_PATHS.archiveAchievements]}>
+            <App />
+          </MemoryRouter>
+        </I18nProvider>
+      </ThemeProvider>
+    );
+
+    await waitFor(() => {
+      expect(document.title).toBe("Achievement archive — GGStarRail");
+      expect(description.content).toBe(
+        messagesEn["route.archiveAchievements.description"]
+      );
+    });
+    description.remove();
+  });
 });

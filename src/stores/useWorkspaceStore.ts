@@ -5,7 +5,10 @@ import {
   type AccountImportMode,
   applyAccountImport,
 } from "@/domain/account/merge";
-import type { AccountSnapshot } from "@/domain/account/schemas";
+import {
+  type AccountSnapshot,
+  AchievementCompletionSchema,
+} from "@/domain/account/schemas";
 import type {
   BuildConfiguration,
   ScoreProfile,
@@ -26,6 +29,12 @@ interface WorkspaceActions {
   applyAccountImport: (
     account: AccountSnapshot,
     mode: AccountImportMode
+  ) => void;
+  setSeriesAchievementStatus: (
+    seriesIds: readonly number[],
+    achievementId: number,
+    completed: boolean,
+    now?: Date
   ) => void;
   upsertBuild: (build: BuildConfiguration) => void;
   removeBuild: (buildId: string) => void;
@@ -52,6 +61,44 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         set((state) => ({
           account: applyAccountImport(state.account, account, mode),
         })),
+      setSeriesAchievementStatus: (
+        seriesIds,
+        achievementId,
+        completed,
+        now = new Date()
+      ) =>
+        set((state) => {
+          if (!state.account) return state;
+          const achievementIndex = seriesIds.indexOf(achievementId);
+          if (achievementIndex < 0) return state;
+
+          const completedIds = new Set(
+            state.account.achievementCompletion?.completedIds ?? []
+          );
+          const affectedIds = completed
+            ? seriesIds.slice(0, achievementIndex + 1)
+            : seriesIds.slice(achievementIndex);
+          for (const id of affectedIds) {
+            if (!Number.isInteger(id) || id <= 0 || id > 0xffff_ffff) {
+              continue;
+            }
+            if (completed) completedIds.add(id);
+            else completedIds.delete(id);
+          }
+
+          return {
+            account: {
+              ...state.account,
+              achievementCompletion: AchievementCompletionSchema.parse({
+                ...state.account.achievementCompletion,
+                completedIds: [...completedIds].sort(
+                  (left, right) => left - right
+                ),
+                locallyModifiedAt: now.toISOString(),
+              }),
+            },
+          };
+        }),
       upsertBuild: (build) =>
         set((state) => ({
           builds: state.builds.some((candidate) => candidate.id === build.id)

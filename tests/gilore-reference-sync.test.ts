@@ -75,6 +75,7 @@ describe("GIlore reference sync regressions", () => {
   it("accepts the generated audited bundle", () => {
     const result = runAgainstCopy(() => undefined);
     expect(result.status).toBe(0);
+    expect(result.output).toContain("9 categories, 1921 definitions");
     expect(result.output).toContain("93 characters");
     expect(result.output).toContain("184 logical pieces / 742 rarity variants");
   });
@@ -301,12 +302,12 @@ describe("GIlore reference sync regressions", () => {
     const unsupportedSchema = runAgainstCopy((directory) => {
       const manifestPath = path.join(directory, "manifest.json");
       const manifest = readJson<MutableManifest>(manifestPath);
-      manifest.schema_version = "1.2.0";
+      manifest.schema_version = "1.3.0";
       writeJson(manifestPath, manifest);
     });
     expect(unsupportedSchema.status).not.toBe(0);
     expect(unsupportedSchema.output).toContain(
-      "unsupported schema version 1.2.0"
+      "unsupported schema version 1.3.0"
     );
 
     const arbitrarySource = runAgainstCopy((directory) => {
@@ -318,6 +319,74 @@ describe("GIlore reference sync regressions", () => {
     expect(arbitrarySource.status).not.toBe(0);
     expect(arbitrarySource.output).toContain(
       "manifest source_id must be turn_based_game_data"
+    );
+  });
+
+  it("rejects lossy achievement IDs and dangling category joins", () => {
+    const lossyId = runAgainstCopy((directory) => {
+      const fileName = "achievements.json";
+      const document = readJson<{ value: Array<{ id: number | string }> }>(
+        path.join(directory, fileName)
+      );
+      document.value[0].id = String(document.value[0].id);
+      rewriteMember(directory, fileName, document);
+    });
+    expect(lossyId.status).not.toBe(0);
+    expect(lossyId.output).toContain("must be a positive u32 integer");
+
+    const danglingCategory = runAgainstCopy((directory) => {
+      const fileName = "achievements.json";
+      const document = readJson<{
+        value: Array<{ category_id: number }>;
+      }>(path.join(directory, fileName));
+      document.value[0].category_id = 0xffff_ffff;
+      rewriteMember(directory, fileName, document);
+    });
+    expect(danglingCategory.status).not.toBe(0);
+    expect(danglingCategory.output).toContain("references unknown category");
+  });
+
+  it("rejects achievement visibility, chain, and explicit-null contract drift", () => {
+    const missingReleaseVersion = runAgainstCopy((directory) => {
+      const fileName = "achievements.json";
+      const document = readJson<{
+        value: Array<Record<string, unknown>>;
+      }>(path.join(directory, fileName));
+      delete document.value[0].release_version;
+      rewriteMember(directory, fileName, document);
+    });
+    expect(missingReleaseVersion.status).not.toBe(0);
+    expect(missingReleaseVersion.output).toContain("keys differ");
+
+    const invalidChain = runAgainstCopy((directory) => {
+      const fileName = "achievements.json";
+      const document = readJson<{
+        value: Array<{ chain_index: number }>;
+      }>(path.join(directory, fileName));
+      document.value[0].chain_index = 1;
+      rewriteMember(directory, fileName, document);
+    });
+    expect(invalidChain.status).not.toBe(0);
+    expect(invalidChain.output).toContain("chain_index is out of range");
+
+    const hiddenWithoutText = runAgainstCopy((directory) => {
+      const fileName = "achievements.json";
+      const document = readJson<{
+        value: Array<{
+          hidden_description: unknown;
+          visibility: string;
+        }>;
+      }>(path.join(directory, fileName));
+      const achievement = document.value.find(
+        (entry) => entry.visibility === "hidden_description"
+      );
+      if (!achievement) throw new Error("fixture has no hidden description");
+      achievement.hidden_description = null;
+      rewriteMember(directory, fileName, document);
+    });
+    expect(hiddenWithoutText.status).not.toBe(0);
+    expect(hiddenWithoutText.output).toContain(
+      "hidden_description visibility requires alternate text"
     );
   });
 

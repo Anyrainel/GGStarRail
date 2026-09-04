@@ -570,6 +570,22 @@ export function AccountImportPanel({
                   coverage: coverageText(draft.account.source.coverage.relics),
                 })}
               </Badge>
+              <Badge variant="outline">
+                {draft.account.achievementCompletion
+                  ? t(
+                      draft.account.achievementCompletion.capture
+                        ? draft.account.achievementCompletion.locallyModifiedAt
+                          ? "imports.review.achievementCapturedEdited"
+                          : "imports.review.achievementComplete"
+                        : "imports.review.achievementTracked",
+                      {
+                        count:
+                          draft.account.achievementCompletion.completedIds
+                            .length,
+                      }
+                    )
+                  : t("imports.review.achievementUnavailable")}
+              </Badge>
             </div>
             {draft.warnings.length > 0 && (
               <div className="space-y-2 rounded-lg border border-border bg-background/60 p-4">

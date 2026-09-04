@@ -356,7 +356,7 @@ export function normalizeEnkaHsrShowcase(
 
   const warningList = [...warnings];
   const account = AccountSnapshotSchema.parse({
-    schemaVersion: 2,
+    schemaVersion: 3,
     profileId: accountProfileKey(uid),
     uid,
     region: parsed.region ?? expectedServer ?? undefined,

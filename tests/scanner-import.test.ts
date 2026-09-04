@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { applyAccountImport } from "@/domain/account/merge";
 import {
   type AccountSnapshot,
   AccountSnapshotSchema,
@@ -10,6 +11,7 @@ import {
   ManagerInstructionEnvelopeSchema,
   summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
+import { loadAchievementIds } from "@/providers/gilore/catalog";
 import {
   SCANNER_WARNING_V4_COVERAGE_UNKNOWN,
   SCANNER_WARNING_V4_EQUIPPED_CHARACTER_MISSING,
@@ -26,12 +28,53 @@ import {
   SCANNER_WARNING_V1_COVERAGE_UNKNOWN,
 } from "@/providers/scanner/schema";
 import { makeAccountSnapshot } from "./fixtures";
+import scannerAchievementV3Fixture from "./fixtures/goodscanner-hsr-achievement-only-v3.json";
 import scannerV1Fixture from "./fixtures/goodscanner-hsr-experimental-v1.json";
 import scannerV2Fixture from "./fixtures/goodscanner-hsr-experimental-v2.json";
 import nativeScannerV1Fixture from "./fixtures/native-scanner-account-v1.json";
 import hsrScannerV4Fixture from "./fixtures/scanner/hsr-scanner-v4.json";
 import managerV1Fixture from "./fixtures/scanner/manager-instructions-v1.json";
 import reliquaryV4Fixture from "./fixtures/scanner/reliquary-v4.json";
+
+function productionScannerV3(
+  entries: Array<{ achievementId: number; status: string }>
+) {
+  return {
+    ...structuredClone(scannerV2Fixture),
+    schema: "goodscanner.hsr",
+    schemaVersion: 3,
+    source: {
+      ...scannerV2Fixture.source,
+      kind: "packetCapture",
+      coverage: {
+        characters: "unknown",
+        lightCones: "unknown",
+        relics: "unknown",
+      },
+    },
+    characters: [],
+    lightCones: [],
+    relics: [],
+    planarOrnaments: [],
+    achievements: {
+      source: { kind: "packetCapture", revision: "auto-reliquary-1.2.0" },
+      coverage: "complete",
+      entries,
+    },
+  };
+}
+
+async function knownAchievementIds(count: number): Promise<number[]> {
+  const ids = [...(await loadAchievementIds())].sort(
+    (left, right) => left - right
+  );
+  if (ids.length < count) {
+    throw new Error(
+      `Generated achievement reference has fewer than ${count} IDs`
+    );
+  }
+  return ids.slice(0, count);
+}
 
 function fixtureSha256(relativePath: string): string {
   const bytes = readFileSync(new URL(relativePath, import.meta.url));
@@ -49,6 +92,38 @@ function semanticManagerKey(
 }
 
 describe("GOODScanner HSR import compatibility", () => {
+  it("parses the byte-exact scanner-produced achievement-only v3 golden", async () => {
+    expect(
+      fixtureSha256("./fixtures/goodscanner-hsr-achievement-only-v3.json")
+    ).toBe("9c9bcfc5f35af71385f1c2e4c8d6d71308d6927a82af5a44c1bb593959175dc1");
+
+    const parsed = await parseVersionedScannerExport(
+      scannerAchievementV3Fixture,
+      new Date("2026-09-04T06:00:00.000Z")
+    );
+
+    expect(parsed.account.achievementCompletion).toEqual({
+      completedIds: [4010101, 4040201],
+      capture: {
+        coverage: "complete",
+        source: {
+          kind: "packetCapture",
+          revision: "auto-reliquary-1.2.0",
+        },
+        importedAt: "2026-09-04T06:00:00.000Z",
+      },
+    });
+    expect(parsed.account.source).toMatchObject({
+      provider: "scanner-export",
+      sourceVersion: "goodscanner-hsr-v3",
+      coverage: {
+        characters: "unknown",
+        lightCones: "unknown",
+        relics: "unknown",
+      },
+    });
+  });
+
   it("parses the byte-exact scanner-produced v2 golden", async () => {
     expect(
       fixtureSha256("./fixtures/goodscanner-hsr-experimental-v2.json")
@@ -56,11 +131,276 @@ describe("GOODScanner HSR import compatibility", () => {
 
     const parsed = await parseVersionedScannerExport(scannerV2Fixture);
     expect(parsed.account).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       source: {
         sourceVersion: "goodscanner-hsr-experimental-v2",
       },
     });
+  });
+
+  it("imports an achievement-only production v3 capture without clearing unknown inventory sections", async () => {
+    const [knownAchievementId] = await knownAchievementIds(1);
+    const draft = await parseVersionedScannerExport(
+      productionScannerV3([]),
+      new Date("2026-09-04T04:00:00.000Z")
+    );
+    const current = makeAccountSnapshot();
+    current.achievementCompletion = {
+      completedIds: [knownAchievementId!],
+    };
+    const merged = applyAccountImport(current, draft.account, "merge");
+
+    expect(draft.account).toMatchObject({
+      schemaVersion: 3,
+      characters: [],
+      lightCones: [],
+      relics: [],
+      achievementCompletion: {
+        completedIds: [],
+        capture: {
+          coverage: "complete",
+          source: {
+            kind: "packetCapture",
+            revision: "auto-reliquary-1.2.0",
+          },
+          importedAt: "2026-09-04T04:00:00.000Z",
+        },
+      },
+      source: {
+        sourceVersion: "goodscanner-hsr-v3",
+        coverage: {
+          characters: "unknown",
+          lightCones: "unknown",
+          relics: "unknown",
+        },
+      },
+    });
+    expect(merged.characters).toEqual(current.characters);
+    expect(merged.lightCones).toEqual(current.lightCones);
+    expect(merged.relics).toEqual(current.relics);
+    expect(merged.achievementCompletion).toEqual(
+      draft.account.achievementCompletion
+    );
+  });
+
+  it("imports sorted unique production v3 IDs from the generated achievement reference", async () => {
+    const [firstAchievementId, secondAchievementId] =
+      await knownAchievementIds(2);
+
+    const draft = await parseVersionedScannerExport(
+      productionScannerV3([
+        { achievementId: firstAchievementId!, status: "completed" },
+        { achievementId: secondAchievementId!, status: "completed" },
+      ]),
+      new Date("2026-09-04T05:00:00.000Z")
+    );
+
+    expect(draft.account.achievementCompletion).toEqual({
+      completedIds: [firstAchievementId, secondAchievementId],
+      capture: {
+        coverage: "complete",
+        source: {
+          kind: "packetCapture",
+          revision: "auto-reliquary-1.2.0",
+        },
+        importedAt: "2026-09-04T05:00:00.000Z",
+      },
+    });
+  });
+
+  it("preserves existing completion when production v3 omits achievement evidence", async () => {
+    const [knownAchievementId] = await knownAchievementIds(1);
+    const input = productionScannerV3([]);
+    delete (input as { achievements?: unknown }).achievements;
+
+    const draft = await parseVersionedScannerExport(input);
+    const current = makeAccountSnapshot();
+    current.achievementCompletion = {
+      completedIds: [knownAchievementId!],
+    };
+    const merged = applyAccountImport(current, draft.account, "merge");
+
+    expect(draft.account.achievementCompletion).toBeUndefined();
+    expect(merged.characters).toEqual(current.characters);
+    expect(merged.lightCones).toEqual(current.lightCones);
+    expect(merged.relics).toEqual(current.relics);
+    expect(merged.achievementCompletion).toEqual(current.achievementCompletion);
+  });
+
+  it.each([
+    ["experimental schema name", "goodscanner.hsr.experimental", 3],
+    ["production schema with the old version", "goodscanner.hsr", 2],
+    ["unknown production version", "goodscanner.hsr", 4],
+    ["unknown schema name", "goodscanner.hsr.future", 3],
+  ])("rejects production v3 with %s", async (_label, schema, schemaVersion) => {
+    const input = productionScannerV3([]);
+    Object.assign(input, { schema, schemaVersion });
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it.each([
+    "source",
+    "reference",
+    "privacy",
+    "characters",
+    "lightCones",
+    "relics",
+    "planarOrnaments",
+  ] as const)("rejects production v3 without required %s", async (field) => {
+    const input = productionScannerV3([]);
+    delete (input as unknown as Record<string, unknown>)[field];
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it("rejects fields outside the full production v3 envelope", async () => {
+    const unexpectedTopLevel = productionScannerV3([]);
+    Object.assign(unexpectedTopLevel, { unexpected: true });
+    await expect(
+      parseVersionedScannerExport(unexpectedTopLevel)
+    ).rejects.toThrow();
+
+    const achievementCoverageInInventorySource = productionScannerV3([]);
+    Object.assign(achievementCoverageInInventorySource.source.coverage, {
+      achievements: "complete",
+    });
+    await expect(
+      parseVersionedScannerExport(achievementCoverageInInventorySource)
+    ).rejects.toThrow();
+  });
+
+  it("distinguishes an omitted achievement snapshot from JSON null", async () => {
+    const input = productionScannerV3([]);
+    (input as { achievements: unknown }).achievements = null;
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it.each([
+    "source",
+    "coverage",
+    "entries",
+  ] as const)("rejects achievement evidence without required %s", async (field) => {
+    const input = productionScannerV3([]);
+    delete (input.achievements as unknown as Record<string, unknown>)[field];
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it.each([
+    ["non-packet source", "source.kind", "screenCapture"],
+    ["empty source revision", "source.revision", ""],
+    ["overlong source revision", "source.revision", "x".repeat(129)],
+    ["unsafe source revision", "source.revision", "capture account=secret"],
+    ["non-ASCII source revision", "source.revision", "抓包-1"],
+    ["unknown coverage", "coverage", "unknown"],
+    ["unknown status", "entries.0.status", "finished"],
+  ])("rejects production v3 achievement evidence with %s", async (_label, path, value) => {
+    const input = productionScannerV3([
+      { achievementId: 1, status: "completed" },
+    ]);
+    if (path === "source.kind") {
+      input.achievements.source.kind = value;
+    } else if (path === "source.revision") {
+      input.achievements.source.revision = value;
+    } else if (path === "coverage") {
+      input.achievements.coverage = value;
+    } else {
+      input.achievements.entries[0]!.status = value;
+    }
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it("rejects raw numeric protocol status in production v3 entries", async () => {
+    const input = productionScannerV3([
+      { achievementId: 1, status: "completed" },
+    ]);
+    (input.achievements.entries[0] as { status: unknown }).status = 2;
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it("rejects extra achievement source, snapshot, and entry fields", async () => {
+    const unexpectedSourceField = productionScannerV3([]);
+    Object.assign(unexpectedSourceField.achievements.source, {
+      unexpected: true,
+    });
+    await expect(
+      parseVersionedScannerExport(unexpectedSourceField)
+    ).rejects.toThrow();
+
+    const unexpectedSnapshotField = productionScannerV3([]);
+    Object.assign(unexpectedSnapshotField.achievements, { observedAt: 1 });
+    await expect(
+      parseVersionedScannerExport(unexpectedSnapshotField)
+    ).rejects.toThrow();
+
+    const unexpectedEntryField = productionScannerV3([
+      { achievementId: 1, status: "completed" },
+    ]);
+    Object.assign(unexpectedEntryField.achievements.entries[0]!, {
+      progress: 1,
+    });
+    await expect(
+      parseVersionedScannerExport(unexpectedEntryField)
+    ).rejects.toThrow();
+  });
+
+  it.each([
+    ["zero", 0],
+    ["negative", -1],
+    ["fractional", 1.5],
+    ["larger than u32", 0x1_0000_0000],
+    ["string", "80001"],
+  ])("rejects production v3 %s achievement IDs", async (_label, id) => {
+    const input = productionScannerV3([
+      { achievementId: 1, status: "completed" },
+    ]);
+    (
+      input.achievements.entries[0] as { achievementId: unknown }
+    ).achievementId = id;
+
+    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+  });
+
+  it("rejects duplicate and unsorted production v3 completion entries", async () => {
+    const [firstAchievementId, secondAchievementId] =
+      await knownAchievementIds(2);
+    await expect(
+      parseVersionedScannerExport(
+        productionScannerV3([
+          { achievementId: firstAchievementId!, status: "completed" },
+          { achievementId: firstAchievementId!, status: "completed" },
+        ])
+      )
+    ).rejects.toThrow(/Duplicate completed achievement ID/);
+
+    await expect(
+      parseVersionedScannerExport(
+        productionScannerV3([
+          { achievementId: secondAchievementId!, status: "completed" },
+          { achievementId: firstAchievementId!, status: "completed" },
+        ])
+      )
+    ).rejects.toThrow(/sorted ascending/);
+  });
+
+  it("rejects production v3 IDs missing from the generated achievement reference", async () => {
+    const achievementIds = await loadAchievementIds();
+    let unknownAchievementId = 0xffff_ffff;
+    while (achievementIds.has(unknownAchievementId)) {
+      unknownAchievementId -= 1;
+    }
+
+    await expect(
+      parseVersionedScannerExport(
+        productionScannerV3([
+          { achievementId: unknownAchievementId, status: "completed" },
+        ])
+      )
+    ).rejects.toThrow(`Unknown HSR achievement: ${unknownAchievementId}`);
   });
 
   it("imports v1 conservatively and preserves observed tri-state fields", async () => {
@@ -69,7 +409,7 @@ describe("GOODScanner HSR import compatibility", () => {
       new Date("2026-09-02T12:00:00.000Z")
     );
 
-    expect(draft.account.schemaVersion).toBe(2);
+    expect(draft.account.schemaVersion).toBe(3);
     expect(draft.account.source.coverage).toEqual({
       characters: "unknown",
       lightCones: "unknown",
@@ -98,6 +438,7 @@ describe("GOODScanner HSR import compatibility", () => {
       SCANNER_WARNING_TRACES_NOT_INCLUDED,
       SCANNER_WARNING_V1_COVERAGE_UNKNOWN,
       SCANNER_WARNING_SANITIZED_FIXTURE,
+      SCANNER_WARNING_REFERENCE_REVISION_MISMATCH,
       SCANNER_WARNING_UNKNOWN_LOCK_STATE,
       SCANNER_WARNING_UNKNOWN_DISCARD_STATE,
     ]);
@@ -119,7 +460,7 @@ describe("GOODScanner HSR import compatibility", () => {
     );
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       profileId: "scanner:local",
       source: {
         provider: "scanner-export",
@@ -150,6 +491,7 @@ describe("GOODScanner HSR import compatibility", () => {
     });
     expect(draft.warnings).toEqual([
       SCANNER_WARNING_TRACES_NOT_INCLUDED,
+      SCANNER_WARNING_REFERENCE_REVISION_MISMATCH,
       SCANNER_WARNING_UNKNOWN_LOCK_STATE,
       SCANNER_WARNING_UNKNOWN_DISCARD_STATE,
     ]);
@@ -356,7 +698,7 @@ describe("GOODScanner HSR import compatibility", () => {
     const draft = await parseVersionedScannerExport(nativeScannerV1Fixture);
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       profileId: "scanner:legacy",
       source: {
         coverage: {
@@ -374,6 +716,54 @@ describe("GOODScanner HSR import compatibility", () => {
         }),
       ],
     });
+  });
+
+  it("accepts native v3 completion IDs present in the generated achievement reference", async () => {
+    const achievementIds = await loadAchievementIds();
+    const knownAchievementId = achievementIds.values().next().value;
+    if (knownAchievementId === undefined) {
+      throw new Error("Generated achievement reference is empty");
+    }
+    const imported = await parseVersionedScannerExport(scannerV2Fixture);
+    const native = {
+      format: "ggstarrail-scanner-export",
+      schemaVersion: 1,
+      sourceApp: { name: "GGStarRail", version: "0.1.0" },
+      exportedAt: "2026-09-04T04:00:00.000Z",
+      account: {
+        ...imported.account,
+        achievementCompletion: { completedIds: [knownAchievementId] },
+      },
+    };
+
+    await expect(parseVersionedScannerExport(native)).resolves.toMatchObject({
+      account: {
+        achievementCompletion: { completedIds: [knownAchievementId] },
+      },
+    });
+  });
+
+  it("rejects native v3 completion IDs missing from the generated achievement reference", async () => {
+    const achievementIds = await loadAchievementIds();
+    let unknownAchievementId = 0xffff_ffff;
+    while (achievementIds.has(unknownAchievementId)) {
+      unknownAchievementId -= 1;
+    }
+    const imported = await parseVersionedScannerExport(scannerV2Fixture);
+    const native = {
+      format: "ggstarrail-scanner-export",
+      schemaVersion: 1,
+      sourceApp: { name: "GGStarRail", version: "0.1.0" },
+      exportedAt: "2026-09-04T04:00:00.000Z",
+      account: {
+        ...imported.account,
+        achievementCompletion: { completedIds: [unknownAchievementId] },
+      },
+    };
+
+    await expect(parseVersionedScannerExport(native)).rejects.toThrow(
+      `Unknown HSR achievement: ${unknownAchievementId}`
+    );
   });
 
   it("rejects unknown native Relic definitions through the public parser", async () => {
@@ -699,7 +1089,7 @@ describe("interoperable HSR scanner v4 imports", () => {
     );
 
     expect(first.account).toMatchObject({
-      schemaVersion: 2,
+      schemaVersion: 3,
       profileId: "scanner:v4:hsr-scanner",
       uid: "601869216",
       source: {
@@ -797,7 +1187,7 @@ describe("interoperable HSR scanner v4 imports", () => {
           result: { decision: "keep", reasons: ["keep-score"] },
         },
       ],
-      "014e33e2404f8cd668bf06fc2ea6db53b6bc3992",
+      "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091",
       "ggstarrail-reliquary-fixture"
     );
     expect(JSON.stringify(envelope)).not.toContain("3456789012");
@@ -889,6 +1279,35 @@ describe("interoperable HSR scanner v4 imports", () => {
 });
 
 describe("canonical AccountSnapshot equipment integrity", () => {
+  it("rejects unsafe persisted achievement capture revisions", () => {
+    const account = makeAccountSnapshot();
+    account.achievementCompletion = {
+      completedIds: [],
+      capture: {
+        coverage: "complete",
+        source: {
+          kind: "packetCapture",
+          revision: "capture account=secret",
+        },
+        importedAt: "2026-09-04T06:00:00.000Z",
+      },
+    };
+
+    expect(AccountSnapshotSchema.safeParse(account).success).toBe(false);
+  });
+
+  it.each([
+    ["zero", [0]],
+    ["larger than u32", [0x1_0000_0000]],
+    ["duplicate", [101, 101]],
+    ["unsorted", [102, 101]],
+  ])("rejects %s completed achievement IDs", (_label, completedIds) => {
+    const account = makeAccountSnapshot();
+    account.achievementCompletion = { completedIds };
+
+    expect(AccountSnapshotSchema.safeParse(account).success).toBe(false);
+  });
+
   it("accepts unknown lock states and truly reference-free partial sections", () => {
     const unknownStates = makeAccountSnapshot();
     unknownStates.lightCones[0]!.locked = null;

@@ -68,7 +68,8 @@ Implemented now:
 - React 19, TypeScript, Vite, Tailwind, shadcn-style primitives, and Zustand.
 - Responsive desktop/mobile shell and all MVP routes.
 - Typed `en` and `zh-CN` catalogs with key and placeholder parity tests.
-- Locale-neutral HSR account, Character, Light Cone, and six-slot Relic models.
+- Locale-neutral HSR account, Character, Light Cone, six-slot Relic, and
+  optional achievement-completion models.
 - Versioned local workspace storage and a GGStarRail-only backup envelope.
 - Editable per-Character 4+2 builds, with an advanced 2+2 Cavern alternative,
   fixed Head/Hands main stats, and configurable main stats for the other four
@@ -78,14 +79,18 @@ Implemented now:
   and advisory triage.
 - Complete, lazily loaded GIlore reference catalogs with strict integrity,
   provenance, diagnostics, and bilingual-identity checks.
-- Functional Character, Light Cone, and Relic/Planar Archives with localized
-  search, filters, selectable details, progression, materials, and provenance.
+- Functional Character, Light Cone, Relic/Planar, and Achievement Archives
+  with localized search, filters, selectable details, progression, materials,
+  completion coverage, and provenance.
 - Functional Account Data views with a primary responsive import action for
   public UID, transient HoYoLAB/米游社 credentials, and scanner JSON. The
   explicit real-ID demo loader remains a secondary development aid.
 - Review-before-apply JSON import for the native GGStarRail envelope,
-  GOODScanner HSR experimental v1/v2, and interoperable Reliquary,
-  HSR-Scanner, Kel, and Fribbels v4 files; rejected imports are atomic.
+  GOODScanner HSR experimental v1/v2 and production v3, and interoperable
+  Reliquary, HSR-Scanner, Kel, and Fribbels v4 files; rejected imports are
+  atomic. Production v3 may authoritatively replace achievement completion
+  while omitted achievement evidence remains unavailable and preserves local
+  progress during a merge.
 - Deterministic local GIlore sync plus strict scanner-envelope validation.
 - Complete local asset-cache resolution with deterministic visual fallbacks.
 - Enka/MiHoMo public showcase import and separate Global/CN Battle Chronicle
@@ -100,7 +105,6 @@ Implemented now:
 
 Known external boundaries:
 
-- Live scanner capture and a production scanner-to-GGStarRail handoff.
 - Authenticated Battle Chronicle success and the minimum accepted cookie fields
   remain unverified without a user-authorized credential test.
 - Browser/app verification challenges must be completed in HoYoLAB or 米游社;

@@ -5,6 +5,9 @@ import type {
 import { configureCatalogAssetLookup, getAssetUrl } from "@/lib/assets";
 
 const CATALOG_ASSET_KINDS = new Set<CatalogAssetKind>([
+  "achievement",
+  "achievement-category",
+  "achievement-reward",
   "character",
   "light-cone",
   "relic-set",
@@ -32,6 +35,11 @@ interface RuntimeLookupDocument {
 let lookupPromise: Promise<void> | null = null;
 
 const REQUIRED_FALLBACKS: readonly CatalogAssetLookupEntry[] = [
+  ...Array.from({ length: 9 }, (_, index) => ({
+    kind: "achievement-category" as const,
+    id: String(index + 1),
+    cachePath: null,
+  })),
   { kind: "property", id: "StanceBreakAddedRatio", cachePath: null },
   ...["BODY", "FOOT", "HAND", "HEAD", "NECK", "OBJECT"].map((id) => ({
     kind: "relic-slot" as const,

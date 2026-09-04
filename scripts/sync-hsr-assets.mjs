@@ -14,14 +14,35 @@ import {
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-export const SUPPORTED_ASSET_SCHEMA_VERSION = "1.0.0";
-export const SUPPORTED_REFERENCE_SCHEMA_VERSION = "1.1.0";
+export const SUPPORTED_ASSET_SCHEMA_VERSION = "1.1.0";
+export const SUPPORTED_REFERENCE_SCHEMA_VERSION = "1.2.0";
 export const AUDITED_REFERENCE_REVISION =
-  "014e33e2404f8cd668bf06fc2ea6db53b6bc3992";
+  "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091";
 export const AUDITED_ASSET_SOURCE_REVISION =
   "d226befe3db13f2ec15f4161d5f34b1b607643fe";
 
 export const EXPECTED_ASSET_COVERAGE = Object.freeze({
+  achievement: Object.freeze({
+    reference_entity_count: 1921,
+    eligible_entity_count: 0,
+    mapped_entity_count: 0,
+    logical_asset_count: 0,
+    excluded_entity_count: 0,
+  }),
+  achievement_category: Object.freeze({
+    reference_entity_count: 9,
+    eligible_entity_count: 0,
+    mapped_entity_count: 0,
+    logical_asset_count: 0,
+    excluded_entity_count: 9,
+  }),
+  achievement_reward: Object.freeze({
+    reference_entity_count: 1,
+    eligible_entity_count: 1,
+    mapped_entity_count: 1,
+    logical_asset_count: 1,
+    excluded_entity_count: 0,
+  }),
   character: Object.freeze({
     reference_entity_count: 93,
     eligible_entity_count: 93,
@@ -75,12 +96,14 @@ export const EXPECTED_ASSET_COVERAGE = Object.freeze({
 
 const ASSET_KINDS = Object.freeze(Object.keys(EXPECTED_ASSET_COVERAGE));
 const EXPECTED_MAPPING_CONTRACT =
-  "Join locale-independent reference IDs only through pinned StarRailRes index JSON; TurnBasedGameData SpriteOutput paths are provenance and are never filename inputs. Unknown additive reference entity fields are ignored.";
+  "Join locale-independent reference IDs only through pinned StarRailRes index JSON; achievement IDs are validation-only because the index has no icon field; category icons remain explicit exclusions without an exact indexed mapping; TurnBasedGameData SpriteOutput paths are provenance and are never filename inputs. Unknown additive reference entity fields are ignored.";
 const EXPECTED_PUBLICATION_CONTRACT =
   "Files are committed as an immutable snapshot before assets-manifest.json is atomically replaced as the live commit marker. assets-manifest.sha256 is advisory; on a mismatch, reread both files and retry.";
 const EXPECTED_INDEX_PATHS = Object.freeze({
+  achievements: "index_min/en/achievements.json",
   characters: "index_min/en/characters.json",
   combat_types: "index_min/en/elements.json",
+  items: "index_min/en/items.json",
   light_cones: "index_min/en/light_cones.json",
   paths: "index_min/en/paths.json",
   properties: "index_min/en/properties.json",
@@ -88,6 +111,12 @@ const EXPECTED_INDEX_PATHS = Object.freeze({
   relics: "index_min/en/relics.json",
 });
 const EXPECTED_SOURCE_INDEX_EXTRAS = Object.freeze({
+  achievement: Object.freeze([]),
+  achievement_category: Object.freeze([]),
+  achievement_reward: Object.freeze({
+    count: 4016,
+    sha256: "be29e8881a6c3eadf9d61b2e25820d0aa60f22e0233c0649ec8ba4d088e359df",
+  }),
   character: Object.freeze(["1014", "1015", "1508", "1509"]),
   combat_type: Object.freeze([]),
   light_cone: Object.freeze([]),
@@ -96,6 +125,15 @@ const EXPECTED_SOURCE_INDEX_EXTRAS = Object.freeze({
   relic_piece: Object.freeze([]),
   relic_set: Object.freeze([]),
 });
+const EXPECTED_ACHIEVEMENT_VALIDATION_IDS = Object.freeze({
+  count: 1921,
+  sha256: "01765bdd174316998d246881a8e6bef649431df6c35b5e1ba0d63419a53eb6e3",
+});
+export const EXPECTED_LOGICAL_ASSET_COUNT = 578;
+export const EXPECTED_UNIQUE_PNG_COUNT = 551;
+export const EXPECTED_ASSET_FILE_COUNT = 554;
+export const EXPECTED_ACHIEVEMENT_REWARD_SHA256 =
+  "55fe37d5cd4bca96d9da243469a4f2dd0d948833a57628a53eadc0c6d12cf1a9";
 const EXPECTED_OUTPUT_DOCUMENTS = Object.freeze([
   "ATTRIBUTION.md",
   "upstream/LICENSE",
@@ -463,11 +501,13 @@ function validateCoverage(coverage) {
         `manifest.coverage.${kind}.${field} mismatch: expected ${count}; got ${entry[field]}`
       );
     }
-    assert(
-      entry.reference_entity_count ===
-        entry.eligible_entity_count + entry.excluded_entity_count,
-      `manifest.coverage.${kind} does not account for every reference entity`
-    );
+    if (kind !== "achievement") {
+      assert(
+        entry.reference_entity_count ===
+          entry.eligible_entity_count + entry.excluded_entity_count,
+        `manifest.coverage.${kind} does not account for every reference entity`
+      );
+    }
     assert(
       entry.mapped_entity_count === entry.eligible_entity_count,
       `manifest.coverage.${kind} has unmapped eligible entities`
@@ -478,19 +518,32 @@ function validateCoverage(coverage) {
 
 function validateExcludedAssets(excludedAssets) {
   const entries = assertArray(excludedAssets, "manifest.excluded_assets");
-  assert(entries.length === 1, "expected exactly one explicit asset exclusion");
-  const entry = assertObject(entries[0], "manifest.excluded_assets[0]");
-  assertExactKeys(
-    entry,
-    ["entity_id", "logical_kind", "reason"],
-    "manifest.excluded_assets[0]"
-  );
+  const expected = [
+    ...Array.from({ length: 9 }, (_, index) => ({
+      entity_id: String(index + 1),
+      logical_kind: "achievement_category",
+      reason: "no_exact_indexed_icon",
+    })),
+    {
+      entity_id: "StanceBreakAddedRatio",
+      logical_kind: "property",
+      reason: "no_real_upstream_icon",
+    },
+  ];
   assert(
-    entry.logical_kind === "property" &&
-      entry.entity_id === "StanceBreakAddedRatio" &&
-      entry.reason === "no_real_upstream_icon",
-    "unexpected asset exclusion"
+    entries.length === expected.length,
+    `expected exactly ${expected.length} explicit asset exclusions`
   );
+  entries.forEach((entryValue, index) => {
+    const label = `manifest.excluded_assets[${index}]`;
+    const entry = assertObject(entryValue, label);
+    assertExactKeys(entry, ["entity_id", "logical_kind", "reason"], label);
+    assert(
+      JSON.stringify(entry) === JSON.stringify(expected[index]),
+      `${label} does not match the audited exclusion`
+    );
+  });
+  return entries;
 }
 
 function validateSourceIndexExtras(extras) {
@@ -505,11 +558,60 @@ function validateSourceIndexExtras(extras) {
       entries.every((entry) => typeof entry === "string" && entry.length > 0),
       `manifest.source_index_extras.${kind} contains an invalid ID`
     );
-    assert(
-      JSON.stringify(entries) === JSON.stringify(expected),
-      `manifest.source_index_extras.${kind} drift`
-    );
+    if (Array.isArray(expected)) {
+      assert(
+        JSON.stringify(entries) === JSON.stringify(expected),
+        `manifest.source_index_extras.${kind} drift`
+      );
+    } else {
+      assert(
+        entries.length === expected.count &&
+          sha256(Buffer.from(JSON.stringify(entries), "utf8")) ===
+            expected.sha256,
+        `manifest.source_index_extras.${kind} drift`
+      );
+    }
   }
+}
+
+function validateValidationOnlyEntityIds(validationOnlyEntityIds, coverage) {
+  const value = assertObject(
+    validationOnlyEntityIds,
+    "manifest.validation_only_entity_ids"
+  );
+  assertExactKeys(
+    value,
+    ["achievement"],
+    "manifest.validation_only_entity_ids"
+  );
+  const achievementIds = assertArray(
+    value.achievement,
+    "manifest.validation_only_entity_ids.achievement"
+  );
+  const uniqueIds = new Set();
+  for (const [index, id] of achievementIds.entries()) {
+    const numericId = Number(id);
+    assert(
+      typeof id === "string" &&
+        /^[1-9]\d*$/.test(id) &&
+        Number.isInteger(numericId) &&
+        numericId <= 0xffffffff,
+      `manifest.validation_only_entity_ids.achievement[${index}] is not a canonical positive u32 ID`
+    );
+    assert(
+      !uniqueIds.has(id),
+      `manifest.validation_only_entity_ids.achievement contains duplicate ${id}`
+    );
+    uniqueIds.add(id);
+  }
+  assert(
+    achievementIds.length === coverage.achievement.reference_entity_count &&
+      achievementIds.length === EXPECTED_ACHIEVEMENT_VALIDATION_IDS.count &&
+      sha256(Buffer.from(JSON.stringify(achievementIds), "utf8")) ===
+        EXPECTED_ACHIEVEMENT_VALIDATION_IDS.sha256,
+    "manifest.validation_only_entity_ids.achievement drift"
+  );
+  return value;
 }
 
 function validateAssetRecord(record, index, sourceRevision, snapshotId) {
@@ -580,6 +682,7 @@ export function validateAssetManifestDocument(manifest) {
       "snapshot_id",
       "source",
       "source_index_extras",
+      "validation_only_entity_ids",
     ],
     "manifest"
   );
@@ -601,8 +704,12 @@ export function validateAssetManifestDocument(manifest) {
   const reference = validateReferenceLink(value.reference);
   const source = validateAssetSource(value.source);
   const coverage = validateCoverage(value.coverage);
-  validateExcludedAssets(value.excluded_assets);
+  const excludedAssets = validateExcludedAssets(value.excluded_assets);
   validateSourceIndexExtras(value.source_index_extras);
+  const validationOnlyEntityIds = validateValidationOnlyEntityIds(
+    value.validation_only_entity_ids,
+    coverage
+  );
 
   const files = assertObject(value.files, "manifest.files");
   assertExactKeys(
@@ -691,12 +798,26 @@ export function validateAssetManifestDocument(manifest) {
     );
   }
   assert(
-    assets.length === 577,
-    `expected 577 logical assets; got ${assets.length}`
+    assets.length === EXPECTED_LOGICAL_ASSET_COUNT,
+    `expected ${EXPECTED_LOGICAL_ASSET_COUNT} logical assets; got ${assets.length}`
   );
   assert(
-    assetPaths.size === 550,
-    `expected 550 unique asset blobs; got ${assetPaths.size}`
+    assetPaths.size === EXPECTED_UNIQUE_PNG_COUNT,
+    `expected ${EXPECTED_UNIQUE_PNG_COUNT} unique asset blobs; got ${assetPaths.size}`
+  );
+  const achievementRewardAssets = assets.filter(
+    (asset) => asset.logical_kind === "achievement_reward"
+  );
+  assert(
+    achievementRewardAssets.length === 1,
+    "expected exactly one achievement reward asset"
+  );
+  const achievementRewardAsset = achievementRewardAssets[0];
+  assert(
+    achievementRewardAsset.entity_id === "1" &&
+      achievementRewardAsset.upstream_path === "icon/item/900001.png" &&
+      achievementRewardAsset.sha256 === EXPECTED_ACHIEVEMENT_REWARD_SHA256,
+    "Stellar Jade achievement reward asset drift"
   );
   const pngFiles = Object.keys(files).filter((filePath) =>
     filePath.endsWith(".png")
@@ -705,8 +826,8 @@ export function validateAssetManifestDocument(manifest) {
     (filePath) => !filePath.endsWith(".png")
   );
   assert(
-    pngFiles.length === 550,
-    `expected 550 PNG files; got ${pngFiles.length}`
+    pngFiles.length === EXPECTED_UNIQUE_PNG_COUNT,
+    `expected ${EXPECTED_UNIQUE_PNG_COUNT} PNG files; got ${pngFiles.length}`
   );
   assert(
     JSON.stringify(documentFiles.sort()) ===
@@ -721,7 +842,10 @@ export function validateAssetManifestDocument(manifest) {
     pngFiles.every((filePath) => assetPaths.has(filePath)),
     "manifest.files contains an unreferenced PNG"
   );
-  assert(Object.keys(files).length === 553, "asset output file count drift");
+  assert(
+    Object.keys(files).length === EXPECTED_ASSET_FILE_COUNT,
+    "asset output file count drift"
+  );
   assert(
     files[`snapshots/${value.snapshot_id}/upstream/LICENSE`].sha256 ===
       source.source_files.LICENSE.sha256 &&
@@ -736,7 +860,16 @@ export function validateAssetManifestDocument(manifest) {
         source.source_files["README.md"].byte_size,
     "copied upstream README metadata drift"
   );
-  return { assets, assetPaths, coverage, files, manifest: value, reference };
+  return {
+    assets,
+    assetPaths,
+    coverage,
+    excludedAssets,
+    files,
+    manifest: value,
+    reference,
+    validationOnlyEntityIds,
+  };
 }
 
 async function listRelativeFiles(directory, rootDirectory = directory) {
@@ -851,11 +984,15 @@ export function createRuntimeLookup(validated) {
       entriesByKey.set(key, [kind, id, cachePath]);
     }
   }
-  entriesByKey.set("property\0StanceBreakAddedRatio", [
-    "property",
-    "StanceBreakAddedRatio",
-    null,
-  ]);
+  for (const excluded of validated.excludedAssets) {
+    const kind = runtimeKind(excluded.logical_kind);
+    const key = `${kind}\0${excluded.entity_id}`;
+    assert(
+      !entriesByKey.has(key),
+      `excluded asset unexpectedly has a mapping for ${kind}:${excluded.entity_id}`
+    );
+    entriesByKey.set(key, [kind, excluded.entity_id, null]);
+  }
   for (const slot of EXPECTED_RELIC_SLOTS) {
     entriesByKey.set(`relic-slot\0${slot}`, ["relic-slot", slot, null]);
   }
@@ -1133,6 +1270,7 @@ async function main() {
       : "Asset cache synchronized";
   process.stdout.write(
     `${operation}: ${result.manifestSha256}\n` +
+      `Achievements: 1921 validation-only definitions, 9 explicit category fallbacks, 1 Stellar Jade reward icon\n` +
       `Coverage: 93 Characters, 169 Light Cones, 60 sets, ` +
       `184 logical Relic pieces / 742 rarity variants, 55 properties + ` +
       `1 explicit fallback, 9 Paths, 7 combat types\n` +

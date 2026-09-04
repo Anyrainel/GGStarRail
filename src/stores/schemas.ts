@@ -8,7 +8,7 @@ import {
 
 export const PersistedWorkspaceSchema = z
   .object({
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(3),
     account: AccountSnapshotSchema.nullable(),
     builds: z.array(BuildConfigurationSchema),
     scoreProfiles: z.array(ScoreProfileSchema),
@@ -51,7 +51,7 @@ export const PersistedWorkspaceSchema = z
 export type PersistedWorkspace = z.infer<typeof PersistedWorkspaceSchema>;
 
 export const DEFAULT_WORKSPACE: PersistedWorkspace = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   account: null,
   builds: [],
   scoreProfiles: [],

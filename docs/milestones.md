@@ -13,8 +13,10 @@
 - Add local file selection, parsing/error states, coverage warnings, and
   review-before-apply behavior.
 - Test replace/merge semantics and guarantee failure causes no store mutation.
-- Accept native, GOODScanner experimental v1/v2, and interoperable Reliquary,
-  HSR-Scanner, Kel, and Fribbels v4 inputs without inventing completeness.
+- Accept native, GOODScanner experimental v1/v2 and production v3, and
+  interoperable Reliquary, HSR-Scanner, Kel, and Fribbels v4 inputs without
+  inventing completeness. Production v3 complete achievement evidence
+  authoritatively replaces completion while omission preserves it on merge.
 
 ## Completed locally: build workspace UX
 

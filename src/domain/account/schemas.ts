@@ -36,6 +36,54 @@ export const ImportReceiptSchema = z
   })
   .strict();
 
+export const AchievementIdSchema = z.number().int().positive().max(0xffff_ffff);
+
+export const AchievementCaptureRevisionSchema = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(/^[A-Za-z0-9._-]+$/);
+
+export const CompletedAchievementIdsSchema = z
+  .array(AchievementIdSchema)
+  .superRefine((ids, context) => {
+    for (let index = 1; index < ids.length; index += 1) {
+      const previous = ids[index - 1];
+      const current = ids[index];
+      if (
+        previous !== undefined &&
+        current !== undefined &&
+        current <= previous
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: "Completed achievement IDs must be unique and sorted",
+          path: [index],
+        });
+      }
+    }
+  });
+
+export const AchievementCompletionSchema = z
+  .object({
+    completedIds: CompletedAchievementIdsSchema,
+    capture: z
+      .object({
+        coverage: z.literal("complete"),
+        source: z
+          .object({
+            kind: z.literal("packetCapture"),
+            revision: AchievementCaptureRevisionSchema,
+          })
+          .strict(),
+        importedAt: z.string().datetime(),
+      })
+      .strict()
+      .optional(),
+    locallyModifiedAt: z.string().datetime().optional(),
+  })
+  .strict();
+
 export const CharacterSchema = z
   .object({
     key: StableIdSchema,
@@ -305,21 +353,35 @@ function validateAccountEquipmentIntegrity(
   });
 }
 
-export const AccountSnapshotSchema = z
+const AccountSnapshotFields = {
+  profileId: StableIdSchema,
+  uid: z
+    .string()
+    .regex(/^\d{8,12}$/)
+    .optional(),
+  region: z.string().min(1).max(32).optional(),
+  nickname: z.string().min(1).max(64).optional(),
+  trailblazeLevel: z.number().int().min(1).max(100).optional(),
+  characters: z.array(CharacterSchema),
+  lightCones: z.array(LightConeSchema),
+  relics: z.array(RelicSchema),
+  source: ImportReceiptSchema,
+} as const;
+
+/** Canonical account shape before achievement completion was added. */
+export const AccountSnapshotV2Schema = z
   .object({
     schemaVersion: z.literal(2),
-    profileId: StableIdSchema,
-    uid: z
-      .string()
-      .regex(/^\d{8,12}$/)
-      .optional(),
-    region: z.string().min(1).max(32).optional(),
-    nickname: z.string().min(1).max(64).optional(),
-    trailblazeLevel: z.number().int().min(1).max(100).optional(),
-    characters: z.array(CharacterSchema),
-    lightCones: z.array(LightConeSchema),
-    relics: z.array(RelicSchema),
-    source: ImportReceiptSchema,
+    ...AccountSnapshotFields,
+  })
+  .strict()
+  .superRefine(validateAccountEquipmentIntegrity);
+
+export const AccountSnapshotSchema = z
+  .object({
+    schemaVersion: z.literal(3),
+    ...AccountSnapshotFields,
+    achievementCompletion: AchievementCompletionSchema.optional(),
   })
   .strict()
   .superRefine(validateAccountEquipmentIntegrity);
@@ -362,6 +424,8 @@ export type Relic = z.infer<typeof RelicSchema>;
 export type RelicSlot = z.infer<typeof RelicSlotSchema>;
 export type RelicCategory = z.infer<typeof RelicCategorySchema>;
 export type AccountSnapshot = z.infer<typeof AccountSnapshotSchema>;
+export type AccountSnapshotV2 = z.infer<typeof AccountSnapshotV2Schema>;
+export type AchievementCompletion = z.infer<typeof AchievementCompletionSchema>;
 export type ImportCoverage = z.infer<typeof ImportCoverageSchema>;
 
 function uniqueByInstanceKey<T extends { key: string }>(
@@ -438,7 +502,7 @@ export function migrateAccountSnapshotV1(
   const equipment = normalizeLegacyEquipment(input);
   return AccountSnapshotSchema.parse({
     ...input,
-    schemaVersion: 2,
+    schemaVersion: 3,
     ...equipment,
     source: {
       ...input.source,
@@ -458,6 +522,15 @@ export function migrateAccountSnapshotV1(
         (warning) => StableIdSchema.safeParse(warning).success
       ),
     },
+  });
+}
+
+export function migrateAccountSnapshotV2(
+  input: AccountSnapshotV2
+): AccountSnapshot {
+  return AccountSnapshotSchema.parse({
+    ...input,
+    schemaVersion: 3,
   });
 }
 

@@ -13,7 +13,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const AUDITED_SOURCE_REVISION =
-  "014e33e2404f8cd668bf06fc2ea6db53b6bc3992";
+  "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091";
 
 const COMMON_EXPECTED_COUNTS = Object.freeze({
   cavern_relic_sets: 32,
@@ -38,26 +38,37 @@ const COMMON_EXPECTED_COUNTS = Object.freeze({
   relic_sub_affixes: 48,
 });
 
+const EXPANDED_EXPECTED_COUNTS = Object.freeze({
+  ...COMMON_EXPECTED_COUNTS,
+  character_enhancement_variants: 10,
+  character_ranks: 558,
+  character_servant_attachments: 8,
+  character_servant_skills: 48,
+  character_servants: 7,
+  character_skills: 611,
+  character_skills_using_description_fallback: 92,
+  character_trace_levels: 4818,
+  character_trace_nodes: 1699,
+  enhanced_character_ranks: 60,
+  enhanced_character_skills: 64,
+  enhanced_character_trace_levels: 500,
+  enhanced_character_trace_nodes: 180,
+  light_cone_superimpositions: 845,
+  progression_items: 238,
+  properties_with_real_icons: 55,
+});
+
 export const EXPECTED_COUNTS_BY_SCHEMA = Object.freeze({
   "1.0.0": COMMON_EXPECTED_COUNTS,
-  "1.1.0": Object.freeze({
-    ...COMMON_EXPECTED_COUNTS,
-    character_enhancement_variants: 10,
-    character_ranks: 558,
-    character_servant_attachments: 8,
-    character_servant_skills: 48,
-    character_servants: 7,
-    character_skills: 611,
-    character_skills_using_description_fallback: 92,
-    character_trace_levels: 4818,
-    character_trace_nodes: 1699,
-    enhanced_character_ranks: 60,
-    enhanced_character_skills: 64,
-    enhanced_character_trace_levels: 500,
-    enhanced_character_trace_nodes: 180,
-    light_cone_superimpositions: 845,
-    progression_items: 238,
-    properties_with_real_icons: 55,
+  "1.1.0": EXPANDED_EXPECTED_COUNTS,
+  "1.2.0": Object.freeze({
+    ...EXPANDED_EXPECTED_COUNTS,
+    achievement_categories: 9,
+    achievement_linear_quests: 1921,
+    achievements: 1921,
+    achievements_hidden_description: 310,
+    achievements_show_after_finish: 806,
+    achievements_with_release_version: 0,
   }),
 });
 
@@ -65,7 +76,7 @@ export const SUPPORTED_SCHEMA_VERSIONS = Object.freeze(
   Object.keys(EXPECTED_COUNTS_BY_SCHEMA)
 );
 
-const MEMBER_FILES = Object.freeze([
+const COMMON_MEMBER_FILES = Object.freeze([
   "characters.json",
   "corroboration.json",
   "diagnostics.json",
@@ -75,7 +86,18 @@ const MEMBER_FILES = Object.freeze([
   "relic_pieces.json",
   "relic_sets.json",
 ]);
+const MEMBER_FILES_BY_SCHEMA = Object.freeze({
+  "1.0.0": COMMON_MEMBER_FILES,
+  "1.1.0": COMMON_MEMBER_FILES,
+  "1.2.0": Object.freeze([
+    "achievement_categories.json",
+    "achievements.json",
+    ...COMMON_MEMBER_FILES,
+  ]),
+});
 const MEMBER_COLLECTIONS = Object.freeze({
+  "achievement_categories.json": "achievement_categories",
+  "achievements.json": "achievements",
   "characters.json": "characters",
   "diagnostics.json": "diagnostics",
   "light_cones.json": "light_cones",
@@ -95,6 +117,12 @@ const EXPECTED_DIAGNOSTICS_BY_SCHEMA = Object.freeze({
     resolved_deobfuscation: 2,
     source_disagreements: 4,
     source_gaps: 14,
+    unresolved_deobfuscation: 0,
+  }),
+  "1.2.0": Object.freeze({
+    resolved_deobfuscation: 2,
+    source_disagreements: 4,
+    source_gaps: 16,
     unresolved_deobfuscation: 0,
   }),
 });
@@ -264,6 +292,8 @@ function assertLocalizedIdentities(value, sourceRevision, trail = "value") {
 
 function computeEntityCount(fileName, value, schemaVersion) {
   if (
+    fileName === "achievement_categories.json" ||
+    fileName === "achievements.json" ||
     fileName === "characters.json" ||
     fileName === "light_cones.json" ||
     fileName === "relic_pieces.json" ||
@@ -294,7 +324,7 @@ function computeEntityCount(fileName, value, schemaVersion) {
       scoring.main_affix_character_weights,
       scoring.sub_affix_character_weights,
     ];
-    if (schemaVersion === "1.1.0") {
+    if (schemaVersion !== "1.0.0") {
       countedCollections.unshift(progression.items);
     }
     return countedCollections.reduce(
@@ -444,7 +474,7 @@ function computeCounts(documents, schemaVersion) {
     )
   );
 
-  return {
+  const expandedCounts = {
     ...counts,
     character_enhancement_variants: enhancements.length,
     character_ranks: baseRanks.length,
@@ -492,6 +522,425 @@ function computeCounts(documents, schemaVersion) {
         property.usable_icon_path.length > 0
     ).length,
   };
+  if (schemaVersion === "1.1.0") return expandedCounts;
+
+  const achievementCategories = assertArray(
+    documents["achievement_categories.json"].value,
+    "achievement categories"
+  );
+  const achievements = assertArray(
+    documents["achievements.json"].value,
+    "achievements"
+  );
+  return {
+    ...expandedCounts,
+    achievement_categories: achievementCategories.length,
+    achievement_linear_quests: new Set(
+      achievements.map((achievement) => achievement.linear_quest_id)
+    ).size,
+    achievements: achievements.length,
+    achievements_hidden_description: achievements.filter(
+      (achievement) => achievement.visibility === "hidden_description"
+    ).length,
+    achievements_show_after_finish: achievements.filter(
+      (achievement) => achievement.visibility === "show_after_finish"
+    ).length,
+    achievements_with_release_version: achievements.filter(
+      (achievement) => typeof achievement.release_version === "string"
+    ).length,
+  };
+}
+
+function assertPositiveU32(value, label) {
+  assert(
+    Number.isInteger(value) && value > 0 && value <= 0xffffffff,
+    `${label} must be a positive u32 integer`
+  );
+  return value;
+}
+
+function assertIntegerOrNull(value, label) {
+  assert(
+    value === null || Number.isInteger(value),
+    `${label} must be an integer or null`
+  );
+}
+
+function assertStringOrNull(value, label) {
+  assert(
+    value === null || typeof value === "string",
+    `${label} must be a string or null`
+  );
+}
+
+function assertStrictLocalizedText(value, label) {
+  const localized = assertObject(value, label);
+  assertExactKeys(localized, ["en", "zh-CN"], label);
+  for (const locale of ["en", "zh-CN"]) {
+    const sourceText = assertObject(localized[locale], `${label}.${locale}`);
+    assertExactKeys(sourceText, ["provenance", "value"], `${label}.${locale}`);
+    assert(
+      typeof sourceText.value === "string" && sourceText.value.length > 0,
+      `${label}.${locale}.value must be non-empty`
+    );
+    const provenance = assertObject(
+      sourceText.provenance,
+      `${label}.${locale}.provenance`
+    );
+    assertExactKeys(
+      provenance,
+      [
+        "locale",
+        "source_id",
+        "source_key",
+        "source_locale",
+        "source_path",
+        "source_reference",
+        "source_revision",
+      ],
+      `${label}.${locale}.provenance`
+    );
+  }
+}
+
+function assertNullableLocalizedText(value, label) {
+  if (value !== null) assertStrictLocalizedText(value, label);
+}
+
+function assertAchievementCatalogRelations(documents) {
+  const categories = assertArray(
+    documents["achievement_categories.json"].value,
+    "achievement_categories.value"
+  );
+  const achievements = assertArray(
+    documents["achievements.json"].value,
+    "achievements.value"
+  );
+  const categoryById = new Map();
+
+  for (const [index, categoryValue] of categories.entries()) {
+    const label = `achievement_categories.value[${index}]`;
+    const category = assertObject(categoryValue, label);
+    assertExactKeys(
+      category,
+      [
+        "copper_icon_path",
+        "gold_icon_path",
+        "icon_path",
+        "id",
+        "main_icon_path",
+        "name",
+        "order",
+        "silver_icon_path",
+      ],
+      label
+    );
+    assertPositiveU32(category.id, `${label}.id`);
+    assert(!categoryById.has(category.id), `${label}.id is duplicated`);
+    categoryById.set(category.id, category);
+    assertStrictLocalizedText(category.name, `${label}.name`);
+    assert(
+      Number.isInteger(category.order),
+      `${label}.order must be an integer`
+    );
+    for (const field of [
+      "icon_path",
+      "main_icon_path",
+      "gold_icon_path",
+      "silver_icon_path",
+      "copper_icon_path",
+    ]) {
+      assert(
+        typeof category[field] === "string" && category[field].length > 0,
+        `${label}.${field} must be non-empty`
+      );
+    }
+  }
+  const sortedCategoryIds = [...categories]
+    .sort((left, right) => right.order - left.order || left.id - right.id)
+    .map((category) => category.id);
+  assert(
+    JSON.stringify(categories.map((category) => category.id)) ===
+      JSON.stringify(sortedCategoryIds),
+    "achievement categories are not in high-priority display order"
+  );
+
+  const achievementById = new Map();
+  for (const [index, achievementValue] of achievements.entries()) {
+    const label = `achievements.value[${index}]`;
+    const achievement = assertObject(achievementValue, label);
+    assertExactKeys(
+      achievement,
+      [
+        "category_id",
+        "chain_ids",
+        "chain_index",
+        "completion_condition",
+        "description",
+        "description_parameters",
+        "hidden_description",
+        "icon_path",
+        "id",
+        "linear_quest_id",
+        "name",
+        "next_ids",
+        "order",
+        "previous_id",
+        "ps_description",
+        "ps_name",
+        "ps_trophy_id",
+        "quest_id",
+        "rarity",
+        "record_text",
+        "record_type",
+        "release_version",
+        "reward",
+        "visibility",
+      ],
+      label
+    );
+    assertPositiveU32(achievement.id, `${label}.id`);
+    assert(
+      !achievementById.has(achievement.id),
+      `${label}.id ${achievement.id} is duplicated`
+    );
+    achievementById.set(achievement.id, achievement);
+  }
+
+  const rarityRewardCounts = { High: 20, Low: 5, Mid: 10 };
+  const rarityIconFields = {
+    High: "gold_icon_path",
+    Low: "copper_icon_path",
+    Mid: "silver_icon_path",
+  };
+  const categoryUsage = new Set();
+  for (const [index, achievement] of achievements.entries()) {
+    const label = `achievements.value[${index}]`;
+    for (const field of ["category_id", "quest_id", "linear_quest_id"]) {
+      assertPositiveU32(achievement[field], `${label}.${field}`);
+    }
+    const category = categoryById.get(achievement.category_id);
+    assert(
+      category,
+      `${label} references unknown category ${achievement.category_id}`
+    );
+    categoryUsage.add(achievement.category_id);
+    assertStrictLocalizedText(achievement.name, `${label}.name`);
+    assertStrictLocalizedText(achievement.description, `${label}.description`);
+    assertNullableLocalizedText(
+      achievement.hidden_description,
+      `${label}.hidden_description`
+    );
+    const parameters = assertArray(
+      achievement.description_parameters,
+      `${label}.description_parameters`
+    );
+    assert(
+      parameters.every(
+        (parameter) =>
+          typeof parameter === "number" && Number.isFinite(parameter)
+      ),
+      `${label}.description_parameters must contain only finite numbers`
+    );
+    assert(
+      Number.isInteger(achievement.order),
+      `${label}.order must be an integer`
+    );
+    assert(
+      Object.hasOwn(rarityRewardCounts, achievement.rarity),
+      `${label}.rarity is unsupported`
+    );
+    assert(
+      ["visible", "show_after_finish", "hidden_description"].includes(
+        achievement.visibility
+      ),
+      `${label}.visibility is unsupported`
+    );
+    if (achievement.visibility === "hidden_description") {
+      assert(
+        achievement.hidden_description !== null,
+        `${label}.hidden_description visibility requires alternate text`
+      );
+    }
+    assert(
+      typeof achievement.icon_path === "string" &&
+        achievement.icon_path.length > 0,
+      `${label}.icon_path must be non-empty`
+    );
+    assert(
+      achievement.icon_path === category[rarityIconFields[achievement.rarity]],
+      `${label}.icon_path does not match category rarity icon`
+    );
+
+    const reward = assertObject(achievement.reward, `${label}.reward`);
+    assertExactKeys(
+      reward,
+      ["count", "item_id", "reward_id"],
+      `${label}.reward`
+    );
+    assertPositiveU32(reward.reward_id, `${label}.reward.reward_id`);
+    assert(
+      reward.item_id === 1,
+      `${label}.reward.item_id must be Stellar Jade ID 1`
+    );
+    assert(
+      reward.count === rarityRewardCounts[achievement.rarity],
+      `${label}.reward.count does not match ${achievement.rarity} rarity`
+    );
+
+    const chainIds = assertArray(achievement.chain_ids, `${label}.chain_ids`);
+    assert(chainIds.length > 0, `${label}.chain_ids must be non-empty`);
+    const uniqueChainIds = new Set();
+    for (const [chainIndex, chainId] of chainIds.entries()) {
+      assertPositiveU32(chainId, `${label}.chain_ids[${chainIndex}]`);
+      assert(
+        !uniqueChainIds.has(chainId),
+        `${label}.chain_ids contains duplicate ${chainId}`
+      );
+      uniqueChainIds.add(chainId);
+      assert(
+        achievementById.has(chainId),
+        `${label}.chain_ids references unknown achievement ${chainId}`
+      );
+    }
+    assert(
+      Number.isInteger(achievement.chain_index) &&
+        achievement.chain_index >= 0 &&
+        achievement.chain_index < chainIds.length,
+      `${label}.chain_index is out of range`
+    );
+    assert(
+      chainIds[achievement.chain_index] === achievement.id,
+      `${label}.chain_index does not identify this achievement`
+    );
+    assertIntegerOrNull(achievement.previous_id, `${label}.previous_id`);
+    const expectedPrevious =
+      achievement.chain_index === 0
+        ? null
+        : chainIds[achievement.chain_index - 1];
+    assert(
+      achievement.previous_id === expectedPrevious,
+      `${label}.previous_id does not match chain_ids`
+    );
+    const nextIds = assertArray(achievement.next_ids, `${label}.next_ids`);
+    const expectedNext = chainIds.slice(
+      achievement.chain_index + 1,
+      achievement.chain_index + 2
+    );
+    assert(
+      JSON.stringify(nextIds) === JSON.stringify(expectedNext),
+      `${label}.next_ids does not match chain_ids`
+    );
+
+    const condition = assertObject(
+      achievement.completion_condition,
+      `${label}.completion_condition`
+    );
+    assertExactKeys(
+      condition,
+      [
+        "finish_type",
+        "id",
+        "is_backtrack",
+        "maze_floor_id",
+        "maze_plane_id",
+        "parameter_integer_1",
+        "parameter_integer_2",
+        "parameter_integer_3",
+        "parameter_integers",
+        "parameter_string",
+        "parameter_type",
+        "progress",
+      ],
+      `${label}.completion_condition`
+    );
+    assertPositiveU32(condition.id, `${label}.completion_condition.id`);
+    for (const field of ["finish_type", "parameter_type", "parameter_string"]) {
+      assert(
+        typeof condition[field] === "string",
+        `${label}.completion_condition.${field} must be a string`
+      );
+    }
+    for (const field of [
+      "parameter_integer_1",
+      "parameter_integer_2",
+      "parameter_integer_3",
+      "maze_floor_id",
+      "maze_plane_id",
+    ]) {
+      assertIntegerOrNull(
+        condition[field],
+        `${label}.completion_condition.${field}`
+      );
+    }
+    const parameterIntegers = assertArray(
+      condition.parameter_integers,
+      `${label}.completion_condition.parameter_integers`
+    );
+    assert(
+      parameterIntegers.every(Number.isInteger),
+      `${label}.completion_condition.parameter_integers must contain integers`
+    );
+    assert(
+      Number.isInteger(condition.progress),
+      `${label}.completion_condition.progress must be an integer`
+    );
+    assert(
+      typeof condition.is_backtrack === "boolean",
+      `${label}.completion_condition.is_backtrack must be a boolean`
+    );
+
+    assertStringOrNull(achievement.ps_trophy_id, `${label}.ps_trophy_id`);
+    assertNullableLocalizedText(achievement.ps_name, `${label}.ps_name`);
+    assertNullableLocalizedText(
+      achievement.ps_description,
+      `${label}.ps_description`
+    );
+    assertStringOrNull(achievement.record_type, `${label}.record_type`);
+    assertNullableLocalizedText(
+      achievement.record_text,
+      `${label}.record_text`
+    );
+    assert(
+      (achievement.record_type === null) === (achievement.record_text === null),
+      `${label}.record_type and record_text must be paired`
+    );
+    assertStringOrNull(achievement.release_version, `${label}.release_version`);
+  }
+
+  assert(
+    categoryUsage.size === categoryById.size,
+    "every achievement category must contain at least one achievement"
+  );
+  const categoryPosition = new Map(
+    categories.map((category, index) => [category.id, index])
+  );
+  const expectedAchievementIds = [...achievements]
+    .sort(
+      (left, right) =>
+        categoryPosition.get(left.category_id) -
+          categoryPosition.get(right.category_id) ||
+        right.order - left.order ||
+        left.id - right.id
+    )
+    .map((achievement) => achievement.id);
+  assert(
+    JSON.stringify(achievements.map((achievement) => achievement.id)) ===
+      JSON.stringify(expectedAchievementIds),
+    "achievements are not in category/priority display order"
+  );
+
+  for (const achievement of achievements) {
+    for (const chainId of achievement.chain_ids) {
+      const chained = achievementById.get(chainId);
+      assert(
+        chained.linear_quest_id === achievement.linear_quest_id &&
+          JSON.stringify(chained.chain_ids) ===
+            JSON.stringify(achievement.chain_ids),
+        `achievement ${achievement.id} chain ${chainId} is inconsistent`
+      );
+    }
+  }
 }
 
 function assertCostReferences(costs, itemIds, label) {
@@ -1552,6 +2001,7 @@ function validateManifest(manifest) {
     object.schema_version,
     "manifest.schema_version"
   );
+  const memberFiles = MEMBER_FILES_BY_SCHEMA[object.schema_version];
   assert(
     JSON.stringify(object.locales) === JSON.stringify(["en", "zh-CN"]),
     "manifest locales must be exactly en and zh-CN"
@@ -1614,7 +2064,7 @@ function validateManifest(manifest) {
       `manifest source hash is invalid for ${sourcePath}`
     );
   }
-  assertExactKeys(object.files, MEMBER_FILES, "manifest.files");
+  assertExactKeys(object.files, memberFiles, "manifest.files");
   for (const [fileName, entry] of Object.entries(object.files)) {
     assertExactKeys(
       entry,
@@ -1641,10 +2091,11 @@ export async function validateBundleDirectory(directory) {
   const manifestPath = path.join(absoluteDirectory, "manifest.json");
   const manifestBytes = await readFile(manifestPath);
   const manifest = validateManifest(parseJson(manifestBytes, manifestPath));
+  const memberFiles = MEMBER_FILES_BY_SCHEMA[manifest.schema_version];
   const documents = {};
   const bytesByFile = { "manifest.json": manifestBytes };
 
-  for (const fileName of MEMBER_FILES) {
+  for (const fileName of memberFiles) {
     const filePath = path.join(absoluteDirectory, fileName);
     const bytes = await readFile(filePath);
     const manifestEntry = assertObject(
@@ -1734,14 +2185,21 @@ export async function validateBundleDirectory(directory) {
       `manifest/computed count drift for ${key}`
     );
   }
-  for (const fileName of [
+  const localizedMemberFiles = [
     "characters.json",
     "light_cones.json",
     "progression.json",
     "relic_sets.json",
     "relic_pieces.json",
     "property_tables.json",
-  ]) {
+  ];
+  if (manifest.schema_version === "1.2.0") {
+    localizedMemberFiles.unshift(
+      "achievement_categories.json",
+      "achievements.json"
+    );
+  }
+  for (const fileName of localizedMemberFiles) {
     assertLocalizedIdentities(
       documents[fileName].value,
       manifest.source.revision,
@@ -1753,6 +2211,9 @@ export async function validateBundleDirectory(directory) {
     assertLegacyCatalogShapes(documents);
   } else {
     assertExpandedCatalogRelations(documents);
+  }
+  if (manifest.schema_version === "1.2.0") {
+    assertAchievementCatalogRelations(documents);
   }
   const diagnosticSummary = assertDiagnostics(
     documents["diagnostics.json"],
@@ -1794,7 +2255,8 @@ export async function syncReferenceBundle(sourceDirectory, outputDirectory) {
   let backupParent = null;
   let previousOutput = null;
   try {
-    for (const fileName of MEMBER_FILES) {
+    const memberFiles = MEMBER_FILES_BY_SCHEMA[source.manifest.schema_version];
+    for (const fileName of memberFiles) {
       await writeFile(
         path.join(stagingDirectory, fileName),
         source.bytesByFile[fileName]
@@ -1816,7 +2278,7 @@ export async function syncReferenceBundle(sourceDirectory, outputDirectory) {
     }
     try {
       await mkdir(absoluteOutput, { recursive: true });
-      for (const fileName of MEMBER_FILES) {
+      for (const fileName of memberFiles) {
         await copyFile(
           path.join(stagingDirectory, fileName),
           path.join(absoluteOutput, fileName)
@@ -1895,8 +2357,13 @@ async function main() {
     : options.verifyOnly
       ? "Source bundle verified"
       : "Reference bundle synchronized";
+  const achievementSummary =
+    result.manifest.schema_version === "1.2.0"
+      ? `Achievements: ${result.computedCounts.achievement_categories} categories, ${result.computedCounts.achievements} definitions\n`
+      : "";
   process.stdout.write(
     `${operation}: ${result.manifest.source.revision}\n` +
+      achievementSummary +
       `Catalogs: ${result.computedCounts.characters} characters, ` +
       `${result.computedCounts.light_cones} Light Cones, ` +
       `${result.computedCounts.relic_sets} sets, ` +

@@ -46,6 +46,14 @@ export function formatGameText(
         return `${formatParameter(parameter, percent)}${percentMarker}`;
       }
     )
+    .replace(
+      /(?<![A-Za-z0-9_=])#([1-9])(?![\d[])(%?)/g,
+      (token, sourceIndex: string, percentMarker: string) => {
+        const parameter = parameters[Number(sourceIndex) - 1];
+        if (parameter === undefined) return token;
+        return `${formatParameter(parameter, false)}${percentMarker}`;
+      }
+    )
     .replace(/<[^>]+>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
