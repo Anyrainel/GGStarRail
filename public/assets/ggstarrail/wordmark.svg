@@ -18,6 +18,13 @@
       <stop offset=".55" stop-color="#639fc7"/>
       <stop offset="1" stop-color="#c3edff"/>
     </linearGradient>
+    <linearGradient id="express-metal" x1="0" y1="-40" x2="0" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e2f5ff" stop-opacity=".8"/>
+      <stop offset=".3" stop-color="#a2d5ed" stop-opacity=".1"/>
+      <stop offset=".65" stop-color="#254a73" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#749ec2" stop-opacity=".2"/>
+    </linearGradient>
+    <path id="express-body" d="M0 0 3-26 17-33 139-35 158-40h57l-4 6 20 3 10 16 12 3 17 12H0Z"/>
     <linearGradient id="letters" x1="0" y1="0" x2="0" y2="65" gradientUnits="userSpaceOnUse">
       <stop stop-color="#fff"/>
       <stop offset=".65" stop-color="#f8faff"/>
@@ -42,13 +49,15 @@
   <!-- The Express rises from the lettering's baseline through the crescent.
        Its connected silhouette suggests a locomotive without miniature hardware. -->
   <g transform="translate(207 155) rotate(-24) scale(.9 1)">
-    <path d="M0 0V-29l8-7h151l6-5h66l8 6v20h13l18 15Z" fill="url(#express)"/>
-    <path d="M8-34h153l6-5h62l7 5" fill="none" stroke="#d8f3ff" stroke-width="1.5"/>
-    <path d="M167-33h58l5 5v12h-63Z" fill="#345978"/>
-    <path d="M193-33v17" stroke="#b5dff0" stroke-width="2"/>
-    <path d="M9-27h142v12H9Z" fill="#345978" opacity=".45"/>
-    <path d="M9-7h231l12 5H9Z" fill="#d5ecf5" opacity=".75"/>
-    <path d="M158-32v22m79-20v19" fill="none" stroke="#355b7c" stroke-width="2"/>
+    <use href="#express-body" fill="url(#express)"/>
+    <use href="#express-body" fill="url(#express-metal)"/>
+    <!-- Long inset planes and interrupted highlights imply machinery, not windows. -->
+    <path d="m16-28 125-3 20-5h42l-9 5-40 2-18 7H13Z" fill="#c6e9f8" opacity=".65"/>
+    <path d="m151-23 44-6 24 1 10 13-21-5-20 3-42 2Z" fill="#2e577a"/>
+    <path d="m161-22 29-4 19 1-7 3-23 1Z" fill="#d1effa" opacity=".75"/>
+    <path d="M15-12 131-15 151-10 217-12 238-5 180-6 147-3 12-4Z" fill="#254c76" opacity=".7"/>
+    <path d="m24-30 106-3m22-2 12-3h41m-64 10-7 8m80-10q10 6 12 15m-73 6 48-2 25 5 26 2" fill="none" stroke="#d3edfa" stroke-width="1.1" opacity=".8"/>
+    <path d="m12-2 124-3 14 3m82-10 10 4 12 1" fill="none" stroke="#8ac5e4" stroke-width="1.5"/>
   </g>
   <!-- Hand-drawn angular letterforms spell GGArtifact in small capitals. -->
   <g transform="translate(84 84) skewX(-13)" fill="url(#letters)" stroke="#35475f" stroke-width="1.5" paint-order="stroke fill">
