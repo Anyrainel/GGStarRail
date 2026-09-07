@@ -80,8 +80,8 @@ describe("Archive catalogs", () => {
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
 
-    await catalogRegion("Character catalog results", 93);
-    expect(screen.getByText("Showing 93 of 93 records")).toBeInTheDocument();
+    await catalogRegion("Character catalog results", 97);
+    expect(screen.getByText("Showing 97 of 97 records")).toBeInTheDocument();
     const catalogDataSummary = screen.getByText("About the catalog data", {
       selector: "summary",
     });
@@ -90,7 +90,7 @@ describe("Archive catalogs", () => {
     await user.click(catalogDataSummary);
     expect(
       screen.getByText(
-        "93 Characters · 166 Light Cones · 58 sets · 180 logical pieces across 726 rarity variants"
+        "97 Characters · 166 Light Cones · 58 sets · 180 logical pieces across 726 rarity variants"
       )
     ).toBeInTheDocument();
     expect(
@@ -119,12 +119,12 @@ describe("Archive catalogs", () => {
   it("searches Characters across locales and combines canonical filters with selection", async () => {
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
-    const region = await catalogRegion("Character catalog results", 93);
+    const region = await catalogRegion("Character catalog results", 97);
     const search = screen.getByRole("searchbox", { name: "Search" });
 
     await user.type(search, "Trailblazer");
     expect(
-      await screen.findByText("Showing 12 of 93 records")
+      await screen.findByText("Showing 12 of 97 records")
     ).toBeInTheDocument();
     const trailblazer = catalogItem(region, "character", "8001");
     expect(trailblazer).toHaveTextContent("Trailblazer · Caelus");
@@ -146,7 +146,7 @@ describe("Archive catalogs", () => {
     await user.clear(search);
     await user.type(search, "开拓者");
     expect(
-      await screen.findByText("Showing 12 of 93 records")
+      await screen.findByText("Showing 12 of 97 records")
     ).toBeInTheDocument();
     expect(catalogItem(region, "character", "8010")).toHaveTextContent(
       "Trailblazer · Stelle"
@@ -155,7 +155,7 @@ describe("Archive catalogs", () => {
     await user.clear(search);
     await user.type(search, "三月七");
     expect(
-      await screen.findByText("Showing 2 of 93 records")
+      await screen.findByText("Showing 2 of 97 records")
     ).toBeInTheDocument();
     expect(within(region).getAllByRole("button")).toHaveLength(2);
 
@@ -187,7 +187,7 @@ describe("Archive catalogs", () => {
       "4"
     );
     expect(
-      await screen.findByText("Showing 1 of 93 records")
+      await screen.findByText("Showing 1 of 97 records")
     ).toBeInTheDocument();
     expect(catalogItem(region, "character", "1001")).toHaveAttribute(
       "aria-pressed",
@@ -207,7 +207,7 @@ describe("Archive catalogs", () => {
 
     await user.clear(search);
     await user.type(search, "March 7th");
-    expect(await screen.findByText("显示 1 / 93 条记录")).toBeInTheDocument();
+    expect(await screen.findByText("显示 1 / 97 条记录")).toBeInTheDocument();
 
     await user.selectOptions(
       screen.getByRole("combobox", { name: "命途" }),
@@ -223,7 +223,7 @@ describe("Archive catalogs", () => {
     );
     await user.clear(search);
     await user.type(search, "开拓者");
-    expect(await screen.findByText("显示 12 / 93 条记录")).toBeInTheDocument();
+    expect(await screen.findByText("显示 12 / 97 条记录")).toBeInTheDocument();
     expect(catalogItem(region, "character", "8010")).toHaveTextContent(
       "开拓者 · 星"
     );
@@ -296,7 +296,7 @@ describe("Archive catalogs", () => {
   it("exposes the complete 1.1 Character model as separate collapsed records", async () => {
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
-    const region = await catalogRegion("Character catalog results", 93);
+    const region = await catalogRegion("Character catalog results", 97);
     const catalogDataSummary = screen.getByText("About the catalog data", {
       selector: "summary",
     });
@@ -306,7 +306,7 @@ describe("Archive catalogs", () => {
     await user.click(catalogDataSummary);
     expect(
       screen.getByText(
-        "1.1+ detail model · 611 base skills · 558 Eidolons · 1699 Trace nodes · 7 Servants · 0 seasonal variants · 830 Superimposition rows · 237 progression items"
+        "1.1+ detail model · 639 base skills · 582 Eidolons · 1771 Trace nodes · 7 Servants · 0 seasonal variants · 830 Superimposition rows · 241 progression items"
       )
     ).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search" });
@@ -393,7 +393,7 @@ describe("Archive catalogs", () => {
     await user.clear(search);
     await user.type(search, "Garmentmaker");
     expect(
-      await screen.findByText("Showing 2 of 93 records")
+      await screen.findByText("Showing 2 of 97 records")
     ).toBeInTheDocument();
     await user.click(catalogItem(region, "character", "1402"));
     detail = screen.getByTestId("character-detail");
@@ -454,7 +454,7 @@ describe("Archive catalogs", () => {
     await user.clear(search);
     await user.type(search, "set up Trailblazer to absorb");
     expect(
-      await screen.findByText("Showing 1 of 93 records")
+      await screen.findByText("Showing 1 of 97 records")
     ).toBeInTheDocument();
     await user.click(catalogItem(region, "character", "1005"));
     detail = screen.getByTestId("character-detail");
@@ -695,7 +695,7 @@ describe("Archive catalogs", () => {
 
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
-    let region = await catalogRegion("Character catalog results", 93);
+    let region = await catalogRegion("Character catalog results", 97);
     let inlineDetail = await screen.findByTestId(
       "character-detail",
       undefined,

@@ -50,7 +50,7 @@ describe("lazy GIlore catalog provider", () => {
     expect(achievementCategories.values).toHaveLength(9);
     expect(achievements.values).toHaveLength(1921);
     expect(achievementIds.size).toBe(1921);
-    expect(characters.values).toHaveLength(93);
+    expect(characters.values).toHaveLength(97);
     expect(lightCones.values).toHaveLength(169);
     expect(relicSets.values).toHaveLength(60);
     expect(relicPieces.values).toHaveLength(742);
@@ -125,15 +125,15 @@ describe("lazy GIlore catalog provider", () => {
     const enhancements = expandedCharacters.flatMap(
       (character) => character.enhancements
     );
-    expect(skills).toHaveLength(611);
-    expect(ranks).toHaveLength(558);
-    expect(traces).toHaveLength(1_699);
-    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(4_818);
+    expect(skills).toHaveLength(639);
+    expect(ranks).toHaveLength(582);
+    expect(traces).toHaveLength(1_771);
+    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(5_018);
     expect(
       skills.filter(
         (skill) => skill.display_description_source === "description"
       )
-    ).toHaveLength(92);
+    ).toHaveLength(96);
     expect(servants).toHaveLength(8);
     expect(new Set(servants.map((servant) => servant.id)).size).toBe(7);
     expect(
@@ -204,7 +204,7 @@ describe("lazy GIlore catalog provider", () => {
     expect(progression.relic_scoring.sub_affix_character_weights).toHaveLength(
       97
     );
-    expect(progression.items).toHaveLength(238);
+    expect(progression.items).toHaveLength(242);
     expect(
       progression.items.filter((item) => item.source_table === "ItemConfig")
     ).toHaveLength(150);
@@ -212,7 +212,7 @@ describe("lazy GIlore catalog provider", () => {
       progression.items.filter(
         (item) => item.source_table === "ItemConfigAvatarRank"
       )
-    ).toHaveLength(88);
+    ).toHaveLength(92);
     expect(
       progression.items.filter(
         (item) =>
@@ -222,4 +222,22 @@ describe("lazy GIlore catalog provider", () => {
     ).toHaveLength(6);
     expect(getLocalizedValue(progression.items[0].name, "en")).toBe("Credit");
   });
+});
+
+it("includes collaboration characters in the released catalog with progression", async () => {
+  setBetaEnabled(false);
+  const catalog = await loadCharacters();
+  for (const id of ["1014", "1015", "1508", "1509"]) {
+    const character = catalog.byId.get(id);
+    expect(
+      character,
+      `missing released collaboration character ${id}`
+    ).toBeDefined();
+    if (!character || !isCharacterDefinitionV1_1(character))
+      throw new Error(`Incomplete character ${id}`);
+    expect(character.promotions).toHaveLength(7);
+    expect(character.ranks).toHaveLength(6);
+    expect(character.skills.length).toBeGreaterThan(0);
+    expect(character.traces.length).toBeGreaterThan(0);
+  }
 });
