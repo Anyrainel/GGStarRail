@@ -51,3 +51,17 @@ catalog compatibility tests exercise the complete opt-in normalized snapshot;
 release partition checks exercise default visibility separately. Test HTTP
 requests for game assets read the actual published files, while unexpected
 network requests remain blocked.
+
+
+## GOODCapture game data
+
+`/good/hsr_data_cache.json` is a stable public endpoint for the Windows companion.
+It contains the full normalized public catalog and packet affix/form mappings from
+one GIlore revision. It carries no account data. GOODCapture checks it every two
+hours and exposes Refresh game data for an immediate update; an offline client
+can continue using its last validated local cache.
+
+The regular `npm run data:update` command regenerates it through GIlore alongside
+the website data. `data:website:check` rejects revision or catalog coverage drift.
+Publish the generated JSON with normal website changes; data updates require no
+new executable. `_headers` requires revalidation instead of immutable caching.

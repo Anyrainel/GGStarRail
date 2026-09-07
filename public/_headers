@@ -16,3 +16,7 @@
 # This original SVG has no content hash.
 /assets/ggstarrail/mark.svg
   Cache-Control: public, max-age=86400, must-revalidate
+
+# GOODCapture refreshes this stable endpoint independently of app releases.
+/good/hsr_data_cache.json
+  Cache-Control: no-cache, must-revalidate

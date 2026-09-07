@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { copyFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { crawlHoyolab } from "./hoyolab.mjs";
 import { crawlNanoka } from "./nanoka.mjs";
@@ -56,6 +57,11 @@ if (args.has("--legacy-cache") || args.has("--package")) {
   ]);
 }
 const referenceRoot = path.join(producer, "data/reference/honkai_star_rail/v1");
+await mkdir(path.join(root, "public/good"), { recursive: true });
+await copyFile(
+  path.join(referenceRoot, "capture_data_cache.json"),
+  path.join(root, "public/good/hsr_data_cache.json")
+);
 const evidencePath = path.join(
   producer,
   "data/raw/honkai_star_rail/hoyolab.json"

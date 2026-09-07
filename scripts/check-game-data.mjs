@@ -230,6 +230,40 @@ export async function checkGameData(repositoryRoot = root) {
         `Preview duplicates complete data: ${preview.id}`
       );
   }
+  // The executable consumes this stable public endpoint, independent of a web
+  // asset hash or executable release. Catch stale publications at build time.
+  const capture = JSON.parse(
+    await readFile(
+      path.join(repositoryRoot, "public/good/hsr_data_cache.json"),
+      "utf8"
+    )
+  );
+  assert.equal(capture.formatVersion, 1);
+  assert.equal(capture.snapshot.revision, manifest.source_revision);
+  assert.equal(capture.packet.sourceRevision, manifest.source_revision);
+  for (const [collection, field] of [
+    ["characters", "characters"],
+    ["light_cones", "lightCones"],
+    ["relic_pieces", "gearPieces"],
+    ["achievements", "achievementIds"],
+  ]) {
+    const expected = new Set(
+      [...documents[collection].released, ...documents[collection].beta].map(
+        (record) => Number(record.id)
+      )
+    );
+    const actual = capture.snapshot[field].map((record) =>
+      typeof record === "number" ? record : record.gameId
+    );
+    assert.equal(
+      new Set(actual).size,
+      actual.length,
+      `Duplicate capture ${field}`
+    );
+    assert.deepEqual(new Set(actual), expected, `Stale capture ${field}`);
+  }
+  assert.ok(capture.packet.main.length > 0 && capture.packet.sub.length > 0);
+  assert.ok(Object.keys(capture.packet.baseAvatars).length > 0);
   console.log(
     `Website data verified: ${Object.keys(documents).length} members, ${totalBytes} transport bytes, ${assetPaths.size} source WebPs`
   );
