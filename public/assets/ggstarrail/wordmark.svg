@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="50 0 560 200">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="15 0 560 200">
   <defs>
     <linearGradient id="moon" x1="220" y1="18" x2="308" y2="191" gradientUnits="userSpaceOnUse">
       <stop stop-color="#6ac8f2"/>
@@ -41,7 +41,7 @@
   </g>
   <!-- The Express rises from the lettering's baseline through the crescent.
        Its connected silhouette suggests a locomotive without miniature hardware. -->
-  <g transform="translate(207 145) rotate(-24)">
+  <g transform="translate(207 155) rotate(-24) scale(.9 1)">
     <path d="M0 0V-29l8-7h151l6-5h66l8 6v20h13l18 15Z" fill="url(#express)"/>
     <path d="M8-34h153l6-5h62l7 5" fill="none" stroke="#d8f3ff" stroke-width="1.5"/>
     <path d="M167-33h58l5 5v12h-63Z" fill="#345978"/>
@@ -51,7 +51,7 @@
     <path d="M158-32v22m79-20v19" fill="none" stroke="#355b7c" stroke-width="2"/>
   </g>
   <!-- Hand-drawn angular letterforms spell GGArtifact in small capitals. -->
-  <g transform="translate(119 84) skewX(-13)" fill="url(#letters)" stroke="#35475f" stroke-width="1.5" paint-order="stroke fill">
+  <g transform="translate(84 84) skewX(-13)" fill="url(#letters)" stroke="#35475f" stroke-width="1.5" paint-order="stroke fill">
     <use href="#g"/>
     <use href="#g" x="49"/>
     <use href="#a" x="99"/>
