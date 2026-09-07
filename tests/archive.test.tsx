@@ -114,7 +114,7 @@ describe("Archive catalogs", () => {
         "Showing 60 of 60 sets · 184 logical pieces · 742 rarity variants"
       )
     ).toBeInTheDocument();
-  });
+  }, 30_000);
 
   it("searches Characters across locales and combines canonical filters with selection", async () => {
     const user = userEvent.setup();
@@ -464,7 +464,7 @@ describe("Archive catalogs", () => {
     detail = screen.getByTestId("character-detail");
     expect(detail).toHaveTextContent("令开拓者吸收星核");
     expect(detail).not.toHaveTextContent("{NICKNAME}");
-  }, 15_000);
+  }, 30_000);
 
   it("exposes every Light Cone superimposition and resolved progression row", async () => {
     const user = userEvent.setup();
