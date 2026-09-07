@@ -42,12 +42,13 @@
   <!-- The Express rises from the lettering's baseline through the crescent.
        Its connected silhouette suggests a locomotive without miniature hardware. -->
   <g transform="translate(207 145) rotate(-24)">
-    <path d="M0 0 12-19H155l10-11h43l9 10h18l12 13 23 7H0Z" fill="url(#express)"/>
-    <path d="M17-17h140l10-11h39" fill="none" stroke="#d8f3ff" stroke-width="1.5"/>
-    <path d="m167-24-6 8h44l-5-8Z" fill="#345978"/>
-    <path d="M183-24v8" stroke="#b5dff0" stroke-width="1.5"/>
-    <path d="M17-5h213l23 3H15Z" fill="#d5ecf5" opacity=".75"/>
-    <path d="M152-17v10m62-10 7 9" fill="none" stroke="#355b7c" stroke-width="2"/>
+    <path d="M0 0V-29l8-7h151l6-5h66l8 6v20h13l18 15Z" fill="url(#express)"/>
+    <path d="M8-34h153l6-5h62l7 5" fill="none" stroke="#d8f3ff" stroke-width="1.5"/>
+    <path d="M167-33h58l5 5v12h-63Z" fill="#345978"/>
+    <path d="M193-33v17" stroke="#b5dff0" stroke-width="2"/>
+    <path d="M9-27h142v12H9Z" fill="#345978" opacity=".45"/>
+    <path d="M9-7h231l12 5H9Z" fill="#d5ecf5" opacity=".75"/>
+    <path d="M158-32v22m79-20v19" fill="none" stroke="#355b7c" stroke-width="2"/>
   </g>
   <!-- Hand-drawn angular letterforms spell GGArtifact in small capitals. -->
   <g transform="translate(49 84) skewX(-13)" fill="url(#letters)" stroke="#35475f" stroke-width="1.5" paint-order="stroke fill">
