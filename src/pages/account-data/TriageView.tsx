@@ -165,7 +165,7 @@ export function TriageView() {
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `ggstarrail-manager-${managerPreview.envelope.requestId}.json`;
+    anchor.download = `ggartifact-hsr-manager-${managerPreview.envelope.requestId}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   }

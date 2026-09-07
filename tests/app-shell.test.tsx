@@ -33,10 +33,10 @@ describe("GGArtifact family shell", () => {
     await user.click(screen.getByRole("button", { name: "Switch game site" }));
 
     expect(
-      screen.getByRole("menuitem", { name: "GGArtifactGenshin Impact" })
+      screen.getByRole("menuitem", { name: "Genshin Impact" })
     ).toHaveAttribute("href", "https://ggartifact.com");
     const starRailItem = screen.getByRole("menuitem", {
-      name: "GGStarRailHonkai: Star Rail",
+      name: "Honkai: Star Rail",
     });
     expect(starRailItem).toHaveAttribute("href", APP_PATHS.home);
     expect(starRailItem).toHaveAttribute("aria-current", "page");

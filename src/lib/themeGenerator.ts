@@ -11,17 +11,17 @@ const THEME_VARS: Record<ThemeId, Readonly<Record<string, string>>> = {
     "card-foreground": "0 0% 95%",
     popover: "229 24% 9%",
     "popover-foreground": "0 0% 95%",
-    primary: "223 62% 48%",
+    primary: "242 62% 63%",
     "primary-foreground": "0 0% 98%",
     secondary: "229 24% 13%",
     "secondary-foreground": "0 0% 95%",
     muted: "229 20% 10%",
     "muted-foreground": "225 12% 62%",
-    accent: "224 48% 34%",
+    accent: "242 48% 34%",
     "accent-foreground": "0 0% 98%",
     border: "228 19% 22%",
     input: "229 20% 10%",
-    ring: "223 62% 52%",
+    ring: "242 62% 67%",
     "gradient-page":
       "radial-gradient(ellipse 85% 75% at 50% 50%, hsl(221 39% 25%) 0%, transparent 92%), radial-gradient(ellipse 170% 60% at 50% 50%, hsl(245 31% 20%) 0%, transparent 94%), radial-gradient(ellipse 60% 165% at 50% 50%, hsl(247 28% 14%) 0%, transparent 92%), radial-gradient(circle at 50% 50%, hsl(229 22% 7%) 0%, hsl(229 22% 7%) 100%)",
     "gradient-card":
@@ -30,29 +30,29 @@ const THEME_VARS: Record<ThemeId, Readonly<Record<string, string>>> = {
       "linear-gradient(135deg, hsl(242 25% 10%) 0%, hsl(234 30% 14%) 50%, hsl(227 29% 16%) 100%)",
   },
   express: {
-    background: "221 25% 7%",
-    foreground: "42 25% 95%",
-    card: "221 23% 8%",
-    "card-foreground": "42 25% 95%",
-    popover: "221 24% 9%",
-    "popover-foreground": "42 25% 95%",
-    primary: "42 76% 52%",
-    "primary-foreground": "222 30% 8%",
-    secondary: "221 20% 14%",
-    "secondary-foreground": "42 20% 94%",
-    muted: "221 19% 10%",
-    "muted-foreground": "218 12% 64%",
-    accent: "191 45% 30%",
+    background: "355 24% 7%",
+    foreground: "35 20% 95%",
+    card: "355 25% 9%",
+    "card-foreground": "35 20% 95%",
+    popover: "355 25% 10%",
+    "popover-foreground": "35 20% 95%",
+    primary: "8 68% 51%",
+    "primary-foreground": "0 0% 98%",
+    secondary: "355 24% 15%",
+    "secondary-foreground": "35 20% 95%",
+    muted: "355 20% 11%",
+    "muted-foreground": "15 12% 66%",
+    accent: "8 46% 28%",
     "accent-foreground": "0 0% 98%",
-    border: "221 17% 22%",
-    input: "221 19% 10%",
-    ring: "42 76% 52%",
+    border: "355 20% 24%",
+    input: "355 20% 11%",
+    ring: "8 68% 58%",
     "gradient-page":
-      "radial-gradient(ellipse 85% 75% at 50% 50%, hsl(194 38% 22%) 0%, transparent 92%), radial-gradient(ellipse 170% 60% at 50% 50%, hsl(40 31% 17%) 0%, transparent 94%), radial-gradient(ellipse 60% 165% at 50% 50%, hsl(36 24% 12%) 0%, transparent 92%), radial-gradient(circle at 50% 50%, hsl(221 25% 7%) 0%, hsl(221 25% 7%) 100%)",
+      "radial-gradient(ellipse 85% 75% at 50% 50%, hsl(355 42% 23%) 0%, transparent 92%), radial-gradient(ellipse 170% 60% at 50% 50%, hsl(28 28% 15%) 0%, transparent 94%), linear-gradient(135deg, hsl(355 24% 7%), hsl(345 22% 7%))",
     "gradient-card":
-      "linear-gradient(135deg, hsl(211 27% 15%) 0%, hsl(202 28% 13%) 50%, hsl(223 22% 9%) 100%)",
+      "linear-gradient(135deg, hsl(355 30% 17%) 0%, hsl(5 28% 13%) 50%, hsl(345 22% 9%) 100%)",
     "gradient-select":
-      "linear-gradient(135deg, hsl(223 22% 9%) 0%, hsl(202 28% 13%) 50%, hsl(211 27% 15%) 100%)",
+      "linear-gradient(135deg, hsl(345 22% 9%) 0%, hsl(5 28% 13%) 50%, hsl(355 30% 17%) 100%)",
   },
   dreamscape: {
     background: "273 22% 7%",
@@ -80,6 +80,10 @@ const THEME_VARS: Record<ThemeId, Readonly<Record<string, string>>> = {
       "linear-gradient(135deg, hsl(257 25% 10%) 0%, hsl(277 31% 14%) 50%, hsl(290 29% 16%) 100%)",
   },
 };
+
+export function getThemePrimaryColor(theme: ThemeId): string {
+  return `hsl(${THEME_VARS[theme].primary})`;
+}
 
 export function applyThemeVars(theme: ThemeId): void {
   const root = document.documentElement;

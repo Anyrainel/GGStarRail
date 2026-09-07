@@ -1,8 +1,28 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { routeDefinition } from "@/app/routeRegistry";
-import { NAVIGATION_SECTIONS } from "@/config/navigation";
+import {
+  APP_PATHS,
+  type AppPath,
+  NAVIGATION_SECTIONS,
+} from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
+import type { MessageKey } from "@/i18n/messages.en";
+
+const summaries: Partial<Record<AppPath, MessageKey>> = {
+  [APP_PATHS.characters]: "home.index.characters",
+  [APP_PATHS.inventory]: "home.index.inventory",
+  [APP_PATHS.resources]: "home.index.resources",
+  [APP_PATHS.triage]: "home.index.triage",
+  [APP_PATHS.builds]: "home.index.builds",
+  [APP_PATHS.filters]: "home.index.filters",
+  [APP_PATHS.tierCharacters]: "home.index.tierCharacters",
+  [APP_PATHS.tierLightCones]: "home.index.tierLightCones",
+  [APP_PATHS.tierRelics]: "home.index.tierRelics",
+  [APP_PATHS.archiveCharacters]: "home.index.archiveCharacters",
+  [APP_PATHS.archiveLightCones]: "home.index.archiveLightCones",
+  [APP_PATHS.archiveRelicSets]: "home.index.archiveRelicSets",
+  [APP_PATHS.archiveAchievements]: "home.index.archiveAchievements",
+};
 
 /** Keep the home index and app navigation on the same set of real routes. */
 export function FeatureMatrix() {
@@ -29,7 +49,7 @@ export function FeatureMatrix() {
             <ul className="space-y-3">
               {group.items.map((item) => {
                 const Icon = item.icon;
-                const route = routeDefinition(item.path);
+                const summary = summaries[item.path];
                 return (
                   <li key={item.path}>
                     <Link
@@ -47,9 +67,9 @@ export function FeatureMatrix() {
                           aria-hidden="true"
                         />
                       </span>
-                      {route && (
+                      {summary && (
                         <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
-                          {t(route.descriptionKey)}
+                          {t(summary)}
                         </span>
                       )}
                     </Link>

@@ -37,7 +37,7 @@ class RootErrorBoundary extends React.Component<
       .filter(Boolean)
       .join("\n");
     this.setState({ diagnostic });
-    console.error("GGStarRail render failure", diagnostic);
+    console.error("GGArtifact render failure", diagnostic);
   }
 
   public render() {

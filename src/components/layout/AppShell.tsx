@@ -60,7 +60,7 @@ function SiteSwitcher() {
         >
           <img src="/assets/ggstarrail/mark.svg" className="h-8 w-8" alt="" />
           <span className="hidden text-base font-semibold sm:inline">
-            GG Artifact
+            GGArtifact
           </span>
           <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
             {t("site.starRail.short")}
@@ -77,11 +77,8 @@ function SiteSwitcher() {
               className="h-7 w-7"
               alt=""
             />
-            <span className="min-w-0 flex-1">
-              <span className="block font-medium">GGArtifact</span>
-              <span className="block text-xs text-muted-foreground">
-                {t("site.genshin")}
-              </span>
+            <span className="min-w-0 flex-1 font-medium">
+              {t("site.genshin")}
             </span>
             <ExternalLink
               className="text-muted-foreground"
@@ -92,11 +89,8 @@ function SiteSwitcher() {
         <DropdownMenuItem asChild>
           <Link to={APP_PATHS.home} aria-current="page">
             <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
-            <span className="min-w-0 flex-1">
-              <span className="block font-medium">GGStarRail</span>
-              <span className="block text-xs text-muted-foreground">
-                {t("site.starRail")}
-              </span>
+            <span className="min-w-0 flex-1 font-medium">
+              {t("site.starRail")}
             </span>
             <Check className="text-primary" aria-hidden="true" />
           </Link>
@@ -195,7 +189,7 @@ function MobileMenu() {
       >
         <SheetTitle className="flex items-center gap-2 pr-8">
           <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
-          GG Artifact
+          GGArtifact
           <span className="text-sm font-normal text-primary">
             {t("site.starRail.short")}
           </span>

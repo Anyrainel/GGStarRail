@@ -196,3 +196,32 @@ revision, upstream README, LICENSE, attribution, and license-scope notice, but
 commits none of the binaries. The entire local output under
 `public/assets/ggstarrail/cache/` is ignored and must not be published or
 claimed as GGStarRail-owned content without a separate rights review.
+
+## Home card publisher wallpapers
+
+The four curated images in `public/assets/ggstarrail/home/` come directly from
+the verified Honkai: Star Rail publisher account on HoYoLAB. Each source post
+displays "Repost allowed". They are COGNOSPHERE artwork, not GGArtifact-owned
+art or assets covered by this repository's code license. The original images
+retain their publisher marks; local copies are resized to 1400 px wide and
+encoded as WebP (quality 86) without retouching. Cards use CSS cover crops.
+
+| Local file | Official post | Original image |
+| --- | --- | --- |
+| `firefly.webp` | [Outfit Wallpaper: Firefly, Spring Missive](https://www.hoyolab.com/article/39526862) | [2560 x 1440 JPG](https://upload-os-bbs.hoyolab.com/upload/2025/06/20/99ff1c2471c15e840f4b4c57aff036df_4595423145747539859.jpg) |
+| `ruan-mei.webp` | [Pom-Pom Gallery, December 15, 2023](https://www.hoyolab.com/article/23629548) | [2844 x 1600 JPEG](https://upload-os-bbs.hoyolab.com/upload/2023/12/15/95e2d452ec9a06140ca4bd7c50127167_4472802937747563065.jpeg) |
+| `hysilens.webp` | [Pom-Pom Gallery, September 4, 2025](https://www.hoyolab.com/article/40908393) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2025/08/22/aac7a06d63e1f2d9ee26ee975977e893_6439837002613710400.jpg) |
+| `evernight.webp` | [Pom-Pom Gallery, September 4, 2025](https://www.hoyolab.com/article/40908393) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2025/08/22/fc2a791fa9be6524f095e0586b8ac84f_2383941123723856191.jpg) |
+
+The Ruan Mei source also includes Dr. Ratio and a small Herta; the card focuses
+on Ruan Mei. The other three images each feature a single character. Sources
+and original dimensions were verified on September 7, 2026.
+
+## GGArtifact hero wordmark
+
+`public/assets/ggstarrail/wordmark.svg` is an original vector drawing of the
+GGArtifact name. Its angular slanted letterforms, blue/gold crescent, and
+ascending Express motif reference the English Star Rail wordmark displayed
+on the [official site](https://hsr.hoyoverse.com/en-us/), inspected September 7,
+2026. It uses custom paths rather than a bundled game logo or font. The
+separate Stellar Jade site icon remains the switcher mark and favicon.

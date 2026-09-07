@@ -186,7 +186,7 @@ export function parseVersionedWorkspace(input: unknown): PersistedWorkspace {
   if (versionTwo.success) return migrateV2(versionTwo.data);
   const previous = PersistedWorkspaceV1Schema.safeParse(input);
   if (previous.success) return migrateV1(previous.data);
-  throw new Error("Unsupported or invalid GGStarRail workspace schema");
+  throw new Error("Unsupported or invalid account workspace schema");
 }
 
 export function migrateWorkspace(

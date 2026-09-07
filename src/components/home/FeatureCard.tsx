@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { AssetImage } from "@/components/shared/AssetImage";
+import { getAssetUrl } from "@/lib/assets";
 
 interface FeatureCardProps {
   icon: ReactNode;
@@ -9,45 +9,45 @@ interface FeatureCardProps {
   problem: string;
   guideline: string;
   link: string;
-  characterId: string;
+  bgImage: string;
+  bgPosition?: string;
   ctaText: string;
-  assetsReady: boolean;
 }
 
-/** GGArtifact's visual launcher layout, using the Star Rail asset cache. */
+/** GGArtifact's visual launcher layout with publisher wallpaper artwork. */
 export function FeatureCard({
   icon,
   title,
   problem,
   guideline,
   link,
-  characterId,
+  bgImage,
+  bgPosition = "center center",
   ctaText,
-  assetsReady,
 }: FeatureCardProps) {
   return (
     <Link
       to={link}
       className="group relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[250px]"
     >
-      <div className="absolute inset-y-0 right-0 z-0 w-[60%] max-w-[250px] overflow-hidden">
-        {assetsReady && (
-          <AssetImage
-            kind="character"
-            id={characterId}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-          />
-        )}
+      <div className="absolute inset-y-0 right-0 z-0 w-[65%] overflow-hidden">
+        <img
+          src={getAssetUrl(bgImage)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          style={{ objectPosition: bgPosition }}
+          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+        />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to right, hsl(var(--card)) 0%, hsl(var(--card) / 0.8) 25%, hsl(var(--card) / 0.25) 65%, transparent 100%)",
+              "linear-gradient(to right, hsl(var(--card)) 0%, hsl(var(--card) / 0.85) 30%, hsl(var(--card) / 0.5) 50%, transparent 75%)",
           }}
         />
       </div>
-      <div className="relative z-10 flex h-full max-w-[78%] flex-col gap-2 p-5 pb-16 sm:max-w-[65%]">
+      <div className="relative z-10 flex h-full max-w-[70%] flex-1 flex-col gap-2 p-5 pb-16 sm:max-w-[55%]">
         <div className="flex items-center gap-3">
           <div className="rounded-lg border border-primary/30 bg-primary/20 p-2 text-primary shadow-lg shadow-primary/10 backdrop-blur-sm">
             {icon}

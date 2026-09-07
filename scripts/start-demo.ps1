@@ -41,7 +41,7 @@ function Test-WebDemo {
   try {
     $response = Invoke-WebRequest -UseBasicParsing -Uri "$demoUrl/" -TimeoutSec 2
     return $response.StatusCode -eq 200 -and
-      $response.Content.Contains("<title>GGStarRail</title>")
+      $response.Content.Contains("<title>GGArtifact</title>")
   } catch {
     return $false
   }

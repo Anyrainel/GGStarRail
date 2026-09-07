@@ -173,7 +173,7 @@ export function BuildWorkspaceActions({
     );
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = "ggstarrail-build-workspace.json";
+    anchor.download = "ggartifact-hsr-build-workspace.json";
     anchor.click();
     URL.revokeObjectURL(url);
     setStatus({ tone: "success", message: t("build.exported") });

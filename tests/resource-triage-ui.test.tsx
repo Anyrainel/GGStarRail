@@ -97,7 +97,7 @@ describe("Resource and Relic Triage views", () => {
     expect(screen.getAllByText("Synthesize Relics").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Use Variable Dice").length).toBeGreaterThan(0);
     expect(
-      screen.getByText(/GGStarRail does not know your consumable balances/)
+      screen.getByText(/GGArtifact does not know your consumable balances/)
     ).toBeVisible();
     expect((await screen.findAllByRole("article")).length).toBeGreaterThan(0);
     expect(

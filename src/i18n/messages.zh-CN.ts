@@ -1,6 +1,27 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "guide.open": "快速上手",
+  "guide.previous": "上一步",
+  "guide.next": "下一步",
+  "guide.done": "开始使用",
+  "guide.progress": "快速上手 · {current} / {total}",
+  "guide.account.body":
+    "进入账号数据，点击顶部应用栏的「导入账号」。选择兼容的扫描器 JSON 文件，或通过 UID 获取公开角色展柜数据，确认预览后再导入。",
+  "guide.account.hint":
+    "公开展柜仅包含展示的角色及其装备。要导入背包中的其他装备，请使用扫描器导出的文件。",
+  "guide.builds.body":
+    "选择角色，指定隧洞遗器和位面饰品套装来创建配装。设置主词条和副词条权重后，前往遗器筛选，查看账号内符合条件的装备。",
+  "guide.builds.hint":
+    "无需导入账号即可配置配装；查看匹配装备和账号结果则需要先导入遗器。",
+  "guide.priority.body":
+    "将角色、光锥和遗器套装排入自己的优先级档位。按优先级排序角色时，会使用你设置的角色优先级。",
+  "guide.priority.hint":
+    "这是你自己的培养与收集计划，可以随时按角色池和目标调整。",
+  "guide.archive.body":
+    "查阅角色、光锥和遗器套装。通过搜索与筛选，快速找到配装时需要的信息。",
+  "guide.archive.hint":
+    "浏览图鉴无需导入账号。需要时，随时可以从首页重新打开本指南。",
   "filter.sortPriority": "优先级",
   "filter.priorityUnavailable":
     "在角色优先级页面为角色分级后即可按优先级排序。",
@@ -44,7 +65,7 @@ export const messagesZhCn = {
   "beta.storageError": "无法保存设置，请允许浏览器存储后重试。",
   "beta.enabled": "已显示测试服内容",
   "beta.disable": "隐藏测试服内容",
-  "app.name": "GGStarRail",
+  "app.name": "GGArtifact",
   "app.tagline": "本地优先的星铁配装工作台",
   "app.foundation": "星铁数据工作台",
   "app.locale": "语言",
@@ -114,6 +135,19 @@ export const messagesZhCn = {
   "home.openArchive": "浏览图鉴",
   "home.tools.title": "从这里开始",
   "home.tools.body": "直接前往你需要的工具。",
+  "home.index.characters": "查看养成与装备",
+  "home.index.inventory": "浏览已有装备",
+  "home.index.resources": "规划下一步提升",
+  "home.index.triage": "决定遗器去留",
+  "home.index.builds": "选择套装与词条",
+  "home.index.filters": "筛选适配遗器",
+  "home.index.tierCharacters": "安排角色养成顺序",
+  "home.index.tierLightCones": "安排光锥养成顺序",
+  "home.index.tierRelics": "安排遗器刷取顺序",
+  "home.index.archiveCharacters": "查询技能与行迹",
+  "home.index.archiveLightCones": "对比光锥效果",
+  "home.index.archiveRelicSets": "查询套装效果",
+  "home.index.archiveAchievements": "记录成就进度",
   "home.tool.account.title": "查看账号数据",
   "home.tool.account.body": "查看角色、装备与遗器提升建议。",
   "home.tool.builds.title": "规划遗器配装",
@@ -450,7 +484,7 @@ export const messagesZhCn = {
   "triage.managerPreparing": "正在准备…",
   "triage.managerDownload": "下载指令",
   "triage.managerBoundary":
-    "GGStarRail 只生成复核文件，不会修改游戏。GOODScanner 必须重新扫描，并且只匹配到一件画面可见遗器后才可执行。已锁定且准备标记弃置的候选仍会计入预览，但不会写入下载文件；解锁与弃置标记必须分两次复核执行。文件绝不会包含分解、装备、删除或解锁指令。",
+    "GGArtifact 只生成复核文件，不会修改游戏。GOODScanner 必须重新扫描，并且只匹配到一件画面可见遗器后才可执行。已锁定且准备标记弃置的候选仍会计入预览，但不会写入下载文件；解锁与弃置标记必须分两次复核执行。文件绝不会包含分解、装备、删除或解锁指令。",
   "triage.managerError": "无法生成管理器预览；没有下载任何文件。",
   "triage.managerInstructions": "指令数",
   "triage.managerPreviewOnly": "仅预览",
@@ -523,7 +557,7 @@ export const messagesZhCn = {
   "resource.priority.medium": "值得关注",
   "resource.priority.low": "空间较小",
   "resource.advisoryBoundary":
-    "所有结果仅供参考。GGStarRail 不知道你持有多少消耗品，也不会消耗材料、强化或合成遗器，更不会在游戏内重掷。强化、合成和变量骰子的随机结果均不保证提升。",
+    "所有结果仅供参考。GGArtifact 不知道你持有多少消耗品，也不会消耗材料、强化或合成遗器，更不会在游戏内重掷。强化、合成和变量骰子的随机结果均不保证提升。",
   "resource.noSuggestions":
     "当前操作、装备类型、提升空间和分数门槛下没有建议。",
   "resource.targetFor": "适用于 {character}",
@@ -731,7 +765,7 @@ export const messagesZhCn = {
     "“数据来源”页面用于说明各来源的覆盖范围、隐私边界与诊断状态。你也可以在这里开始导入，或在任意“账号数据”页面使用“导入账号”。",
   "imports.account.title": "本地账号导入",
   "imports.account.body":
-    "选择带版本的 GGStarRail 或兼容的 GOODScanner 星铁 JSON 导出文件。文件通过校验并完成预览后，才会合并到本地账号数据。",
+    "选择带版本的 GGArtifact 或兼容的 GOODScanner 星铁 JSON 导出文件。文件通过校验并完成预览后，才会合并到本地账号数据。",
   "imports.selectFile": "选择 JSON 文件",
   "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",
   "imports.review.title": "导入前确认",
@@ -802,7 +836,7 @@ export const messagesZhCn = {
     "原始 Cookie、设备 ID 和设备指纹只会经本地 Worker 用于一次请求，随后立即清空；绝不会保存、导出、写入日志或放入网址。",
   "imports.credentials.action": "预览已装备账号数据",
   "imports.error.verification":
-    "HoYoLAB 或米游社要求账号验证。请在官方应用或网站完成验证后重试；GGStarRail 无法代办或绕过验证。",
+    "HoYoLAB 或米游社要求账号验证。请在官方应用或网站完成验证后重试；GGArtifact 无法代办或绕过验证。",
   "imports.error.riskBlocked":
     "HoYoLAB 或米游社将本次请求判定为风险请求。请先在官方应用或网站检查账号安全，再重试。",
   "imports.warning.legacyCoverage":
@@ -908,7 +942,7 @@ export const messagesZhCn = {
   "filter.unknownDiscard": "弃置状态未知",
   "tier.priority.notice.title": "这是你的个人优先级列表",
   "tier.priority.notice.body":
-    "GGStarRail 不会提供或暗示权威排名。图鉴中的全部条目默认留在待分类池，只有你亲自选择的位置才会保存。",
+    "GGArtifact 不会提供或暗示权威排名。图鉴中的全部条目默认留在待分类池，只有你亲自选择的位置才会保存。",
   "tier.priority.summary": "已分类 {assigned} · 待分类 {pool}",
   "tier.priority.instructions":
     "可拖动图标调整层级，也可点按图标直接选择；改动只保存在本设备。",
@@ -933,7 +967,7 @@ export const messagesZhCn = {
   "search.characters": "搜索已拥有角色",
   "search.lightCones": "搜索已拥有光锥",
   "search.relics": "搜索遗器与套装",
-  "error.title": "GGStarRail 无法显示此页面",
+  "error.title": "GGArtifact 无法显示此页面",
   "error.catalogLoad": "图鉴数据加载失败。",
   "error.hint": "请刷新页面。如问题持续，可复制已经脱敏的技术详情用于排查。",
   "error.redacted": "诊断信息中的疑似敏感值会被隐藏。",

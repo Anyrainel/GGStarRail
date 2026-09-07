@@ -1,22 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="jade" x1="17" y1="7" x2="43" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fff1d5"/>
-      <stop offset=".35" stop-color="#f5b7e2"/>
-      <stop offset=".7" stop-color="#a5d6f8"/>
-      <stop offset="1" stop-color="#63e5d4"/>
+    <linearGradient id="core" x1="27" y1="14" x2="32" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe49b"/>
+      <stop offset=".5" stop-color="#ffb8c7"/>
+      <stop offset="1" stop-color="#b4f0ff"/>
     </linearGradient>
-    <linearGradient id="edge" x1="45" y1="14" x2="21" y2="53" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#fff6de"/>
-      <stop offset=".5" stop-color="#bea8eb"/>
-      <stop offset="1" stop-color="#6481d9"/>
+    <linearGradient id="side" x1="48" y1="9" x2="40" y2="48" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff1e2"/>
+      <stop offset=".48" stop-color="#f5e6ff"/>
+      <stop offset="1" stop-color="#80dcf0"/>
+    </linearGradient>
+    <linearGradient id="base" x1="27" y1="40" x2="36" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9bffff"/>
+      <stop offset=".5" stop-color="#27c9e7"/>
+      <stop offset="1" stop-color="#008cd4"/>
     </linearGradient>
   </defs>
-  <path d="m34 3 17 16-5 29-21 13L10 43l5-24Z" fill="url(#edge)"/>
-  <path d="m34 3 7 22-16 36L15 19Z" fill="url(#jade)"/>
-  <path d="m34 3 17 16-10 6Z" fill="#fff2df"/>
-  <path d="m41 25 10-6-5 29-21 13Z" fill="url(#edge)"/>
-  <path d="m15 19 26 6-16 36-15-18Z" fill="url(#jade)"/>
-  <path d="m15 19 26 6-16 36" fill="none" stroke="#f0f7ff" stroke-opacity=".65" stroke-width="1"/>
-  <path d="m56 4 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z" fill="#fff0ca"/>
+  <!-- Wide blue crystal cluster anchors the pale upright prism at favicon sizes. -->
+  <path d="m5 35 4-2 9 4 9 9 10 2 17-7 4 1 4 10-5 7-15 4H31l-5-5-5 2-6-2L4 45Z" fill="url(#base)" stroke="#244963" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="m5 35 4-2 9 4 2 7-10 2-6-1Z" fill="#f5fcff"/>
+  <path d="m10 46 10-2-2 13Z" fill="#3fa7e6"/>
+  <path d="m18 57 2-13 8 6-2 8-5 2Z" fill="#66e8e5"/>
+  <path d="m28 50 9-2 5 7-11 8-5-5Z" fill="#30dedf"/>
+  <path d="m42 55 12-14 4 1 4 10-8 3Z" fill="#80e5f4"/>
+  <path d="m54 41 4 1-4 13-12 8-5-6Z" fill="#398eda"/>
+  <!-- Faceted main crystal, tilted gently right like Stellar Jade. -->
+  <path d="m24 11 18-9 6 3 10 16-8 25-16 9-13-7-5-13Z" fill="#f7fdff" stroke="#354859" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="m42 2 6 3-4 16-7 4-13-14Z" fill="#fffdfa"/>
+  <path d="m48 5 10 16-14 0Z" fill="url(#side)"/>
+  <path d="m44 21 14 0-8 25-16 9 5-27Z" fill="url(#side)"/>
+  <path d="m26 14 13 9-5 32-13-7Z" fill="url(#core)"/>
+  <path d="m26 14 13 9-4 10" fill="none" stroke="#efc378" stroke-width="1" stroke-linejoin="round"/>
+  <path d="m26 14-5 34 13 7 10-34" fill="none" stroke="#a5ccec" stroke-width=".8" stroke-linejoin="round"/>
+  <!-- A few large base facets retain the cluster without the game's tiny shards. -->
+  <path d="m17 44 5-3 4 5 5-2 5 9-7 3-6-5-4 1Z" fill="#2cafd9"/>
+  <path d="m17 44 5-3 4 5-4 3Z" fill="#f2ffff"/>
+  <path d="m24 50 7-6 3 8-8 2Z" fill="#e4ffff"/>
+  <path d="m34 51 9-5 11-4-4 10-13 3Z" fill="#f1ffff"/>
+  <path d="m37 55 13-3 4 3-12 5Z" fill="#50dce8"/>
 </svg>

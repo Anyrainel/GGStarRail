@@ -1,0 +1,28 @@
+@keyframes guide-text-shimmer {
+  from {
+    background-position: 100% center;
+  }
+  to {
+    background-position: 0% center;
+  }
+}
+
+.guide-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--foreground)) 0%,
+    hsl(var(--foreground)) 35%,
+    hsl(var(--primary)) 42.5%,
+    hsl(var(--foreground)) 50%,
+    hsl(var(--primary)) 57.5%,
+    hsl(var(--foreground)) 65%,
+    hsl(var(--foreground)) 100%
+  );
+  background-size: 300% 100%;
+  background-repeat: no-repeat;
+  background-color: hsl(var(--foreground));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: guide-text-shimmer 3s linear infinite;
+}

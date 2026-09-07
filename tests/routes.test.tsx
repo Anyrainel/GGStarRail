@@ -36,11 +36,10 @@ describe("HSR route foundation", () => {
       })
     ).toBeInTheDocument();
     if (route.path === APP_PATHS.home) {
-      await waitFor(() => {
-        expect(document.querySelectorAll("[data-asset-source]")).toHaveLength(
-          4
-        );
-      });
+      expect(
+        document.querySelectorAll('img[src^="/assets/ggstarrail/home/"]')
+      ).toHaveLength(4);
+      expect(document.querySelectorAll("[data-asset-source]")).toHaveLength(0);
     }
   });
 
@@ -75,7 +74,7 @@ describe("HSR route foundation", () => {
     );
 
     await waitFor(() => {
-      expect(document.title).toBe("Achievement archive — GGStarRail");
+      expect(document.title).toBe("Achievement archive — GGArtifact");
       expect(description.content).toBe(
         messagesEn["route.archiveAchievements.description"]
       );

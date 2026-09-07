@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 0 560 200">
+  <defs>
+    <linearGradient id="moon" x1="220" y1="18" x2="308" y2="191" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6ac8f2"/>
+      <stop offset=".48" stop-color="#758aa9"/>
+      <stop offset=".75" stop-color="#e4edf0"/>
+      <stop offset="1" stop-color="#eccd8e"/>
+    </linearGradient>
+    <path id="crescent" d="M271 8C213 24 185 73 198 125c14 55 75 83 125 60 27-12 45-38 49-66-14 32-43 51-75 49-45-2-79-40-77-84 1-32 21-61 51-76Z"/>
+    <clipPath id="moon-edge"><use href="#crescent"/></clipPath>
+    <radialGradient id="moon-light" cx=".24" cy=".7" r=".75">
+      <stop stop-color="#fff4d9" stop-opacity=".7"/>
+      <stop offset=".48" stop-color="#b2dcf1" stop-opacity="0"/>
+      <stop offset="1" stop-color="#233553" stop-opacity=".55"/>
+    </radialGradient>
+    <linearGradient id="express" x1="0" y1="0" x2="270" y2="-25" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4c6689"/>
+      <stop offset=".55" stop-color="#639fc7"/>
+      <stop offset="1" stop-color="#c3edff"/>
+    </linearGradient>
+    <linearGradient id="letters" x1="0" y1="0" x2="0" y2="65" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff"/>
+      <stop offset=".65" stop-color="#f8faff"/>
+      <stop offset="1" stop-color="#c8dfec"/>
+    </linearGradient>
+    <path id="g" d="M43 0H10L0 10V47L9 56H43V26H23L18 34H33V47H11V9H38Z"/>
+    <path id="a" fill-rule="evenodd" d="M0 56 22 0H31L52 56H40L33 39H14L7 56ZM18 30H30L24 12Z"/>
+    <path id="r" fill-rule="evenodd" d="M0 56V0H35L44 9V22L34 32H26L49 56H34L11 32V56ZM11 9V23H29L33 19V13L29 9Z"/>
+    <path id="t" d="M0 0H48L43 9H28V56H16V9H0Z"/>
+    <path id="i" d="M0 0H12V56H0Z"/>
+    <path id="f" d="M0 0H41L36 9H11V25H34L29 34H11V56H0Z"/>
+    <path id="c" d="M43 0H10L0 10V47L9 56H43L38 47H11V9H38Z"/>
+  </defs>
+  <!-- Surface shading and an illuminated rim stay inside the crescent. -->
+  <use href="#crescent" fill="url(#moon)"/>
+  <use href="#crescent" fill="url(#moon-light)"/>
+  <g clip-path="url(#moon-edge)">
+    <path d="M264 13C208 36 186 94 211 142s83 63 124 34" fill="none" stroke="#ddf3ff" stroke-width="2" opacity=".65"/>
+    <path d="M218 45C194 93 213 149 260 172c35 16 76 10 100-19" fill="none" stroke="#354e73" stroke-width="5" opacity=".24"/>
+    <path d="m201 94 14-11 6 30-15 17Zm18 49 15-8 20 29-13 11Zm48 36 12-12 25 7-4 16Z" fill="#ecf4f6" opacity=".16"/>
+  </g>
+  <!-- The Express rises from the lettering's baseline through the crescent.
+       Its connected silhouette suggests a locomotive without miniature hardware. -->
+  <g transform="translate(207 145) rotate(-24)">
+    <path d="M0 0 12-19H155l10-11h43l9 10h18l12 13 23 7H0Z" fill="url(#express)"/>
+    <path d="M17-17h140l10-11h39" fill="none" stroke="#d8f3ff" stroke-width="1.5"/>
+    <path d="m167-24-6 8h44l-5-8Z" fill="#345978"/>
+    <path d="M183-24v8" stroke="#b5dff0" stroke-width="1.5"/>
+    <path d="M17-5h213l23 3H15Z" fill="#d5ecf5" opacity=".75"/>
+    <path d="M152-17v10m62-10 7 9" fill="none" stroke="#355b7c" stroke-width="2"/>
+  </g>
+  <!-- Hand-drawn angular letterforms spell GGArtifact in small capitals. -->
+  <g transform="translate(49 84) skewX(-13)" fill="url(#letters)" stroke="#35475f" stroke-width="1.5" paint-order="stroke fill">
+    <use href="#g"/>
+    <use href="#g" x="49"/>
+    <use href="#a" x="99"/>
+    <g transform="translate(155 10) scale(.84 .82)">
+      <use href="#r"/>
+      <use href="#t" x="51"/>
+      <use href="#i" x="104"/>
+      <use href="#f" x="123"/>
+      <use href="#a" x="168"/>
+      <use href="#c" x="226"/>
+      <use href="#t" x="275"/>
+    </g>
+  </g>
+</svg>

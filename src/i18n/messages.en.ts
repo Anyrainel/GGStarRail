@@ -1,4 +1,25 @@
 export const messagesEn = {
+  "guide.open": "Quick Guide",
+  "guide.previous": "Previous",
+  "guide.next": "Next",
+  "guide.done": "Let's go",
+  "guide.progress": "Quick guide · {current} / {total}",
+  "guide.account.body":
+    "Open Account Data and choose Import account in the app bar. Import a compatible scanner JSON file or look up your public UID showcase, then review the data before applying it.",
+  "guide.account.hint":
+    "A public showcase only includes the displayed Characters and their equipped gear. Use a scanner export to include the rest of your inventory.",
+  "guide.builds.body":
+    "Choose a Character and create a build with your Cavern Relic and Planar Ornament sets. Set the main stats and substat weights, then open Relic Filters to see the matching pieces in your account.",
+  "guide.builds.hint":
+    "You can configure builds before importing an account. Matching gear and account results need imported Relics.",
+  "guide.priority.body":
+    "Arrange Characters, Light Cones, and Relic sets into your own priority tiers. Use Character Priority when sorting Characters by your plans.",
+  "guide.priority.hint":
+    "These are your personal priorities; adjust them as your roster and goals change.",
+  "guide.archive.body":
+    "Browse Characters, Light Cones, and Relic sets. Search or use the filters to find the details you need while planning a build.",
+  "guide.archive.hint":
+    "No account import is needed to browse the Archive. Reopen this guide from the home page whenever you need it.",
   "filter.sortPriority": "Priority",
   "filter.priorityUnavailable":
     "Assign Characters in Character Priority to sort by priority.",
@@ -44,7 +65,7 @@ export const messagesEn = {
     "Could not save this setting. Allow browser storage and try again.",
   "beta.enabled": "Unreleased content enabled",
   "beta.disable": "Hide unreleased content",
-  "app.name": "GGStarRail",
+  "app.name": "GGArtifact",
   "app.tagline": "A local-first Star Rail build workspace",
   "app.foundation": "HSR data workspace",
   "app.locale": "Language",
@@ -115,6 +136,19 @@ export const messagesEn = {
   "home.openArchive": "Browse the archive",
   "home.tools.title": "Find your next step",
   "home.tools.body": "Jump straight to the tool you need.",
+  "home.index.characters": "Review levels and equipment",
+  "home.index.inventory": "Browse your gear",
+  "home.index.resources": "Plan your next upgrades",
+  "home.index.triage": "Decide which Relics to keep",
+  "home.index.builds": "Choose sets and stats",
+  "home.index.filters": "Find matching Relics",
+  "home.index.tierCharacters": "Rank your roster",
+  "home.index.tierLightCones": "Prioritize Light Cones",
+  "home.index.tierRelics": "Prioritize Relic sets",
+  "home.index.archiveCharacters": "Look up skills and Traces",
+  "home.index.archiveLightCones": "Compare Light Cone effects",
+  "home.index.archiveRelicSets": "Look up set bonuses",
+  "home.index.archiveAchievements": "Track your achievements",
   "home.tool.account.title": "Review your account",
   "home.tool.account.body":
     "Review your Characters, equipment, and Relic upgrade options.",
@@ -485,7 +519,7 @@ export const messagesEn = {
   "triage.managerPreparing": "Preparing…",
   "triage.managerDownload": "Download instructions",
   "triage.managerBoundary":
-    "GGStarRail only creates a review file; it never changes the game. GOODScanner must rescan and match exactly one visible Relic before acting. Locked-before-discard candidates are counted in this preview but omitted from the download: unlocking and discard marking require separate reviewed runs. Salvage, equip, delete, and unlock commands are never exported.",
+    "GGArtifact only creates a review file; it never changes the game. GOODScanner must rescan and match exactly one visible Relic before acting. Locked-before-discard candidates are counted in this preview but omitted from the download: unlocking and discard marking require separate reviewed runs. Salvage, equip, delete, and unlock commands are never exported.",
   "triage.managerError":
     "The manager preview could not be created. No file was downloaded.",
   "triage.managerInstructions": "Instructions",
@@ -564,7 +598,7 @@ export const messagesEn = {
   "resource.priority.medium": "Useful gaps",
   "resource.priority.low": "Smaller gaps",
   "resource.advisoryBoundary":
-    "Suggestions are advisory. GGStarRail does not know your consumable balances, spend materials, enhance Relics, synthesize items, or reroll in-game. Random enhancement, synthesis, and Variable Dice results are never guaranteed.",
+    "Suggestions are advisory. GGArtifact does not know your consumable balances, spend materials, enhance Relics, synthesize items, or reroll in-game. Random enhancement, synthesis, and Variable Dice results are never guaranteed.",
   "resource.noSuggestions":
     "No Relics meet the current action, equipment, opportunity, and score-gap filters.",
   "resource.targetFor": "Target for {character}",
@@ -777,7 +811,7 @@ export const messagesEn = {
     "Data Sources documents provider coverage, privacy, and diagnostics. Start an import here if you arrived while checking those details, or use Import account from any Account Data page.",
   "imports.account.title": "Local account import",
   "imports.account.body":
-    "Choose a versioned GGStarRail or compatible GOODScanner HSR JSON export. The file is validated and reviewed before merging it into local account data.",
+    "Choose a versioned GGArtifact or compatible GOODScanner HSR JSON export. The file is validated and reviewed before merging it into local account data.",
   "imports.selectFile": "Choose JSON file",
   "imports.fileHelp":
     "JSON only. Importing never sends the file or account data over the network.",
@@ -814,7 +848,7 @@ export const messagesEn = {
   "imports.identity.differentHelp":
     "The UIDs differ. Replacing the current account snapshot is required to keep identities separate.",
   "imports.identity.unknownHelp":
-    "One or both sources omit UID, so GGStarRail cannot verify whether they represent the same account.",
+    "One or both sources omit UID, so GGArtifact cannot verify whether they represent the same account.",
   "imports.identity.replaceConfirm":
     "I understand this replaces the current local account snapshot.",
   "imports.apply.merge": "Merge matching account",
@@ -854,7 +888,7 @@ export const messagesEn = {
     "The raw Cookie, device ID, and fingerprint are sent through the local Worker for one request, then cleared. They are never stored, exported, logged, or placed in a URL.",
   "imports.credentials.action": "Review equipped account data",
   "imports.error.verification":
-    "HoYoLAB or 米游社 requires account verification. Complete it in the official app or site, then retry; GGStarRail cannot solve or bypass it.",
+    "HoYoLAB or 米游社 requires account verification. Complete it in the official app or site, then retry; GGArtifact cannot solve or bypass it.",
   "imports.error.riskBlocked":
     "HoYoLAB or 米游社 blocked this request as risky. Review account security in the official app or site before retrying.",
   "imports.warning.legacyCoverage":
@@ -961,7 +995,7 @@ export const messagesEn = {
   "filter.unknownDiscard": "Discard state unknown",
   "tier.priority.notice.title": "This priority list belongs to you",
   "tier.priority.notice.body":
-    "GGStarRail does not publish or imply an authoritative ranking. Every catalog entry starts in Pool; only your explicit placements are saved.",
+    "GGArtifact does not publish or imply an authoritative ranking. Every catalog entry starts in Pool; only your explicit placements are saved.",
   "tier.priority.summary": "{assigned} ranked · {pool} in Pool",
   "tier.priority.instructions":
     "Drag an icon between rows, or tap it to choose a tier. Changes stay on this device.",
@@ -986,7 +1020,7 @@ export const messagesEn = {
   "search.characters": "Search owned Characters",
   "search.lightCones": "Search owned Light Cones",
   "search.relics": "Search Relics and sets",
-  "error.title": "GGStarRail could not render this page",
+  "error.title": "GGArtifact could not render this page",
   "error.catalogLoad": "Catalog data could not be loaded.",
   "error.hint":
     "Refresh the page. If the problem continues, copy the redacted details for diagnosis.",

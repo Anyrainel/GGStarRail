@@ -1,5 +1,5 @@
 export const PRODUCT_ID = "ggstarrail" as const;
-export const PRODUCT_NAME = "GGStarRail" as const;
+export const PRODUCT_NAME = "GGArtifact" as const;
 export const GAME_ID = "honkai-star-rail" as const;
 export const ASSET_NAMESPACE = "/assets/ggstarrail" as const;
 
@@ -15,7 +15,8 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const BACKUP_IDENTITY = {
-  product: PRODUCT_NAME,
+  // Stable wire-format identity; independent of the public site brand.
+  product: "GGStarRail",
   kind: "ggstarrail.backup",
   schemaVersion: 1,
 } as const;
