@@ -61,7 +61,10 @@ one GIlore revision. It carries no account data. GOODCapture checks it every two
 hours and exposes Refresh game data for an immediate update; an offline client
 can continue using its last validated local cache.
 
-The regular `npm run data:update` command regenerates it through GIlore alongside
-the website data. `data:website:check` rejects revision or catalog coverage drift.
+The default GIlore command, `uv run python -m hsr_data reference`, writes both
+`src/data/game/` and `public/good/hsr_data_cache.json` in the sibling GGStarRail
+checkout, using cached source evidence. Add `--pull` to refresh the datamine, or
+`--no-website` for a GIlore-only build. `npm run data:update` additionally refreshes
+HoYoWiki/Nanoka evidence before calling the same website export function. `data:website:check` rejects revision or catalog coverage drift.
 Publish the generated JSON with normal website changes; data updates require no
 new executable. `_headers` requires revalidation instead of immutable caching.
