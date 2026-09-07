@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import { restoreSourceAssets } from "./source-assets.mjs";
 import {
   DEFAULT_ASSET_CACHE_DIRECTORY,
   validatePublishedAssets,
@@ -26,8 +27,9 @@ try {
     cached.asset_manifest_sha256 === validated.manifestSha256 &&
     cached.webp_encoder === encoder
   ) {
+    const restored = await restoreSourceAssets(cached);
     const files = new Set(
-      cached.entries.map((entry) => entry[2]).filter(Boolean)
+      restored.entries.map((entry) => entry[2]).filter(Boolean)
     );
     for (const file of files) {
       if (!/^webp\/[a-f0-9]{64}\.webp$/.test(file))
@@ -39,6 +41,7 @@ try {
       )
         throw new Error("WebP cache checksum mismatch");
     }
+    await writeFile(lookupPath, `${JSON.stringify(restored)}\n`);
     console.log(`WebP cache verified: ${files.size} images`);
     process.exit(0);
   }
@@ -77,7 +80,7 @@ const lookup = {
 };
 await writeFile(
   path.join(generated, "runtime-lookup.json"),
-  `${JSON.stringify(lookup)}\n`
+  `${JSON.stringify(await restoreSourceAssets(lookup))}\n`
 );
 console.log(
   `WebP: ${paths.size} images; ${sourceBytes} PNG bytes -> ${outputBytes} WebP bytes (${Math.round(100 * (1 - outputBytes / sourceBytes))}% smaller)`

@@ -1,0 +1,2976 @@
+{
+  "schema_version": "1.0.0",
+  "source_revision": "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091",
+  "entries": [
+    {
+      "kind": "character",
+      "id": "1001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/0047e5284a840424de8b21d1ccd042cd_933159568797000001.png",
+      "source_sha256": "f7665a09ab46b0f007c07548935de8a8cdac30de6bb9062253c4d651359c0603",
+      "path": "webp/30a1f062603706d41e81ef69fb5c1d61ee1590d37c0916a9474030e610a0396c.webp",
+      "sha256": "30a1f062603706d41e81ef69fb5c1d61ee1590d37c0916a9474030e610a0396c",
+      "byte_count": 14102
+    },
+    {
+      "kind": "character",
+      "id": "1002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/f22589fcc8472c64f735d67ca72f0432_7471037767326702542.png",
+      "source_sha256": "c892e1a8ec5f1793bed1800b52f25394885f0bac56817244010ece3dd230f9f7",
+      "path": "webp/c14f943d50e869093a778df169fd7446a4aa17fa24e1e6c99728ac5a3dc3732d.webp",
+      "sha256": "c14f943d50e869093a778df169fd7446a4aa17fa24e1e6c99728ac5a3dc3732d",
+      "byte_count": 11192
+    },
+    {
+      "kind": "character",
+      "id": "1003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6170656b26d7383d0ee34f002284d3ff_7335309365701961860.png",
+      "source_sha256": "28d7f03f229af1e0a726673079d21038a45d18b2d53d7e3e1f406b17263b9ffd",
+      "path": "webp/b15720df04b072d5956ba52cb39949055cfe74b8e8838f40f9158fd7dc09c187.webp",
+      "sha256": "b15720df04b072d5956ba52cb39949055cfe74b8e8838f40f9158fd7dc09c187",
+      "byte_count": 13384
+    },
+    {
+      "kind": "character",
+      "id": "1004",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/131c3de4c924022727ce61ac726d051a_4490115586020920921.png",
+      "source_sha256": "213b86dec810e4b7563a37b5d509998dba16e11b9a1d984f779e2ef0ebb132c8",
+      "path": "webp/b65179dac71231582db672228a24dad9598fb548be8d1718eaee46a2ff72113e.webp",
+      "sha256": "b65179dac71231582db672228a24dad9598fb548be8d1718eaee46a2ff72113e",
+      "byte_count": 10670
+    },
+    {
+      "kind": "character",
+      "id": "1005",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/24/84496276/4893a52c54b02106778799cbebd289f6_4056499725021663945.png",
+      "source_sha256": "47b1f5b2c5453e85bfc6b59484f052d567f3b79387090add3083069709358b3e",
+      "path": "webp/ccfd566b48ee99067c6f0d71b59a5d0b714ff740af6a519faa6ae3b9e0d98a26.webp",
+      "sha256": "ccfd566b48ee99067c6f0d71b59a5d0b714ff740af6a519faa6ae3b9e0d98a26",
+      "byte_count": 10256
+    },
+    {
+      "kind": "character",
+      "id": "1006",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/06/07/7998136/b59604087f67ed3d1828c08a104be302_7489703962207497890.png",
+      "source_sha256": "f91b2e38ebc34ba0203af44c884270c9c73e81497ef6fd57b3cbee3945b574dc",
+      "path": "webp/297fefce7cf7c0bcf01f79c548f462cb80da91b8a568659f2d4d655c559fc033.webp",
+      "sha256": "297fefce7cf7c0bcf01f79c548f462cb80da91b8a568659f2d4d655c559fc033",
+      "byte_count": 14884
+    },
+    {
+      "kind": "character",
+      "id": "1008",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/ec16879888ecb38f5e4a793d596817b5_7471037767326702542.png",
+      "source_sha256": "733a1e6696e72cb144fad60888dd6a2f4f526b2e7620504bc88a6adb7fc5a517",
+      "path": "webp/83ee5c309999c6e7d6319a2a5267b53b93194e2e7e4e86edcaa1cf52fca79e7a.webp",
+      "sha256": "83ee5c309999c6e7d6319a2a5267b53b93194e2e7e4e86edcaa1cf52fca79e7a",
+      "byte_count": 12828
+    },
+    {
+      "kind": "character",
+      "id": "1009",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9ac18d37eab70ad1b7485d8025ec7499_4987547298490400207.png",
+      "source_sha256": "739ab989a9e64bb6bdfe0872b947b9e39de0acb9449a97700caf482d1dd43b6d",
+      "path": "webp/33871afeeeb0e74196be14a1f6fc9d21819800df94dbcc07671591b95e77150d.webp",
+      "sha256": "33871afeeeb0e74196be14a1f6fc9d21819800df94dbcc07671591b95e77150d",
+      "byte_count": 11366
+    },
+    {
+      "kind": "character",
+      "id": "1013",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/a755d7167aa226264cb5aa26f70f9736_6990891585355987615.png",
+      "source_sha256": "dcd21f1069a0efbc776f30a79e0caf2bd4aeb767779caaa72fae2afb2980e607",
+      "path": "webp/5edfcc13cf7a3db0cd0ae3b8cf1390e1e10843ef8e0c60c0fdc9c42a7a9517fc.webp",
+      "sha256": "5edfcc13cf7a3db0cd0ae3b8cf1390e1e10843ef8e0c60c0fdc9c42a7a9517fc",
+      "byte_count": 11822
+    },
+    {
+      "kind": "character",
+      "id": "1014",
+      "source_url": "https://static.nanoka.cc/assets/hsr/avatarshopicon/1014.webp",
+      "source_sha256": "1142a42d179decfe16e0d31eb7f4b8178d8598fd00965e489371815ef21d2a37",
+      "path": "webp/b5a133bc659b9f7abf6a3e225611e9190e58660df2e723ac847e6490b6ab9591.webp",
+      "sha256": "b5a133bc659b9f7abf6a3e225611e9190e58660df2e723ac847e6490b6ab9591",
+      "byte_count": 83626
+    },
+    {
+      "kind": "character",
+      "id": "1015",
+      "source_url": "https://static.nanoka.cc/assets/hsr/avatarshopicon/1015.webp",
+      "source_sha256": "b798237e5c6b2cc5318bd53639820daf92422064eed61b086439096df4b6aee8",
+      "path": "webp/a18ef2f56547452c2ab15338abf2aa510af9cefd34b276c0c267e3d5e05536ab.webp",
+      "sha256": "a18ef2f56547452c2ab15338abf2aa510af9cefd34b276c0c267e3d5e05536ab",
+      "byte_count": 62344
+    },
+    {
+      "kind": "character",
+      "id": "1101",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/7c97499ec8dac5bd41a0ab91b8bba9a2_9011443874790929649.png",
+      "source_sha256": "347c0f89e03bdfec70e32169cb8fd1be4a502cefea8ac05c42f0148dcb04ce8c",
+      "path": "webp/eb7cbdfc1630daa54dcf1937ac13dac75ca6df77e588f3c9adfc97519e307567.webp",
+      "sha256": "eb7cbdfc1630daa54dcf1937ac13dac75ca6df77e588f3c9adfc97519e307567",
+      "byte_count": 13102
+    },
+    {
+      "kind": "character",
+      "id": "1102",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/51d48aafbbf69b8e92256a381445ad07_4740490797942876174.png",
+      "source_sha256": "40576247371cdc40da0c570ebf4e37e604c81668a83601228346d4c0f44352f6",
+      "path": "webp/994d314b0f773f563fa4bbb48f8929b3bebb3a8635ecdfc037e4e6a5c415d671.webp",
+      "sha256": "994d314b0f773f563fa4bbb48f8929b3bebb3a8635ecdfc037e4e6a5c415d671",
+      "byte_count": 10982
+    },
+    {
+      "kind": "character",
+      "id": "1103",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6660b8c2be9a0db0130a8a2bd1825e0c_115117260001571580.png",
+      "source_sha256": "5921bffdf6bc525c28c2b41ad3798b03aeac1436d216dba4af48271620caf743",
+      "path": "webp/7d33c92b6b05161bfbdc1532ba81092a789be958852a97bbe903d87b5d50d753.webp",
+      "sha256": "7d33c92b6b05161bfbdc1532ba81092a789be958852a97bbe903d87b5d50d753",
+      "byte_count": 12224
+    },
+    {
+      "kind": "character",
+      "id": "1104",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/21ae001edc80f597d35df15f35537d00_4983283866355038276.png",
+      "source_sha256": "7a0b5b162f30efb9502b4fdeb096482ee71bbf3ab8bfd7734c25a06fe70d42b7",
+      "path": "webp/ebd4be3bad66df00c6744a61c7783261e2cd880bd7cb0b222af170a7e04e28ad.webp",
+      "sha256": "ebd4be3bad66df00c6744a61c7783261e2cd880bd7cb0b222af170a7e04e28ad",
+      "byte_count": 12308
+    },
+    {
+      "kind": "character",
+      "id": "1105",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/59abc9abc0795ead8a3d3ac2c03530f1_1713347165320581354.png",
+      "source_sha256": "113938baf47900ed3bfee6f314c043a835df1d9974fa6a67f177d0db989ff80f",
+      "path": "webp/d6a8c7e75481c5a140f32b46d38cab9d3790a9942ff82e344b28fd511968e306.webp",
+      "sha256": "d6a8c7e75481c5a140f32b46d38cab9d3790a9942ff82e344b28fd511968e306",
+      "byte_count": 12012
+    },
+    {
+      "kind": "character",
+      "id": "1106",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9ca6f9a8509b3e8dd05fb551056d273d_933159568797000001.png",
+      "source_sha256": "f31a075d883724b1704fe76abf37610e7d0062db3b099615191f6d15711cfa76",
+      "path": "webp/90afd5d4d7f1ca427e7e7f016eb4f046332d85af854e48f677bbd22a80443c9b.webp",
+      "sha256": "90afd5d4d7f1ca427e7e7f016eb4f046332d85af854e48f677bbd22a80443c9b",
+      "byte_count": 12100
+    },
+    {
+      "kind": "character",
+      "id": "1107",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/36ac7d1e87145434d0617a511066a3db_1713347165320581354.png",
+      "source_sha256": "8025ba126e0245ec3e27f102984e9203e05bb1e1e073230ef443081ea6d88fc0",
+      "path": "webp/3d3a24268b4dad35f0c2a0ab6e9286587764479333b787e66d6a00b69f86aef8.webp",
+      "sha256": "3d3a24268b4dad35f0c2a0ab6e9286587764479333b787e66d6a00b69f86aef8",
+      "byte_count": 11434
+    },
+    {
+      "kind": "character",
+      "id": "1108",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/8cc98741a00c642fd5e47c86b22bf8d9_1867355418239514355.png",
+      "source_sha256": "e4893141610203129ed0aed3e089fe1508ef09b92f800789821e451af65cb085",
+      "path": "webp/3db087f682b8abf9c4106610eaa3eab881b7af9d194d59545694d2346519fc8d.webp",
+      "sha256": "3db087f682b8abf9c4106610eaa3eab881b7af9d194d59545694d2346519fc8d",
+      "byte_count": 12700
+    },
+    {
+      "kind": "character",
+      "id": "1109",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/22823e36686017767fa0310dd44d2eb4_115117260001571580.png",
+      "source_sha256": "fbcd1aa2826112f405d7aa444b25c685cd8a614472b7608af547c8ba0cecbd93",
+      "path": "webp/ba8aab498f07598a1ee586c4c4db159e57d0e564e7b969a59af1ed6b37949b7b.webp",
+      "sha256": "ba8aab498f07598a1ee586c4c4db159e57d0e564e7b969a59af1ed6b37949b7b",
+      "byte_count": 12828
+    },
+    {
+      "kind": "character",
+      "id": "1110",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/07/84496276/021e173536079b09ced5d996b8d1f638_2463374175404965619.png",
+      "source_sha256": "6245a294ba67d91e2e87141f8ab14b3f68665dbf0ea99c051ec94d23fb8ae05b",
+      "path": "webp/946d292ced0085d401f18d86d247197871051d1ed1edb7d60b59c026174bef34.webp",
+      "sha256": "946d292ced0085d401f18d86d247197871051d1ed1edb7d60b59c026174bef34",
+      "byte_count": 14384
+    },
+    {
+      "kind": "character",
+      "id": "1111",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/28/84496276/c6d6b8bef93b257573df2eab95302f0e_2085700383517821744.png",
+      "source_sha256": "c6b92e2daae5aaa7841617d8a6945bf554d52c5d581b938d65bbb4d6d7735c2b",
+      "path": "webp/9ad4454c100ee491bfd190faf205403986490806e30af641d804541b877a3a14.webp",
+      "sha256": "9ad4454c100ee491bfd190faf205403986490806e30af641d804541b877a3a14",
+      "byte_count": 11570
+    },
+    {
+      "kind": "character",
+      "id": "1112",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/27/84496276/1ce49a269c54787b7fd60eeb8dc21b3e_857344954345485675.png",
+      "source_sha256": "13e574abe5d132454640a28e8bb093f86dbc50620dad66e037bd87338dd1edd9",
+      "path": "webp/bec05e7ae8ae4346c9502fca181c0c47dedae63530a62468c474d4a87bd9f603.webp",
+      "sha256": "bec05e7ae8ae4346c9502fca181c0c47dedae63530a62468c474d4a87bd9f603",
+      "byte_count": 12970
+    },
+    {
+      "kind": "character",
+      "id": "1201",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e8150c747e37c2b29ebb426291a062d9_7335309365701961860.png",
+      "source_sha256": "59e6e058747efb475bcff5ae0f897f79176d73113a325ce6466647171b2904f1",
+      "path": "webp/5413a28d45b543f590eda9f5a7195278b78bae626520afa785d46d3dbb9459ec.webp",
+      "sha256": "5413a28d45b543f590eda9f5a7195278b78bae626520afa785d46d3dbb9459ec",
+      "byte_count": 11696
+    },
+    {
+      "kind": "character",
+      "id": "1202",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/96067b8aa9c14528544fbc50c8ce7ec5_4740490797942876174.png",
+      "source_sha256": "fa42b746b464e9b46373ba058753219294b8e3968d9a7e5d68e04c1e7b7fd5ea",
+      "path": "webp/c579e9ec7e27ccdaa3bd7a35c96c7496eeb7d64a54e581ffc0899d2f3988b891.webp",
+      "sha256": "c579e9ec7e27ccdaa3bd7a35c96c7496eeb7d64a54e581ffc0899d2f3988b891",
+      "byte_count": 12484
+    },
+    {
+      "kind": "character",
+      "id": "1203",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/28/84496276/de2c1931c57092369663e30a201ce7f6_7123949262150391402.png",
+      "source_sha256": "25f34b0ce77eeca5883af760d6c64b9fabb2f6cea3b205670fc9d35858e488e9",
+      "path": "webp/43ac971aed5b2de306c41e9c249adcc4d38d255704952cfe5791b041164fc27a.webp",
+      "sha256": "43ac971aed5b2de306c41e9c249adcc4d38d255704952cfe5791b041164fc27a",
+      "byte_count": 13804
+    },
+    {
+      "kind": "character",
+      "id": "1204",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/df37aacd31ab40efdcb16ef03a5b68ed_4983283866355038276.png",
+      "source_sha256": "dcb11c5fb6510f799209b991e67dede5cd6a96f8984b65786f926e9f7c575b2d",
+      "path": "webp/5c30ac7c73a587847a2c47af242dec49ef5e56e980f2bf887a1c8101451d9c1a.webp",
+      "sha256": "5c30ac7c73a587847a2c47af242dec49ef5e56e980f2bf887a1c8101451d9c1a",
+      "byte_count": 14542
+    },
+    {
+      "kind": "character",
+      "id": "1205",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/23/84496276/64c098cc21d7f053a020f4e051407e41_4364357903791387806.png",
+      "source_sha256": "672d0d81310cc92a70018f588a3383fb990f6e602b86209f454908fa718c211d",
+      "path": "webp/ec3e7b34a68271b2fa9dc56ec5e7d9d1497079105b1d7742c8faf47af6009308.webp",
+      "sha256": "ec3e7b34a68271b2fa9dc56ec5e7d9d1497079105b1d7742c8faf47af6009308",
+      "byte_count": 11140
+    },
+    {
+      "kind": "character",
+      "id": "1206",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/34ed53d517bff61c71243b3ef9985a2a_9011443874790929649.png",
+      "source_sha256": "dd9e60a59ea79cbecae87f10369cef16541e2e4e1839de715b70ad23e1295ee5",
+      "path": "webp/fc21411c38b5b1a621eaac67623f94ea832cd046a99f6ba1a4fd0d561239615e.webp",
+      "sha256": "fc21411c38b5b1a621eaac67623f94ea832cd046a99f6ba1a4fd0d561239615e",
+      "byte_count": 13444
+    },
+    {
+      "kind": "character",
+      "id": "1207",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/13/84496276/767cb7131b41bb1058c2ee329b77593e_1216609127861628136.png",
+      "source_sha256": "71d85a46bba50f16c347957cee03914385556315d7f235dfce67657fe6e25d75",
+      "path": "webp/21f2fa8a52c883c3b56ed41333ef5fb6b644e3009a1cfd948815022e0cc73dc5.webp",
+      "sha256": "21f2fa8a52c883c3b56ed41333ef5fb6b644e3009a1cfd948815022e0cc73dc5",
+      "byte_count": 83032
+    },
+    {
+      "kind": "character",
+      "id": "1208",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/07/84496276/973836d5f252e7c09d7e7759c785b777_1222315012785569851.png",
+      "source_sha256": "9d6704d7e637fb7368fb8aa47fcbdf4164eae5cb00f08e7d9305945b68d88219",
+      "path": "webp/db9abd0bbb732a41d700a47b0c4724feb97186b56909b85055544639e536d504.webp",
+      "sha256": "db9abd0bbb732a41d700a47b0c4724feb97186b56909b85055544639e536d504",
+      "byte_count": 16822
+    },
+    {
+      "kind": "character",
+      "id": "1209",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2fbbdcb50ff8388ec2c6723c6385fb84_4490115586020920921.png",
+      "source_sha256": "7b229bd1d2dd936aaa1151c02729c323ccbee45fe5c3f7a0a1fb1e88ecd9df2c",
+      "path": "webp/af124a69b40a0f48b11d2df2a10a76901f0d46927b28dd9d9de6eedd099edc02.webp",
+      "sha256": "af124a69b40a0f48b11d2df2a10a76901f0d46927b28dd9d9de6eedd099edc02",
+      "byte_count": 13166
+    },
+    {
+      "kind": "character",
+      "id": "1210",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/27/84496276/a76666754012d7c7c341f4af35be8b8d_5298212639453533805.png",
+      "source_sha256": "b459888cde5076bb565dc10dfc99f26e39543e04728007ce4311d8ffd435500a",
+      "path": "webp/48e6461fe846175af0ccee5637c557722601e4e18f7ebff8e738c3783c606288.webp",
+      "sha256": "48e6461fe846175af0ccee5637c557722601e4e18f7ebff8e738c3783c606288",
+      "byte_count": 14840
+    },
+    {
+      "kind": "character",
+      "id": "1211",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9c766b0feb6256141c1ec7afcd3dff35_6990891585355987615.png",
+      "source_sha256": "d983551d3d04d3a7bb7e102065d8e6b07d15fa32967d3d76c766f836df1cd78f",
+      "path": "webp/049ffb2be45e0805a4c42a5e4de84a48aa8318235f346439248d675d69269186.webp",
+      "sha256": "049ffb2be45e0805a4c42a5e4de84a48aa8318235f346439248d675d69269186",
+      "byte_count": 12482
+    },
+    {
+      "kind": "character",
+      "id": "1212",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/27/84496276/2455cabb24d079ba955efe42d0321787_424208313823064668.png",
+      "source_sha256": "0050b2ed8784de4a387652968ded973b7e3aa54a9cc0dd3e7c28802eef4cbc56",
+      "path": "webp/612eedc57fc681471cbdacfb69655ad29a69ed8ba1fe3ba27cd46554ab70966c.webp",
+      "sha256": "612eedc57fc681471cbdacfb69655ad29a69ed8ba1fe3ba27cd46554ab70966c",
+      "byte_count": 14616
+    },
+    {
+      "kind": "character",
+      "id": "1213",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/07/84496276/8f0c086968f504bde0b12d6b94b4622c_6180903279327474961.png",
+      "source_sha256": "d29068fbb51cae94f20d127d141d4802e3334795bd176486508cb922bd11291b",
+      "path": "webp/9df601ab4f034f572be29044a3d5215145cd5ce4c27769da615fa0111bf75850.webp",
+      "sha256": "9df601ab4f034f572be29044a3d5215145cd5ce4c27769da615fa0111bf75850",
+      "byte_count": 12498
+    },
+    {
+      "kind": "character",
+      "id": "1214",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2023/12/25/11038150/c4c71675cb2e2b0ecd158de74ee4bd50_168648737189270316.png",
+      "source_sha256": "f6629152c292c8ea73b439bf85292b20f510061ad04700f5fac81350be946d6a",
+      "path": "webp/4f1f0cbb9d9587e63d3bd4451de9824300f331d087f8e8cf430fb35bd7fb7df7.webp",
+      "sha256": "4f1f0cbb9d9587e63d3bd4451de9824300f331d087f8e8cf430fb35bd7fb7df7",
+      "byte_count": 12192
+    },
+    {
+      "kind": "character",
+      "id": "1215",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/09/29/84496276/5b8509618612814947c11333901d0094_7332110864482589801.png",
+      "source_sha256": "c072a37d9dec1a08ceb7ea5348ac0bfb4e791f78e431ec460b0428980b050e64",
+      "path": "webp/74f2885656cd3eb5d0f97c1f8d9b637f895a0c2de6fb4482b5a256e3b3910bde.webp",
+      "sha256": "74f2885656cd3eb5d0f97c1f8d9b637f895a0c2de6fb4482b5a256e3b3910bde",
+      "byte_count": 176644
+    },
+    {
+      "kind": "character",
+      "id": "1217",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/01/03/313359586/03d42b83135aed98ab433ba450dce0e6_5098263691934045133.png",
+      "source_sha256": "abc5a1648efe57545afe3727f89e753029e9d13551686a00fce5c4b00dcb46d9",
+      "path": "webp/d7be65c72da94a7025f2277ffd3cd035c42eafd65b92088f65153a298cc0cc46.webp",
+      "sha256": "d7be65c72da94a7025f2277ffd3cd035c42eafd65b92088f65153a298cc0cc46",
+      "byte_count": 15496
+    },
+    {
+      "kind": "character",
+      "id": "1218",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/08/13/11038150/d3aadc0440493c83499888df97057eec_7015325816285365030.png",
+      "source_sha256": "e78ffe2638d7858fa65bb64e47c913c3544624122d7e3b6744f06dfda05ebd7e",
+      "path": "webp/d1d516e38a9c5d09d0275542025b4b85f52ec66eac4ffc82f589e4ef803bb217.webp",
+      "sha256": "d1d516e38a9c5d09d0275542025b4b85f52ec66eac4ffc82f589e4ef803bb217",
+      "byte_count": 15340
+    },
+    {
+      "kind": "character",
+      "id": "1220",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/09/03/7f4bec62392b7e08bf91b3231d8f3134_3308390208226913806.png",
+      "source_sha256": "3b02967aa2621e96523fc7d328c43a3b101a373cc76f268e740e2f0a1d4370f9",
+      "path": "webp/0a434d5a0249882742f123f98f64e98a680d98b11f4f5f9fcabe1b1a822040d7.webp",
+      "sha256": "0a434d5a0249882742f123f98f64e98a680d98b11f4f5f9fcabe1b1a822040d7",
+      "byte_count": 17734
+    },
+    {
+      "kind": "character",
+      "id": "1221",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/07/23/974192119b3f17e13fac2014f98a0d40_6234648188106281351.png",
+      "source_sha256": "e852aaa6646f3e1c6d63925da23f9bda4cc1daed1a36c35c4bf6b9d50b2cd18b",
+      "path": "webp/9c216e442e1003145d9c110e83cbb63af88f886458a06dd093cce82424e90863.webp",
+      "sha256": "9c216e442e1003145d9c110e83cbb63af88f886458a06dd093cce82424e90863",
+      "byte_count": 15542
+    },
+    {
+      "kind": "character",
+      "id": "1222",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/25/11038150/0d39def2cfde0e142e0b417ca8cea94d_1610256986596622840.png",
+      "source_sha256": "e4fa808d793e23dbf9e722e533e52e99b0c05c58c29371cfb2dc14f969f63a57",
+      "path": "webp/c2471771e8871761e9ada9a38fd3351cc7d35a3bc5ebe580fdc86ba085d7a589.webp",
+      "sha256": "c2471771e8871761e9ada9a38fd3351cc7d35a3bc5ebe580fdc86ba085d7a589",
+      "byte_count": 13094
+    },
+    {
+      "kind": "character",
+      "id": "1223",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/09/03/52fdc9fa18b6f6ee6579d87fcfcb8bbc_3706451518418557464.png",
+      "source_sha256": "358512499c94fc73f3f9ee12c383360260615d5ee6aa465ae099585b74fbf8c7",
+      "path": "webp/f663a02c9dd6a9ebbfe14aadba6643d16b71df1fc941847d97beafa1c0f8ac24.webp",
+      "sha256": "f663a02c9dd6a9ebbfe14aadba6643d16b71df1fc941847d97beafa1c0f8ac24",
+      "byte_count": 11870
+    },
+    {
+      "kind": "character",
+      "id": "1224",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/07/23/d36e559a0a718d050fc2c911fa3d3365_3686857019305661695.png",
+      "source_sha256": "1633825377c2dc9afc66290d6e65827ea56c438041d55c4d94aae2aba19c6058",
+      "path": "webp/84efe9fceaa57d0f95feb575aec2b2b6c042383abadef3499d2e8ee265479119.webp",
+      "sha256": "84efe9fceaa57d0f95feb575aec2b2b6c042383abadef3499d2e8ee265479119",
+      "byte_count": 14818
+    },
+    {
+      "kind": "character",
+      "id": "1225",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/12/18/920d73741a3983357bdaacf0f02257ad_2990798908524761453.png",
+      "source_sha256": "66fa23dd188c30b4e016586c547f95a960e78e39d706dfc4516621e5a4ba7760",
+      "path": "webp/4e7cf1f54dfc1184adc7cb94ed5f27be7ce0329cd40ec2955a677ee1e6e6a7c0.webp",
+      "sha256": "4e7cf1f54dfc1184adc7cb94ed5f27be7ce0329cd40ec2955a677ee1e6e6a7c0",
+      "byte_count": 13626
+    },
+    {
+      "kind": "character",
+      "id": "1301",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/03/20/c21f99431377dfc00a2e5ff5e1933d3f_7709442928600875177.png",
+      "source_sha256": "0200216488d75a48bff33b81d2bf6c3c2b88b0c547044847559fd9ecab702f1d",
+      "path": "webp/e4576ac6cdd925a2a2a717b2acb6f60e7101a09059d64b18d9e870450905ffad.webp",
+      "sha256": "e4576ac6cdd925a2a2a717b2acb6f60e7101a09059d64b18d9e870450905ffad",
+      "byte_count": 12870
+    },
+    {
+      "kind": "character",
+      "id": "1302",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/12/04/9448edefb4d1253e987da31271c15981_1168181326229101463.png",
+      "source_sha256": "9e5d39dcaf9f784cc443b9f307adbbc1b1037f4380bb97d90ffe519e7e024a78",
+      "path": "webp/24ab631d47d1bf3a5fab6434e3711bfa57ed02dc0ae19e4060cc8f7b6cb75678.webp",
+      "sha256": "24ab631d47d1bf3a5fab6434e3711bfa57ed02dc0ae19e4060cc8f7b6cb75678",
+      "byte_count": 13246
+    },
+    {
+      "kind": "character",
+      "id": "1303",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2023/12/24/11038150/d8ac43b6abd3b9210deebd8a50eae5d1_4761174834578468282.png",
+      "source_sha256": "51c0ffc4cda4118bca0ee2056c311b61ff1b6063e2ff66527c2c274baf191c6b",
+      "path": "webp/c3e874af483ec52ad7325943389daa746be50c119fb7ed4bb57b40d5ea155b40.webp",
+      "sha256": "c3e874af483ec52ad7325943389daa746be50c119fb7ed4bb57b40d5ea155b40",
+      "byte_count": 12646
+    },
+    {
+      "kind": "character",
+      "id": "1304",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/04/03/3912553045c7ee6d816b6f1224d25ce7_5596945107422903292.png",
+      "source_sha256": "0140c26c7120d3745005ae4e0a297e218fb079b3156e133af9ef17643b19af45",
+      "path": "webp/93e3032a0b74c74f687d4aa12597f6c26a8ec1827fff56c52c2567789cd19020.webp",
+      "sha256": "93e3032a0b74c74f687d4aa12597f6c26a8ec1827fff56c52c2567789cd19020",
+      "byte_count": 12876
+    },
+    {
+      "kind": "character",
+      "id": "1305",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/01/16/11038150/3fb391fb0d308ea8e89ea3ca32e8dc3b_5197007872396944154.png",
+      "source_sha256": "41a1c03ec3e73abbfd5e917604cde034f75edeb62850d6fe34bee60a3cb006a6",
+      "path": "webp/03913b5fbc220435de54b3b4df241ed952c844d3e49292d03267d7596b78b6c0.webp",
+      "sha256": "03913b5fbc220435de54b3b4df241ed952c844d3e49292d03267d7596b78b6c0",
+      "byte_count": 12262
+    },
+    {
+      "kind": "character",
+      "id": "1306",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/02/27/e036508b1ca8c5732a77e34b682e05b9_1612166978437617005.png",
+      "source_sha256": "1af69479b17c458b171c39103b812dc36e5e2012e831c5aa9e525e830a1f5d28",
+      "path": "webp/7270334b928de2c20325b67b2392a09a9314fafb30dab519812e1872936894ca.webp",
+      "sha256": "7270334b928de2c20325b67b2392a09a9314fafb30dab519812e1872936894ca",
+      "byte_count": 15720
+    },
+    {
+      "kind": "character",
+      "id": "1307",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/05/11038150/2262abfd4d364802d02de83985ce2ccc_2459345234462464307.png",
+      "source_sha256": "e8be244120ec5a0b428930885d9297de749d2d03e943878f39d61c7ce60589b6",
+      "path": "webp/1397d64b95dc09c19826aaeca9c035be9096de911986940487097ac21cb39697.webp",
+      "sha256": "1397d64b95dc09c19826aaeca9c035be9096de911986940487097ac21cb39697",
+      "byte_count": 13912
+    },
+    {
+      "kind": "character",
+      "id": "1308",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/03/23/11038150/9cb4a2305547a5dabf6c30ee58f8245a_957159746107830468.png",
+      "source_sha256": "9b02d91a281092ea0497af043f4027799b94b7b18b30f6cc476e5592b9fedee2",
+      "path": "webp/e3c70821550cd2a5619c1d6628f37062f2bc676e6982807e950b8a6a604b773a.webp",
+      "sha256": "e3c70821550cd2a5619c1d6628f37062f2bc676e6982807e950b8a6a604b773a",
+      "byte_count": 14896
+    },
+    {
+      "kind": "character",
+      "id": "1309",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/04/29/11038150/e1714be4caece69c5515e59f5bec8612_2346960396711782554.png",
+      "source_sha256": "330f5ff749c1c95a73a288483b3bd7822199383a111d85cedb20692a50d71c53",
+      "path": "webp/24b3904f2fd3378fd5918e64c653afed893630d300fae6fe26ae11afc35ea1df.webp",
+      "sha256": "24b3904f2fd3378fd5918e64c653afed893630d300fae6fe26ae11afc35ea1df",
+      "byte_count": 15012
+    },
+    {
+      "kind": "character",
+      "id": "1310",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/06/13/313359586/7b9020cf084a8592afa259673e9bdcf3_3925468424858529501.png",
+      "source_sha256": "76b9ad053688bb4e69fde99d1db8155c7e6ecd32c7f9227ec8860ea3c0b49f38",
+      "path": "webp/2897ba9ea928d1e177f744c35fc941c695610bf180a4a5255e32aecc7e2e649e.webp",
+      "sha256": "2897ba9ea928d1e177f744c35fc941c695610bf180a4a5255e32aecc7e2e649e",
+      "byte_count": 15610
+    },
+    {
+      "kind": "character",
+      "id": "1312",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/05/11038150/cb544dfa0bbac9570be20fe13f044026_4709978452391422836.png",
+      "source_sha256": "70dd4858fa7478d968580314dd140c7a3a8f6b6e26767c1461b48a3adaa6369a",
+      "path": "webp/5f19900824f61ea319c5f9e6e4dc86f3a6420ad178ed304460d6964e1d043b49.webp",
+      "sha256": "5f19900824f61ea319c5f9e6e4dc86f3a6420ad178ed304460d6964e1d043b49",
+      "byte_count": 13450
+    },
+    {
+      "kind": "character",
+      "id": "1313",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/11/28/313359586/15e9a4cf851b51cc2ec34eb5a7459dca_2899211807187087338.png",
+      "source_sha256": "6e31404495067bb3af04cc6038920d4961691bafbffd223a6c669fa5a1ad160a",
+      "path": "webp/c2ed7a6fd8dd8d9c6c0709f8d10502d621ca3030891f823c5172e7031a32ea63.webp",
+      "sha256": "c2ed7a6fd8dd8d9c6c0709f8d10502d621ca3030891f823c5172e7031a32ea63",
+      "byte_count": 17708
+    },
+    {
+      "kind": "character",
+      "id": "1314",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/07/01/38b9cbe10fa924f10b14d2c2f272dfa5_3494595402307116422.png",
+      "source_sha256": "9fe49e1c35e089a124e0c4868d8eaaa59f54ddf85d424e01e62996e9876cad67",
+      "path": "webp/1565d7b6df306a8490df81ac203c603c9484b1c7e4c1d28735a946adb8fc5af5.webp",
+      "sha256": "1565d7b6df306a8490df81ac203c603c9484b1c7e4c1d28735a946adb8fc5af5",
+      "byte_count": 15636
+    },
+    {
+      "kind": "character",
+      "id": "1315",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/16/2e87ab79a2514476e7a737a633c999a9_2708128530537338369.png",
+      "source_sha256": "7e5b2d1c63b3169eac52b1dcc748968451430a0fa37dd10dfc80250f7df51af1",
+      "path": "webp/08f0991bb60590a4888ad7dca3c50e7afc07e051cbeb5dbbba5f3f51915bc3bc.webp",
+      "sha256": "08f0991bb60590a4888ad7dca3c50e7afc07e051cbeb5dbbba5f3f51915bc3bc",
+      "byte_count": 14476
+    },
+    {
+      "kind": "character",
+      "id": "1317",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/05/11038150/e0417148ff4428ef0d371efbb0c80e0b_5415786627602961380.png",
+      "source_sha256": "67cc16003626d3ea11fcb6ad1622c642c73a3e93b358d8c7367396bb691631e8",
+      "path": "webp/35c6708563925d492f1bea9b444455ef8ffcbcfb3ac60e9bececceeb82db6d8b.webp",
+      "sha256": "35c6708563925d492f1bea9b444455ef8ffcbcfb3ac60e9bececceeb82db6d8b",
+      "byte_count": 26808
+    },
+    {
+      "kind": "character",
+      "id": "1321",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/07/130460543/38d2c22623444abf51898715f0290ca5_5410014391858093098.png",
+      "source_sha256": "a0f31385820f0cfc2578a1ee295d4852fe73c48a50a38217d3a5927d3981e275",
+      "path": "webp/0258f7a4897dba3898a92ac32d2b387b4eb3c522fbd33fcea701cab8265c6f22.webp",
+      "sha256": "0258f7a4897dba3898a92ac32d2b387b4eb3c522fbd33fcea701cab8265c6f22",
+      "byte_count": 16632
+    },
+    {
+      "kind": "character",
+      "id": "1401",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/11/25/417971351/26f213fa4ea0d56e005125e37ce20ae0_7851674632196464898.png",
+      "source_sha256": "ff7eea2d3e030a9c8e8a2b62428a0d599cdebea5c651fa2659308e6bd8489e75",
+      "path": "webp/f1bfcbc8b5aa646399d8718a6527c0cbc68bed1f781420bdf1211023c1c17769.webp",
+      "sha256": "f1bfcbc8b5aa646399d8718a6527c0cbc68bed1f781420bdf1211023c1c17769",
+      "byte_count": 22488
+    },
+    {
+      "kind": "character",
+      "id": "1402",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2025/01/23/9ee894bafdf7f133df0ea84853584d95_2215993949928521727.png",
+      "source_sha256": "85f6ccd3bf06debcf18de99e0697f6b15fbc2b402d5d130f92dc897a1895a943",
+      "path": "webp/bf158b4ac8b006e6f070869198b6cedb2a0584b585fc0d050a9e604e354c860b.webp",
+      "sha256": "bf158b4ac8b006e6f070869198b6cedb2a0584b585fc0d050a9e604e354c860b",
+      "byte_count": 15786
+    },
+    {
+      "kind": "character",
+      "id": "1403",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/02/24/326064416/23cc5742dc549396d4cb20b5f8a0c97c_2383988154766977513.png",
+      "source_sha256": "96e36b037ae1513fc2e94eff6222a8a3b153bd4b179f612b865f4d89b837c624",
+      "path": "webp/8a974d9bd4bbc1af374ac18899a43faa0c9633622e6b89723db2b1c82efa23df.webp",
+      "sha256": "8a974d9bd4bbc1af374ac18899a43faa0c9633622e6b89723db2b1c82efa23df",
+      "byte_count": 16302
+    },
+    {
+      "kind": "character",
+      "id": "1404",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2025/03/13/57f705fccc23ffb78b84df8b7d3c5b08_7299343108790016405.png",
+      "source_sha256": "629cc20f00dbf9b8eacf0007ceca3d668336cf4321fc9be0cf984ab13f64170c",
+      "path": "webp/908bd3cb00aa7a3963f42ffc71426e5dd0e469185ed3397c6276c4a29b8c20d3.webp",
+      "sha256": "908bd3cb00aa7a3963f42ffc71426e5dd0e469185ed3397c6276c4a29b8c20d3",
+      "byte_count": 13910
+    },
+    {
+      "kind": "character",
+      "id": "1405",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2025/04/18/620060559c78e5d6deb730e0db54ab4f_4758946096267394893.png",
+      "source_sha256": "08e364582ad9dad377122636a13e9ab465ff0147e54d7483f3b3eac7273f8775",
+      "path": "webp/36f0ac1c78ca80a1208266ed75cf86cf1a546788e946d960c0e730d63620addb.webp",
+      "sha256": "36f0ac1c78ca80a1208266ed75cf86cf1a546788e946d960c0e730d63620addb",
+      "byte_count": 16188
+    },
+    {
+      "kind": "character",
+      "id": "1406",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2025/06/03/ca21832c7d70a46b019dd60a8bae852b_1543742098100123953.png",
+      "source_sha256": "f18be912262d9ca5411124def2625486f9d26b8b0d96b3699a7d47cb68ee9438",
+      "path": "webp/45d2a860e831896cbcc9df51b6ed428a73b22737ed87d6c778feaa1ca7679b79.webp",
+      "sha256": "45d2a860e831896cbcc9df51b6ed428a73b22737ed87d6c778feaa1ca7679b79",
+      "byte_count": 16516
+    },
+    {
+      "kind": "character",
+      "id": "1407",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/04/09/11038150/ba59a0f78b8b0fd5eae4b82d7003f87d_1875341243114719055.png",
+      "source_sha256": "a7fb960ebf81770b8f78d37b39a9c5635aa8ef8cf71a21f02dc16f15e8471e63",
+      "path": "webp/620db77b705b99025fe7e58312fcbf3e1c9b333449b7f55b93776ceb9c5935df.webp",
+      "sha256": "620db77b705b99025fe7e58312fcbf3e1c9b333449b7f55b93776ceb9c5935df",
+      "byte_count": 14390
+    },
+    {
+      "kind": "character",
+      "id": "1408",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/06/28/11038150/f7998db4ca780a9256d7d290671006eb_4957789866718055273.png",
+      "source_sha256": "9291f3786b7766dede887afa115601add678a6072e1c525c4962db7c8bcfae38",
+      "path": "webp/f01976334a434a5fbafe10ffc43802a3c3619bf459a1d28099d6e29c155a4fcc.webp",
+      "sha256": "f01976334a434a5fbafe10ffc43802a3c3619bf459a1d28099d6e29c155a4fcc",
+      "byte_count": 15338
+    },
+    {
+      "kind": "character",
+      "id": "1409",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/05/19/11038150/52d62c134ec8b8a1da9e776076076aed_7898951934172591490.png",
+      "source_sha256": "92ce93f37ee60defda97fc3d1c71599849e8c2d5e99134d3d498fbc87f23c3a6",
+      "path": "webp/93478d2f834f075b6de72633dca74d14af6cec41375870a14a0a13f0a0705787.webp",
+      "sha256": "93478d2f834f075b6de72633dca74d14af6cec41375870a14a0a13f0a0705787",
+      "byte_count": 17382
+    },
+    {
+      "kind": "character",
+      "id": "1410",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/08/12/11038150/dea51d0a487fadcc5c612a235435b174_2251691600929384226.png",
+      "source_sha256": "944ef4fcfc4374a3777755e04dbaee27794bed8f35763d4e3a40ddfd6641a3ad",
+      "path": "webp/90dfc2c0e8a0f555018f37e5bb020a822fc90d4d59e0800f14a2917b6db86d44.webp",
+      "sha256": "90dfc2c0e8a0f555018f37e5bb020a822fc90d4d59e0800f14a2917b6db86d44",
+      "byte_count": 16478
+    },
+    {
+      "kind": "character",
+      "id": "1412",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/01/326064416/e463ff55f41eba2695b9f2dd94866896_2195765095840814344.png",
+      "source_sha256": "9b6f8e0b05c05202708979b57b5a7efe826e7d36ea73a4da95a5d23610f2e689",
+      "path": "webp/049ba62295a129b6e535c5556df708d4879dedb761fbc8eed14ddb88265f9150.webp",
+      "sha256": "049ba62295a129b6e535c5556df708d4879dedb761fbc8eed14ddb88265f9150",
+      "byte_count": 16456
+    },
+    {
+      "kind": "character",
+      "id": "1413",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/23/11038150/696247b90aa665a2f91be7a2c4c27042_3598614019750556193.png",
+      "source_sha256": "68fd3c10d7b4bcf6683c91bfd08f7732a242409ca52c482cbc1f31b266380f08",
+      "path": "webp/2c5367a7a64c8bbc5382ad3f1759aaf486e281c0a35a64ffc107ebb5057fa119.webp",
+      "sha256": "2c5367a7a64c8bbc5382ad3f1759aaf486e281c0a35a64ffc107ebb5057fa119",
+      "byte_count": 16212
+    },
+    {
+      "kind": "character",
+      "id": "1414",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2025/10/13/d135f7ff305d974c82ba46de8a337f86_4542786094767954183.png",
+      "source_sha256": "1225caac491bcebcce8949925ea5b27bc7c6fecfc04a03651c11100aa0434b56",
+      "path": "webp/51579971225386535ac7501f0c1df201cba2dc850d4639bc0940368ac9ad077f.webp",
+      "sha256": "51579971225386535ac7501f0c1df201cba2dc850d4639bc0940368ac9ad077f",
+      "byte_count": 11978
+    },
+    {
+      "kind": "character",
+      "id": "1415",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/11/02/11038150/ab1c3cf2d6128a383c1c93f7afec1f05_8691208272719077090.png",
+      "source_sha256": "699ccd2f8d2528d0ad1bb0c70320c1146ccab9853a62de0a6c8d426481c51a67",
+      "path": "webp/fcc341bb001be5b72799711ff8cbe793685c1eda694b849aa93ca1cf21633cb3.webp",
+      "sha256": "fcc341bb001be5b72799711ff8cbe793685c1eda694b849aa93ca1cf21633cb3",
+      "byte_count": 16924
+    },
+    {
+      "kind": "character",
+      "id": "1501",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/26/11038150/ee8f8967ca7f156547da8dca56686fb7_8728486776457066589.png",
+      "source_sha256": "1928443ba753538075e2411c5e17452c6c0cf6a68d141ad838769acada8418cc",
+      "path": "webp/3a58cbca785749e5681680f3c736b0ef263085447b6d3837fe0d3fe649e84368.webp",
+      "sha256": "3a58cbca785749e5681680f3c736b0ef263085447b6d3837fe0d3fe649e84368",
+      "byte_count": 18142
+    },
+    {
+      "kind": "character",
+      "id": "1502",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/07/130460543/2ced130b6cdbe08275400efdbebc0a4e_173732853528546205.png",
+      "source_sha256": "7198e20d244fc140f4282618f1482ec59714937fdfe8ddf8ec2893115ec951c1",
+      "path": "webp/c9a5fc9b8ba357d1b617a388299d5ce8d1312b8f58692ce5943997c9ed697031.webp",
+      "sha256": "c9a5fc9b8ba357d1b617a388299d5ce8d1312b8f58692ce5943997c9ed697031",
+      "byte_count": 15614
+    },
+    {
+      "kind": "character",
+      "id": "1503",
+      "source_url": "https://static.nanoka.cc/assets/hsr/avatarshopicon/1503.webp",
+      "source_sha256": "94a0a816bbebe4d8f9bc4d48b32f2459be76b4a1839792c047b73317430c010e",
+      "path": "webp/43d2f1e7e04ae29fc88ce7a60563ee5fdb106313c8a694352b9208d4bdbd3289.webp",
+      "sha256": "43d2f1e7e04ae29fc88ce7a60563ee5fdb106313c8a694352b9208d4bdbd3289",
+      "byte_count": 105304
+    },
+    {
+      "kind": "character",
+      "id": "1504",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/07/130460543/552153081a7cc7dcc115c709697aecc5_8958413748032586601.png",
+      "source_sha256": "8f8a1c70942d763c718fa98a98a3bad657057ae72c5e914ffd2089d66df5f8a5",
+      "path": "webp/c1f1d9755f08737259093747806ee04b3e7548859dac88ee201c12da5fecfdd5.webp",
+      "sha256": "c1f1d9755f08737259093747806ee04b3e7548859dac88ee201c12da5fecfdd5",
+      "byte_count": 15458
+    },
+    {
+      "kind": "character",
+      "id": "1505",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/07/130460543/de66947382ef23cc7e02d46216ef9c68_4112844643263348582.png",
+      "source_sha256": "57b4e63ddffb153479a8c870bbad117c56dcbe55c80d6a560fee8653263c59b1",
+      "path": "webp/3724f837759fa1fd657f3e0ca052c96dc9c7ba95c9b82231e10c9f476683e450.webp",
+      "sha256": "3724f837759fa1fd657f3e0ca052c96dc9c7ba95c9b82231e10c9f476683e450",
+      "byte_count": 16862
+    },
+    {
+      "kind": "character",
+      "id": "1506",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/19/11038150/fe2943d5ec89d9774d9c8d4f891c2b8e_883649974620982486.png",
+      "source_sha256": "57522da261d2133f10a5422563ea8fa991b0f4ec68cd0b6e8e2b6926c96d9f54",
+      "path": "webp/cdee8e12120e0ae02ddefa5435d567ad8c9cb11df7e2c8f17d17bd60a107fa49.webp",
+      "sha256": "cdee8e12120e0ae02ddefa5435d567ad8c9cb11df7e2c8f17d17bd60a107fa49",
+      "byte_count": 16884
+    },
+    {
+      "kind": "character",
+      "id": "1507",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/09/130460543/4c00fe191686ee721b9e0dcffc8a764b_9014839424678952465.png",
+      "source_sha256": "f3fe6b2650996ff0c2d3b34c3dfabd1c505e5193252dfc3caece819e23eab5e8",
+      "path": "webp/aed29480ed3e4577858c9ec1231c3d3ddd6c3352ca194dc0fe84e6a30f82a814.webp",
+      "sha256": "aed29480ed3e4577858c9ec1231c3d3ddd6c3352ca194dc0fe84e6a30f82a814",
+      "byte_count": 14754
+    },
+    {
+      "kind": "character",
+      "id": "1508",
+      "source_url": "https://static.nanoka.cc/assets/hsr/avatarshopicon/1508.webp",
+      "source_sha256": "2585ec08e373edd9baea7718c2f3ea09e952297bc0ebec9b0a97b5d3b914ee8f",
+      "path": "webp/aad8894d316ff0e09da21eb24d2c4367fc1bfb98a81fb48433e78691f9341b9e.webp",
+      "sha256": "aad8894d316ff0e09da21eb24d2c4367fc1bfb98a81fb48433e78691f9341b9e",
+      "byte_count": 97966
+    },
+    {
+      "kind": "character",
+      "id": "1509",
+      "source_url": "https://static.nanoka.cc/assets/hsr/avatarshopicon/1509.webp",
+      "source_sha256": "35616ecce66f33d353d4d3a127bc8a46908299f05c23480744615a6f0afb5d0e",
+      "path": "webp/0efa59f59f960cde92035d7ed7835822d41fada0f99fe3c9c4abb6684a95cee5.webp",
+      "sha256": "0efa59f59f960cde92035d7ed7835822d41fada0f99fe3c9c4abb6684a95cee5",
+      "byte_count": 61824
+    },
+    {
+      "kind": "character",
+      "id": "1510",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/05/19/130460543/d429061c443607c580bb519d1c8cbbc0_3546575610362216970.png",
+      "source_sha256": "5c35b15786342c4db420c45cbfa1ed496fad1e4113ff814050a67b68bbedb57b",
+      "path": "webp/36434d45a21b840addc93bc7a145ebfd6d582a8bcf126f3fd44179335e7b6c25.webp",
+      "sha256": "36434d45a21b840addc93bc7a145ebfd6d582a8bcf126f3fd44179335e7b6c25",
+      "byte_count": 14104
+    },
+    {
+      "kind": "character",
+      "id": "1512",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/09/03/11038150/8506a0ef5d573f51f56e4ad5cbcd5df7_7232513692551845070.png",
+      "source_sha256": "3432dd492181ce984ebf78cb79166fccda953ad7965b1e93a14eefdfd94a656b",
+      "path": "webp/4095b8b8ad68297d95afbe0afe4a59140d7b9a5d9c9a255b2ad7c8374ab4046f.webp",
+      "sha256": "4095b8b8ad68297d95afbe0afe4a59140d7b9a5d9c9a255b2ad7c8374ab4046f",
+      "byte_count": 17408
+    },
+    {
+      "kind": "character",
+      "id": "1513",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/30/5308864/c66c9f622a7384af40d895da8b6c34bc_8806235981309973090.png",
+      "source_sha256": "967707b1692d3c1598be6791cc5823f1e29f399d540c78430037b53913f661d9",
+      "path": "webp/a20195efe590cab9eacb54c3cd4d0a8e682c5cde2e0db67949374b2483ab9b6e.webp",
+      "sha256": "a20195efe590cab9eacb54c3cd4d0a8e682c5cde2e0db67949374b2483ab9b6e",
+      "byte_count": 26146
+    },
+    {
+      "kind": "character",
+      "id": "8001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/a9edba85fe403f0d2b7d69e48540634d_4987547298490400207.gif",
+      "source_sha256": "210630bbc3c4c0043ecdbcf695af2afd48b94770055ba9072c9fb67b3c897e39",
+      "path": "webp/dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c.webp",
+      "sha256": "dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c",
+      "byte_count": 9376
+    },
+    {
+      "kind": "character",
+      "id": "8002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/a9edba85fe403f0d2b7d69e48540634d_4987547298490400207.gif",
+      "source_sha256": "210630bbc3c4c0043ecdbcf695af2afd48b94770055ba9072c9fb67b3c897e39",
+      "path": "webp/dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c.webp",
+      "sha256": "dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c",
+      "byte_count": 9376
+    },
+    {
+      "kind": "character",
+      "id": "8003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9d99c7926e8519f151abeac02a1f7210_8780278128209122769.gif",
+      "source_sha256": "af3815996c47b590ac8cd33558bd34803ffeb59a3bfea71076b43346172937d1",
+      "path": "webp/48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d.webp",
+      "sha256": "48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d",
+      "byte_count": 6998
+    },
+    {
+      "kind": "character",
+      "id": "8004",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9d99c7926e8519f151abeac02a1f7210_8780278128209122769.gif",
+      "source_sha256": "af3815996c47b590ac8cd33558bd34803ffeb59a3bfea71076b43346172937d1",
+      "path": "webp/48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d.webp",
+      "sha256": "48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d",
+      "byte_count": 6998
+    },
+    {
+      "kind": "character",
+      "id": "8005",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/07/9f98e014cdff0dc0e3993121fc0926db_5009274647413414611.gif",
+      "source_sha256": "ad846039bef7853e5b5d2974dc3e0ab0b8adbab22f19d027a58b1dfedf39f23e",
+      "path": "webp/3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046.webp",
+      "sha256": "3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046",
+      "byte_count": 11476
+    },
+    {
+      "kind": "character",
+      "id": "8006",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/07/9f98e014cdff0dc0e3993121fc0926db_5009274647413414611.gif",
+      "source_sha256": "ad846039bef7853e5b5d2974dc3e0ab0b8adbab22f19d027a58b1dfedf39f23e",
+      "path": "webp/3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046.webp",
+      "sha256": "3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046",
+      "byte_count": 11476
+    },
+    {
+      "kind": "character",
+      "id": "8007",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/15/46746754/d27dcfb432f6d37bbaee53ad2fc10806_3954952725968266044.gif",
+      "source_sha256": "f60d832d35223023daa34083f959cca9042aeced9be8b018e40c3a8597b99af0",
+      "path": "webp/6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b.webp",
+      "sha256": "6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b",
+      "byte_count": 12064
+    },
+    {
+      "kind": "character",
+      "id": "8008",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/15/46746754/d27dcfb432f6d37bbaee53ad2fc10806_3954952725968266044.gif",
+      "source_sha256": "f60d832d35223023daa34083f959cca9042aeced9be8b018e40c3a8597b99af0",
+      "path": "webp/6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b.webp",
+      "sha256": "6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b",
+      "byte_count": 12064
+    },
+    {
+      "kind": "character",
+      "id": "8009",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/23/5308864/3fbf433b9e673b329833104f7c3a978e_4042614445748365638.gif",
+      "source_sha256": "97c66cefed2562c244db3ef197bdf3a44e25a5819de54c481d228b141ba41dad",
+      "path": "webp/d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07.webp",
+      "sha256": "d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07",
+      "byte_count": 10776
+    },
+    {
+      "kind": "character",
+      "id": "8010",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/23/5308864/3fbf433b9e673b329833104f7c3a978e_4042614445748365638.gif",
+      "source_sha256": "97c66cefed2562c244db3ef197bdf3a44e25a5819de54c481d228b141ba41dad",
+      "path": "webp/d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07.webp",
+      "sha256": "d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07",
+      "byte_count": 10776
+    },
+    {
+      "kind": "light-cone",
+      "id": "20000",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/ae5412a4ed43aff9988dfbcfd1ac28a6_889032155449973530.png",
+      "source_sha256": "e9b6d32bed8304aec9fea7e776281fd77abdd5e97410dc56415e26e09c03de2b",
+      "path": "webp/a3f723e9fa152ea3997dfa25ae3797d269f248290ae20c29abc12750fda9ed9d.webp",
+      "sha256": "a3f723e9fa152ea3997dfa25ae3797d269f248290ae20c29abc12750fda9ed9d",
+      "byte_count": 442696
+    },
+    {
+      "kind": "light-cone",
+      "id": "20001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/0f53b682edec6beabb9bc4f3b184c1cb_4824814422205447232.png",
+      "source_sha256": "ae85ab86a4042a47dd34e0730616f9ddde9ef248a7c8e100c6474a96699cb853",
+      "path": "webp/e448c5b51b41e7661d512b69022b96cf94d62df945935b72f3050a1bcba43518.webp",
+      "sha256": "e448c5b51b41e7661d512b69022b96cf94d62df945935b72f3050a1bcba43518",
+      "byte_count": 485156
+    },
+    {
+      "kind": "light-cone",
+      "id": "20002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/d1d8dd99e096763e5ae961608e78afcb_952669953280599733.png",
+      "source_sha256": "9095d27a6a56f8e311625d6fcb729337b2558b991cca1dffaa27a37a81ae9d90",
+      "path": "webp/e5d0328c2e88e361cbcee757c5a8e7b1770e423e7d9a1e3b59471314654ee447.webp",
+      "sha256": "e5d0328c2e88e361cbcee757c5a8e7b1770e423e7d9a1e3b59471314654ee447",
+      "byte_count": 488812
+    },
+    {
+      "kind": "light-cone",
+      "id": "20003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6370ebb889f79eb2e1f639e65e7edb33_3088154659918113028.png",
+      "source_sha256": "1786a23a5933663324cc67a28ab1ba1b0a8d70beb1fd45409c1b072e98f9d0c9",
+      "path": "webp/4c74f8acf50e2e3587c98bdee278bd924d9ae9ea5538b327f2cf63232f68d2bf.webp",
+      "sha256": "4c74f8acf50e2e3587c98bdee278bd924d9ae9ea5538b327f2cf63232f68d2bf",
+      "byte_count": 724164
+    },
+    {
+      "kind": "light-cone",
+      "id": "20004",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/f60585e5777a3536bb916e7b56d2682d_2427113140670896624.png",
+      "source_sha256": "9071dc8551c11e921efec98578b4f7c8d598c3621256ac7c7b5b214c0157335d",
+      "path": "webp/cdf0b18ac20315dd2fc4d0653d7623b42b7931caeb9e3b74c979133d649526da.webp",
+      "sha256": "cdf0b18ac20315dd2fc4d0653d7623b42b7931caeb9e3b74c979133d649526da",
+      "byte_count": 546082
+    },
+    {
+      "kind": "light-cone",
+      "id": "20005",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9dad65422e26642596fd50e29ec15739_1662713748597895257.png",
+      "source_sha256": "bcd81f99df8d8bb3c62e2c93c6a127e0fe1fc6479bee3d595e57d694bf808473",
+      "path": "webp/dbde36814e506dfc9e835f1aad2ae10cafd0967b711bf3f32594489780a0c91b.webp",
+      "sha256": "dbde36814e506dfc9e835f1aad2ae10cafd0967b711bf3f32594489780a0c91b",
+      "byte_count": 755658
+    },
+    {
+      "kind": "light-cone",
+      "id": "20006",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/baea8daf8de7c33dfcbd2a2a551d0e4f_839491542014512762.png",
+      "source_sha256": "28ab1a783c98ce111812e3264d287a1e307ab14f00a9598f44c513c8b4ea04e9",
+      "path": "webp/395176b63067375033d826efae2e8dcf121eb4a36376e0686b6a94c7ac67290d.webp",
+      "sha256": "395176b63067375033d826efae2e8dcf121eb4a36376e0686b6a94c7ac67290d",
+      "byte_count": 582332
+    },
+    {
+      "kind": "light-cone",
+      "id": "20007",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9d9a9d30b8acf8cebc8267c7c1131108_3395133034215442072.png",
+      "source_sha256": "a11d57cae862bb4eb5baaf0c3e5a780e43d73658fb1d22bc7a44313e965b8838",
+      "path": "webp/bf1428662f7fffb44321330415cd72fff3ce86f78a98e11417ab405b65bebd91.webp",
+      "sha256": "bf1428662f7fffb44321330415cd72fff3ce86f78a98e11417ab405b65bebd91",
+      "byte_count": 639188
+    },
+    {
+      "kind": "light-cone",
+      "id": "20008",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/38e02b996f5174858ae86d624b0e89b7_3395133034215442072.png",
+      "source_sha256": "7c6c2a4b762aa89c30bf917cd8a23fbeffe8fc362ed95e5c8317b783cec92a09",
+      "path": "webp/b0cbeee354bb55a338760d8697fdacac0c51112073b18f8fa65d7cc1e2017c69.webp",
+      "sha256": "b0cbeee354bb55a338760d8697fdacac0c51112073b18f8fa65d7cc1e2017c69",
+      "byte_count": 464678
+    },
+    {
+      "kind": "light-cone",
+      "id": "20009",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/55aab6796596e6d87c1f9fb552d66f21_1461491922069311906.png",
+      "source_sha256": "ba6ff11effe862d8f44e352f2bcc6e7be90783cda90b57ab583af861463561ee",
+      "path": "webp/a42244d1e80f5efae7ee5c1591edaab89332b069e58e74875ca0d25ea0bd09c1.webp",
+      "sha256": "a42244d1e80f5efae7ee5c1591edaab89332b069e58e74875ca0d25ea0bd09c1",
+      "byte_count": 806036
+    },
+    {
+      "kind": "light-cone",
+      "id": "20010",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/358af6ff373ee2148e6d28744331b975_1461491922069311906.png",
+      "source_sha256": "124340a5b55cf9f8c9acbf1c08660fad5759995801c0e1a2441fe64682288983",
+      "path": "webp/cf2fc483e8386139b75be50a47460fb6360e4c199995277d1eb684c939d60eea.webp",
+      "sha256": "cf2fc483e8386139b75be50a47460fb6360e4c199995277d1eb684c939d60eea",
+      "byte_count": 709494
+    },
+    {
+      "kind": "light-cone",
+      "id": "20011",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/d06cf98794a5d7affdcb105ccc6b6863_2427113140670896624.png",
+      "source_sha256": "06cc38031c4e6abf05bb97284fddff048a97f25ef7299776e70a7ebb08f4ae4e",
+      "path": "webp/7dad7887698e5a5b1749658377f462e889fe024a36db3e93698cb72635e199b7.webp",
+      "sha256": "7dad7887698e5a5b1749658377f462e889fe024a36db3e93698cb72635e199b7",
+      "byte_count": 594686
+    },
+    {
+      "kind": "light-cone",
+      "id": "20012",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/a1168a9158a5ab79d763fa22026bc12e_3215083535974850026.png",
+      "source_sha256": "f9aa50c89733f5089f150c882822078f20dabd2a26077b4b383c6d4f2ebb9639",
+      "path": "webp/1df2f875e0081bd721c0ef5e937b2c5880a1e360f442478e6507bc2bd3828ee4.webp",
+      "sha256": "1df2f875e0081bd721c0ef5e937b2c5880a1e360f442478e6507bc2bd3828ee4",
+      "byte_count": 900016
+    },
+    {
+      "kind": "light-cone",
+      "id": "20013",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/7b6d62181c849c2feb691e4d652c38b1_3215083535974850026.png",
+      "source_sha256": "59aac4a7e86aa62bc1fd877fcce45dfefb8cb192d5c5b726f2b2b4647d83fb68",
+      "path": "webp/0caa36bb4fc5032ae046493ed2aa72e21d65f102be5afa88547bb437c0c2f922.webp",
+      "sha256": "0caa36bb4fc5032ae046493ed2aa72e21d65f102be5afa88547bb437c0c2f922",
+      "byte_count": 508248
+    },
+    {
+      "kind": "light-cone",
+      "id": "20014",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/49b760cf864733ceaa886107c6ffa09b_7702812846989943747.png",
+      "source_sha256": "f5a31af7c5ccd26b67e2649a92e6c97c8129b92f0d73134a276a5c6ca4889031",
+      "path": "webp/7af87fd1f81cd0c7ffc5a6a9c7a32adf6b6f71a5142662504061450a3c542a15.webp",
+      "sha256": "7af87fd1f81cd0c7ffc5a6a9c7a32adf6b6f71a5142662504061450a3c542a15",
+      "byte_count": 256994
+    },
+    {
+      "kind": "light-cone",
+      "id": "20015",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/5a80fde8cde86159d8636e51e17da61a_3071857468062301570.png",
+      "source_sha256": "86ba8a1c0ce1422261d180c5ded17478400418d0b5bbeadd0bb2676ed6750435",
+      "path": "webp/16c8a56e7215fd648bb001a1c6d9bc540882ce89b6ebe3efaba9fd4a66b83475.webp",
+      "sha256": "16c8a56e7215fd648bb001a1c6d9bc540882ce89b6ebe3efaba9fd4a66b83475",
+      "byte_count": 235178
+    },
+    {
+      "kind": "light-cone",
+      "id": "20016",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/fd7bce2c11da292517c3f7dfafe8c8ac_8594114211287819571.png",
+      "source_sha256": "c20172437821f01c6e5703ba3adc7499935c414ddafc29f444b9a57510fcd152",
+      "path": "webp/53eefcca80cc8365aad449e14a760c07cc3656856aac45857936e01b914e3375.webp",
+      "sha256": "53eefcca80cc8365aad449e14a760c07cc3656856aac45857936e01b914e3375",
+      "byte_count": 304988
+    },
+    {
+      "kind": "light-cone",
+      "id": "20017",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/80ade2b7938f6e11665335161a397ac4_6943024485398362366.png",
+      "source_sha256": "42d9cf9cacec781aecfd567deec88b3160cecc8ae20cf37d3d3b7ad127829159",
+      "path": "webp/a2641d70c490973fdc2de5ced9a2ecf5e826cd4d7621d0aad7c4b9ff81e0fd16.webp",
+      "sha256": "a2641d70c490973fdc2de5ced9a2ecf5e826cd4d7621d0aad7c4b9ff81e0fd16",
+      "byte_count": 225674
+    },
+    {
+      "kind": "light-cone",
+      "id": "20018",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/3613ba0849924760bfeb6c55e1bdd580_529310416878422169.png",
+      "source_sha256": "4109685ad9fe0e9e5df6c98b85d0b3d96918b80e55b6e036ef2af67f172b5221",
+      "path": "webp/2719eefd37d9e7db3866f4bb731cc9ee0e9ef861ea7c630d4361a2d1e1552a23.webp",
+      "sha256": "2719eefd37d9e7db3866f4bb731cc9ee0e9ef861ea7c630d4361a2d1e1552a23",
+      "byte_count": 216340
+    },
+    {
+      "kind": "light-cone",
+      "id": "20019",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/a89aa4a324c84fd1111fdc5c6644e969_1357690521492914841.png",
+      "source_sha256": "744b320461e533a0f81917443842b22179daaa7f9d4f3849f47a9f282e4621c6",
+      "path": "webp/c10ed5798936b5a6258f491577c8b3d0e103a7ea38f55fea138aec7b15e6e018.webp",
+      "sha256": "c10ed5798936b5a6258f491577c8b3d0e103a7ea38f55fea138aec7b15e6e018",
+      "byte_count": 336782
+    },
+    {
+      "kind": "light-cone",
+      "id": "20020",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/5550a7cbd82c04408983c7141fe90218_7979302097776306880.png",
+      "source_sha256": "c66894b0077f15ed3cf5fe160fd89d7d5829d0c26d76ad75646b8804d3af6d4e",
+      "path": "webp/20c3ae03508ee290dbbfebecbea0668297eefff2392751aef5c12bf574ef11e7.webp",
+      "sha256": "20c3ae03508ee290dbbfebecbea0668297eefff2392751aef5c12bf574ef11e7",
+      "byte_count": 242956
+    },
+    {
+      "kind": "light-cone",
+      "id": "20021",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/19/326693439/ef2a854ec6aa39be5d61a2899208dcba_4276670451450606431.png",
+      "source_sha256": "6ef46628d0c0c00d2e49274f29af9003a1da3df55adf5b1c9ef75002797adb1d",
+      "path": "webp/779473ef5352fa28d50b050bf0f83347265c6f2bd6d71f3e811198d10acefe1a.webp",
+      "sha256": "779473ef5352fa28d50b050bf0f83347265c6f2bd6d71f3e811198d10acefe1a",
+      "byte_count": 285486
+    },
+    {
+      "kind": "light-cone",
+      "id": "20022",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/19/326693439/def5d81487cabaa8142a12a0480707b5_5463894812614188620.png",
+      "source_sha256": "c27e45dcbcc7a33194f399493f484a666fce4c4e2b3b5f75d82e78d1051c7afd",
+      "path": "webp/357ee0555e0a38fa94426903ecbe53f5254ee596fe002f7965ae2e4b4ca2ded4.webp",
+      "sha256": "357ee0555e0a38fa94426903ecbe53f5254ee596fe002f7965ae2e4b4ca2ded4",
+      "byte_count": 351186
+    },
+    {
+      "kind": "light-cone",
+      "id": "20023",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/01/326064416/e1827481a0a9c5c98d1f40e1fd6a8f2a_3525069283104031034.png",
+      "source_sha256": "4e273c1179a9163af43203d9debdb8f31085b999e7d2d39b31e5ff39cdb9619d",
+      "path": "webp/cdb43aa04d8f66f5717c208075c479a856f7c0efdd09291ba222652e3b0e915d.webp",
+      "sha256": "cdb43aa04d8f66f5717c208075c479a856f7c0efdd09291ba222652e3b0e915d",
+      "byte_count": 273680
+    },
+    {
+      "kind": "light-cone",
+      "id": "20024",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/02/326064416/967e4f5bad008cb58c1e40712b43b7f5_2237176151074930263.png",
+      "source_sha256": "ffc5ffa7d8e66595faa966c968695f6667402331b73c8888d717e805069613a6",
+      "path": "webp/eaf31cdd44b707b1effdf30c3b3fad147b2238727b4fee297670b629ad2ebbf4.webp",
+      "sha256": "eaf31cdd44b707b1effdf30c3b3fad147b2238727b4fee297670b629ad2ebbf4",
+      "byte_count": 368396
+    },
+    {
+      "kind": "light-cone",
+      "id": "21000",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/bbc831d2b1685bc85083551e51047e3f_2901581893313933971.png",
+      "source_sha256": "9784f96c4ac23bacc0ddb8b1dbe5e805866335e8e137fedad6cbe862b70c08d0",
+      "path": "webp/27e911b2e15a8329aa8add1189cc6111a4ac9a83b4384c2dc67c6619dc168cc7.webp",
+      "sha256": "27e911b2e15a8329aa8add1189cc6111a4ac9a83b4384c2dc67c6619dc168cc7",
+      "byte_count": 156190
+    },
+    {
+      "kind": "light-cone",
+      "id": "21001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/fb3acf8862148ccc99297b9c2669502c_7824066832447018591.png",
+      "source_sha256": "c11e2d668fe344689121d8380719344868c6e26d8dbc2e017ee59d13cbd12986",
+      "path": "webp/9263026c7fb2ceadc17dece26290ae0a40274b85ff2476e29cbc4d2065611530.webp",
+      "sha256": "9263026c7fb2ceadc17dece26290ae0a40274b85ff2476e29cbc4d2065611530",
+      "byte_count": 160768
+    },
+    {
+      "kind": "light-cone",
+      "id": "21002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/d30f1640606c482d1dde06f5234be0b2_4059157342224776055.png",
+      "source_sha256": "bbdd3860dcc3904be3c52671a99541cf0df5bc59e141793d365ca0fac62e4d84",
+      "path": "webp/645f290524c37ca021fe5f6e9b3ab7aa422104bd0f784dd32623b7953822e2d6.webp",
+      "sha256": "645f290524c37ca021fe5f6e9b3ab7aa422104bd0f784dd32623b7953822e2d6",
+      "byte_count": 202890
+    },
+    {
+      "kind": "light-cone",
+      "id": "21003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/5906dd1fb682903b2c8fa6b3a314febf_918735250537819040.png",
+      "source_sha256": "78fe85f8a468a9be871050e365e547a8c7625f7c9d11c60db1c06a2444570fef",
+      "path": "webp/90de99c128392167f8b5c11be39acc682cf2ca5127d3ef71bf7538f5622bbc0d.webp",
+      "sha256": "90de99c128392167f8b5c11be39acc682cf2ca5127d3ef71bf7538f5622bbc0d",
+      "byte_count": 123100
+    },
+    {
+      "kind": "light-cone",
+      "id": "21004",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/f72de4833b12bd30234a4ecc82f59b7e_7824066832447018591.png",
+      "source_sha256": "b94ae29e667e15e9f8f71e02e11d789c5d48548d23031e0f963fdc54cb2ac54d",
+      "path": "webp/3fa3cf087c15d3121eb8e1f6d932f61dd0f2ca804149fd9f7285d5a0be5d891e.webp",
+      "sha256": "3fa3cf087c15d3121eb8e1f6d932f61dd0f2ca804149fd9f7285d5a0be5d891e",
+      "byte_count": 183280
+    },
+    {
+      "kind": "light-cone",
+      "id": "21005",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e35c7c440672f1a6626f7b379b2da5a0_4357389817891565749.png",
+      "source_sha256": "de50fa373d7458f4870a993222033b5bee0981a94fc93ca48cd32ad9e771966b",
+      "path": "webp/8858c6b34d62379a099313a650a5596b9fc6ff1002746f11016a275d6a0cdf04.webp",
+      "sha256": "8858c6b34d62379a099313a650a5596b9fc6ff1002746f11016a275d6a0cdf04",
+      "byte_count": 127242
+    },
+    {
+      "kind": "light-cone",
+      "id": "21006",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/78bdd2715945e3f1e87dc677d50f481e_7231314384566776724.png",
+      "source_sha256": "8dfbc96bdcef3dcac8b888046d9ea5927b3ab5502151af9249eb623e46c796a9",
+      "path": "webp/f95ce97aa3315ed3658f3fbfd5ffca0eba2555d42aa0c933d9b39113463bd8ed.webp",
+      "sha256": "f95ce97aa3315ed3658f3fbfd5ffca0eba2555d42aa0c933d9b39113463bd8ed",
+      "byte_count": 185976
+    },
+    {
+      "kind": "light-cone",
+      "id": "21007",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/07e286c59ffe9e045abdd364b6d3f5f0_918735250537819040.png",
+      "source_sha256": "2fe3962cd2b7a950d6ca2b875870defd33b2a1055ba7ae534e9285d72589fa2f",
+      "path": "webp/3ad1fa051b351665f41cdb1ff9b97a2238bc6790b9dfbfc6796926130aa1b2f2.webp",
+      "sha256": "3ad1fa051b351665f41cdb1ff9b97a2238bc6790b9dfbfc6796926130aa1b2f2",
+      "byte_count": 169500
+    },
+    {
+      "kind": "light-cone",
+      "id": "21008",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/1c7c012eeb05699acc8c2ad33cee412a_9207997407084704522.png",
+      "source_sha256": "dcaf628e683ae4760d28cfa72db2218467da261adb87b448bfff5940a1825ae3",
+      "path": "webp/3386a9be948938d2128d55bbe86a67f4c94b8e3089f4c953b9a879aa18f4e65e.webp",
+      "sha256": "3386a9be948938d2128d55bbe86a67f4c94b8e3089f4c953b9a879aa18f4e65e",
+      "byte_count": 150478
+    },
+    {
+      "kind": "light-cone",
+      "id": "21009",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/ba9cd6f22f1b334d869b5414229ee7bd_942516886148531175.png",
+      "source_sha256": "8c6af5cd5c7a670027ca6fa156530eef43727cc5de6e548abf468df682d70b25",
+      "path": "webp/efdb6d564a309cbf9cbf4e7623e049264f90a7434ed26ff21e537c09afc62d7d.webp",
+      "sha256": "efdb6d564a309cbf9cbf4e7623e049264f90a7434ed26ff21e537c09afc62d7d",
+      "byte_count": 143674
+    },
+    {
+      "kind": "light-cone",
+      "id": "21010",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2f53efe41f6c16ce298f0bbafc170949_1511327361354317201.png",
+      "source_sha256": "d31bc36d41a62b04e14e858e768d96f4f3da88100ed5a3540c84792e93781cd1",
+      "path": "webp/6b38261f7f632f45651a855be94db821c1c70b809e216fa94dd80e2fa62cb830.webp",
+      "sha256": "6b38261f7f632f45651a855be94db821c1c70b809e216fa94dd80e2fa62cb830",
+      "byte_count": 215126
+    },
+    {
+      "kind": "light-cone",
+      "id": "21011",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6678fe8d31a180e31a1e04ef1d8eadaf_7231314384566776724.png",
+      "source_sha256": "e0ae0f69a1881d7e84de737d75615c22d9d6a67484c3b9f79d8daf08a39adee8",
+      "path": "webp/279da41b4b60f2ee5b55acc3f0f9913da2474172bdff87e89a6fe0d1dd0783a7.webp",
+      "sha256": "279da41b4b60f2ee5b55acc3f0f9913da2474172bdff87e89a6fe0d1dd0783a7",
+      "byte_count": 143964
+    },
+    {
+      "kind": "light-cone",
+      "id": "21012",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2fa2a29d45df6b229d2525f720b831c1_4357389817891565749.png",
+      "source_sha256": "cfea4dfe6a9d4a807c090762475f59ab2d1e2dd4470e7665f173dcb7cf6898a5",
+      "path": "webp/147e3a09515f089117a32e8a29c54bf8356f5f1e9bd3273979755ad8aa5c1e3c.webp",
+      "sha256": "147e3a09515f089117a32e8a29c54bf8356f5f1e9bd3273979755ad8aa5c1e3c",
+      "byte_count": 139102
+    },
+    {
+      "kind": "light-cone",
+      "id": "21013",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/0d119463b9a6b8fbbc03d4b0de786994_5214933404516381671.png",
+      "source_sha256": "41a580c2bea33a0bbd116235d990a6499e7c7be295d8c19cccd893c49fcab951",
+      "path": "webp/ab90daa8ea5de0f77842149a145fc95031fc6053135c97014b023a0fdf5d11da.webp",
+      "sha256": "ab90daa8ea5de0f77842149a145fc95031fc6053135c97014b023a0fdf5d11da",
+      "byte_count": 210306
+    },
+    {
+      "kind": "light-cone",
+      "id": "21014",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/7987eb5ae6739d63ce70a2900444e5d5_3722969671638428926.png",
+      "source_sha256": "dab4b55cb6676ca093d68383abcffdeae9d1367ff6430208bbafd5e68db77abc",
+      "path": "webp/b16c9c14ffc8b9b4502e997aa87de0df55fc89b7553ce7352b1451ac417dc1f3.webp",
+      "sha256": "b16c9c14ffc8b9b4502e997aa87de0df55fc89b7553ce7352b1451ac417dc1f3",
+      "byte_count": 138056
+    },
+    {
+      "kind": "light-cone",
+      "id": "21015",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/1d947dcdbad2ebbac2592da8873e1707_1747743481739952799.png",
+      "source_sha256": "77ec7fff7d2fbd514d7e39ded51e241e9d1f0ac570687458665c95beb0a2ac9a",
+      "path": "webp/8200f873dbccdbe02c04fafd3724e575535b2c6c89452fe3f0f6bc8659c27064.webp",
+      "sha256": "8200f873dbccdbe02c04fafd3724e575535b2c6c89452fe3f0f6bc8659c27064",
+      "byte_count": 95828
+    },
+    {
+      "kind": "light-cone",
+      "id": "21016",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/9faeed2842482f716b42c0cd21667cbf_8149889544022949159.png",
+      "source_sha256": "36663afc8707df5c20a1124118b20b1924e8c9bb09ee27f58cb674e88b751853",
+      "path": "webp/296949baaaf77e0ecf4cfda8dcfb4adeb34e861669fa4ff8eb45d8fcb20220a4.webp",
+      "sha256": "296949baaaf77e0ecf4cfda8dcfb4adeb34e861669fa4ff8eb45d8fcb20220a4",
+      "byte_count": 141888
+    },
+    {
+      "kind": "light-cone",
+      "id": "21017",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/6d091aed961227e1ee9544a6ed402e71_1544442331446954280.png",
+      "source_sha256": "7dc841b9906dc58785fb49b136034de599a1ce1996c3e57d40e335586c74f85f",
+      "path": "webp/6dfbb70afbe3365fe97b06853c6e3c43c6c9ff25aaac04bacb3c90c6afaaaae5.webp",
+      "sha256": "6dfbb70afbe3365fe97b06853c6e3c43c6c9ff25aaac04bacb3c90c6afaaaae5",
+      "byte_count": 157210
+    },
+    {
+      "kind": "light-cone",
+      "id": "21018",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/6cf47bcf4d76f5cb3e32209201fdb2fd_5608070713183206925.png",
+      "source_sha256": "f9bd2fa32a4b818f2ebf107013a5a41b26568822191e3e81585740a34cf8e5d3",
+      "path": "webp/3c233d9c508c5fc21b9ff4c3c017378a91fe0fae0f6e6e298413a0a93841d20c.webp",
+      "sha256": "3c233d9c508c5fc21b9ff4c3c017378a91fe0fae0f6e6e298413a0a93841d20c",
+      "byte_count": 150570
+    },
+    {
+      "kind": "light-cone",
+      "id": "21019",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/423cba6ba9da519750873231e12092f4_2658038750381156690.png",
+      "source_sha256": "e3d35981ed4cf32426b62b488304aeba9cd4d6ad362a8738469193afaedd7743",
+      "path": "webp/6efb9915b5a8e1f0346092df0299dbd2734446a6d38b8f65de03bc9be9d0d382.webp",
+      "sha256": "6efb9915b5a8e1f0346092df0299dbd2734446a6d38b8f65de03bc9be9d0d382",
+      "byte_count": 175034
+    },
+    {
+      "kind": "light-cone",
+      "id": "21020",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/e92e4a0ff4acdb25556880c7e60d8bc6_7857015744515297414.png",
+      "source_sha256": "01b626a3cabc0dfb343bc4d5c63bcd3f73010e3aa815eee974809e53dc67b315",
+      "path": "webp/762cb18c6e4196b15256e903f6947b7bd561393cf2cf89ab6ba462bd235f5dbf.webp",
+      "sha256": "762cb18c6e4196b15256e903f6947b7bd561393cf2cf89ab6ba462bd235f5dbf",
+      "byte_count": 168856
+    },
+    {
+      "kind": "light-cone",
+      "id": "21021",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/ab7c174f1a5b621d837484e1cc9186f7_3683881911360140978.png",
+      "source_sha256": "35c8993aa9589d82fda1b2d7b201f29115bc96674ff0e22dfbc37c45e2ab83ef",
+      "path": "webp/95c217b4d231e04f579fcba709456b41be800a59cd7fdd1dfe22be387612f73c.webp",
+      "sha256": "95c217b4d231e04f579fcba709456b41be800a59cd7fdd1dfe22be387612f73c",
+      "byte_count": 116522
+    },
+    {
+      "kind": "light-cone",
+      "id": "21022",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/4b93cba23cd52e090a92b423980b7003_487515826086696185.png",
+      "source_sha256": "b703df2a45ea34f89b56b2c8e502f9acd0dc57a3e2e156b1a90626f61dd53cc0",
+      "path": "webp/7e0b4ec46dc1586973469cfbc804e4d1c6bc9c799e6074d40e9821df7b4ad252.webp",
+      "sha256": "7e0b4ec46dc1586973469cfbc804e4d1c6bc9c799e6074d40e9821df7b4ad252",
+      "byte_count": 99812
+    },
+    {
+      "kind": "light-cone",
+      "id": "21023",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/4486373d5bee10c92254cf888e6e49a0_2325834475855080989.png",
+      "source_sha256": "9cfd0e34701c03a6e39a58fc3cc249ee9c8110ed8feaf0c1d51cb703604fc7e8",
+      "path": "webp/444d55e94ea61ca8c693fee8ca3e233af4a772f120d899c4645119cd90826089.webp",
+      "sha256": "444d55e94ea61ca8c693fee8ca3e233af4a772f120d899c4645119cd90826089",
+      "byte_count": 89280
+    },
+    {
+      "kind": "light-cone",
+      "id": "21024",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/68a16d2bf57ab6f1bdb8de10e95a29a5_2021228097320403006.png",
+      "source_sha256": "71847737fba357d2f7abf219b7ea98a31e4e4b10bef4ac3cd1e8818c38582f24",
+      "path": "webp/0f562dd11befa20ceb897b1557622f81f5821b99b77a9d3b8d3f65399e2a3154.webp",
+      "sha256": "0f562dd11befa20ceb897b1557622f81f5821b99b77a9d3b8d3f65399e2a3154",
+      "byte_count": 153524
+    },
+    {
+      "kind": "light-cone",
+      "id": "21025",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/05/07/7998136/4d1efe5f2474ada233b6640adf41820a_3575043626450433531.png",
+      "source_sha256": "a69914cec1ab201d762a12f443ac060b648adbfe3415705fd462bb0c449e78e1",
+      "path": "webp/76d7fd3275da32bdb8c30225b9cba191f99c95ff052e40d611a0fa8bd3deb9b4.webp",
+      "sha256": "76d7fd3275da32bdb8c30225b9cba191f99c95ff052e40d611a0fa8bd3deb9b4",
+      "byte_count": 144332
+    },
+    {
+      "kind": "light-cone",
+      "id": "21026",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6a96e7124f871628ce2974fd0724aaa2_2539696960201429253.png",
+      "source_sha256": "03cbb456086fe44c89741f230599b23114b617336f1896559b94b0dcae78619d",
+      "path": "webp/c8bfc4993e427578972efbb86d2b8ca8cc1aa2324229f110f1f3dff342453892.webp",
+      "sha256": "c8bfc4993e427578972efbb86d2b8ca8cc1aa2324229f110f1f3dff342453892",
+      "byte_count": 154544
+    },
+    {
+      "kind": "light-cone",
+      "id": "21027",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e00975de10154b3fe32fc2c309a0fc08_1117849229478748330.png",
+      "source_sha256": "25a6ec2a4a30ce27b283f18d2bce7358e799faf15bd95983277f1d1f36ca913a",
+      "path": "webp/1a7f47409e372f663f07639209a43df3ca43bc8b10a44d3bf821bde3e758f18e.webp",
+      "sha256": "1a7f47409e372f663f07639209a43df3ca43bc8b10a44d3bf821bde3e758f18e",
+      "byte_count": 222484
+    },
+    {
+      "kind": "light-cone",
+      "id": "21028",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/142eb386d41e9d22c53702acd5d7cafe_4815329713662711142.png",
+      "source_sha256": "ea4b5c82971573f669a11834329d82d0b046f3b8ec572e1a375efe2585afdeb9",
+      "path": "webp/b7ffffd1747d9667da149febf797f07c485fc2996dcaf6701637863562f215ae.webp",
+      "sha256": "b7ffffd1747d9667da149febf797f07c485fc2996dcaf6701637863562f215ae",
+      "byte_count": 197660
+    },
+    {
+      "kind": "light-cone",
+      "id": "21029",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/0dd0f27534855716735efe4702fec1af_942516886148531175.png",
+      "source_sha256": "c06e7b7de4a94f292e913ab04b68c38681083b8fa1a2751e7bacb171c398fbb6",
+      "path": "webp/66a67d412de548912d927cf2817009814e83f8e22a2026b9b12fb789a6f796e2.webp",
+      "sha256": "66a67d412de548912d927cf2817009814e83f8e22a2026b9b12fb789a6f796e2",
+      "byte_count": 222010
+    },
+    {
+      "kind": "light-cone",
+      "id": "21030",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/b592f633647f6c155a5eec01740e8a02_2539696960201429253.png",
+      "source_sha256": "246b53269a4aba93a62a880b0990885baa7c3ccccd981dd6d32bb99c1aa894b2",
+      "path": "webp/28a6f783dbbd1760631aa7dceddf85921d672bf977786dee46f955d9cbf0bf4f.webp",
+      "sha256": "28a6f783dbbd1760631aa7dceddf85921d672bf977786dee46f955d9cbf0bf4f",
+      "byte_count": 198128
+    },
+    {
+      "kind": "light-cone",
+      "id": "21031",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/24cdcb5829ccaeaf564f9d143e13fd27_3463177043058966924.png",
+      "source_sha256": "6101367cede9d393fe00a2a882474a173e77ed67c93ae547418fec3c89845b45",
+      "path": "webp/fcee34a14b443995dd81a5587d396c26ff6d2b83377dcae3f8b8dc85ff5a7339.webp",
+      "sha256": "fcee34a14b443995dd81a5587d396c26ff6d2b83377dcae3f8b8dc85ff5a7339",
+      "byte_count": 196214
+    },
+    {
+      "kind": "light-cone",
+      "id": "21032",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/09f103a321dcd967fa90049b49997560_1511327361354317201.png",
+      "source_sha256": "92c27934480bcdc4c84403f547a47a42d9a32a9c9c8b2d362333c5a64fb04dfe",
+      "path": "webp/6d72d4f7dedffdb60546df76f0e73873811a4dcbf4582e3fd3c71d7807fc568c.webp",
+      "sha256": "6d72d4f7dedffdb60546df76f0e73873811a4dcbf4582e3fd3c71d7807fc568c",
+      "byte_count": 156352
+    },
+    {
+      "kind": "light-cone",
+      "id": "21033",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/619ed38d6def02c0b6c698806b6095a0_1321403954333962126.png",
+      "source_sha256": "b6291cb64588fa28089abed872b3e2c953035b539d15c62b1f20f1849dc0688f",
+      "path": "webp/e1da3721bcb09e97a28ce972f4b2d21e63e6a35b031bd35a6b9529b76e194ec7.webp",
+      "sha256": "e1da3721bcb09e97a28ce972f4b2d21e63e6a35b031bd35a6b9529b76e194ec7",
+      "byte_count": 178406
+    },
+    {
+      "kind": "light-cone",
+      "id": "21034",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2170522acf2fc7e6a657b0f26a81f7b0_8571278187657403042.png",
+      "source_sha256": "b4a815df1015dfee0f17cd4dcdcc922a110c234d3fa95da3275d2dca3c347357",
+      "path": "webp/21b24311d281b783e8bd9c5094f07f0405f4f9725e847a05838a858220424956.webp",
+      "sha256": "21b24311d281b783e8bd9c5094f07f0405f4f9725e847a05838a858220424956",
+      "byte_count": 196028
+    },
+    {
+      "kind": "light-cone",
+      "id": "21035",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/03/06/171301880/0002a0b5db7671221242b223d08ab7ee_7103753900379402127.png",
+      "source_sha256": "c6998de43c9f936438ba260dcf7f2ef3e1ada2306ce5e4a47f3a85d1b1c5664d",
+      "path": "webp/b7119fc658515dcea664c91a2296744cf1039f10eab2bf0deedfeb202c44af2c.webp",
+      "sha256": "b7119fc658515dcea664c91a2296744cf1039f10eab2bf0deedfeb202c44af2c",
+      "byte_count": 148488
+    },
+    {
+      "kind": "light-cone",
+      "id": "21036",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/03/06/326693439/d3339d405c7c9ada557bdf8e3e5b6c16_7284095021837230972.png",
+      "source_sha256": "5fc6d4178fa6d26c9913e8fad541722ab006ff7b610a1b5ea4127f2b8b154b85",
+      "path": "webp/521a0c716ea21aed321027f54562e406cc50a5a888cc4efb304e009c7c6f65e9.webp",
+      "sha256": "521a0c716ea21aed321027f54562e406cc50a5a888cc4efb304e009c7c6f65e9",
+      "byte_count": 205960
+    },
+    {
+      "kind": "light-cone",
+      "id": "21037",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/03/06/171301880/a416b6e354d225586a18232b31195689_3904017079895174562.png",
+      "source_sha256": "6954a300663375353cfb1ed82659fb0dc4d3667a2f520b311a8c5871d2964431",
+      "path": "webp/fb7ca8f83de04c60676230a93d51bf954818bde52df9c56797ef4cf1fd6f0e1e.webp",
+      "sha256": "fb7ca8f83de04c60676230a93d51bf954818bde52df9c56797ef4cf1fd6f0e1e",
+      "byte_count": 103832
+    },
+    {
+      "kind": "light-cone",
+      "id": "21038",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/07/213942066/641afab83e8fa778429903a620f4d927_8588825767471221889.png",
+      "source_sha256": "e448799aca685098c5f46b8d27ff14a8c6e09e669ee14c6624ffb86e496fa8f8",
+      "path": "webp/340e7c2109af1e134a105afa87b4061fe5a452d637a4b23367dce7bfab143378.webp",
+      "sha256": "340e7c2109af1e134a105afa87b4061fe5a452d637a4b23367dce7bfab143378",
+      "byte_count": 264190
+    },
+    {
+      "kind": "light-cone",
+      "id": "21039",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/07/213942066/e515681790e9ceb9c890e4506efd932e_4078083902221717060.png",
+      "source_sha256": "606d55bbeb93bdc42d5d63f2ba15a3bac41473b2e81c6b818c2bf6d822c5f06c",
+      "path": "webp/bf3a96571577502a3249ab5712c796711a83c8c7d4468f9f0143e89e4127b94c.webp",
+      "sha256": "bf3a96571577502a3249ab5712c796711a83c8c7d4468f9f0143e89e4127b94c",
+      "byte_count": 180312
+    },
+    {
+      "kind": "light-cone",
+      "id": "21040",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/07/213942066/308f393b2e20915e921de1e7f2e207b6_5697608064754312224.png",
+      "source_sha256": "0d7de7f894cdba238fd371e3178fa02b9048a83be40b9eb8b15bb259a95a5d71",
+      "path": "webp/2353ba867899d52af16fe8aedeae7a5b9526366b2ce55cb41132199a7a3e41ab.webp",
+      "sha256": "2353ba867899d52af16fe8aedeae7a5b9526366b2ce55cb41132199a7a3e41ab",
+      "byte_count": 200030
+    },
+    {
+      "kind": "light-cone",
+      "id": "21041",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/07/213942066/92c78689a4f0620bc9565818addde074_2550687428131957039.png",
+      "source_sha256": "a01f97ff4bd959a485a52453ce6138e876f02a5b6bbf39480717aaf268c24ece",
+      "path": "webp/ef177bc8e64ec842ae626ac5be3d39194dbf072c2bdbf4bb8636c9f0d4600c3e.webp",
+      "sha256": "ef177bc8e64ec842ae626ac5be3d39194dbf072c2bdbf4bb8636c9f0d4600c3e",
+      "byte_count": 254406
+    },
+    {
+      "kind": "light-cone",
+      "id": "21042",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/02/04/3d2c000744065606335224819b4c2c8e_1440791885639005208.png",
+      "source_sha256": "88c70cf5198ab6934b87b3d0d21ea5fbacd62b93013c5d0713b7c56e48b64883",
+      "path": "webp/b47290b85b9d12d8ea25de2c06cfa4d5cbaefd3fb15eaa87c48b9032a115fa32.webp",
+      "sha256": "b47290b85b9d12d8ea25de2c06cfa4d5cbaefd3fb15eaa87c48b9032a115fa32",
+      "byte_count": 174392
+    },
+    {
+      "kind": "light-cone",
+      "id": "21043",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/04/16/c720442776f84f543c14518de8c8663f_5213217699580238187.png",
+      "source_sha256": "9d39c7c73f2f6cf09dca052298fa491b3c5e4aad4b7f0bf950bd7333ba865dea",
+      "path": "webp/a039d6383722e95744486eb69b90258601881487aeecb7e75d064b09a38d6ea2.webp",
+      "sha256": "a039d6383722e95744486eb69b90258601881487aeecb7e75d064b09a38d6ea2",
+      "byte_count": 222082
+    },
+    {
+      "kind": "light-cone",
+      "id": "21044",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/05/17/326693439/ff00ea6257b47373b18e3ab3b8d4f418_8147110520531310407.png",
+      "source_sha256": "e4b2fea8c2777e182957df6bfd203f25edbddfc32addc555bf6003e1a68152ff",
+      "path": "webp/e8e5eabbc0bdd346b3c53f320dedaf4ed5480ac65e11480a43d9554224a7d81d.webp",
+      "sha256": "e8e5eabbc0bdd346b3c53f320dedaf4ed5480ac65e11480a43d9554224a7d81d",
+      "byte_count": 201526
+    },
+    {
+      "kind": "light-cone",
+      "id": "21045",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/30/326693439/de46ad848380c6da1ea41c2d63a19b06_5637539227918155780.png",
+      "source_sha256": "b852e7bef52ceda03f49ed6d92210d06d5391d46eb84747b6f050e6b705619bc",
+      "path": "webp/c79f29cf27a3d7c8e621e4b6a76416b3a25237390d901a989f08dc108ea9c791.webp",
+      "sha256": "c79f29cf27a3d7c8e621e4b6a76416b3a25237390d901a989f08dc108ea9c791",
+      "byte_count": 154124
+    },
+    {
+      "kind": "light-cone",
+      "id": "21046",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/08/23/417971351/e77436eb84092269f1c359edb40ed8fd_5541795414871819494.png",
+      "source_sha256": "8445fd2d423f51ffb03efe08ac15c63e8de8a49de33a38e5fdecdd32f19a1869",
+      "path": "webp/69324dc34b72515bd8405478b2923275d9bba1fceefea8ef693ef5f3e730ee09.webp",
+      "sha256": "69324dc34b72515bd8405478b2923275d9bba1fceefea8ef693ef5f3e730ee09",
+      "byte_count": 244660
+    },
+    {
+      "kind": "light-cone",
+      "id": "21047",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/30/326693439/1db592d0aafedeec3ea323327917adf9_6472133372382674779.png",
+      "source_sha256": "e250ad5f7191c12dd027e42fe684dc3921bb82b1f379c51bf5ea558e600b9480",
+      "path": "webp/9373bd20c5f04c762814d41fa68fcf88fd93a84c417e26e5c45052fd97caa3ae.webp",
+      "sha256": "9373bd20c5f04c762814d41fa68fcf88fd93a84c417e26e5c45052fd97caa3ae",
+      "byte_count": 170392
+    },
+    {
+      "kind": "light-cone",
+      "id": "21048",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/10/24/326693439/224cfcf1fa51d7d0f7d0803f9f44989f_8030153620345582531.png",
+      "source_sha256": "78e317c94d373bfae9cce73f49266cc5e049c04195738dd8ef4075bcadfe4163",
+      "path": "webp/124f1d2736a8c23477251500de76c98e07086b47b4002ebe94cdb3746c79d279.webp",
+      "sha256": "124f1d2736a8c23477251500de76c98e07086b47b4002ebe94cdb3746c79d279",
+      "byte_count": 315856
+    },
+    {
+      "kind": "light-cone",
+      "id": "21050",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/16/130460543/2ffd094970e86efa2690a2cab9c54953_7567328063820602963.png",
+      "source_sha256": "6a39f59017aa5f9ea7be9e9116c42fd3676629eef66950106a765fd0354c9e77",
+      "path": "webp/17a2cbb19febc93e526bb3553446d0056c6d295394f44cb793a68d86ea69f83c.webp",
+      "sha256": "17a2cbb19febc93e526bb3553446d0056c6d295394f44cb793a68d86ea69f83c",
+      "byte_count": 164226
+    },
+    {
+      "kind": "light-cone",
+      "id": "21051",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/24/130460543/24b78b2d1d2fde3ae1ac76d1eba76140_4488335383636291447.png",
+      "source_sha256": "73ba5a7690b98f2fd24067f20a32d9ea8937bbc821d38b6f5f273bde475f761e",
+      "path": "webp/f6411012ffb73ff0e8c237a75af2fa1a86cbf1d16115e95fdfdb8d03bbc77b85.webp",
+      "sha256": "f6411012ffb73ff0e8c237a75af2fa1a86cbf1d16115e95fdfdb8d03bbc77b85",
+      "byte_count": 169674
+    },
+    {
+      "kind": "light-cone",
+      "id": "21052",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/24/130460543/dcd54b4bb2e18436d6291f9c3fffa411_2705749012580744577.png",
+      "source_sha256": "9b36e16b598330683ead0a83f2150428247e2f2db4788fd66d95cfc279b036c2",
+      "path": "webp/0dda732c6745cad301b1eb006a2db7ccc91565c5a67283a47f778bcfc9e8099b.webp",
+      "sha256": "0dda732c6745cad301b1eb006a2db7ccc91565c5a67283a47f778bcfc9e8099b",
+      "byte_count": 138082
+    },
+    {
+      "kind": "light-cone",
+      "id": "21053",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/04d67b9d746c29b5e1f40de5ae603082_8343169336207033977.png",
+      "source_sha256": "493a60a8aa84cd586ead8e37677504b4e5f512b86963ac789c9b03d2f6024d72",
+      "path": "webp/223f8124ce69abe4d905accf3c1232677e3fe9af722b2a8013d343e656065f3f.webp",
+      "sha256": "223f8124ce69abe4d905accf3c1232677e3fe9af722b2a8013d343e656065f3f",
+      "byte_count": 254684
+    },
+    {
+      "kind": "light-cone",
+      "id": "21054",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/daeeaa8e0fafcc474da75ee44b80ca54_9206512541197434292.png",
+      "source_sha256": "fa5003d6661eefe5c18e464d1cf317d83d17fdf61fdd803abd526c042e3accc7",
+      "path": "webp/756104ab27485600b91329b9dbea6bdf0c4710c5fe24759989f65de80390db0d.webp",
+      "sha256": "756104ab27485600b91329b9dbea6bdf0c4710c5fe24759989f65de80390db0d",
+      "byte_count": 311952
+    },
+    {
+      "kind": "light-cone",
+      "id": "21055",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/3414edab419cc188f575ebb18bd14bec_3222447426594635349.png",
+      "source_sha256": "97601fc1c23657cbde7e4e18361ff0d4586fbdbb2959c07586e6a3586d10cc5b",
+      "path": "webp/36357244cdf98bd02bbaac9eb77af0b646254dfa3caf0df680674f0b18c265cb.webp",
+      "sha256": "36357244cdf98bd02bbaac9eb77af0b646254dfa3caf0df680674f0b18c265cb",
+      "byte_count": 304156
+    },
+    {
+      "kind": "light-cone",
+      "id": "21056",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/a06584ade169122ca31d8a0d205f459e_339643754902823655.png",
+      "source_sha256": "be2f4da0fe79642c5095342fce12851ac2ca4a6192c130775cd6509af5938651",
+      "path": "webp/433a31a26fbb6243969117b3a7e2f336300920c76d46f84a7a014d9695e56b6b.webp",
+      "sha256": "433a31a26fbb6243969117b3a7e2f336300920c76d46f84a7a014d9695e56b6b",
+      "byte_count": 281390
+    },
+    {
+      "kind": "light-cone",
+      "id": "21057",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/20b4a7fa8b12632feb44d0f690c16cdc_4580210924088616357.png",
+      "source_sha256": "76abecf3444264a9914aad02a8f227ad0eafaa445064cadef21008de1e3cd9b8",
+      "path": "webp/7ef3c15d7590ab2de50740dd61122bf6c2cf30608a67704b9253ac0a2e9b5444.webp",
+      "sha256": "7ef3c15d7590ab2de50740dd61122bf6c2cf30608a67704b9253ac0a2e9b5444",
+      "byte_count": 343430
+    },
+    {
+      "kind": "light-cone",
+      "id": "21058",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/6a976c20deac42e6c3af6e2a76f8cfea_6058209926279613810.png",
+      "source_sha256": "507342fbda6eb9947c344df78c88291354b533929bdc4365d4dac92441096ecd",
+      "path": "webp/ef232822cec47d14a9d2d2270678698b91c7534a43ec9912ec0ade477cabf0d8.webp",
+      "sha256": "ef232822cec47d14a9d2d2270678698b91c7534a43ec9912ec0ade477cabf0d8",
+      "byte_count": 313436
+    },
+    {
+      "kind": "light-cone",
+      "id": "21060",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/de79d201a05c72060b1422b66984bab8_7926798150191853951.png",
+      "source_sha256": "49c5094224fe340faf749d0d5e4a0ac8d98fe0a3919738db64833b5f52760e5c",
+      "path": "webp/dc8dfdc14eba14292b27ed7629f2d895012c23de344abac0c086569c5c7e9a5c.webp",
+      "sha256": "dc8dfdc14eba14292b27ed7629f2d895012c23de344abac0c086569c5c7e9a5c",
+      "byte_count": 301674
+    },
+    {
+      "kind": "light-cone",
+      "id": "21061",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/3647952e0b4f350f98f44042eff7f4e3_2724288753299138900.png",
+      "source_sha256": "895a13214178fa81180634ad2e25433e36854db1fea61fea170467817a0513f7",
+      "path": "webp/af6ee8b2cb0f7c706822f89f7db50ad52d3213f050166325da974d58fe9c85ea.webp",
+      "sha256": "af6ee8b2cb0f7c706822f89f7db50ad52d3213f050166325da974d58fe9c85ea",
+      "byte_count": 291292
+    },
+    {
+      "kind": "light-cone",
+      "id": "21062",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/326064416/42c2f36b8cc15a7592c2f3415c0baaf0_5708491941237412964.png",
+      "source_sha256": "ad959193541f64121abe4152d2b91685976bcbdf814b918bd6519280b9da5b71",
+      "path": "webp/033e4d064c694051f0474882a85ef0fef1053c635d455ded7eb5733a529cde6c.webp",
+      "sha256": "033e4d064c694051f0474882a85ef0fef1053c635d455ded7eb5733a529cde6c",
+      "byte_count": 297956
+    },
+    {
+      "kind": "light-cone",
+      "id": "21064",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/02/326064416/99a2dec9645afe6eb5a94c36528bdf94_5288580455349266087.png",
+      "source_sha256": "669c0fa76978e5f49f9870fbda2b3d854e1a0567a84a816b5de8924e7601bbbc",
+      "path": "webp/47846719e93e7b984d254a0b88b1569aaf9aded6bd7a0fcd185d7630916aac69.webp",
+      "sha256": "47846719e93e7b984d254a0b88b1569aaf9aded6bd7a0fcd185d7630916aac69",
+      "byte_count": 294304
+    },
+    {
+      "kind": "light-cone",
+      "id": "21065",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/02/326064416/ba9f53373cd16865591b251b3668da3e_8112638692513936499.png",
+      "source_sha256": "b7f0a9d7993e261a8ec19702e2e9252d487342a8ac7751754d0bdb53e0f47759",
+      "path": "webp/99a375288d57ef49dcd785a2ceecc726ca683ad26f7dbdf9ffe19549a1a2bfa7.webp",
+      "sha256": "99a375288d57ef49dcd785a2ceecc726ca683ad26f7dbdf9ffe19549a1a2bfa7",
+      "byte_count": 304692
+    },
+    {
+      "kind": "light-cone",
+      "id": "21066",
+      "source_url": "https://static.nanoka.cc/assets/hsr/lightconemediumicon/21066.webp",
+      "source_sha256": "ca01ae4a7947d75c29b2545608d1a624b2834c55d4954324f39435639f0f0842",
+      "path": "webp/b2e0c2359d264ca21fa7e23de77916b5a0719bed69b631dd0ce5eff7520f1da5.webp",
+      "sha256": "b2e0c2359d264ca21fa7e23de77916b5a0719bed69b631dd0ce5eff7520f1da5",
+      "byte_count": 53658
+    },
+    {
+      "kind": "light-cone",
+      "id": "22000",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/06/07/7998136/7624d4c80658642109c1677e74e97499_6935245463977096242.png",
+      "source_sha256": "7df8536ba01c83c77e89dca3b1832bef0fb3c91360682ba92c9b238c12a52813",
+      "path": "webp/2845363c24815656656838a562506e26df6859ee347d5d67d9264a014ba1ee99.webp",
+      "sha256": "2845363c24815656656838a562506e26df6859ee347d5d67d9264a014ba1ee99",
+      "byte_count": 182324
+    },
+    {
+      "kind": "light-cone",
+      "id": "22001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/15/146729530/40ea525490b8fe6bfe9ca4294e95825f_7066598270434147237.png",
+      "source_sha256": "ac754f4f09bcb3a0f959285952bf74651303c5e6b3cb752478e618d80c71d82c",
+      "path": "webp/debcfbfcaea0a6870e5aeff21fd53553cd83b886931e6724f69b2d3f1010da2c.webp",
+      "sha256": "debcfbfcaea0a6870e5aeff21fd53553cd83b886931e6724f69b2d3f1010da2c",
+      "byte_count": 197058
+    },
+    {
+      "kind": "light-cone",
+      "id": "22002",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/07/1b836a1205682a9c6f088fbf0ebabb69_4375918032796644928.png",
+      "source_sha256": "be809ae83f19339152fa1abccad7cefbb0a2be46e3bb4c6b744b9c007ba76bae",
+      "path": "webp/25f0806ceef95b16cd4c48112b1d2887175c6a1195f24f428fafa7d3664800e5.webp",
+      "sha256": "25f0806ceef95b16cd4c48112b1d2887175c6a1195f24f428fafa7d3664800e5",
+      "byte_count": 223494
+    },
+    {
+      "kind": "light-cone",
+      "id": "22003",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/10/25/417971351/491e277f1d8a52ea7ee0a99d069907a0_5350483043775145707.png",
+      "source_sha256": "8ca615d74fea96ce4c58c4f2c454a75e80d9881699c395815101a9f1376bb654",
+      "path": "webp/37fdff8f6da31d07236290429849fa6fc3a15ad24be349b5bd07b5cc436e2fef.webp",
+      "sha256": "37fdff8f6da31d07236290429849fa6fc3a15ad24be349b5bd07b5cc436e2fef",
+      "byte_count": 389444
+    },
+    {
+      "kind": "light-cone",
+      "id": "22004",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/04/14/130460543/182416723cb94bb9a6a1c06b2a256905_2669485758263091938.png",
+      "source_sha256": "baca23172073dc011299eda49b35d4c4e8b3421d753b9c446d4a6a6e2bdd8e14",
+      "path": "webp/c572d1217abf5393c4b5aee10e1068439cc6a163b22d4f38d641c06cd187d564.webp",
+      "sha256": "c572d1217abf5393c4b5aee10e1068439cc6a163b22d4f38d641c06cd187d564",
+      "byte_count": 298696
+    },
+    {
+      "kind": "light-cone",
+      "id": "22005",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/01/326064416/a1455436e2d3e33088277e6e6ce0aa34_4209448769779962879.png",
+      "source_sha256": "c14aeaa9decb63121b0f8536a6ed470c1285c4f477189a080f6aaa020bc350a5",
+      "path": "webp/629118a2eda98e4a4c895abac9c984b2f56be7df8abee4bf62f00a4f1c4750ec.webp",
+      "sha256": "629118a2eda98e4a4c895abac9c984b2f56be7df8abee4bf62f00a4f1c4750ec",
+      "byte_count": 369142
+    },
+    {
+      "kind": "light-cone",
+      "id": "22006",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/12/02/326064416/ee520eef4fbc73d404f1f6ea1891c96e_680421281982579843.png",
+      "source_sha256": "85b4077dd54868463c060d4392274bdc3d10cedeafe7ec422025f49c81da8769",
+      "path": "webp/23bf31ae808907da94faa321c7d776602432359268875b8d0abd10ecf7f56e5b.webp",
+      "sha256": "23bf31ae808907da94faa321c7d776602432359268875b8d0abd10ecf7f56e5b",
+      "byte_count": 253752
+    },
+    {
+      "kind": "light-cone",
+      "id": "22007",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/05/12/326064416/ee561b63c46b2277286dacdfc3f5823d_4495152305214506589.png",
+      "source_sha256": "94f6d51c411e2fc6bde823c7acb3d44250fbf467799089be9b460dd8e96edde4",
+      "path": "webp/1e49ace6c67c53f4dc3dd09d6000144b40d1feb2f2c38d38c5fc3aa24ebc643d.webp",
+      "sha256": "1e49ace6c67c53f4dc3dd09d6000144b40d1feb2f2c38d38c5fc3aa24ebc643d",
+      "byte_count": 297580
+    },
+    {
+      "kind": "light-cone",
+      "id": "22008",
+      "source_url": "https://static.nanoka.cc/assets/hsr/lightconemediumicon/22008.webp",
+      "source_sha256": "41862d6aa97ce991ad1b44ff2911bb4106c989c68f8b54724f444ddf913fc284",
+      "path": "webp/362067db44e2a1a5a0c1c72f851a5a5c79487cbe1705cc4a8816800b15f27da2.webp",
+      "sha256": "362067db44e2a1a5a0c1c72f851a5a5c79487cbe1705cc4a8816800b15f27da2",
+      "byte_count": 52720
+    },
+    {
+      "kind": "light-cone",
+      "id": "23000",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e4aaa93b8aec53396fdcf6296388597f_8571278187657403042.png",
+      "source_sha256": "fdda0e82754127f32c4a560807a41b02ac792fe64c421c3f7b7c1c3abbb228c6",
+      "path": "webp/6bf1c65bdd1ba784fb18733a99a6973d29b02bec298837c8f4d5874078043fd2.webp",
+      "sha256": "6bf1c65bdd1ba784fb18733a99a6973d29b02bec298837c8f4d5874078043fd2",
+      "byte_count": 185398
+    },
+    {
+      "kind": "light-cone",
+      "id": "23001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/f342952758193dcdcd8dd1dde1cc969d_4815329713662711142.png",
+      "source_sha256": "e4270dd8d830faff6fa825452ca5738c4439f9871cbfaa0edc4a1f54f76e1ecd",
+      "path": "webp/1c5b2e4276f7cb4546fbb03900a1082fd50f715fc9ad2746791fe2b69bd77691.webp",
+      "sha256": "1c5b2e4276f7cb4546fbb03900a1082fd50f715fc9ad2746791fe2b69bd77691",
+      "byte_count": 165352
+    },
+    {
+      "kind": "light-cone",
+      "id": "23002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e29a90c94a312c8c3630484be112281f_1321403954333962126.png",
+      "source_sha256": "c1bfc088b0aa12523ce0a585a1ca0977f8fabf2e8a92e9ac5b9d992b713a3415",
+      "path": "webp/f5e69ddb9ca9b3a2b5779f4e6541c2f115b1fdb3ed9c71826ad0551ba1e120f3.webp",
+      "sha256": "f5e69ddb9ca9b3a2b5779f4e6541c2f115b1fdb3ed9c71826ad0551ba1e120f3",
+      "byte_count": 146784
+    },
+    {
+      "kind": "light-cone",
+      "id": "23003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/57c5d042f75dbb37b1e78b211cf645c9_6343871253887740107.png",
+      "source_sha256": "b6f10720225c2b34cbc7e5c002ca00d92f19499db6c3074446934ab448ff0164",
+      "path": "webp/8f06c482806ef4b55ba6ee7846b9a1b0b01270a595061eed9a96861cb64da765.webp",
+      "sha256": "8f06c482806ef4b55ba6ee7846b9a1b0b01270a595061eed9a96861cb64da765",
+      "byte_count": 174670
+    },
+    {
+      "kind": "light-cone",
+      "id": "23004",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e83831b4e3d1b31683d2ab65a934d305_7267104140862379789.png",
+      "source_sha256": "e62f6bf50b31381067c484c04dade5c64d718b3da20516709ed5fbec8a97b5fe",
+      "path": "webp/a475105175a42e293b6791b49c53c9b2bcc8ccda6efb797b830d2cfc29d9431f.webp",
+      "sha256": "a475105175a42e293b6791b49c53c9b2bcc8ccda6efb797b830d2cfc29d9431f",
+      "byte_count": 192560
+    },
+    {
+      "kind": "light-cone",
+      "id": "23005",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/e8affe99a96952944134a87057777439_1944942577070479685.png",
+      "source_sha256": "ef77df3cdc6f1bcb564ee9625ba12455932b5671ecabb055711444642598b7e9",
+      "path": "webp/a5c5eabf5bc0157b212d25011892aaf90b6175cc51a0e536fc13acd089619d48.webp",
+      "sha256": "a5c5eabf5bc0157b212d25011892aaf90b6175cc51a0e536fc13acd089619d48",
+      "byte_count": 205108
+    },
+    {
+      "kind": "light-cone",
+      "id": "23006",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/22/84496276/cd8fbed3fe69c8584e08e8a9e0ccce00_2036100191059986968.png",
+      "source_sha256": "7dbeaeacb6310e7b5e92f51dd9428ea78742e9a84464370a20018aac7b623891",
+      "path": "webp/3ddc769f2a8898992b1e1d64bf9c697fa1d8487731765c84b7d650fbd00008ed.webp",
+      "sha256": "3ddc769f2a8898992b1e1d64bf9c697fa1d8487731765c84b7d650fbd00008ed",
+      "byte_count": 121640
+    },
+    {
+      "kind": "light-cone",
+      "id": "23007",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/06/07/7998136/dd30c9e39b8126dde54946cf2581215f_4234182455576051184.png",
+      "source_sha256": "6cd670dd1dd122576dc25c1d3d430a4ad377df1775e12b339365536a0cbb85f1",
+      "path": "webp/b7e394009dc55784dc732a94519ab82b33ddf569325bc60463d74427fdfdda85.webp",
+      "sha256": "b7e394009dc55784dc732a94519ab82b33ddf569325bc60463d74427fdfdda85",
+      "byte_count": 167640
+    },
+    {
+      "kind": "light-cone",
+      "id": "23008",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/01/7998136/e0fbe9f982c1e21d0d0d117bf159e01f_4969186422556279291.png",
+      "source_sha256": "ab52fbec7244aa465770c675e553b3d3ca5b2868e64c0c6d629c9da4a5e9c669",
+      "path": "webp/f4734c4dc59e270c935a4f1bf892f17ff6b8c4eb113ff7f0a4ea6d43a60db6ef.webp",
+      "sha256": "f4734c4dc59e270c935a4f1bf892f17ff6b8c4eb113ff7f0a4ea6d43a60db6ef",
+      "byte_count": 157692
+    },
+    {
+      "kind": "light-cone",
+      "id": "23009",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/20/7998136/d33e5d082c7b67a779c44c663bab3b51_5997614579255060169.png",
+      "source_sha256": "aef5973a05dca68c87e9a9b5a43ce353f6eb64a7b00ead962c0a00559afbfdc8",
+      "path": "webp/61df5f0c82aa6a80bdd9b082198cd6c9b207fa5da02d508f11ca4d6506c4e292.webp",
+      "sha256": "61df5f0c82aa6a80bdd9b082198cd6c9b207fa5da02d508f11ca4d6506c4e292",
+      "byte_count": 166738
+    },
+    {
+      "kind": "light-cone",
+      "id": "23010",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/ac79e739072fa86b2f6d5f851bb2c916_952669953280599733.png",
+      "source_sha256": "17d7e48a6cc30ddcb37610483d624c03e1368df91a8d4b90d88971d618aec0f5",
+      "path": "webp/8fa6cb22e973ac02d00f5f196555a898d0deb393612156a6e6edb2f84c20c10e.webp",
+      "sha256": "8fa6cb22e973ac02d00f5f196555a898d0deb393612156a6e6edb2f84c20c10e",
+      "byte_count": 181718
+    },
+    {
+      "kind": "light-cone",
+      "id": "23011",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/10/13/146729530/a519d2e49b5bbefb2f189a80c30571cd_1675616892588909410.png",
+      "source_sha256": "63f1ffbd6a8b987cd20a54ade823e9bd7ee059692394fc66f772e805b1cf67c0",
+      "path": "webp/63a1afc5708c37c94b494a2d71c26e7bd47e8a5199b654c4bd983d951b6b9348.webp",
+      "sha256": "63a1afc5708c37c94b494a2d71c26e7bd47e8a5199b654c4bd983d951b6b9348",
+      "byte_count": 183898
+    },
+    {
+      "kind": "light-cone",
+      "id": "23012",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/fc67f4c1de98897ba23ffd613650a206_1944942577070479685.png",
+      "source_sha256": "09297bd017f4bebef22437fda6d250ef1549aee42afffb320b3eee68a02ab953",
+      "path": "webp/5213de8bce79abf0ed95343e8885499a0413cfd64c10ff66b6f6e88080742070.webp",
+      "sha256": "5213de8bce79abf0ed95343e8885499a0413cfd64c10ff66b6f6e88080742070",
+      "byte_count": 145654
+    },
+    {
+      "kind": "light-cone",
+      "id": "23013",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/94b2bbafc016ef0d9a055eab3f96f9c5_6343871253887740107.png",
+      "source_sha256": "8505a69d967d680b45136a42b1b61565aa6f4b944caeaae8d7ea2c90e926dae7",
+      "path": "webp/dc87faf5e14b96f2c2e888554fd121fbfb95e2600d4922f0d31a7a86d73c1fa8.webp",
+      "sha256": "dc87faf5e14b96f2c2e888554fd121fbfb95e2600d4922f0d31a7a86d73c1fa8",
+      "byte_count": 189210
+    },
+    {
+      "kind": "light-cone",
+      "id": "23014",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/10/09/327648380/0f027ac017c57d6b62617d379e3087fc_7169863041443585992.png",
+      "source_sha256": "e9cfe0199d4bc3b7f489e0b24a1a27f90a250935d4b7e155d5c952529fa0cb4a",
+      "path": "webp/26af1302a49417dae55efc375c686277c5013275b3e3241d9404ab646fca03d4.webp",
+      "sha256": "26af1302a49417dae55efc375c686277c5013275b3e3241d9404ab646fca03d4",
+      "byte_count": 244104
+    },
+    {
+      "kind": "light-cone",
+      "id": "23015",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/08/30/7998136/274e4d01efb391334126171753e400d7_8569025007475060876.png",
+      "source_sha256": "35426c9914d18d5a422a334a5e0c05e8ad5d98acffdf6431fca911d125241c5f",
+      "path": "webp/dcaa550a0bf798c0e0c7c2f52872468ef2aa1cea2ed65b532e8cbf255195cd25.webp",
+      "sha256": "dcaa550a0bf798c0e0c7c2f52872468ef2aa1cea2ed65b532e8cbf255195cd25",
+      "byte_count": 235234
+    },
+    {
+      "kind": "light-cone",
+      "id": "23016",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/10/26/1019313/4f2ab7074d519b215cd150b8cf1f433a_4632452927144568599.png",
+      "source_sha256": "8b6566ffaaf45793ca26aa120fd1838fc4c71f80f50cbb2a4abb6a30a8108bf8",
+      "path": "webp/8ff256f3e8d8a3cd2f3e6ff755b1e1438641377914fd677336e2c618ed4729c7.webp",
+      "sha256": "8ff256f3e8d8a3cd2f3e6ff755b1e1438641377914fd677336e2c618ed4729c7",
+      "byte_count": 251642
+    },
+    {
+      "kind": "light-cone",
+      "id": "23017",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/15/146729530/02562750cc9ba0728940900bb29bff85_7891932131497743597.png",
+      "source_sha256": "6ceb61c0040def1b002b3ec40b2ed987b871ff4e7dd97a94873199bcf654d1ad",
+      "path": "webp/039ebf72831e537c6788bcea330f02a5e5e5f6769d568ab16c3322eb8a7882d8.webp",
+      "sha256": "039ebf72831e537c6788bcea330f02a5e5e5f6769d568ab16c3322eb8a7882d8",
+      "byte_count": 210788
+    },
+    {
+      "kind": "light-cone",
+      "id": "23018",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/12/05/0e2afe2fd46c9699a4e73807bf63e794_4690802445219194102.png",
+      "source_sha256": "496879ffa0e7d29dd64a4e83166ae8b7489eaf0653e4f58f2e1b01ca1af63654",
+      "path": "webp/d03de23a25d9e42816719602f5bb1f4e4275a2f60c9955eb02cb5fa6e5a7db2b.webp",
+      "sha256": "d03de23a25d9e42816719602f5bb1f4e4275a2f60c9955eb02cb5fa6e5a7db2b",
+      "byte_count": 220608
+    },
+    {
+      "kind": "light-cone",
+      "id": "23019",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2023/12/25/9abbea4b755e183768a9a2a30600cad0_964949891846795661.png",
+      "source_sha256": "2bb5c3f93924fbdd3b0226bcef472e96ec7b1c15accc9b8b2b9692ff0d3faaed",
+      "path": "webp/59218233017ff7ddc50978589c1ce4039cb989cce81d381f2c0798f7dfa718c2.webp",
+      "sha256": "59218233017ff7ddc50978589c1ce4039cb989cce81d381f2c0798f7dfa718c2",
+      "byte_count": 228606
+    },
+    {
+      "kind": "light-cone",
+      "id": "23020",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/01/15/894bd6c5ea494cc540d46244e0c8b895_5844722423980463535.png",
+      "source_sha256": "ae441a7464ab80dd1aa87eb9a4ff43de319f6a6ba43f89fb256ffeaa3db825a3",
+      "path": "webp/56055efcfe22306369c2e21abaf570c6f7e5deb89c004a7a0dce6d89b6116ca4.webp",
+      "sha256": "56055efcfe22306369c2e21abaf570c6f7e5deb89c004a7a0dce6d89b6116ca4",
+      "byte_count": 169454
+    },
+    {
+      "kind": "light-cone",
+      "id": "23021",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/02/27/08f28fd17c7293362ce7db20de8df1df_4242746970141722423.png",
+      "source_sha256": "f4269a93b04689efb833bcbe8323c176f09c27c447da277729b584e720c7792c",
+      "path": "webp/b655c37888c34b2efe84c8c6e89fe5ba131bee43fb45669e40134245973f459e.webp",
+      "sha256": "b655c37888c34b2efe84c8c6e89fe5ba131bee43fb45669e40134245973f459e",
+      "byte_count": 175606
+    },
+    {
+      "kind": "light-cone",
+      "id": "23022",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/02/06/6668036/38b8751c03fae5f57727485edda3a9d0_2647703592169654115.png",
+      "source_sha256": "5344b3c58cd7197e768c680097e2b339af50a08b93807d277e6182cb49c61304",
+      "path": "webp/2c0b49dbeed78917c082f1e397dc6aba0533748e6772f41c232de73a704383a8.webp",
+      "sha256": "2c0b49dbeed78917c082f1e397dc6aba0533748e6772f41c232de73a704383a8",
+      "byte_count": 179598
+    },
+    {
+      "kind": "light-cone",
+      "id": "23023",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/04/16/4dc0c4cf986936473875c166a6d36ab7_8812724644606177897.png",
+      "source_sha256": "2ddf1f45216bb7272e3e66463be89cf97ed019e817d1e8647d096cfcf88888b5",
+      "path": "webp/b3e04cfd467bd582fd599599ddda192f0bdf84d2d48b46810c7d629ea1c5ff4c.webp",
+      "sha256": "b3e04cfd467bd582fd599599ddda192f0bdf84d2d48b46810c7d629ea1c5ff4c",
+      "byte_count": 269028
+    },
+    {
+      "kind": "light-cone",
+      "id": "23024",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/03/26/326693439/8707622cabd577ddf02a0fd00fbd6fd1_5022746560518718047.png",
+      "source_sha256": "ac04eab165c0e948e4cee5ab4be12260261a029a849bbd102b1af087425d9929",
+      "path": "webp/b57f5dbc9b0c5b0d54e365e0eb5ffc7c1dbbe308a3fc386cb816e806bbf2adea.webp",
+      "sha256": "b57f5dbc9b0c5b0d54e365e0eb5ffc7c1dbbe308a3fc386cb816e806bbf2adea",
+      "byte_count": 214056
+    },
+    {
+      "kind": "light-cone",
+      "id": "23025",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/06/19/e4a585ed5dad231872aa0a28ed9a362d_1527074370716145770.png",
+      "source_sha256": "a095090f884869e5842df6e6f4a8660a09066eaa1ff91d275862fc88fbc7cc39",
+      "path": "webp/2935a37a2bd007ec616db6bf651447feef61eca9227175a65f50d6583b8be3f5.webp",
+      "sha256": "2935a37a2bd007ec616db6bf651447feef61eca9227175a65f50d6583b8be3f5",
+      "byte_count": 163082
+    },
+    {
+      "kind": "light-cone",
+      "id": "23026",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/07/ca03ae75713f4ef7dbd4c68d671d1b0f_4402507865225057642.png",
+      "source_sha256": "f3b0dd5d74997c36a37c99dbe32eb588135c339a5331ca9d0f2a6724b809f59e",
+      "path": "webp/dd008a8f4e92801d5867249a2f52c0e33172efbb069ff51d203783f09011d93f.webp",
+      "sha256": "dd008a8f4e92801d5867249a2f52c0e33172efbb069ff51d203783f09011d93f",
+      "byte_count": 275238
+    },
+    {
+      "kind": "light-cone",
+      "id": "23027",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/24/90b1764276960d7f7d53fde956be50aa_6987640505724242005.png",
+      "source_sha256": "a041c0d9d56b4831c05d28acc4307cab4afbd23c654eb09390c4d11fafabe032",
+      "path": "webp/052921c17ba67978c69f540f6adfe725627ee094fa13aa706a61e37a12a57028.webp",
+      "sha256": "052921c17ba67978c69f540f6adfe725627ee094fa13aa706a61e37a12a57028",
+      "byte_count": 175132
+    },
+    {
+      "kind": "light-cone",
+      "id": "23028",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/30/326693439/40ba19555b72a9afcd6ae1d6575d76b3_6967614770549198399.png",
+      "source_sha256": "5feb7f9d093f198d66379a17c02ab1d4418b2757972872903661f96fd4ea45b6",
+      "path": "webp/e2732df9089223fcafeb9fbf4d2fb5e653bbb501f1cdcce5f23c16c679a1b228.webp",
+      "sha256": "e2732df9089223fcafeb9fbf4d2fb5e653bbb501f1cdcce5f23c16c679a1b228",
+      "byte_count": 264016
+    },
+    {
+      "kind": "light-cone",
+      "id": "23029",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/08/23/417971351/667b4f120af6ff3672e4b4e73680975c_4981485607791604458.png",
+      "source_sha256": "696bad2b682624468969eeb93546c711c72169c5970b7757c7ec0e5257b937c3",
+      "path": "webp/7ce89a1778699a096516a186ec9e9b9ca3b41945686fb251b520140e13ec1906.webp",
+      "sha256": "7ce89a1778699a096516a186ec9e9b9ca3b41945686fb251b520140e13ec1906",
+      "byte_count": 200344
+    },
+    {
+      "kind": "light-cone",
+      "id": "23030",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/07/30/4f112f0dbb53f86def1d68b607875b82_2698456100476958626.png",
+      "source_sha256": "076342064571d97144ff5ad8f554b4cf823d3eb80257ba9514667dbc0ced5872",
+      "path": "webp/aa504362c3aeae9f1b6f65d1f629117f020832f0ed30e630588992eafaab1297.webp",
+      "sha256": "aa504362c3aeae9f1b6f65d1f629117f020832f0ed30e630588992eafaab1297",
+      "byte_count": 199590
+    },
+    {
+      "kind": "light-cone",
+      "id": "23031",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/10/417971351/ea80ce754858ff9a2860736795a35bd3_8494550450715775391.png",
+      "source_sha256": "714c496ade23144a78965943adfab4ab527ce9fbd73d8bbe0144afa03d864bd1",
+      "path": "webp/c3e838927ca3c852889d89b604cbec3e8c02ba99569e77293ac47507dcb894a5.webp",
+      "sha256": "c3e838927ca3c852889d89b604cbec3e8c02ba99569e77293ac47507dcb894a5",
+      "byte_count": 228954
+    },
+    {
+      "kind": "light-cone",
+      "id": "23032",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/30/326693439/d1ff58c9ad9e8d172988e845fb12fd35_7030424953049541360.png",
+      "source_sha256": "550e63bf35e00a5d2b413deae904cac58eef09f631f089464c5aad68847da50d",
+      "path": "webp/b7f4451f88a594d5851d12ca2cd828f3a8e82b96799a53e7b75be3fd17333daa.webp",
+      "sha256": "b7f4451f88a594d5851d12ca2cd828f3a8e82b96799a53e7b75be3fd17333daa",
+      "byte_count": 210180
+    },
+    {
+      "kind": "light-cone",
+      "id": "23033",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/10/24/326693439/b2c478416669da0b93624d5a6141c394_2928699210662497988.png",
+      "source_sha256": "909ea753ffdb67236812b56dcd1439e35d7d42a5a820ba6061bd3fb691993327",
+      "path": "webp/1949de870643b96e525bcc8a158b4eaf13d33063dda7eb038462d812bec9718a.webp",
+      "sha256": "1949de870643b96e525bcc8a158b4eaf13d33063dda7eb038462d812bec9718a",
+      "byte_count": 234298
+    },
+    {
+      "kind": "light-cone",
+      "id": "23034",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/11/25/326064416/87989e444dbaa65b077722d82ba72acb_2997150082776952684.png",
+      "source_sha256": "7ca5dcb9fabe6b5a638c5c975448b5f68c75dfdcc494fcb4b42fbf80bc8c1484",
+      "path": "webp/9e7bbc48d66b3fca57ea7fd5807d3542a384e68220365c9c3f26a5def37161a4.webp",
+      "sha256": "9e7bbc48d66b3fca57ea7fd5807d3542a384e68220365c9c3f26a5def37161a4",
+      "byte_count": 278248
+    },
+    {
+      "kind": "light-cone",
+      "id": "23035",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/12/17/326064416/ab792bee4c7a2f4683bab449bb259bb6_2986423809029639302.png",
+      "source_sha256": "28bab459eae5f7aa29c147d7895523aa98b2b783bcc136bb0c70d26ec14c1da8",
+      "path": "webp/35f27be100a4598819606fc4955dd472930c583d9fefeaa7687f9fc23e208fbc.webp",
+      "sha256": "35f27be100a4598819606fc4955dd472930c583d9fefeaa7687f9fc23e208fbc",
+      "byte_count": 319596
+    },
+    {
+      "kind": "light-cone",
+      "id": "23036",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/02/06/130460543/5b88cb1e9bfcb4b180368da18f25ad8c_1660324090567638826.png",
+      "source_sha256": "2953dfd54606832fecdec14e44448e05974beb08218368d1739986be5df085ab",
+      "path": "webp/a38057a94ad34353b75e53f400436c003d883830a1035c8e27dfb64340b17f6c.webp",
+      "sha256": "a38057a94ad34353b75e53f400436c003d883830a1035c8e27dfb64340b17f6c",
+      "byte_count": 209478
+    },
+    {
+      "kind": "light-cone",
+      "id": "23037",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/12/417971351/093d7aa123be82b4a6ecc06b8e42f66c_7072747612618032169.png",
+      "source_sha256": "308994c89f7a82d5f2a2dcb59637538b44d7525ae578c58eb7fd50e11532f203",
+      "path": "webp/622b69a103b4071388d3e2f62e007957868779239b950fbe700410755875c2e6.webp",
+      "sha256": "622b69a103b4071388d3e2f62e007957868779239b950fbe700410755875c2e6",
+      "byte_count": 220264
+    },
+    {
+      "kind": "light-cone",
+      "id": "23038",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/02/27/326064416/166e250be240a84d1c2031700931bfc7_4579400418756018466.png",
+      "source_sha256": "7a785408d49fb62095830e6977baee16ef2326a41288c51817490416b703b441",
+      "path": "webp/61773134adf07e98d17e8508fd33e8ae3babf36583ea49cbc5171586576867b2.webp",
+      "sha256": "61773134adf07e98d17e8508fd33e8ae3babf36583ea49cbc5171586576867b2",
+      "byte_count": 315984
+    },
+    {
+      "kind": "light-cone",
+      "id": "23039",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/03/21/326064416/5cdc0db8fcf96722874e4c0df78cf853_219924735896260852.png",
+      "source_sha256": "1664227b3657847dac3ad350df0cbbe1f758321b3847f06586c2ed526385cedc",
+      "path": "webp/55eaa05f7d0e1e53a151fc2288684effd2bb0775d14fcb18653965a82fe4371a.webp",
+      "sha256": "55eaa05f7d0e1e53a151fc2288684effd2bb0775d14fcb18653965a82fe4371a",
+      "byte_count": 232904
+    },
+    {
+      "kind": "light-cone",
+      "id": "23040",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/04/14/130460543/7b2eb92a1f462aa630ea553363040d07_6315295306622507066.png",
+      "source_sha256": "952dba0f59c6089ae2f259e5937a193a4fedce7fb0a278ff67bd3f6d77c7f14c",
+      "path": "webp/a716fbe992353d179f6ffcd632672bb3706054c53632c8b75468f990036bebb1.webp",
+      "sha256": "a716fbe992353d179f6ffcd632672bb3706054c53632c8b75468f990036bebb1",
+      "byte_count": 246042
+    },
+    {
+      "kind": "light-cone",
+      "id": "23041",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/05/12/130460543/ac0e30706c21e8124009de94bba5f403_1675523301622630214.png",
+      "source_sha256": "cd2166437a5d9934a965292b029cc3fbea3ebf935fe1fbc59b290ae0e32db2a5",
+      "path": "webp/091f04fc74574faa1db656f5c0f50fc4d4d31d4198cfc02c89001b94b8aaf4fe.webp",
+      "sha256": "091f04fc74574faa1db656f5c0f50fc4d4d31d4198cfc02c89001b94b8aaf4fe",
+      "byte_count": 155776
+    },
+    {
+      "kind": "light-cone",
+      "id": "23042",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/06/10/326064416/d74bce46d35be53f14946e83aa6a3c02_7867510019057461715.png",
+      "source_sha256": "8b3edc4494cd4e95a31a494c19bc7556df7702a26cd73528129b239868242851",
+      "path": "webp/6e1bfc53af8b7efc34d4fda5d8ff77238cdcb559f26bf6a6add3ee33d2423702.webp",
+      "sha256": "6e1bfc53af8b7efc34d4fda5d8ff77238cdcb559f26bf6a6add3ee33d2423702",
+      "byte_count": 241090
+    },
+    {
+      "kind": "light-cone",
+      "id": "23043",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/06/10/326064416/a2e4b63a4d3792f784141fdeb2855573_2992898570718388718.png",
+      "source_sha256": "415e8b3064ebc1f16af0f5f349c3aa94e688f47ee816b5a27ca131883f9307b8",
+      "path": "webp/d67dd7905f54a5e14482d9bc7b9e394051ad62c7f45c05157c1f30e4bcfacc8f.webp",
+      "sha256": "d67dd7905f54a5e14482d9bc7b9e394051ad62c7f45c05157c1f30e4bcfacc8f",
+      "byte_count": 242834
+    },
+    {
+      "kind": "light-cone",
+      "id": "23044",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/14/11038150/486be081ce3e68cd6725f0e16bc18ac1_5205244955806036651.png",
+      "source_sha256": "e31c50a7542a728d934de24beb494abbc17e98e3dc042aad050db1d96885e159",
+      "path": "webp/40380da2acf43aee6f948dc0cf3428f6efc2923559076831e17cef31bf19bb4b.webp",
+      "sha256": "40380da2acf43aee6f948dc0cf3428f6efc2923559076831e17cef31bf19bb4b",
+      "byte_count": 366536
+    },
+    {
+      "kind": "light-cone",
+      "id": "23045",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/09/326064416/d4ed30750b940f74041afde90b48fb48_2749985231272541677.png",
+      "source_sha256": "e4ca9d3579237d5e72c798c2bd37ea29ded1537f57b32cab76828db78593fce3",
+      "path": "webp/5e27adf697ff3bf6a4ef72b73a68ba63d22ec73efe483c1b501e331b8904b6cb.webp",
+      "sha256": "5e27adf697ff3bf6a4ef72b73a68ba63d22ec73efe483c1b501e331b8904b6cb",
+      "byte_count": 261556
+    },
+    {
+      "kind": "light-cone",
+      "id": "23046",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/07/10/326064416/970063c870f6cc2c5b4f1cf46daeae92_4683613547209672312.png",
+      "source_sha256": "5e97dc524bdd5a46152046d8410174885ad7041d37090843f2226a2e9968aeda",
+      "path": "webp/04def4a96dd318d5fa6efdce5014781f6953e61dd5e325b5d96a0fe043bbafa5.webp",
+      "sha256": "04def4a96dd318d5fa6efdce5014781f6953e61dd5e325b5d96a0fe043bbafa5",
+      "byte_count": 312844
+    },
+    {
+      "kind": "light-cone",
+      "id": "23047",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/08/15/11038150/5fec9e758e99973eff1c45be6e201f4a_8805267303526805195.png",
+      "source_sha256": "15ee2c64d5b70b88c3c91ab1a5ae1a9dc9655fa26c9ffbd19b530142f15cdadd",
+      "path": "webp/b83c2e6e333a5f127bc524ee23b62d4b9b4f1de6a2a996de8d79937fb4348736.webp",
+      "sha256": "b83c2e6e333a5f127bc524ee23b62d4b9b4f1de6a2a996de8d79937fb4348736",
+      "byte_count": 248824
+    },
+    {
+      "kind": "light-cone",
+      "id": "23048",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/01/326064416/2e34251edd343bb9e5652f8e3f1c4d9c_2515176354895944225.png",
+      "source_sha256": "7090ceb81d50de330b2b357892509af226c8430464467f56bae733c1c0c672fc",
+      "path": "webp/b3de309ace88cedd15887f5cc89ee317992703b08359f0439263b99a12b8b5c3.webp",
+      "sha256": "b3de309ace88cedd15887f5cc89ee317992703b08359f0439263b99a12b8b5c3",
+      "byte_count": 367730
+    },
+    {
+      "kind": "light-cone",
+      "id": "23049",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/10/01/11038150/a944d2e5f33f0b0802fbad8d9971df1b_5620932816767724849.png",
+      "source_sha256": "005458e898d5c921b6a81de160471501935ce973577439b8d7e975aa2dcd809d",
+      "path": "webp/0c07cc753560e2c9821daf2740c99acd92686a7071d659e555e2c6fc249e8b1d.webp",
+      "sha256": "0c07cc753560e2c9821daf2740c99acd92686a7071d659e555e2c6fc249e8b1d",
+      "byte_count": 288670
+    },
+    {
+      "kind": "light-cone",
+      "id": "23050",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/12/27/326064416/7b3da1c62718fd9c8da3a5907024cb23_7422965458653432935.png",
+      "source_sha256": "f51c2edbc448bd059767a1630c2f2f176cdefea23b5ef670ac5b088c9f41f7e6",
+      "path": "webp/d72e459f07c31342c28facfe983df70fe9a6506557ca2b3385c47deb4a2d029f.webp",
+      "sha256": "d72e459f07c31342c28facfe983df70fe9a6506557ca2b3385c47deb4a2d029f",
+      "byte_count": 301208
+    },
+    {
+      "kind": "light-cone",
+      "id": "23051",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/10/14/326064416/6ed70198fdf9451acc1f061d284170b3_1132854303879466138.png",
+      "source_sha256": "146bb798c91a37bb6e3c5ad8ee0cae62181aafcb192a223c426912e6dd8927c7",
+      "path": "webp/f06dc074f16a8a741d3287c65b31edeede771798f289e62404e9106fd3b1b755.webp",
+      "sha256": "f06dc074f16a8a741d3287c65b31edeede771798f289e62404e9106fd3b1b755",
+      "byte_count": 348534
+    },
+    {
+      "kind": "light-cone",
+      "id": "23052",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/11/22/11038150/ba861a3c7753a3fc32efb86b1019542c_5646416711414193023.png",
+      "source_sha256": "b78fbb7695f722a8804b51e4b83fa52662d42a411bd966a4a55845ef0136cc91",
+      "path": "webp/62e2aa2dc927f8787ce9bbf69bd57fb9e169b131a821ff55d99189b9be338e4b.webp",
+      "sha256": "62e2aa2dc927f8787ce9bbf69bd57fb9e169b131a821ff55d99189b9be338e4b",
+      "byte_count": 180652
+    },
+    {
+      "kind": "light-cone",
+      "id": "23053",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/02/326064416/c84118492addd4cdb1529a8416c4ccca_6187264305703876193.png",
+      "source_sha256": "d6ce1388c158505f2457c506e97700a66d043e8550391a0cf4d97f3e44f603b0",
+      "path": "webp/268d19a5f5e04808394af4959f649512fcbbecf217d44ffbc6d1ef96e42ecd4f.webp",
+      "sha256": "268d19a5f5e04808394af4959f649512fcbbecf217d44ffbc6d1ef96e42ecd4f",
+      "byte_count": 355348
+    },
+    {
+      "kind": "light-cone",
+      "id": "23054",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/13/326064416/c3e0ac04207ee26a205b0bfdd888818b_5308955386118138690.png",
+      "source_sha256": "8180572f960b0559ba9312d3cf43165ce2608285e0ad6b8254c388a10352060e",
+      "path": "webp/2d12ab7190ca967187736e3c249eb236946cd2107709690af1560dbcb52d9236.webp",
+      "sha256": "2d12ab7190ca967187736e3c249eb236946cd2107709690af1560dbcb52d9236",
+      "byte_count": 327378
+    },
+    {
+      "kind": "light-cone",
+      "id": "23055",
+      "source_url": "https://static.nanoka.cc/assets/hsr/lightconemediumicon/23055.webp",
+      "source_sha256": "03264b47862c958d48b303914b567b1007d34f25cedc83d6dee06835b9a83250",
+      "path": "webp/2a105272593655d76d470229511968e9b0498ac45aa7a1be18b096e2869c217c.webp",
+      "sha256": "2a105272593655d76d470229511968e9b0498ac45aa7a1be18b096e2869c217c",
+      "byte_count": 49684
+    },
+    {
+      "kind": "light-cone",
+      "id": "23056",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/24/326064416/73cfc468659279ad2530808d214186e4_4816835842157921712.png",
+      "source_sha256": "2a669acdcab0cc88e8c4b03a0941628e613c6195f784fc05657602be3c0cd58c",
+      "path": "webp/b7dd43741e9ace4457ecbf82eb99689adc4e1f534b83ebcbcf96d7d0ccefe30a.webp",
+      "sha256": "b7dd43741e9ace4457ecbf82eb99689adc4e1f534b83ebcbcf96d7d0ccefe30a",
+      "byte_count": 294242
+    },
+    {
+      "kind": "light-cone",
+      "id": "23057",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/22/11038150/acee19636395578bff37d1e9b5664036_6418271581853452861.png",
+      "source_sha256": "d4d6512ade6acf670c0c0d2da9af06a4ed45f0950d213f1487443639816d54d7",
+      "path": "webp/cec2c4db487ab0fdb8b6f7d99efe3cded542e7badab52b6f78aab352f120f229.webp",
+      "sha256": "cec2c4db487ab0fdb8b6f7d99efe3cded542e7badab52b6f78aab352f120f229",
+      "byte_count": 297226
+    },
+    {
+      "kind": "light-cone",
+      "id": "23058",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/05/12/326064416/daa221c7ca8cd3252d8a86243f5dd087_4959402028534107816.png",
+      "source_sha256": "e4c407dbcecaf30e33091fa6d42cce85a0f8548ffeb42b78576936ca40c45b11",
+      "path": "webp/5b28e092149eeea4243886fbe4a6f6916d526a903e8faaaa73b0e3cca44bc6b8.webp",
+      "sha256": "5b28e092149eeea4243886fbe4a6f6916d526a903e8faaaa73b0e3cca44bc6b8",
+      "byte_count": 236442
+    },
+    {
+      "kind": "light-cone",
+      "id": "23059",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/05/31/326064416/260215a1a1b9d0867e3df1e00b51ea6a_7448425911809599291.png",
+      "source_sha256": "506433e28c002f015745b2f06bffc999e7377dcc9b8007398b166fff10050c98",
+      "path": "webp/f4535605175e5cf1a86d4d8044b662edd27f78f1e685cb4a42d70cb5fd9e4f9a.webp",
+      "sha256": "f4535605175e5cf1a86d4d8044b662edd27f78f1e685cb4a42d70cb5fd9e4f9a",
+      "byte_count": 297266
+    },
+    {
+      "kind": "light-cone",
+      "id": "23060",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/07/14/326064416/c76861d27d272f8a6abb9358fba8b1d5_1708944288513452961.png",
+      "source_sha256": "7a49767eb71fb3dfd90fe60acc7debf059ec639b09b7ab04a96129a306904840",
+      "path": "webp/7a051b7ad7d1ee155303b48e39aecff71f6f55024b7ba1768eb7f7b0cefe9e9e.webp",
+      "sha256": "7a051b7ad7d1ee155303b48e39aecff71f6f55024b7ba1768eb7f7b0cefe9e9e",
+      "byte_count": 348456
+    },
+    {
+      "kind": "light-cone",
+      "id": "23061",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/07/30/11038150/f5ffb3bd6a165aa4dbcea8c613bde4b2_7435079153364047783.png",
+      "source_sha256": "258dfd8c8187fb792c95208702db2b639f7f883702ac182078464e6d288ecd8b",
+      "path": "webp/6d2e7017e346c2b5cd5ccb36690452e40cc7ea77abda65acaa81213ee76e4612.webp",
+      "sha256": "6d2e7017e346c2b5cd5ccb36690452e40cc7ea77abda65acaa81213ee76e4612",
+      "byte_count": 255896
+    },
+    {
+      "kind": "light-cone",
+      "id": "23062",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/07/30/11038150/d463d0f4dcb528ef8c0dda70df52e81b_555870673871098212.png",
+      "source_sha256": "cf11f5463445a49b368a19860de9d3eaf57e1c2c6265b59e98d95d1da2d4ec9a",
+      "path": "webp/05825efd0ae9e10a59e979d0d3d1274f2b67a8176c27ae552fa6e5ac72c22e86.webp",
+      "sha256": "05825efd0ae9e10a59e979d0d3d1274f2b67a8176c27ae552fa6e5ac72c22e86",
+      "byte_count": 223992
+    },
+    {
+      "kind": "light-cone",
+      "id": "23063",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/08/26/5308864/4bb395c80c0fced8717882a1221e6b4f_3399384880361477803.png",
+      "source_sha256": "83c1908a49344d462c991c46c4c5ca06b57c648be8b0cbe9157ee1ececa856e6",
+      "path": "webp/4dda53d872701edbfd81077a22a551496991036584e42c180ed503069ced876d.webp",
+      "sha256": "4dda53d872701edbfd81077a22a551496991036584e42c180ed503069ced876d",
+      "byte_count": 221444
+    },
+    {
+      "kind": "light-cone",
+      "id": "23064",
+      "source_url": "https://static.nanoka.cc/assets/hsr/lightconemediumicon/23064.webp",
+      "source_sha256": "d7c5500634698d4932aab59d67c6de6996238c1e1d7e7805a94a7cc6bf1ff0b3",
+      "path": "webp/30d32d86a12e0210713167929b74733c616e13623b0f044b8d1df21f19e937fa.webp",
+      "sha256": "30d32d86a12e0210713167929b74733c616e13623b0f044b8d1df21f19e937fa",
+      "byte_count": 51822
+    },
+    {
+      "kind": "light-cone",
+      "id": "24000",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2908b86aeaca11fb174c20f2dd24d5d5_4824814422205447232.png",
+      "source_sha256": "3254a59563c09c380c1232ae8649c9df40f8de18d9c62762007e470140e961f7",
+      "path": "webp/46f4e575ca865b739ef633fc167bfaaaf13691974894afd50f8eaf30a68d226d.webp",
+      "sha256": "46f4e575ca865b739ef633fc167bfaaaf13691974894afd50f8eaf30a68d226d",
+      "byte_count": 351244
+    },
+    {
+      "kind": "light-cone",
+      "id": "24001",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/5581a8188cda5393ac8c254177819ee0_7267104140862379789.png",
+      "source_sha256": "50925f35eca8a5821ccc3dde39bd3007d17adf18fb05199f61482a8a95b784b6",
+      "path": "webp/f75820507dc95e4b0cdf29cce366ffc12ee02f26d0c8b0f0b61bed57877b55c7.webp",
+      "sha256": "f75820507dc95e4b0cdf29cce366ffc12ee02f26d0c8b0f0b61bed57877b55c7",
+      "byte_count": 254924
+    },
+    {
+      "kind": "light-cone",
+      "id": "24002",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9e938799af42b5af667482599e170c21_839491542014512762.png",
+      "source_sha256": "33e13854625b14693f4feb80acb47e4cc4372e1ff4f7717f8a7fc4c6cc31d915",
+      "path": "webp/25f4050c0190a18c14a9b269484377dba99df7bd580d3d63e12483f1361e6b09.webp",
+      "sha256": "25f4050c0190a18c14a9b269484377dba99df7bd580d3d63e12483f1361e6b09",
+      "byte_count": 424272
+    },
+    {
+      "kind": "light-cone",
+      "id": "24003",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/09/09/59155606/261c174b5f60fec1fc913dc176098b69_2006967022124559651.png",
+      "source_sha256": "e94e9cdf40972f82390a2840338ea5332f103cf118125fceb1c489fa030bd570",
+      "path": "webp/4d52a98487f48e46b77fe9241a4c61f034bd4f2547d0859b3b124aeda5257584.webp",
+      "sha256": "4d52a98487f48e46b77fe9241a4c61f034bd4f2547d0859b3b124aeda5257584",
+      "byte_count": 264134
+    },
+    {
+      "kind": "light-cone",
+      "id": "24004",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/30/326693439/b95f197312c263bca5665a910e4ef32a_4799008457360518980.png",
+      "source_sha256": "ac903ba347c498c6538888c989d9f386711b707419d47f3088a1ffd0b64ba52d",
+      "path": "webp/320420b3c6f5b04de93e515b299debb4bda16e4d1c4628a249a571ec46782025.webp",
+      "sha256": "320420b3c6f5b04de93e515b299debb4bda16e4d1c4628a249a571ec46782025",
+      "byte_count": 360702
+    },
+    {
+      "kind": "light-cone",
+      "id": "24005",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/03/06/130460543/406c2c5028151e72d46284791c64667e_6267181890120738062.png",
+      "source_sha256": "e8ef328a809c651a8c16f4972b0fec2f8cbdb9911318a1b3a9c51fe026c6152f",
+      "path": "webp/b786e327acf8be95926f9cdc1e8c7966e8d847d44c32e8d22644d10ff90de89c.webp",
+      "sha256": "b786e327acf8be95926f9cdc1e8c7966e8d847d44c32e8d22644d10ff90de89c",
+      "byte_count": 385042
+    },
+    {
+      "kind": "light-cone",
+      "id": "24006",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/02/326064416/a0cc09f1348c34f73d26d736e67f2803_57716326102833173.png",
+      "source_sha256": "958b4adaa19b4d6904f9f2368fbb62141273bf52d10e313477e9b1924c5c9c36",
+      "path": "webp/6e0f57be6dcb79c8c2daa5995a4e3b0d030cb2c79c1e02e4619b1381c63d1f64.webp",
+      "sha256": "6e0f57be6dcb79c8c2daa5995a4e3b0d030cb2c79c1e02e4619b1381c63d1f64",
+      "byte_count": 346242
+    },
+    {
+      "kind": "relic-set",
+      "id": "101",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/6ddf17c9a630be892cb5f6b8b473e8bd_3638496963506027753.png",
+      "source_sha256": "26ece9fb93d00f35ca41e962457cd781842f67f630e358b788f48bb7b6ea11f4",
+      "path": "webp/ac2382d37cde9aafc7c197343aca3a5f48fa0126fec6bb6172f367460e30e25c.webp",
+      "sha256": "ac2382d37cde9aafc7c197343aca3a5f48fa0126fec6bb6172f367460e30e25c",
+      "byte_count": 21610
+    },
+    {
+      "kind": "relic-set",
+      "id": "102",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/abe6cb1af28a446586a4a2f833d06f0d_5915534753761444308.png",
+      "source_sha256": "d0c39db9931f2f1d875e3ed0fe22db8b40c832af53dfdc33b9ff7c0f6c7f6536",
+      "path": "webp/4c85d2d9e5f65d8855e387d73532e73fcaa38e75ab82928193e1c9a54b3a1302.webp",
+      "sha256": "4c85d2d9e5f65d8855e387d73532e73fcaa38e75ab82928193e1c9a54b3a1302",
+      "byte_count": 20404
+    },
+    {
+      "kind": "relic-set",
+      "id": "103",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/81360f50ea5beaaebe2bacbcae086d1e_1742799904657193130.png",
+      "source_sha256": "7d6155bfa9bc5472b535b1f448b51bf7a328f2c01363f8cb1186770c6dc48ee4",
+      "path": "webp/f845cb569f5d165c9bb54fb99194acbe95d0df16e2b2289720ae9f1fd3f88217.webp",
+      "sha256": "f845cb569f5d165c9bb54fb99194acbe95d0df16e2b2289720ae9f1fd3f88217",
+      "byte_count": 24666
+    },
+    {
+      "kind": "relic-set",
+      "id": "104",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2fa5e1475b00ed47113d879062e0bb9d_3108138781323191767.png",
+      "source_sha256": "23fd2239eda8a3d0cf20992a2877045a6031c8ed4736703077579cc20519aff0",
+      "path": "webp/7a7d93e178b671d31fc4d6a4a86f62d4262a90b4ed4e526e1facbd4905ba7572.webp",
+      "sha256": "7a7d93e178b671d31fc4d6a4a86f62d4262a90b4ed4e526e1facbd4905ba7572",
+      "byte_count": 23974
+    },
+    {
+      "kind": "relic-set",
+      "id": "105",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/0ee1b15eb80ca1c00bd4ca1d8d4aefe5_3949956415341892322.png",
+      "source_sha256": "b846d1825b6cc0d5f19b4de00a5cc4e1805dd0b0035e959d7f8a5f65d64aece0",
+      "path": "webp/ac34190db70bc9674823b63f67a0abe9a8cfaafb26ba5692d293e43670f797dc.webp",
+      "sha256": "ac34190db70bc9674823b63f67a0abe9a8cfaafb26ba5692d293e43670f797dc",
+      "byte_count": 22984
+    },
+    {
+      "kind": "relic-set",
+      "id": "106",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/2d78b72236fcd774a5302c86f81d5bce_3949956415341892322.png",
+      "source_sha256": "981b3e49b8c868e265ea77891465d77368439a1ee46b2b229f16145ef5241614",
+      "path": "webp/e2fd7d66332742975173d4fe5efdcbc579b5d089991735dc050fa14709e442e8.webp",
+      "sha256": "e2fd7d66332742975173d4fe5efdcbc579b5d089991735dc050fa14709e442e8",
+      "byte_count": 23760
+    },
+    {
+      "kind": "relic-set",
+      "id": "107",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/f95029fd78e4a09d8a45a02295cb3028_5326203375186266609.png",
+      "source_sha256": "1503ac58a8956142e2ef835d3ba718a581027ad37cd98d64fc1ee00be1102733",
+      "path": "webp/af24c677f447d3b1011a35e8d0204e73e61af410ea32ec30df4355695ddce0a5.webp",
+      "sha256": "af24c677f447d3b1011a35e8d0204e73e61af410ea32ec30df4355695ddce0a5",
+      "byte_count": 22706
+    },
+    {
+      "kind": "relic-set",
+      "id": "108",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/67b9c778a1a6080472e6b1deeb340d37_3108138781323191767.png",
+      "source_sha256": "990aaffc5c9a0b8be11d5c0671e5e2e3acef507d7ae3d3a07c35553814b8efd9",
+      "path": "webp/6f52584afc8a2cc1246825206cb6f112e44b1ea90e5994f58d6b0a6f437318df.webp",
+      "sha256": "6f52584afc8a2cc1246825206cb6f112e44b1ea90e5994f58d6b0a6f437318df",
+      "byte_count": 21256
+    },
+    {
+      "kind": "relic-set",
+      "id": "109",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/8e9b516a3edf2bbeecaf28cc4bee48dd_6971515504882803680.png",
+      "source_sha256": "7dbeeb6c55ac108b1e3ba947fcc61c216a935e1aaf42dcc00f80d0be9ba514c2",
+      "path": "webp/861020e7dd667adfec4166bcd0c384273dea04fb1730d0fe147565dbfabf6ef0.webp",
+      "sha256": "861020e7dd667adfec4166bcd0c384273dea04fb1730d0fe147565dbfabf6ef0",
+      "byte_count": 17124
+    },
+    {
+      "kind": "relic-set",
+      "id": "110",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/8b4ba7fead7b6e59ecab11f19764c7b1_3638496963506027753.png",
+      "source_sha256": "165547678406b6eb0c313c3a29cd0e916471674c2ddf940a9d8448df26edeb25",
+      "path": "webp/3f8294f901c313553079cfb0123c86589446d608195bd9b42c6081ba30a99567.webp",
+      "sha256": "3f8294f901c313553079cfb0123c86589446d608195bd9b42c6081ba30a99567",
+      "byte_count": 22966
+    },
+    {
+      "kind": "relic-set",
+      "id": "111",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/8050ab9da843c74c7771756ac2a9e1de_5915534753761444308.png",
+      "source_sha256": "2da8dcdfa043229bd56c5281904302d22939e48a6548b06bd32402af31a71b00",
+      "path": "webp/eb13b01ec42871dbc0db34910c0256037747ee93adcc26c578fc012693f6b190.webp",
+      "sha256": "eb13b01ec42871dbc0db34910c0256037747ee93adcc26c578fc012693f6b190",
+      "byte_count": 20062
+    },
+    {
+      "kind": "relic-set",
+      "id": "112",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/c1ab42bf3ba903a8e838ac7c3ed6a9b5_5326203375186266609.png",
+      "source_sha256": "2c38d7dfe62203489f8208f91aead576aaec85d551d0e3b499fa4ae909ecfdb6",
+      "path": "webp/1f5c92d065dc024d68fd11b7d0a864b0a1ad1ab6fdccbd2699eee6ce61c9b9b0.webp",
+      "sha256": "1f5c92d065dc024d68fd11b7d0a864b0a1ad1ab6fdccbd2699eee6ce61c9b9b0",
+      "byte_count": 22022
+    },
+    {
+      "kind": "relic-set",
+      "id": "113",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/22/7998136/8c326ba49520c4c99a59ae5284d9cefc_8958574779270928055.png",
+      "source_sha256": "abffbf1270b43699e03e9d5e1700ca66ef60e4147dae44cd5da19c5a93784ef8",
+      "path": "webp/d761c0a20c8554bac1dddae1b7a65dabd3bd59229fbdbfedc3203303966cd4bb.webp",
+      "sha256": "d761c0a20c8554bac1dddae1b7a65dabd3bd59229fbdbfedc3203303966cd4bb",
+      "byte_count": 20396
+    },
+    {
+      "kind": "relic-set",
+      "id": "114",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/22/7998136/b0af8f291c56d38fe6666e7932d1efeb_3864663003831224891.png",
+      "source_sha256": "29bbb8d5d4340e6614bd04628386d452c451f8b6d0ce9037576a7d9c65bfa272",
+      "path": "webp/2bdc016c588307c68ab64c2c0c197b7be94750f4eced200693ebbdc807f92e8b.webp",
+      "sha256": "2bdc016c588307c68ab64c2c0c197b7be94750f4eced200693ebbdc807f92e8b",
+      "byte_count": 18866
+    },
+    {
+      "kind": "relic-set",
+      "id": "115",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/16/1019313/ad5bc1aaa26697a914ffe584d320ee1a_8845155280660685854.png",
+      "source_sha256": "0e5de045a189dc410c62f77824605b089c53b010565cd0d97687283c6ed1fb51",
+      "path": "webp/8064da52eb1c11e33b5c3e40b11c9ae5bf907938a7da5dde507e45e2fdc5e7dc.webp",
+      "sha256": "8064da52eb1c11e33b5c3e40b11c9ae5bf907938a7da5dde507e45e2fdc5e7dc",
+      "byte_count": 7512
+    },
+    {
+      "kind": "relic-set",
+      "id": "116",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/16/1019313/6bec4455ada691b5dbe65145dca9382d_2462302691626649445.png",
+      "source_sha256": "0b86f5d99accc33176228d957dcb037d3bdc403eafe98b9d8784519d0ba25d51",
+      "path": "webp/7887e0cab2487160a1631118151efb89b808aa6e366357c73199fd8ae373d1f4.webp",
+      "sha256": "7887e0cab2487160a1631118151efb89b808aa6e366357c73199fd8ae373d1f4",
+      "byte_count": 7578
+    },
+    {
+      "kind": "relic-set",
+      "id": "117",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/02/04/ef72ccb30106836adfafe37b53395948_5289666133633954456.png",
+      "source_sha256": "a1ab50a06422a8e82d24e891e3d93ec90ccd6b337160d857f03323baf1e92a10",
+      "path": "webp/719cd5b88303f0a1cf03dfce836619100aa1cdd4444ba0d9b2070acfb451b17f.webp",
+      "sha256": "719cd5b88303f0a1cf03dfce836619100aa1cdd4444ba0d9b2070acfb451b17f",
+      "byte_count": 8264
+    },
+    {
+      "kind": "relic-set",
+      "id": "118",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/02/04/a46b351bba5940dd34e33cfc28c3d22f_2956659346418442628.png",
+      "source_sha256": "9247822199ad24ca008a72b83e548d3f47ad0ab491f13f36b041a0f1e88f9d7e",
+      "path": "webp/2532647764628a5dda667a270ffa40f533775c1b92d644bd903cf18d9c805553.webp",
+      "sha256": "2532647764628a5dda667a270ffa40f533775c1b92d644bd903cf18d9c805553",
+      "byte_count": 7854
+    },
+    {
+      "kind": "relic-set",
+      "id": "119",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/31/417971351/a67355bbccf751212e3ef0b98bad4c92_6583079565169973970.png",
+      "source_sha256": "575ec4701ecd0ce3852e518be65c0c5c663b4ed4e81fcf56f28311f254c75708",
+      "path": "webp/8bfc866661596fa78393bbdecb2986783ac633e5c64c6fae7930f53b903b8cfc.webp",
+      "sha256": "8bfc866661596fa78393bbdecb2986783ac633e5c64c6fae7930f53b903b8cfc",
+      "byte_count": 7090
+    },
+    {
+      "kind": "relic-set",
+      "id": "120",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/06/19/cba0aed6aa5266b8916717a7babeab8e_8192303473229492655.png",
+      "source_sha256": "85e7c6c76f0ef25613f8b0c73de1be5cbaeb02062be8f8f4c2de6b7c6b237da8",
+      "path": "webp/17457dcfe6254aa080dcf947515da81e26312c14620f2c17ef333218c604de25.webp",
+      "sha256": "17457dcfe6254aa080dcf947515da81e26312c14620f2c17ef333218c604de25",
+      "byte_count": 7878
+    },
+    {
+      "kind": "relic-set",
+      "id": "121",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/10/23/417971351/785dca758b030ab1d9d91873e2b15ab0_6282228983858220813.png",
+      "source_sha256": "7c1e14b1e45db3417b44b7d07b96f6fb700b5eda8040f2361c3a602ffc5521bb",
+      "path": "webp/73d9726082a3546921b573aeb44fed41e3e799538bd9fe91d93ab9c32f3ae457.webp",
+      "sha256": "73d9726082a3546921b573aeb44fed41e3e799538bd9fe91d93ab9c32f3ae457",
+      "byte_count": 21768
+    },
+    {
+      "kind": "relic-set",
+      "id": "122",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/10/23/417971351/c5be73f607661e161d6449a60b7926ac_1738876175081787384.png",
+      "source_sha256": "ef8b456c762e3dce2e745d7008f5ee85943fd3d4462f981808e2ff39d0062972",
+      "path": "webp/d9098cad92b154f7af800b9b251269ac8c850976067eb22c053f07985ea169c9.webp",
+      "sha256": "d9098cad92b154f7af800b9b251269ac8c850976067eb22c053f07985ea169c9",
+      "byte_count": 21738
+    },
+    {
+      "kind": "relic-set",
+      "id": "123",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/16/130460543/83dddd57d9aa2afbd6b3889223e730c7_3557525690830222465.png",
+      "source_sha256": "cf1914cd97576c67515375a23efcdfa384eddfb3e91c9372217375bd2e9ff925",
+      "path": "webp/cb55c42a5f3e4f9abcea559f6c8ce225accccbf7f9484692c0f26eeb8f340d14.webp",
+      "sha256": "cb55c42a5f3e4f9abcea559f6c8ce225accccbf7f9484692c0f26eeb8f340d14",
+      "byte_count": 69916
+    },
+    {
+      "kind": "relic-set",
+      "id": "124",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/16/130460543/386a1527f07c260a804797d5a87d2094_5235300026593315714.png",
+      "source_sha256": "007fd0b8ea9f33a3b8cb046caee961c720af81d123c971e5f495f559572fb5e1",
+      "path": "webp/4dedddb3a84a9389eb258979d282f021d2fc56b1f8a1fbb4c36e5501b7873a21.webp",
+      "sha256": "4dedddb3a84a9389eb258979d282f021d2fc56b1f8a1fbb4c36e5501b7873a21",
+      "byte_count": 60322
+    },
+    {
+      "kind": "relic-set",
+      "id": "125",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/12/130460543/b8e143e0645f92e0961dd9ceb30663d7_1636574737882380853.png",
+      "source_sha256": "f297127e2acdf95aa5215e92eb6dfa7c0a39222a4003fb1b498c521c6f81d42e",
+      "path": "webp/629fbd3dfc637a4a040d72da52ad851a4d0d24d6e74be65845dec6e54ebab6ff.webp",
+      "sha256": "629fbd3dfc637a4a040d72da52ad851a4d0d24d6e74be65845dec6e54ebab6ff",
+      "byte_count": 21100
+    },
+    {
+      "kind": "relic-set",
+      "id": "126",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/12/130460543/221bda3d3aafc323e547cbd5e82f27f0_6529448625651238342.png",
+      "source_sha256": "141febc301cec50b482d7886ee2ad6a67717c4637cfb510e27ee1ccea5c936ff",
+      "path": "webp/f37e93d912f9d7ff9c0f0b2ed6f5c3ef647ee556847d32e8b0c8c0043f87a8a5.webp",
+      "sha256": "f37e93d912f9d7ff9c0f0b2ed6f5c3ef647ee556847d32e8b0c8c0043f87a8a5",
+      "byte_count": 19654
+    },
+    {
+      "kind": "relic-set",
+      "id": "127",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/12/03/326064416/e82b7e88ec131d003f4ae4986d4ff99c_7140400503657965125.png",
+      "source_sha256": "d3ce99f9d7080e7c5b772f941c05db560c37bba41cb83e4f5e70acaac040df7f",
+      "path": "webp/1f0ab3f63baf2dab708044e00a26fec7532729475229e64df135d87fad36c2bb.webp",
+      "sha256": "1f0ab3f63baf2dab708044e00a26fec7532729475229e64df135d87fad36c2bb",
+      "byte_count": 22378
+    },
+    {
+      "kind": "relic-set",
+      "id": "128",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/12/04/326064416/da886815daae7f886de5f33588d9c986_2971226335635636946.png",
+      "source_sha256": "6d39439e6113e9366078ce6dd9c8e87ad6df21d01b8ec41d1dd83665fc422bed",
+      "path": "webp/9f519e70dd6929f82869e64a6c057ff47e29a9ec88fd231bb36ab369809a86d6.webp",
+      "sha256": "9f519e70dd6929f82869e64a6c057ff47e29a9ec88fd231bb36ab369809a86d6",
+      "byte_count": 17810
+    },
+    {
+      "kind": "relic-set",
+      "id": "129",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/19/130460543/14845d8260a2e5e7e248318e869967ee_7158980309389134677.png",
+      "source_sha256": "441d63217b7c1823bcb93f717cbf3bcaa43e39ec8ea71fc6f6f95dce3b3d7d02",
+      "path": "webp/c3e46e42d4e19932f87eee8f8d1e553a1e7d49757c5fb8f49e7708aecc445bf9.webp",
+      "sha256": "c3e46e42d4e19932f87eee8f8d1e553a1e7d49757c5fb8f49e7708aecc445bf9",
+      "byte_count": 19174
+    },
+    {
+      "kind": "relic-set",
+      "id": "130",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/19/130460543/027ef830fcd5f99bcd714d83590d5ae0_4834941596850838474.png",
+      "source_sha256": "e02a316d571bf6aa2500a54720fa669737ffaca35565d9b9491dbf5ac834ede9",
+      "path": "webp/9df58a46adbba8c04f944700c08fe01ccc05e49aea8576af4a2bcce1fe604d0d.webp",
+      "sha256": "9df58a46adbba8c04f944700c08fe01ccc05e49aea8576af4a2bcce1fe604d0d",
+      "byte_count": 17204
+    },
+    {
+      "kind": "relic-set",
+      "id": "131",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/06/130460543/34e35be25f4dee1f621c2c3c19a011f5_1284536725220735335.png",
+      "source_sha256": "796a5cfd1fa52914b54082d4f23b986ffad57596e0d522021e403138c852b4ac",
+      "path": "webp/efb4e0a0e388977931557b98de720ac9ff8af9ebc2553e8b43b357c14274729e.webp",
+      "sha256": "efb4e0a0e388977931557b98de720ac9ff8af9ebc2553e8b43b357c14274729e",
+      "byte_count": 20476
+    },
+    {
+      "kind": "relic-set",
+      "id": "132",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/06/06/130460543/ac774a6b07763db3cb787ac0662585c8_8113975045212048294.png",
+      "source_sha256": "048d1003c90cae9147e0dfa2202b58829d904fe8082d81149fed8acec3f14f08",
+      "path": "webp/695f3e0a8201f0b755571331d2fedede441128785f91e93cabd1a4ea51c53dd5.webp",
+      "sha256": "695f3e0a8201f0b755571331d2fedede441128785f91e93cabd1a4ea51c53dd5",
+      "byte_count": 21840
+    },
+    {
+      "kind": "relic-set",
+      "id": "133",
+      "source_url": "https://static.nanoka.cc/assets/hsr/itemfigures/71060.webp",
+      "source_sha256": "b2149b385da616461ea18fe7f36971481a82df400babc41f13ea660fc5d74174",
+      "path": "webp/2766e3c9b7a9ba53328dd5e1fc2b2c075b2b456c5cc673e27887fe2e15bca9d6.webp",
+      "sha256": "2766e3c9b7a9ba53328dd5e1fc2b2c075b2b456c5cc673e27887fe2e15bca9d6",
+      "byte_count": 21772
+    },
+    {
+      "kind": "relic-set",
+      "id": "134",
+      "source_url": "https://static.nanoka.cc/assets/hsr/itemfigures/71061.webp",
+      "source_sha256": "9abb1c06141d44773b60a8abe1c2f4fd2baa7dcbf926876d36ea7bfd3be8e25d",
+      "path": "webp/6371cda1ec30527195bc0d3fa000aec47e4798b349243f80f8f24b5f55a78843.webp",
+      "sha256": "6371cda1ec30527195bc0d3fa000aec47e4798b349243f80f8f24b5f55a78843",
+      "byte_count": 21952
+    },
+    {
+      "kind": "relic-set",
+      "id": "301",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/51fee4f9ae73c2c3375136a7f110fe95_2939326751770986079.png",
+      "source_sha256": "8ea59ebc382ad65e51b63bdabe4cade5165daa13348528792429afae44cde732",
+      "path": "webp/bd30bddaf8e45908c46c0162eab51ddb220139058457824a2b480f46208f4343.webp",
+      "sha256": "bd30bddaf8e45908c46c0162eab51ddb220139058457824a2b480f46208f4343",
+      "byte_count": 21550
+    },
+    {
+      "kind": "relic-set",
+      "id": "302",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9c03b0db36cba6983a8d6e5d69130318_5795936948053730149.png",
+      "source_sha256": "9b621efda4efc172a9e68d983a5dad578ba6ac473307c8699525aa1520b4f2c6",
+      "path": "webp/fceefa1e3033dbb661820768d74bcd0de1f27c341586fc3372516215576c359d.webp",
+      "sha256": "fceefa1e3033dbb661820768d74bcd0de1f27c341586fc3372516215576c359d",
+      "byte_count": 21488
+    },
+    {
+      "kind": "relic-set",
+      "id": "303",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/b6f70a551f592772a0dbabed658c28c7_2568199828224208470.png",
+      "source_sha256": "64722745186ce4bd6a4b16ffa999c3ae55287dcdfdefa29516118d88894721e7",
+      "path": "webp/94fc1fce413066f0df5de6a693a6623611798f8242a0a5d155311b0f57d92931.webp",
+      "sha256": "94fc1fce413066f0df5de6a693a6623611798f8242a0a5d155311b0f57d92931",
+      "byte_count": 21264
+    },
+    {
+      "kind": "relic-set",
+      "id": "304",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/4adc4f0466bbdb9d211f4e5f4cda4f96_5795936948053730149.png",
+      "source_sha256": "b1f047058a76aaab5b3e2a73420fd0b5f4609cd1b2f05ac68c89d5aead79bea8",
+      "path": "webp/396670d18e4901c8df4c6d47591a4318571b789e6e89c0dd5b83b608377b3e0f.webp",
+      "sha256": "396670d18e4901c8df4c6d47591a4318571b789e6e89c0dd5b83b608377b3e0f",
+      "byte_count": 20786
+    },
+    {
+      "kind": "relic-set",
+      "id": "305",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/8dc62d0f10f06f1ca542f7afc954dc6c_2939326751770986079.png",
+      "source_sha256": "b40e74055992fe80340737089420db60ff7a5ca92533ebb49589adff7347c3c2",
+      "path": "webp/3fb70275d6b6bd17be2f4a14ab85f2545dcd03f6149f07f88aa9949bbe3be1ae.webp",
+      "sha256": "3fb70275d6b6bd17be2f4a14ab85f2545dcd03f6149f07f88aa9949bbe3be1ae",
+      "byte_count": 22328
+    },
+    {
+      "kind": "relic-set",
+      "id": "306",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/61423cf4372a4f1ff6c96c861d380fd1_2568199828224208470.png",
+      "source_sha256": "b7b6ed33567695b2d0aafd1924170dc8e208047bf4b5ff1d316ff8e521df08ac",
+      "path": "webp/8fdd5507de419dcf31ce38f4b686c6e636ec50bdbfa6a08ca5685a8b6366de80.webp",
+      "sha256": "8fdd5507de419dcf31ce38f4b686c6e636ec50bdbfa6a08ca5685a8b6366de80",
+      "byte_count": 20690
+    },
+    {
+      "kind": "relic-set",
+      "id": "307",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/b94e7dbd821c1c7982a68997f2ce158f_6971515504882803680.png",
+      "source_sha256": "5c50e1305a088f4f1c3c509a00010c9547f9fe91629b5ff4a2ceceabd125d9ce",
+      "path": "webp/053ddd257a990702f2e5b3e927a2b4ce57f2b907f073fa1408afe97b0dfed762.webp",
+      "sha256": "053ddd257a990702f2e5b3e927a2b4ce57f2b907f073fa1408afe97b0dfed762",
+      "byte_count": 21808
+    },
+    {
+      "kind": "relic-set",
+      "id": "308",
+      "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/314919caf1351d99aa62be3fb4d51a14_1742799904657193130.png",
+      "source_sha256": "558c1fbd48b05c5b56db77e1468bd3a7c4294c9a36d7f94886fe3a2651023f7c",
+      "path": "webp/7e126b295eabceec7184eadae245a37a698cc697f8ddac04d6da6fdd3a97fc6e.webp",
+      "sha256": "7e126b295eabceec7184eadae245a37a698cc697f8ddac04d6da6fdd3a97fc6e",
+      "byte_count": 20590
+    },
+    {
+      "kind": "relic-set",
+      "id": "309",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/22/7998136/54ba0f7d69d41274243606eff871fde6_9055370133812229763.png",
+      "source_sha256": "d422f39934286485959e7a5fd8fa769aefb716ba56230887f898d2f19fa73cb8",
+      "path": "webp/70b709729136c8903d115c5f80b592ac3b08ea787efa5b36125dd8ad306e1252.webp",
+      "sha256": "70b709729136c8903d115c5f80b592ac3b08ea787efa5b36125dd8ad306e1252",
+      "byte_count": 19124
+    },
+    {
+      "kind": "relic-set",
+      "id": "310",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/22/7998136/11d19ad61765f888804d31cb4b2bff11_930354752953943726.png",
+      "source_sha256": "4a01907f9c92d722f1cd44e4b41132bbb814c23d99812d4dd9ef2b4504138956",
+      "path": "webp/43f664181b5eb6d8ca708b201b3c8c0d48b1e967ac59caeacb3fb9f3ed37dff1.webp",
+      "sha256": "43f664181b5eb6d8ca708b201b3c8c0d48b1e967ac59caeacb3fb9f3ed37dff1",
+      "byte_count": 18632
+    },
+    {
+      "kind": "relic-set",
+      "id": "311",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/16/1019313/5949584b8bd531d18025ed0f06536568_2652324128445673248.png",
+      "source_sha256": "746658f58429b1ebbcb4cc85017b542a48dc33506e8c365516ad4d95eb71ac2c",
+      "path": "webp/a8e9436e3f631c5e0dbac94986aac8838fba9f16100d49bbee99f93a9ff7852e.webp",
+      "sha256": "a8e9436e3f631c5e0dbac94986aac8838fba9f16100d49bbee99f93a9ff7852e",
+      "byte_count": 7228
+    },
+    {
+      "kind": "relic-set",
+      "id": "312",
+      "source_url": "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/11/16/1019313/992bca6e0e5a79c867c8f887e9f575ae_23398535378867212.png",
+      "source_sha256": "2c8ce58092626bd35cff3bbb3ddab1fc36f8ad62d016454d845c7a2cca6a6b4e",
+      "path": "webp/9ab258290ec1a87614a39594b53720ac8e4ac3596d6766c4b21c9384432de71f.webp",
+      "sha256": "9ab258290ec1a87614a39594b53720ac8e4ac3596d6766c4b21c9384432de71f",
+      "byte_count": 6736
+    },
+    {
+      "kind": "relic-set",
+      "id": "313",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/03/25/4c58fb2a84ff9472247a8a09aa922c7f_4616232191682383345.png",
+      "source_sha256": "aa4cde7523a860dc9a0959f4d40280698a32a115df536b479d1ef9e3a253ca0a",
+      "path": "webp/9279182219319724e27ceb28344b4c361a0c5ed69c6f5b3e1c1dee6572ac6485.webp",
+      "sha256": "9279182219319724e27ceb28344b4c361a0c5ed69c6f5b3e1c1dee6572ac6485",
+      "byte_count": 7086
+    },
+    {
+      "kind": "relic-set",
+      "id": "314",
+      "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/03/25/e99eb9cfdca1c792f4073875855e5d35_3744945578484912564.png",
+      "source_sha256": "994db99b40f8308ed9aa6d2ea8f7c87ba1c75402682c5cbb8478dfdb3769e558",
+      "path": "webp/1127c845d3938caa9971fe8b1005c1ba8d358487c5c5fdccc1b5f7efffd1e5e7.webp",
+      "sha256": "1127c845d3938caa9971fe8b1005c1ba8d358487c5c5fdccc1b5f7efffd1e5e7",
+      "byte_count": 7096
+    },
+    {
+      "kind": "relic-set",
+      "id": "315",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/31/417971351/220bc9e374c0e72393182f5b9a083ff2_8548087797283324391.png",
+      "source_sha256": "26a01f9274e722b23835e694cf5af2fd0be6c8fa5467fbef396b5d935a578cb8",
+      "path": "webp/c25d745240a0a5b4397024a8fc8f12b3029bd8101d99fa3d1ec952e6d9b6c230.webp",
+      "sha256": "c25d745240a0a5b4397024a8fc8f12b3029bd8101d99fa3d1ec952e6d9b6c230",
+      "byte_count": 6928
+    },
+    {
+      "kind": "relic-set",
+      "id": "316",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/07/31/417971351/e5fd9a6801bbc0ded7ab06da65500a33_4385190516804780811.png",
+      "source_sha256": "4154094c39a35b1f0a7cf53d987956104082ccf06351b00043b564ffd2079140",
+      "path": "webp/06806f815364ffacb262d9a625f2b462a8538318da9cda6c5710807719083884.webp",
+      "sha256": "06806f815364ffacb262d9a625f2b462a8538318da9cda6c5710807719083884",
+      "byte_count": 7110
+    },
+    {
+      "kind": "relic-set",
+      "id": "317",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/10/417971351/64f71ef151755514593ab4d2e06b15c2_3826906289442617384.png",
+      "source_sha256": "5ce750f7ba267586aadc85b4228e7b9385cd0e6d679e866356cd0fbe1e2a664b",
+      "path": "webp/55602317ca08ab2360e3f811f6585fbb431aac3c76b9f808c67a97ad19fce4ea.webp",
+      "sha256": "55602317ca08ab2360e3f811f6585fbb431aac3c76b9f808c67a97ad19fce4ea",
+      "byte_count": 21570
+    },
+    {
+      "kind": "relic-set",
+      "id": "318",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2024/09/10/417971351/0c9f0b6f717db6cdb91d1b7eb40df3db_8621631520782327096.png",
+      "source_sha256": "72af5c8e32e6da370160a6e2030d121e886db5839a117bf3ea6eb3a066ceafc6",
+      "path": "webp/8f5db2d2d9dd569f46840c51e91a3f4dcb5fe4e8e2db59dbef9fdd1ff753bea9.webp",
+      "sha256": "8f5db2d2d9dd569f46840c51e91a3f4dcb5fe4e8e2db59dbef9fdd1ff753bea9",
+      "byte_count": 21814
+    },
+    {
+      "kind": "relic-set",
+      "id": "319",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/03/01/130460543/4ec29165061c7a2b59a3af51783e4758_6216288146998012659.png",
+      "source_sha256": "f87326e69ded4dbec21f73cc607d92d171d33db67625bef2668fe9493dbef6f1",
+      "path": "webp/a3a155722777e611338a9e7a916dcbc409c0663d9d5a6016cd5341e17d26da46.webp",
+      "sha256": "a3a155722777e611338a9e7a916dcbc409c0663d9d5a6016cd5341e17d26da46",
+      "byte_count": 21860
+    },
+    {
+      "kind": "relic-set",
+      "id": "320",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/03/01/130460543/6415e6e85ced9bae852937b27c0df457_7397735868794819189.png",
+      "source_sha256": "4633f3e1436c6967c3f510173f002ea5eb6d53e7396616bced321e194303c690",
+      "path": "webp/d525900ae2a24f9ae1fb4678aabb7d2f2e171afb394bf7741ca9b8382f77564a.webp",
+      "sha256": "d525900ae2a24f9ae1fb4678aabb7d2f2e171afb394bf7741ca9b8382f77564a",
+      "byte_count": 20790
+    },
+    {
+      "kind": "relic-set",
+      "id": "321",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/12/130460543/254ea743fcb949b98ed434c71cc9117e_7047570107644606483.png",
+      "source_sha256": "4ad315bd9542f0dd63716ffdd3e51de63d31a039d97ef16498e5865fa194ee66",
+      "path": "webp/12482a2469094b8d29ab0e0a0084697e6b65a1ea2f6283ea3625a7d1f087b36f.webp",
+      "sha256": "12482a2469094b8d29ab0e0a0084697e6b65a1ea2f6283ea3625a7d1f087b36f",
+      "byte_count": 20132
+    },
+    {
+      "kind": "relic-set",
+      "id": "322",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/09/12/130460543/1f90e1346c44b2690caba25b2fa312d7_3486365563280574804.png",
+      "source_sha256": "c0da4bdbf80f1ae0924c3e3ca811ae731a0504424a9d5b1a4858f3a8756bcc72",
+      "path": "webp/7f191ea0d4bf34486f99c9cf873de009808d26fca3d200763ec35b10378eca71.webp",
+      "sha256": "7f191ea0d4bf34486f99c9cf873de009808d26fca3d200763ec35b10378eca71",
+      "byte_count": 18614
+    },
+    {
+      "kind": "relic-set",
+      "id": "323",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/10/130460543/c80982b32d64aaa01ace4d8d2b714fc2_4897465879177292995.png",
+      "source_sha256": "e523670ff6b9e1ca074a6db883fe3e756c00b057e4c2ba602c22af053e89a311",
+      "path": "webp/7f36ef2407efa92b49a29f08049752a84138f3d61dd7d1c69f02c9c11aa0d12f.webp",
+      "sha256": "7f36ef2407efa92b49a29f08049752a84138f3d61dd7d1c69f02c9c11aa0d12f",
+      "byte_count": 19040
+    },
+    {
+      "kind": "relic-set",
+      "id": "324",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/19/130460543/5ade9800ec9574f71a8d4cccc8253557_1167934312299659765.png",
+      "source_sha256": "72518de86f08c4bfca564019535f28c4e7df906c72ba72c471a917f190312b17",
+      "path": "webp/938eccdc272d24171c29ef25533f155c07f9908556b15d3bcebee792d9ad70fc.webp",
+      "sha256": "938eccdc272d24171c29ef25533f155c07f9908556b15d3bcebee792d9ad70fc",
+      "byte_count": 20528
+    },
+    {
+      "kind": "relic-set",
+      "id": "325",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/27/130460543/dd68af2abdef535a2b5c196eece054ba_5820116093163251573.png",
+      "source_sha256": "16cb58e1705703012151845e2e428cd4884f5d472454902ec83699bcea4a4043",
+      "path": "webp/460432cc1406910725088a8cc72a834aac38a16e029fbe0c028450d5536d46a3.webp",
+      "sha256": "460432cc1406910725088a8cc72a834aac38a16e029fbe0c028450d5536d46a3",
+      "byte_count": 22078
+    },
+    {
+      "kind": "relic-set",
+      "id": "326",
+      "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/03/27/130460543/670a6b0c3ef12880026ef207e2df3662_7120862701121546396.png",
+      "source_sha256": "c26b67e8dcae561942f0d64c6feb21c4b4b708ce15823687d5d217eda33ad3bb",
+      "path": "webp/c4475a26a3ab3ded4c74610eb946154fb2a817470ed3b109f2023328c106cdf0.webp",
+      "sha256": "c4475a26a3ab3ded4c74610eb946154fb2a817470ed3b109f2023328c106cdf0",
+      "byte_count": 23326
+    },
+    {
+      "kind": "relic-set",
+      "id": "327",
+      "source_url": "https://static.nanoka.cc/assets/hsr/itemfigures/71058.webp",
+      "source_sha256": "3f374f648c54d0cb25f16e0698369d5e63702646d2d693bcf5087c76fe4ae380",
+      "path": "webp/c9d1717f207e9048da14932f5db679a2fba2058a73e8d0958f443dfceab933b0.webp",
+      "sha256": "c9d1717f207e9048da14932f5db679a2fba2058a73e8d0958f443dfceab933b0",
+      "byte_count": 23056
+    },
+    {
+      "kind": "relic-set",
+      "id": "328",
+      "source_url": "https://static.nanoka.cc/assets/hsr/itemfigures/71059.webp",
+      "source_sha256": "46788a8c4ef0969e99a273b132022c201a23902f51e04d84bacace0db64140b9",
+      "path": "webp/55caca72415ff06f1271bfba1ddf0e192637623bc7fcb4a2638416acdb66141b.webp",
+      "sha256": "55caca72415ff06f1271bfba1ddf0e192637623bc7fcb4a2638416acdb66141b",
+      "byte_count": 23390
+    }
+  ]
+}
