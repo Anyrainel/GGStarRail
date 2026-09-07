@@ -1,4 +1,25 @@
 export const messagesEn = {
+  "beta.releasedSummary": "Verified released catalog",
+  "beta.previews": "Source previews",
+  "beta.previewBadge": "PREVIEW",
+  "beta.previewHint":
+    "This additional source data is incomplete, and release status is unverified here. These previews are not yet available in build tools.",
+  "beta.statOrder":
+    "Values by ascension stage, in source order. Growth is per level; CRIT values are ratios.",
+  "beta.stat.hp": "Base HP",
+  "beta.stat.hpGrowth": "HP growth",
+  "beta.stat.attack": "Base ATK",
+  "beta.stat.attackGrowth": "ATK growth",
+  "beta.stat.defense": "Base DEF",
+  "beta.stat.defenseGrowth": "DEF growth",
+  "beta.stat.speed": "Base SPD",
+  "beta.stat.critRate": "CRIT Rate",
+  "beta.stat.critDamage": "CRIT DMG",
+  "beta.stat.aggro": "Base aggro",
+  "beta.storageError":
+    "Could not save this setting. Allow browser storage and try again.",
+  "beta.enabled": "Unreleased content enabled",
+  "beta.disable": "Hide unreleased content",
   "app.name": "GGStarRail",
   "app.tagline": "A local-first Star Rail build workspace",
   "app.foundation": "HSR data workspace",

@@ -76,7 +76,7 @@ describe("HSR Tier List views", () => {
     const { container } = renderView(<LightConeTierListView />);
 
     expect(
-      await screen.findByText("0 ranked · 169 in Pool", {}, catalogTimeout)
+      await screen.findByText("0 ranked · 166 in Pool", {}, catalogTimeout)
     ).toBeVisible();
     await waitFor(
       () => expect(priorityItems(container).length).toBeGreaterThan(0),
@@ -96,7 +96,7 @@ describe("HSR Tier List views", () => {
     const { container } = renderView(<RelicTierListView />);
 
     expect(
-      await screen.findByText("0 ranked · 60 in Pool", {}, catalogTimeout)
+      await screen.findByText("0 ranked · 58 in Pool", {}, catalogTimeout)
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Cavern Relic" })).toBeVisible();
     expect(
@@ -107,7 +107,7 @@ describe("HSR Tier List views", () => {
       "true"
     );
     await waitFor(
-      () => expect(priorityItems(container).length).toBe(60),
+      () => expect(priorityItems(container).length).toBe(58),
       catalogTimeout
     );
     expect(
@@ -142,7 +142,7 @@ describe("HSR Tier List views", () => {
     await user.click(screen.getByRole("button", { name: "Planar Ornament" }));
     const planarItems = container.querySelectorAll("[data-priority-item-id]");
     expect(planarItems.length).toBeGreaterThan(0);
-    expect(planarItems.length).toBeLessThan(60);
+    expect(planarItems.length).toBeLessThan(58);
   });
 
   it("renders the priority contract and Relic categories in zh-CN", async () => {

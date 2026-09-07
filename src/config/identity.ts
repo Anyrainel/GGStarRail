@@ -4,6 +4,7 @@ export const GAME_ID = "honkai-star-rail" as const;
 export const ASSET_NAMESPACE = "/assets/ggstarrail" as const;
 
 export const STORAGE_KEYS = {
+  beta: "ggstarrail:enable-beta:v1",
   locale: "ggstarrail:locale:v1",
   theme: "ggstarrail:theme:v1",
   workspace: "ggstarrail:workspace:v1",

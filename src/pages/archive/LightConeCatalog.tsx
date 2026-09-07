@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -308,6 +309,7 @@ function LightConeCard({
           />
           <span className="min-w-0 space-y-1.5">
             <span className="line-clamp-2 block font-semibold">{name}</span>
+            <BetaBadge member="light_cones" id={lightCone.id} />
             <span className="flex flex-wrap gap-1.5">
               <Badge variant="secondary">{pathName}</Badge>
             </span>
@@ -360,6 +362,7 @@ function LightConeDetail({
         />
         <div className="min-w-0 space-y-2">
           <h2 className="text-xl font-semibold">{name}</h2>
+          <BetaBadge member="light_cones" id={lightCone.id} />
           <div className="flex flex-wrap gap-2">
             <Badge>{pathName}</Badge>
             <Badge variant="outline">

@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { useBetaSearch } from "@/hooks/useBetaSearch";
 import { isArchiveSearchActive } from "@/lib/archiveFilters";
 
 interface ArchiveToolbarProps {
@@ -20,6 +21,7 @@ export function ArchiveToolbar({
   children,
 }: ArchiveToolbarProps) {
   const filtersDisabled = isArchiveSearchActive(searchQuery);
+  const { changeSearch, error } = useBetaSearch(onSearchChange);
 
   return (
     <div className="space-y-3">
@@ -32,10 +34,11 @@ export function ArchiveToolbar({
         <input
           type="search"
           value={searchQuery}
-          onChange={(event) => onSearchChange(event.currentTarget.value)}
+          onChange={(event) => changeSearch(event.currentTarget.value)}
           placeholder={searchPlaceholder}
           className="h-11 w-full rounded-xl border border-border bg-card/50 pl-10 pr-3 text-base text-foreground outline-none shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
         />
+        {error && <span role="alert">{error}</span>}
       </label>
 
       {children && (

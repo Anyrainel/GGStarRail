@@ -1,5 +1,6 @@
 import { AlertTriangle, LoaderCircle, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { useBetaSearch } from "@/hooks/useBetaSearch";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 
@@ -15,6 +16,7 @@ export function CatalogSearch({
   placeholderKey,
 }: CatalogSearchProps) {
   const { t } = useI18n();
+  const { changeSearch, error } = useBetaSearch(onChange);
   return (
     <label className="relative block min-w-0 flex-1">
       <span className="sr-only">{t("common.search")}</span>
@@ -25,10 +27,11 @@ export function CatalogSearch({
       <input
         type="search"
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => changeSearch(event.target.value)}
         placeholder={t(placeholderKey)}
         className="h-11 w-full rounded-lg border border-border bg-background/75 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
       />
+      {error && <span role="alert">{error}</span>}
     </label>
   );
 }

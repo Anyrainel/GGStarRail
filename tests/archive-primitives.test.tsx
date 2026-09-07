@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { I18nProvider } from "@/i18n/I18nContext";
 
 const FILTER_OPTIONS = ["unfinished", "finished"] as const;
 type FilterOption = (typeof FILTER_OPTIONS)[number];
@@ -104,7 +105,11 @@ function LayoutHarness({
 describe("ArchiveToolbar", () => {
   it("disables filters only during non-whitespace search and preserves selection", async () => {
     const user = userEvent.setup();
-    render(<ToolbarHarness />);
+    render(
+      <I18nProvider>
+        <ToolbarHarness />
+      </I18nProvider>
+    );
 
     const search = screen.getByRole("searchbox", {
       name: "Search achievements",

@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { configureCatalogAssetLookup } from "@/lib/assets";
 import { AchievementArchiveContent } from "@/pages/archive/AchievementArchiveContent";
@@ -62,6 +63,7 @@ afterEach(() => {
 });
 
 describe("achievement archive GIlore adapter", () => {
+  beforeEach(() => setBetaEnabled(true));
   it("maps the complete real bilingual 1.2 catalogs without changing visibility", async () => {
     const [english, chinese] = await Promise.all([
       loadRealViewData("en", "[dynamic in-game text]", "Trailblazer"),

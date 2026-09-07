@@ -1,3 +1,4 @@
+import type { RuntimeReferenceManifest } from "@/domain/provenance";
 import {
   HSR_REFERENCE_MANIFEST,
   loadCharacters,
@@ -8,7 +9,6 @@ import {
 } from "@/providers/gilore/catalog";
 import type {
   CharacterDefinition,
-  DataBundleManifest,
   LightConeDefinition,
   ProgressionTables,
   PropertyDefinition,
@@ -16,7 +16,7 @@ import type {
 } from "@/providers/gilore/types";
 
 export interface AccountImportCatalog {
-  manifest: DataBundleManifest;
+  manifest: RuntimeReferenceManifest;
   characters: ReadonlyMap<string, CharacterDefinition>;
   lightCones: ReadonlyMap<string, LightConeDefinition>;
   relicPieces: ReadonlyMap<string, RelicPieceDefinition>;

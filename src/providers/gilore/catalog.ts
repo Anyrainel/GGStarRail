@@ -1,6 +1,7 @@
-import manifestJson from "@/generated/hsr-reference/manifest.json";
+import manifestJson from "@/data/game/manifest.json";
+import { loadGameMember } from "@/data/gameDataLoader";
+import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
 import { loadCatalogAssetLookup } from "./assets";
-import { parseGIloreManifest } from "./manifest";
 import type {
   AchievementCatalog,
   AchievementCategoryCatalog,
@@ -14,10 +15,7 @@ import type {
   CharacterSkill,
   CharacterSkillV1_1,
   CombatTypeDefinition,
-  CorroborationDocument,
-  CorroborationEvidence,
   DefinitionCatalog,
-  Diagnostics,
   LightConeCatalog,
   LightConeDefinition,
   LightConeDefinitionV1,
@@ -42,7 +40,9 @@ import type {
   RelicSlotDefinition,
 } from "./types";
 
-export const HSR_REFERENCE_MANIFEST = parseGIloreManifest(manifestJson);
+export const HSR_REFERENCE_MANIFEST = RuntimeReferenceManifestSchema.parse(
+  manifestJson.reference_manifest
+);
 
 function createDefinitionCatalog<
   T extends { id: string | number },
@@ -118,10 +118,10 @@ export function getLocalizedValue(
 
 export async function loadAchievementCategories(): Promise<AchievementCategoryCatalog> {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/achievement_categories.json"),
+    loadGameMember("achievement_categories"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as MemberDocument<
+  const document = module as MemberDocument<
     readonly AchievementCategoryDefinition[],
     "1.2.0"
   >;
@@ -131,10 +131,10 @@ export async function loadAchievementCategories(): Promise<AchievementCategoryCa
 
 export async function loadAchievements(): Promise<AchievementCatalog> {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/achievements.json"),
+    loadGameMember("achievements"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as MemberDocument<
+  const document = module as MemberDocument<
     readonly AchievementDefinition[],
     "1.2.0"
   >;
@@ -142,21 +142,16 @@ export async function loadAchievements(): Promise<AchievementCatalog> {
   return createDefinitionCatalog(document.value, document.schema_version);
 }
 
-let achievementIdsPromise: Promise<ReadonlySet<number>> | null = null;
-
-export function loadAchievementIds(): Promise<ReadonlySet<number>> {
-  achievementIdsPromise ??= loadAchievements().then(
-    (catalog) => new Set(catalog.byId.keys())
-  );
-  return achievementIdsPromise;
+export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
+  return new Set((await loadAchievements()).byId.keys());
 }
 
 export async function loadCharacters(): Promise<CharacterCatalog> {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/characters.json"),
+    loadGameMember("characters"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as
+  const document = module as
     | MemberDocument<readonly CharacterDefinitionV1[], "1.0.0">
     | MemberDocument<readonly CharacterDefinitionV1_1[], "1.1.0">
     | MemberDocument<readonly CharacterDefinitionV1_1[], "1.2.0">;
@@ -168,10 +163,10 @@ export async function loadCharacters(): Promise<CharacterCatalog> {
 
 export async function loadLightCones(): Promise<LightConeCatalog> {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/light_cones.json"),
+    loadGameMember("light_cones"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as
+  const document = module as
     | MemberDocument<readonly LightConeDefinitionV1[], "1.0.0">
     | MemberDocument<readonly LightConeDefinitionV1_1[], "1.1.0">
     | MemberDocument<readonly LightConeDefinitionV1_1[], "1.2.0">;
@@ -185,12 +180,10 @@ export async function loadRelicSets(): Promise<
   DefinitionCatalog<RelicSetDefinition>
 > {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/relic_sets.json"),
+    loadGameMember("relic_sets"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as MemberDocument<
-    readonly RelicSetDefinition[]
-  >;
+  const document = module as MemberDocument<readonly RelicSetDefinition[]>;
   assertMemberSchema(document, "relic_sets");
   return createDefinitionCatalog(document.value, document.schema_version);
 }
@@ -199,22 +192,20 @@ export async function loadRelicPieces(): Promise<
   DefinitionCatalog<RelicPieceDefinition>
 > {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/relic_pieces.json"),
+    loadGameMember("relic_pieces"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as MemberDocument<
-    readonly RelicPieceDefinition[]
-  >;
+  const document = module as MemberDocument<readonly RelicPieceDefinition[]>;
   assertMemberSchema(document, "relic_pieces");
   return createDefinitionCatalog(document.value, document.schema_version);
 }
 
 export async function loadPropertyTables(): Promise<PropertyCatalog> {
   const [module] = await Promise.all([
-    import("@/generated/hsr-reference/property_tables.json"),
+    loadGameMember("property_tables"),
     loadCatalogAssetLookup(),
   ]);
-  const document = module.default as unknown as
+  const document = module as
     | MemberDocument<PropertyTablesV1, "1.0.0">
     | MemberDocument<PropertyTablesV1_1, "1.1.0">
     | MemberDocument<PropertyTablesV1_1, "1.2.0">;
@@ -276,26 +267,10 @@ export async function loadPropertyTables(): Promise<PropertyCatalog> {
 }
 
 export async function loadProgression(): Promise<ProgressionTables> {
-  const module = await import("@/generated/hsr-reference/progression.json");
-  const document = module.default as unknown as
+  const document = (await loadGameMember("progression")) as
     | MemberDocument<ProgressionTablesV1, "1.0.0">
     | MemberDocument<ProgressionTablesV1_1, "1.1.0">
     | MemberDocument<ProgressionTablesV1_1, "1.2.0">;
   assertMemberSchema(document, "progression");
-  return document.value;
-}
-
-export async function loadDiagnostics(): Promise<Diagnostics> {
-  const module = await import("@/generated/hsr-reference/diagnostics.json");
-  const document = module.default as unknown as MemberDocument<Diagnostics>;
-  assertMemberSchema(document, "diagnostics");
-  return document.value;
-}
-
-export async function loadCorroboration(): Promise<CorroborationEvidence> {
-  const module = await import("@/generated/hsr-reference/corroboration.json");
-  const document =
-    module.default as unknown as CorroborationDocument<CorroborationEvidence>;
-  assertMemberSchema(document, "corroboration");
   return document.value;
 }

@@ -26,11 +26,8 @@ const V1_COUNT_KEYS = [
 ] as const;
 
 const mockedModuleIds = [
-  "@/generated/hsr-reference/manifest.json",
-  "@/generated/hsr-reference/characters.json",
-  "@/generated/hsr-reference/light_cones.json",
-  "@/generated/hsr-reference/progression.json",
-  "@/generated/hsr-reference/property_tables.json",
+  "@/data/game/manifest.json",
+  "@/data/gameDataLoader",
   "@/providers/gilore/assets",
 ] as const;
 
@@ -56,20 +53,22 @@ describe("GIlore schema-versioned runtime catalogs", () => {
       files: legacyFiles,
       schema_version: "1.0.0",
     };
-    vi.doMock("@/generated/hsr-reference/manifest.json", () => ({
-      default: legacyManifest,
+    const { files: _files, ...referenceManifest } = legacyManifest;
+    vi.doMock("@/data/game/manifest.json", () => ({
+      default: { reference_manifest: referenceManifest },
     }));
-    vi.doMock("@/generated/hsr-reference/characters.json", () => ({
-      default: legacyFixture.characters,
-    }));
-    vi.doMock("@/generated/hsr-reference/light_cones.json", () => ({
-      default: legacyFixture.lightCones,
-    }));
-    vi.doMock("@/generated/hsr-reference/progression.json", () => ({
-      default: legacyFixture.progression,
-    }));
-    vi.doMock("@/generated/hsr-reference/property_tables.json", () => ({
-      default: legacyFixture.propertyTables,
+    vi.doMock("@/data/gameDataLoader", () => ({
+      loadGameMember: async (member: string) => {
+        const members: Record<string, unknown> = {
+          characters: legacyFixture.characters,
+          light_cones: legacyFixture.lightCones,
+          progression: legacyFixture.progression,
+          property_tables: legacyFixture.propertyTables,
+        };
+        if (!(member in members))
+          throw new Error(`Unexpected member ${member}`);
+        return members[member];
+      },
     }));
     vi.doMock("@/providers/gilore/assets", () => ({
       loadCatalogAssetLookup: vi.fn(async () => new Map()),

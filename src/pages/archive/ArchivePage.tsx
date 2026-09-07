@@ -1,14 +1,14 @@
-import { Database, ShieldAlert } from "lucide-react";
+import { Database } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { useCatalogResource } from "@/hooks/useCatalogResource";
+import { Button } from "@/components/ui/button";
+import { betaEnabled } from "@/data/betaState";
+import { useBetaSearch } from "@/hooks/useBetaSearch";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import {
-  HSR_REFERENCE_MANIFEST,
-  loadDiagnostics,
-} from "@/providers/gilore/catalog";
+import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
 import { AchievementArchiveView } from "./AchievementArchiveView";
+import { BetaPreviews } from "./BetaPreviews";
 import { CharacterCatalog } from "./CharacterCatalog";
 import { LightConeCatalog } from "./LightConeCatalog";
 import { RelicSetCatalog } from "./RelicSetCatalog";
@@ -30,6 +30,8 @@ export default function ArchivePage({
   titleKey,
   descriptionKey,
 }: ArchivePageProps) {
+  const { t } = useI18n();
+  const { changeSearch, error } = useBetaSearch(() => {});
   return (
     <>
       <PageHeader
@@ -37,6 +39,19 @@ export default function ArchivePage({
         descriptionKey={descriptionKey}
         visuallyHidden
       />
+      {betaEnabled() && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
+          <Badge>{t("beta.enabled")}</Badge>
+          <Button
+            variant="outline"
+            onClick={() => changeSearch("关闭测试模式")}
+          >
+            {t("beta.disable")}
+          </Button>
+          {error && <span role="alert">{error}</span>}
+        </div>
+      )}
+      {betaEnabled() && kind !== "achievements" && <BetaPreviews kind={kind} />}
       {kind === "characters" && <CharacterCatalog />}
       {kind === "lightCones" && <LightConeCatalog />}
       {kind === "relicSets" && <RelicSetCatalog />}
@@ -48,14 +63,14 @@ export default function ArchivePage({
 
 function CatalogProvenance() {
   const { t } = useI18n();
-  const diagnostics = useCatalogResource(loadDiagnostics);
   const manifest = HSR_REFERENCE_MANIFEST;
   return (
     <details className="rounded-xl border border-border bg-card/20 p-3 text-sm">
       <summary className="cursor-pointer font-medium text-muted-foreground">
         {t("archive.dataDetails")}
       </summary>
-      <section className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
+      <section className="mt-3 grid gap-3">
+        <p className="text-sm font-medium">{t("beta.releasedSummary")}</p>
         <div className="rounded-xl border border-border bg-background/35 p-4">
           <div className="flex items-start gap-3">
             <Database
@@ -114,48 +129,9 @@ function CatalogProvenance() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-background/35 p-4 lg:max-w-md">
-          <div className="flex items-start gap-3">
-            <ShieldAlert
-              className="mt-0.5 h-5 w-5 shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            <div>
-              <h2 className="font-semibold">{t("archive.gaps.title")}</h2>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                {diagnostics.data
-                  ? t("archive.gaps.summary", {
-                      gaps: diagnostics.data.source_gaps.length,
-                      disagreements:
-                        diagnostics.data.source_disagreements.length,
-                    })
-                  : t("common.loading")}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                {t("archive.license.warning")}
-              </p>
-              {diagnostics.data && (
-                <details className="mt-3 text-xs">
-                  <summary className="cursor-pointer font-medium">
-                    {t("archive.gaps.details")}
-                  </summary>
-                  <ul className="mt-2 space-y-1 text-muted-foreground">
-                    {diagnostics.data.source_gaps.map((gap) => (
-                      <li key={`${gap.table}:${gap.record_id}:${gap.field}`}>
-                        <code>{gap.record_id}</code> — {gap.field}
-                      </li>
-                    ))}
-                    {diagnostics.data.source_disagreements.map((gap) => (
-                      <li key={gap.evidence_id}>
-                        <code>{gap.entity_id}</code> — {gap.field}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
-            </div>
-          </div>
-        </div>
+        <p className="text-xs leading-5 text-muted-foreground">
+          {t("archive.license.warning")}
+        </p>
       </section>
     </details>
   );

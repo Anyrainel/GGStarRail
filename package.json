@@ -11,6 +11,7 @@
     "data:sync": "node scripts/sync-hsr-reference.mjs",
     "data:verify": "node scripts/sync-hsr-reference.mjs --verify-only",
     "data:check": "node scripts/sync-hsr-reference.mjs --check-generated",
+    "data:website:check": "node scripts/check-game-data.mjs",
     "assets:sync": "node scripts/sync-hsr-assets.mjs",
     "assets:verify": "node scripts/sync-hsr-assets.mjs --verify-only",
     "assets:check": "node scripts/sync-hsr-assets.mjs --check-generated",
@@ -27,13 +28,14 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "vitest run",
+    "test:data-sources": "node --test scripts/crawl-sources.test.mjs",
     "test:worker": "vitest run -c vitest.worker.config.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "depcheck": "depcruise src tests worker --config .dependency-cruiser.cjs",
     "check:worker-config": "node scripts/check-worker-config.mjs",
     "check:worker": "npm run check:worker-config && npm run type-check:worker && npm run test:worker",
-    "check": "npm run data:check && npm run assets:check && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
+    "check": "npm run data:check && npm run assets:check && npm run data:website:check && npm run test:data-sources && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

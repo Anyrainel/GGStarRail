@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { setBetaEnabled } from "@/data/betaState";
 import {
   getLocalizedValue,
   HSR_REFERENCE_MANIFEST,
@@ -9,7 +10,6 @@ import {
   loadAchievementIds,
   loadAchievements,
   loadCharacters,
-  loadDiagnostics,
   loadLightCones,
   loadProgression,
   loadPropertyTables,
@@ -19,6 +19,9 @@ import {
 import type { CharacterDefinitionV1_1 } from "@/providers/gilore/types";
 
 describe("lazy GIlore catalog provider", () => {
+  // Coverage of the complete normalized snapshot, including opt-in records.
+  // The released-only transport and network gate are tested separately.
+  beforeEach(() => setBetaEnabled(true));
   it("loads complete typed catalogs with stable bilingual identities", async () => {
     const [
       achievementCategories,
@@ -186,11 +189,8 @@ describe("lazy GIlore catalog provider", () => {
     ).toBe(true);
   });
 
-  it("exposes complete progression and honest diagnostics lazily", async () => {
-    const [progression, diagnostics] = await Promise.all([
-      loadProgression(),
-      loadDiagnostics(),
-    ]);
+  it("exposes complete progression lazily", async () => {
+    const progression = await loadProgression();
     if (!isProgressionTablesV1_1(progression)) {
       throw new Error("expected schema 1.1 progression tables");
     }
@@ -221,8 +221,5 @@ describe("lazy GIlore catalog provider", () => {
       )
     ).toHaveLength(6);
     expect(getLocalizedValue(progression.items[0].name, "en")).toBe("Credit");
-    expect(diagnostics.unresolved_deobfuscation).toEqual([]);
-    expect(diagnostics.source_disagreements).toHaveLength(4);
-    expect(diagnostics.source_gaps).toHaveLength(16);
   });
 });

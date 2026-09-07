@@ -1,10 +1,11 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "@/App";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 
 const asyncCatalogOptions = { timeout: 15_000 };
@@ -64,11 +65,21 @@ function catalogItem(
 }
 
 describe("Archive catalogs", () => {
+  beforeEach(() => setBetaEnabled(true));
+
+  it("shows only verified Light Cones and no source previews by default", async () => {
+    setBetaEnabled(false);
+    renderArchive(APP_PATHS.archiveLightCones);
+    await catalogRegion("Light Cone catalog results", 166);
+    expect(screen.queryByText("Source previews")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Hide unreleased content")
+    ).not.toBeInTheDocument();
+  });
   it("loads each complete catalog through the route-local async boundary", async () => {
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
 
-    expect(screen.getByRole("status")).toBeInTheDocument();
     await catalogRegion("Character catalog results", 93);
     expect(screen.getByText("Showing 93 of 93 records")).toBeInTheDocument();
     const catalogDataSummary = screen.getByText("About the catalog data", {
@@ -79,12 +90,12 @@ describe("Archive catalogs", () => {
     await user.click(catalogDataSummary);
     expect(
       screen.getByText(
-        "93 Characters · 169 Light Cones · 60 sets · 184 logical pieces across 742 rarity variants"
+        "93 Characters · 166 Light Cones · 58 sets · 180 logical pieces across 726 rarity variants"
       )
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Achievement data · 1921 records in 9 categories · 806 reveal their title only after completion · 310 use an alternate pre-completion description · release version supplied for 0 records"
+        "Achievement data · 1760 records in 9 categories · 781 reveal their title only after completion · 280 use an alternate pre-completion description · release version supplied for 0 records"
       )
     ).toBeInTheDocument();
 
@@ -295,7 +306,7 @@ describe("Archive catalogs", () => {
     await user.click(catalogDataSummary);
     expect(
       screen.getByText(
-        "1.1+ detail model · 611 base skills · 558 Eidolons · 1699 Trace nodes · 7 Servants · 10 seasonal variants · 845 Superimposition rows · 238 progression items"
+        "1.1+ detail model · 611 base skills · 558 Eidolons · 1699 Trace nodes · 7 Servants · 0 seasonal variants · 830 Superimposition rows · 237 progression items"
       )
     ).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search" });

@@ -145,5 +145,18 @@ export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
 ]);
 
 export type DataBundleManifest = z.infer<typeof DataBundleManifestSchema>;
+// The website has its own hashed split files. Raw export file digests must not
+// be presented as descriptors for those different runtime assets.
+export const RuntimeReferenceManifestSchema = z.discriminatedUnion(
+  "schema_version",
+  [
+    DataBundleManifestSchema.options[0].omit({ files: true }),
+    DataBundleManifestSchema.options[1].omit({ files: true }),
+    DataBundleManifestSchema.options[2].omit({ files: true }),
+  ]
+);
+export type RuntimeReferenceManifest = z.infer<
+  typeof RuntimeReferenceManifestSchema
+>;
 export type BundleSchemaVersion = z.infer<typeof BundleSchemaVersionSchema>;
 export type ReferenceLocale = z.infer<typeof ReferenceLocaleSchema>;

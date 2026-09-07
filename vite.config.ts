@@ -109,6 +109,15 @@ export default defineConfig({
     },
   },
   server: {
+    watch: {
+      // Source snapshots are atomically replaced by the updater. They aren't
+      // runtime modules, and watching them can raise EBUSY on Windows.
+      ignored: [
+        "**/src/generated/hsr-reference/**",
+        "**/.cache/**",
+        "**/public/assets/ggstarrail/cache/**",
+      ],
+    },
     port: localDevPort,
     strictPort: true,
     host: true,

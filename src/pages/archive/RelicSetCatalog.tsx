@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
+import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -277,6 +278,7 @@ function RelicSetCard({
           />
           <span className="min-w-0 space-y-2">
             <span className="line-clamp-2 block font-semibold">{name}</span>
+            <BetaBadge member="relic_sets" id={relicSet.id} />
             <Badge variant="secondary">
               {relicSet.kind === "cavern_relic"
                 ? t("archive.kind.cavern")
@@ -321,6 +323,7 @@ function RelicSetDetail({
               : t("archive.kind.planar")}
           </p>
           <h2 className="text-xl font-semibold">{name}</h2>
+          <BetaBadge member="relic_sets" id={relicSet.id} />
           <p className="text-xs text-muted-foreground">
             {t("archive.releaseVersion", { value: relicSet.release_version })}
           </p>

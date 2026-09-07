@@ -1,6 +1,26 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "beta.releasedSummary": "已核实实装的图鉴数据",
+  "beta.previews": "资料预览",
+  "beta.previewBadge": "预览",
+  "beta.previewHint":
+    "补充资料尚不完整，实装状态未核实。这些条目暂不参与配装工具。",
+  "beta.statOrder":
+    "各突破阶段的数值，按来源顺序排列。成长值为每级增量；暴击数值以小数表示。",
+  "beta.stat.hp": "基础生命值",
+  "beta.stat.hpGrowth": "生命值成长",
+  "beta.stat.attack": "基础攻击力",
+  "beta.stat.attackGrowth": "攻击力成长",
+  "beta.stat.defense": "基础防御力",
+  "beta.stat.defenseGrowth": "防御力成长",
+  "beta.stat.speed": "基础速度",
+  "beta.stat.critRate": "暴击率",
+  "beta.stat.critDamage": "暴击伤害",
+  "beta.stat.aggro": "基础嘲讽值",
+  "beta.storageError": "无法保存设置，请允许浏览器存储后重试。",
+  "beta.enabled": "已显示测试服内容",
+  "beta.disable": "隐藏测试服内容",
   "app.name": "GGStarRail",
   "app.tagline": "本地优先的星铁配装工作台",
   "app.foundation": "星铁数据工作台",

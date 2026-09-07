@@ -2,6 +2,7 @@ import type {
   BundleSchemaVersion,
   DataBundleManifest,
   ReferenceLocale,
+  RuntimeReferenceManifest,
 } from "@/domain/provenance";
 
 export type { BundleSchemaVersion, DataBundleManifest, ReferenceLocale };
@@ -632,7 +633,7 @@ export type PropertyCatalogV1_1 = PropertyCatalogCommon<
 export type PropertyCatalog = PropertyCatalogV1 | PropertyCatalogV1_1;
 
 export interface HsrReferenceCatalog {
-  manifest: DataBundleManifest;
+  manifest: RuntimeReferenceManifest;
   characters: readonly CharacterDefinition[];
   lightCones: readonly LightConeDefinition[];
   relicSets: readonly RelicSetDefinition[];

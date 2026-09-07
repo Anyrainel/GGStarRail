@@ -50,6 +50,8 @@
       "!**/node_modules",
       "!**/coverage",
       "!**/.wrangler",
+      "!src/data/game",
+      "!data/source-assets",
       "!**/*.d.ts"
     ]
   },
