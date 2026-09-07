@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
+import runtimeLookupUrl from "@/generated/hsr-assets/runtime-lookup.json?url";
 import { resolveCatalogAsset } from "@/lib/assets";
 import { loadCatalogAssetLookup } from "@/providers/gilore/assets";
 
 const runtimeLookupPath = path.resolve(
-  "public/assets/ggstarrail/cache/gilore/lookup-v1/runtime-lookup.json"
+  "src/generated/hsr-assets/runtime-lookup.json"
 );
 
 describe("lazy GIlore asset runtime adapter", () => {
@@ -22,9 +23,7 @@ describe("lazy GIlore asset runtime adapter", () => {
     await loadCatalogAssetLookup();
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(fetchMock).toHaveBeenCalledWith(
-      "/assets/ggstarrail/cache/gilore/lookup-v1/runtime-lookup.json"
-    );
+    expect(fetchMock).toHaveBeenCalledWith(runtimeLookupUrl);
     expect(
       resolveCatalogAsset({ kind: "character", id: "1001" })
     ).toMatchObject({ startsWithFallback: false });
@@ -43,9 +42,7 @@ describe("lazy GIlore asset runtime adapter", () => {
     ).toMatchObject({
       startsWithFallback: false,
       entry: {
-        cachePath: expect.stringContaining(
-          "55fe37d5cd4bca96d9da243469a4f2dd0d948833a57628a53eadc0c6d12cf1a9.png"
-        ),
+        cachePath: expect.stringMatching(/^webp\/[a-f0-9]{64}\.webp$/),
       },
     });
   });

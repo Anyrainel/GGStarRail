@@ -35,7 +35,7 @@ Identity is centralized in `src/config/identity.ts`:
 - locale storage: `ggstarrail:locale:v1`
 - workspace storage: `ggstarrail:workspace:v1`
 - backup kind: `ggstarrail.backup`
-- Worker name: `ggstarrail-worker`
+- Worker name: `ggstarrail`
 
 There is no fallback to GenshinTools keys or backup formats. The v1 to v2
 workspace migration covers canonical account tri-state fields and the current
@@ -104,6 +104,7 @@ The Worker is intentionally standalone and storage-free. It responds to
 `GET`/`HEAD /api/health`, a GET-only nine-digit UID route, and separate POST
 routes for the Global and CN Battle Chronicle contracts. Paths, methods,
 origins, bodies, upstream hosts, response sizes, and timeouts are allowlisted.
-It declares no D1, R2, KV, route, cron, account, authentication provider, or
+It serves the frontend through an ASSETS binding and the `hsr.ggartifact.com`
+Custom Domain. It declares no D1, R2, KV, cron, authentication provider, or
 secret binding. See [Account imports](account-imports.md) for coverage and
 live-validation limits.

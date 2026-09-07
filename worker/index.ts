@@ -1,3 +1,4 @@
+/// <reference path="../worker-configuration.d.ts" />
 import {
   approvedRequestOrigin,
   handleImportProxy,
@@ -6,6 +7,7 @@ import {
 
 interface Env extends ImportProxyEnv {
   APP_ID: string;
+  ASSETS?: CloudflareEnv["ASSETS"];
 }
 
 function json(body: unknown, status: number, origin: string | null): Response {
@@ -24,6 +26,39 @@ function json(body: unknown, status: number, origin: string | null): Response {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    if (!url.pathname.startsWith("/api/") && env.ASSETS) {
+      const assetResponse = await env.ASSETS.fetch(request);
+      if (assetResponse.status !== 404) {
+        if (assetResponse.headers.get("Content-Type")?.includes("text/html")) {
+          const response = new Response(assetResponse.body, assetResponse);
+          response.headers.set("Cache-Control", "no-cache, must-revalidate");
+          return response;
+        }
+        return assetResponse;
+      }
+      // Only extensionless HTML navigations receive the app shell. Missing
+      // chunks/images must stay 404 so an old tab cannot parse HTML as JS.
+      const navigation =
+        request.headers.get("Sec-Fetch-Mode") === "navigate" ||
+        request.headers.get("Accept")?.includes("text/html");
+      if (
+        (request.method === "GET" || request.method === "HEAD") &&
+        navigation &&
+        !url.pathname.startsWith("/assets/") &&
+        !url.pathname.startsWith("/media/") &&
+        !url.pathname.split("/").pop()?.includes(".")
+      ) {
+        const indexUrl = new URL("/index.html", url);
+        const index = await env.ASSETS.fetch(new Request(indexUrl, request));
+        const response = new Response(index.body, index);
+        response.headers.set("Cache-Control", "no-cache, must-revalidate");
+        response.headers.set("X-Content-Type-Options", "nosniff");
+        return response;
+      }
+      const missing = new Response(assetResponse.body, assetResponse);
+      missing.headers.set("Cache-Control", "no-store");
+      return missing;
+    }
     const requestOrigin = approvedRequestOrigin(request, env);
     if (requestOrigin === false) {
       return Response.json(

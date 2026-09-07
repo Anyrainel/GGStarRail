@@ -14,6 +14,10 @@
 - Provider DTOs stay in `src/providers`; canonical state must not import them.
 - Do not add team damage optimization, Genshin formula engines, or energy
   calculators without an explicit scope change.
-- Do not add live Worker bindings, account IDs, resource IDs, routes, secrets,
-  deployment workflows, or remotes as part of ordinary feature work.
+- Production uses the `ggstarrail` Worker and `hsr.ggartifact.com`, with
+  Cloudflare Git builds from `main`. Do not reuse GenshinTools cloud resources.
+- Normal production publication is a validated push to `origin/main` when
+  requested. Manual Wrangler deployment requires an explicit deployment request.
+- Fresh clones run `npm run data:restore` and `npm run assets:webp` before
+  checking. Publish the checksummed data release before pushing its lockfile.
 - Run `npm run check` and `git diff --check` before committing.

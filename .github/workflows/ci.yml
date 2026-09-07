@@ -18,4 +18,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run data:restore
+      - run: npm run assets:webp
       - run: npm run check

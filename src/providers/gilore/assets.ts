@@ -2,7 +2,8 @@ import type {
   CatalogAssetKind,
   CatalogAssetLookupEntry,
 } from "@/domain/assets";
-import { configureCatalogAssetLookup, getAssetUrl } from "@/lib/assets";
+import runtimeLookupUrl from "@/generated/hsr-assets/runtime-lookup.json?url";
+import { configureCatalogAssetLookup } from "@/lib/assets";
 
 const CATALOG_ASSET_KINDS = new Set<CatalogAssetKind>([
   "achievement",
@@ -86,9 +87,7 @@ function toLookupEntries(
 }
 
 export function loadCatalogAssetLookup(): Promise<void> {
-  lookupPromise ??= fetch(
-    getAssetUrl("assets/ggstarrail/cache/gilore/lookup-v1/runtime-lookup.json")
-  )
+  lookupPromise ??= fetch(runtimeLookupUrl)
     .then(async (response) => {
       if (!response.ok) {
         throw new Error(`asset lookup returned HTTP ${response.status}`);

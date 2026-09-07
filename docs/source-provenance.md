@@ -19,8 +19,10 @@ evidence remains validation-only and never replaces a normalized value.
 ## Local generation and sync
 
 `src/generated/hsr-reference/` is ignored local output. A fresh GGStarRail
-checkout must first obtain a verified bundle; the GIlore commit alone does not
-imply that its gitignored `data/` output exists.
+checkout runs `npm run data:restore` to obtain the checksummed release pinned
+in `data-bundle.lock.json`, followed by `npm run assets:webp`. Maintainers may
+instead generate from GIlore; its commit alone does not imply that its
+gitignored `data/` output exists. See [Hosting and data updates](deployment.md).
 
 From a sibling GIlore checkout, generate the pinned source bundle before
 syncing:

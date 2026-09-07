@@ -1,0 +1,18 @@
+# HTML and unhashed files must be revalidated on each visit.
+/*
+  X-Content-Type-Options: nosniff
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+# Vite content-hashed JS, CSS and generated lookup files.
+/assets/:file
+  Cache-Control: public, max-age=31536000, immutable
+
+# Content-addressed WebP images, independent of application releases.
+/assets/ggstarrail/webp/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# This original SVG has no content hash.
+/assets/ggstarrail/mark.svg
+  Cache-Control: public, max-age=86400, must-revalidate

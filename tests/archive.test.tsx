@@ -68,9 +68,7 @@ describe("Archive catalogs", () => {
     const user = userEvent.setup();
     renderArchive(APP_PATHS.archiveCharacters);
 
-    expect(
-      screen.getByText("Loading the local reference catalog…")
-    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
     await catalogRegion("Character catalog results", 93);
     expect(screen.getByText("Showing 93 of 93 records")).toBeInTheDocument();
     const catalogDataSummary = screen.getByText("About the catalog data", {

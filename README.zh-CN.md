@@ -10,16 +10,18 @@ GGStarRail 是一个本地优先的《崩坏：星穹铁道》账号、背包、
 ## 本地运行
 
 ```powershell
-npm install
-npm run data:sync
-npm run assets:sync
+npm ci
+npm run data:restore
+npm run assets:webp
 npm run demo:start
 ```
 
 `data:sync` 会先校验同级 GIlore 仓库中的规范化数据包，再写入本仓库已忽略的
 本地生成目录。全新检出时，需要先在 GIlore 中生成其未纳入 Git 的数据包，或通过
 `--source` 指定另一个已验证的数据包；详见[数据来源要求](docs/source-provenance.md)。
-`assets:sync` 只消费 GIlore 已生成并校验的资源包，将图片写入本仓库忽略的本地缓存；
+`data:restore` 可直接下载并校验当前提交锁定的数据包，无需本地 GIlore。
+`assets:webp` 将所有已映射图片转换为带内容哈希的 WebP。
+`assets:sync` 仍可消费 GIlore 已生成并校验的资源包，将图片写入本仓库忽略的本地缓存；
 GGStarRail 不提交或主张拥有上游游戏美术资源。
 
 `demo:start` 会在 `http://127.0.0.1:41737` 启动与终端分离的本地演示站，
@@ -29,6 +31,9 @@ GGStarRail 不提交或主张拥有上游游戏美术资源。
 Worker，它提供健康检查和严格白名单限制的账号导入代理路由。
 
 ## 当前真实范围
+
+生产站点为 https://hsr.ggartifact.com，Cloudflare Worker 名称为 `ggstarrail`。
+自动发布、缓存规则和 `data:update` 流程见[部署说明](docs/deployment.md)。
 
 已实现：React 19 应用外壳、响应式路由、双语目录、星铁领域模型、完整且按需加载的
 GIlore 图鉴数据、可复现的数据同步与完整性校验、Zustand 版本化持久化、独立备份

@@ -12,16 +12,16 @@ stored data or requires a schema migration.
 ## Quick start
 
 ```powershell
-npm install
-npm run data:sync
-npm run assets:sync
+npm ci
+npm run data:restore
+npm run assets:webp
 npm run demo:start
 ```
 
-`data:sync` verifies the normalized bundle in the sibling GIlore checkout and
-publishes it to the ignored local generated-data directory. On a fresh clone,
-generate GIlore's gitignored bundle first or pass an explicit verified bundle
-path; see [Source provenance](docs/source-provenance.md).
+`data:restore` downloads the checksummed build-input release pinned by this
+checkout and validates its reference data and image coverage. A fresh clone
+does not need GIlore. Maintainers can still use `data:sync` and `assets:sync`
+with a sibling producer; see [Source provenance](docs/source-provenance.md).
 
 `assets:sync` consumes GIlore's separately generated, content-addressed asset
 bundle. It writes only to an ignored local cache; no upstream game-art binary
@@ -59,7 +59,9 @@ bindings.
 | `npm run check:worker` | Validate, type-check, and test the Worker |
 | `npm run check` | Run the complete local validation stack |
 
-There is intentionally no deployment command in this project.
+Production is https://hsr.ggartifact.com on the `ggstarrail` Cloudflare Worker.
+See [Hosting and data updates](docs/deployment.md) for Git auto-publishing,
+cache rules, WebP conversion, and the `data:update` workflow.
 
 ## Honest product boundary
 

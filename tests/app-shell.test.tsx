@@ -113,7 +113,9 @@ describe("GGArtifact family shell", () => {
     expect(
       screen.queryByRole("heading", { name: "UID profile showcase" })
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Import account" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Import account" })
+    );
     expect(
       screen.getByRole("heading", { name: "UID profile showcase" })
     ).toBeInTheDocument();
@@ -187,7 +189,7 @@ describe("GGArtifact family shell", () => {
     );
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "角色图鉴" })
+      await screen.findByRole("heading", { level: 1, name: "角色图鉴" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "切换游戏站点" })

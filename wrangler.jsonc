@@ -1,16 +1,29 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ggstarrail-worker",
+  "name": "ggstarrail",
   "main": "worker/index.ts",
   "compatibility_date": "2026-09-02",
   "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "none",
+    "run_worker_first": [
+      "/*",
+      "!/assets/*",
+      "!/media/*",
+      "!/*.ico",
+      "!/*.svg",
+      "!/*.txt"
+    ]
+  },
+  "routes": [{ "pattern": "hsr.ggartifact.com", "custom_domain": true }],
   "vars": {
-    "APP_ID": "ggstarrail-local",
-    "ALLOWED_ORIGIN": "http://localhost:5173,http://127.0.0.1:41737",
+    "APP_ID": "ggstarrail",
+    "ALLOWED_ORIGIN": "https://hsr.ggartifact.com,http://localhost:5173,http://127.0.0.1:41737",
     // Current HSR Battle Chronicle browser hash. This is public request
     // fingerprint configuration, not an authentication secret.
     "HOYOLAB_CN_PAGE_HASH": "#/hsr"
   }
-  // Add development bindings only after documenting their provenance.
-  // Keep account IDs, resource IDs, routes, and secrets out of this scaffold.
 }

@@ -27,7 +27,7 @@ describe("HSR route foundation", () => {
       </ThemeProvider>
     );
     expect(
-      screen.getByRole("heading", {
+      await screen.findByRole("heading", {
         level: 1,
         name: messagesEn[route.titleKey],
       })

@@ -7,9 +7,12 @@ const configPath = path.join(root, "wrangler.jsonc");
 const source = fs.readFileSync(configPath, "utf8");
 
 const requiredSnippets = [
-  '"name": "ggstarrail-worker"',
+  '"name": "ggstarrail"',
   '"main": "worker/index.ts"',
-  '"APP_ID": "ggstarrail-local"',
+  '"APP_ID": "ggstarrail"',
+  '"binding": "ASSETS"',
+  '"not_found_handling": "none"',
+  '"pattern": "hsr.ggartifact.com"',
 ];
 const missing = requiredSnippets.filter((snippet) => !source.includes(snippet));
 if (missing.length > 0) {
@@ -19,11 +22,11 @@ if (missing.length > 0) {
 }
 
 const forbiddenProperty =
-  /"(account_id|database_id|bucket_name|d1_databases|r2_buckets|kv_namespaces|routes?|secrets?)"\s*:/i;
+  /"(account_id|database_id|bucket_name|d1_databases|r2_buckets|kv_namespaces|secrets?)"\s*:/i;
 if (forbiddenProperty.test(source)) {
   throw new Error(
     "Worker config must not contain live resource or secret fields"
   );
 }
 
-console.log("Worker placeholder config is independent and resource-free.");
+console.log("GGStarRail production Worker configuration verified.");

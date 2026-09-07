@@ -8,6 +8,8 @@ coverage/
 playwright-report/
 test-results/
 /src/generated/hsr-reference/
+/src/generated/hsr-assets/
+/public/assets/ggstarrail/webp/
 /public/assets/ggstarrail/cache/
 .DS_Store
 Thumbs.db
