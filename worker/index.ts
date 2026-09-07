@@ -48,7 +48,9 @@ export default {
         !url.pathname.startsWith("/media/") &&
         !url.pathname.split("/").pop()?.includes(".")
       ) {
-        const indexUrl = new URL("/index.html", url);
+        // ASSETS canonicalizes /index.html to / with a redirect. Fetch the
+        // root internally so direct app links keep their original pathname.
+        const indexUrl = new URL("/", url);
         const index = await env.ASSETS.fetch(new Request(indexUrl, request));
         const response = new Response(index.body, index);
         response.headers.set("Cache-Control", "no-cache, must-revalidate");

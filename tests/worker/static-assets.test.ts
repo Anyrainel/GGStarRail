@@ -4,7 +4,7 @@ import worker from "../../worker/index";
 describe("production static asset routing", () => {
   function environment() {
     const fetch = vi.fn(async (request: Request) =>
-      new URL(request.url).pathname === "/index.html"
+      new URL(request.url).pathname === "/"
         ? new Response("<html>GGStarRail</html>", {
             headers: { "Content-Type": "text/html" },
           })
@@ -26,6 +26,7 @@ describe("production static asset routing", () => {
       environment()
     );
     expect(response.status).toBe(200);
+    expect(response.headers.has("Location")).toBe(false);
     expect(response.headers.get("Cache-Control")).toBe(
       "no-cache, must-revalidate"
     );

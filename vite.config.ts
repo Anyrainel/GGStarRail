@@ -11,6 +11,25 @@ export default defineConfig({
   plugins: [
     react(),
     {
+      name: "cache-development-images",
+      apply: "serve",
+      configureServer(server) {
+        server.middlewares.use((request, response, next) => {
+          if (
+            /^\/assets\/ggstarrail\/webp\/[a-f0-9]{64}\.webp(?:\?|$)/.test(
+              request.url ?? ""
+            )
+          ) {
+            response.setHeader(
+              "Cache-Control",
+              "public, max-age=31536000, immutable"
+            );
+          }
+          next();
+        });
+      },
+    },
+    {
       name: "exclude-source-asset-cache",
       apply: "build",
       async closeBundle() {

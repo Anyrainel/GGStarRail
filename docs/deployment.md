@@ -58,7 +58,8 @@ lockfile, never whatever upstream happens to publish during deployment.
 ## Cache and bundle design
 
 - Page code loads on demand; React/router, Radix, drag-and-drop, validation,
-  utility dependencies, and translations have separate chunks.
+  icons, and translations have separate chunks. Transitive dependencies stay
+  with their importer to avoid React initialization cycles.
 - The existing catalog members remain independent lazy chunks.
 - Vite hashes JS, CSS, and the generated runtime image lookup. These URLs
   and content-addressed WebP URLs get one-year immutable browser caching.
@@ -69,6 +70,8 @@ lockfile, never whatever upstream happens to publish during deployment.
 - WebP preserves dimensions and alpha, uses quality 85, and hashes encoded
   bytes. Encoding changes invalidate only affected image URLs. Code-only
   local builds validate and reuse existing WebP output.
+- The development server also caches content-hashed WebPs so switching pages
+  does not repeatedly revalidate every image.
 
 Verify a release through its Cloudflare commit/build result, `/api/health`,
 direct app-route navigation, image loading, and live response cache headers.
