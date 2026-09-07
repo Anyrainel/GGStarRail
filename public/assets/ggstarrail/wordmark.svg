@@ -39,12 +39,14 @@
     <path id="c" d="M43 0H10L0 10V47L9 56H43L38 47H11V9H38Z"/>
   </defs>
   <!-- Surface shading and an illuminated rim stay inside the crescent. -->
-  <use href="#crescent" fill="url(#moon)"/>
-  <use href="#crescent" fill="url(#moon-light)"/>
-  <g clip-path="url(#moon-edge)">
-    <path d="M264 13C208 36 186 94 211 142s83 63 124 34" fill="none" stroke="#ddf3ff" stroke-width="2" opacity=".65"/>
-    <path d="M218 45C194 93 213 149 260 172c35 16 76 10 100-19" fill="none" stroke="#354e73" stroke-width="5" opacity=".24"/>
-    <path d="m201 94 14-11 6 30-15 17Zm18 49 15-8 20 29-13 11Zm48 36 12-12 25 7-4 16Z" fill="#ecf4f6" opacity=".16"/>
+  <g transform="translate(-12 -6)">
+    <use href="#crescent" fill="url(#moon)"/>
+    <use href="#crescent" fill="url(#moon-light)"/>
+    <g clip-path="url(#moon-edge)">
+      <path d="M264 13C208 36 186 94 211 142s83 63 124 34" fill="none" stroke="#ddf3ff" stroke-width="2" opacity=".65"/>
+      <path d="M218 45C194 93 213 149 260 172c35 16 76 10 100-19" fill="none" stroke="#354e73" stroke-width="5" opacity=".24"/>
+      <path d="m201 94 14-11 6 30-15 17Zm18 49 15-8 20 29-13 11Zm48 36 12-12 25 7-4 16Z" fill="#ecf4f6" opacity=".16"/>
+    </g>
   </g>
   <!-- The Express rises from the lettering's baseline through the crescent.
        Its connected silhouette suggests a locomotive without miniature hardware. -->
