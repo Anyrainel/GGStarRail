@@ -29,13 +29,16 @@ describe("HSR route foundation", () => {
     expect(
       await screen.findByRole("heading", {
         level: 1,
-        name: messagesEn[route.titleKey],
+        name:
+          route.path === APP_PATHS.home
+            ? messagesEn["home.brand"]
+            : messagesEn[route.titleKey],
       })
     ).toBeInTheDocument();
     if (route.path === APP_PATHS.home) {
       await waitFor(() => {
         expect(document.querySelectorAll("[data-asset-source]")).toHaveLength(
-          3
+          4
         );
       });
     }

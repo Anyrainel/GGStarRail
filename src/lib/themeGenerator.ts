@@ -1,6 +1,9 @@
 import type { ThemeId } from "@/contexts/themeTypes";
 
 const THEME_VARS: Record<ThemeId, Readonly<Record<string, string>>> = {
+  jarilo: destinationPalette(211, 198, 65, 62),
+  luofu: destinationPalette(172, 164, 48, 48),
+  amphoreus: destinationPalette(35, 39, 72, 62),
   astral: {
     background: "229 22% 7%",
     foreground: "0 0% 95%",
@@ -83,4 +86,36 @@ export function applyThemeVars(theme: ThemeId): void {
   for (const [name, value] of Object.entries(THEME_VARS[theme])) {
     root.style.setProperty(`--${name}`, value);
   }
+}
+
+// Destination-inspired palettes share the same contrast and surface hierarchy.
+function destinationPalette(
+  base: number,
+  hue: number,
+  saturation: number,
+  lightness: number
+): Readonly<Record<string, string>> {
+  const primary = `${hue} ${saturation}% ${lightness}%`;
+  return {
+    background: `${base} 22% 7%`,
+    foreground: "0 0% 96%",
+    card: `${base} 22% 9%`,
+    "card-foreground": "0 0% 96%",
+    popover: `${base} 24% 10%`,
+    "popover-foreground": "0 0% 96%",
+    primary,
+    "primary-foreground": `${base} 30% 8%`,
+    secondary: `${base} 24% 15%`,
+    "secondary-foreground": "0 0% 96%",
+    muted: `${base} 19% 11%`,
+    "muted-foreground": `${base} 12% 66%`,
+    accent: `${hue} 35% 30%`,
+    "accent-foreground": "0 0% 98%",
+    border: `${base} 19% 24%`,
+    input: `${base} 20% 11%`,
+    ring: primary,
+    "gradient-page": `radial-gradient(ellipse 85% 75% at 50% 50%, hsl(${hue} 34% 23%) 0%, transparent 92%), linear-gradient(135deg, hsl(${base} 24% 8%), hsl(${base} 22% 7%))`,
+    "gradient-card": `linear-gradient(135deg, hsl(${base} 29% 16%), hsl(${hue} 28% 11%))`,
+    "gradient-select": `linear-gradient(135deg, hsl(${hue} 28% 11%), hsl(${base} 29% 16%))`,
+  };
 }

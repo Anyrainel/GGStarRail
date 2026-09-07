@@ -1,6 +1,29 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "filter.sortPriority": "优先级",
+  "filter.priorityUnavailable":
+    "在角色优先级页面为角色分级后即可按优先级排序。",
+  "filter.sort": "排序",
+  "filter.sortName": "名称",
+  "filter.sortRarity": "星级",
+  "filter.sortLevel": "等级",
+  "filter.ascending": "升序",
+  "filter.descending": "降序",
+  "filter.configuredOnly": "仅已配置配装",
+  "filter.reset": "重置筛选",
+  "home.brand": "GGArtifact",
+  "home.tool.tiers.title": "规划养成优先级",
+  "home.tool.tiers.body": "按自己的养成计划整理角色、光锥和遗器套装。",
+  "home.openBuilds": "配置配装",
+  "home.openTiers": "整理优先级",
+  "build.chooseSet": "选择套装",
+  "build.chooseSetsHelp":
+    "选择这套配装要使用的套装。创建后可切换为两套隧洞遗器 2 件套。",
+  "theme.jarilo": "雅利洛-Ⅵ · 冰雪与钢铁",
+  "theme.luofu": "仙舟「罗浮」· 青玉",
+  "theme.amphoreus": "翁法罗斯 · 黎明金",
+
   "beta.releasedSummary": "已核实实装的图鉴数据",
   "beta.previews": "资料预览",
   "beta.previewBadge": "预览",
@@ -32,9 +55,9 @@ export const messagesZhCn = {
   "site.starRail": "崩坏：星穹铁道",
   "site.starRail.short": "星穹铁道",
   "theme.label": "主题",
-  "theme.astral": "群星之夜",
+  "theme.astral": "空间站「黑塔」· 星光",
   "theme.express": "星穹列车",
-  "theme.dreamscape": "美梦之境",
+  "theme.dreamscape": "匹诺康尼 · 梦境霓虹",
   "common.more": "更多",
   "common.close": "关闭",
   "stat.short.hp": "生命",
@@ -86,24 +109,19 @@ export const messagesZhCn = {
   "nav.tierRelics": "遗器优先级",
   "nav.imports": "数据来源",
   "route.home.title": "配好角色，留下真正有用的遗器",
-  "route.home.description":
-    "沿用 GGArtifact 熟悉的账号与圣遗物管理流程，为《崩坏：星穹铁道》重构，支持本地导入与完整双语图鉴。",
+  "route.home.description": "你的《崩坏：星穹铁道》遗器、配装与养成规划助手。",
   "home.openAccount": "打开账号数据",
   "home.openArchive": "浏览图鉴",
-  "home.tools.title": "星铁工具",
-  "home.tools.body":
-    "延续 GGArtifact 以玩家任务为核心的结构，适配角色、光锥、遗器和位面饰品。",
+  "home.tools.title": "从这里开始",
+  "home.tools.body": "直接前往你需要的工具。",
   "home.tool.account.title": "查看账号数据",
-  "home.tool.account.body": "在同一本地工作台中浏览已导入的角色与装备。",
+  "home.tool.account.body": "查看角色、装备与遗器提升建议。",
   "home.tool.builds.title": "规划遗器配装",
-  "home.tool.builds.body":
-    "配置角色配装、调整评分、生成筛选并安全复核遗器整理建议。",
+  "home.tool.builds.body": "选好遗器套装与词条，找出适合角色配装的遗器。",
   "home.tool.archive.title": "浏览游戏图鉴",
-  "home.tool.archive.body":
-    "搜索角色、光锥、遗器套装与成就，并查看有来源依据的完整资料。",
+  "home.tool.archive.body": "查询角色、光锥、遗器套装效果与成就。",
   "route.characters.title": "角色",
-  "route.characters.description":
-    "已拥有角色、养成、星魂、行迹和已装备物品引用。",
+  "route.characters.description": "查看角色养成、星魂、行迹与当前装备。",
   "route.inventory.title": "背包",
   "route.inventory.description":
     "在同一背包中查看已导入的角色、光锥、隧洞遗器和位面饰品。",
@@ -113,13 +131,12 @@ export const messagesZhCn = {
   "route.relics.title": "遗器",
   "route.relics.description": "查看头部、手部、躯干和脚部的隧洞遗器。",
   "route.planar.title": "位面饰品",
-  "route.planar.description": "位面球和连结绳作为独立的星铁装备部位建模。",
+  "route.planar.description": "查看已拥有的位面球与连结绳。",
   "route.builds.title": "角色配装",
   "route.builds.description":
     "为角色配置四件隧洞遗器与两件位面饰品，编辑主词条偏好和评分方案。",
   "route.scoring.title": "遗器评分",
-  "route.scoring.description":
-    "调整来自数据表的词条权重与评级门槛，查看每件遗器和当前配装的确定性评分。",
+  "route.scoring.description": "调整词条权重与评分门槛，评估遗器和当前配装。",
   "route.filters.title": "遗器筛选",
   "route.filters.description":
     "把每套配装转成六个部位筛选，并从已导入账号中推荐匹配度最高的整套遗器。",
@@ -139,21 +156,20 @@ export const messagesZhCn = {
     "浏览隧洞遗器与位面饰品套装、部位、稀有度和套装效果。",
   "route.archiveAchievements.title": "成就图鉴",
   "route.archiveAchievements.description":
-    "按分类、完成状态与来源支持的版本信息浏览星铁成就，并查看捕获或本地记录的完成进度。",
+    "按分类查找成就，记录并查看完成进度。",
   "route.tierCharacters.title": "角色优先级",
   "route.tierCharacters.description":
     "按战斗属性整理全部角色，制作属于自己的养成规划。",
   "route.tierLightCones.title": "光锥优先级",
-  "route.tierLightCones.description":
-    "按命途整理全部光锥；列表只代表你的选择，不是通用推荐。",
+  "route.tierLightCones.description": "按命途整理光锥，规划自己的养成优先级。",
   "route.tierRelics.title": "遗器优先级",
   "route.tierRelics.description":
     "把隧洞遗器与位面饰品放在同一张表中，按用途与个人优先级整理。",
   "route.imports.title": "数据来源",
   "route.imports.description":
-    "预览扫描器文件、导入公开 UID 展示，或通过本地 Worker 请求自己的已装备账号数据。",
+    "导入扫描器文件或公开 UID 展示，查看可用的账号导入方式。",
   "route.notFound.title": "页面不存在",
-  "route.notFound.description": "此路径不属于 GGStarRail 当前基础范围。",
+  "route.notFound.description": "找不到此页面，请从导航中选择工具继续使用。",
   "home.ready.title": "现已实现",
   "home.ready.body":
     "已校验双语图鉴、响应式资料库、本地与部分账号导入、可编辑配装、评分、筛选、整理、持久化和安全备份。",
@@ -218,7 +234,6 @@ export const messagesZhCn = {
   "empty.builds.prototype":
     "配装编辑器目前仍处于原型阶段，暂未开放。你可以先查看账号数据或管理导入来源。",
   "empty.openAccount": "查看账号数据",
-  "empty.demoError": "无法加载内置演示账号；当前账号数据没有任何变化。",
   "empty.archive": "尚未加载具有完整来源信息的游戏数据包。",
   "scoring.engine.title": "中立评分服务",
   "scoring.engine.body":
@@ -758,18 +773,8 @@ export const messagesZhCn = {
   "imports.success": "已应用确认后的账号数据。",
   "imports.error.title": "无法预览导入数据",
   "imports.error.hint": "数据来源未通过校验，当前账号数据没有任何变化。",
-  "imports.demo.title": "演示账号",
-  "imports.demo.body":
-    "加载一个由真实图鉴 ID 构建、可直接查看的本地演示账号。仅替换本地账号快照，不会连接游戏。",
-  "imports.demo.load": "加载演示账号",
-  "imports.demo.replace": "替换为演示账号",
-  "imports.demo.loaded": "演示账号已加载。",
-  "imports.demo.confirmTitle": "用演示数据替换当前账号？",
-  "imports.demo.confirmBody":
-    "此操作会删除当前本地账号快照并替换为内置演示数据，不会修改配装与评分方案。",
-  "imports.demo.confirmAction": "替换为演示账号",
   "imports.existingWarning":
-    "网站的部分导入会与本地数据合并，不会删除更完整的背包；完整文件导入可替换其覆盖范围，演示账号会替换整个快照。",
+    "网站的部分导入会与本地数据合并，不会删除更完整的背包；完整文件导入可替换其覆盖范围。",
   "imports.warning.traces":
     "此扫描器导出不包含行迹等级；导入角色的行迹记录将保持为空。",
   "imports.warning.unknownLock":

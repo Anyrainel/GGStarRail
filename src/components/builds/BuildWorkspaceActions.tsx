@@ -1,7 +1,8 @@
 import { Download, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
+import { PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildWorkspaceBundle } from "@/lib/buildBundle";
 import {
@@ -233,63 +234,53 @@ export function BuildWorkspaceActions({
 
   return (
     <>
-      <Card className="overflow-hidden">
-        <CardContent className="flex flex-col gap-3 p-3 md:flex-row md:items-center md:justify-between">
-          <div className="min-w-0">
-            <p className="text-sm font-medium">{t("build.backupTitle")}</p>
-            <p className="text-xs leading-5 text-muted-foreground">
-              {t("build.workspaceSummary", {
-                builds: builds.length,
-                profiles: scoreProfiles.length,
-              })}
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => inputRef.current?.click()}
+      <PageActions
+        primary={
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => inputRef.current?.click()}
+          >
+            <Upload className="h-4 w-4" aria-hidden="true" />
+            {t("build.import")}
+          </Button>
+        }
+        overflow={
+          <>
+            <DropdownMenuItem
+              className="sm:hidden"
+              onSelect={() => inputRef.current?.click()}
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
               {t("build.import")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
+            </DropdownMenuItem>
+            <DropdownMenuItem
               disabled={!hasWorkspace}
-              onClick={exportWorkspace}
+              onSelect={exportWorkspace}
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               {t("build.export")}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
+            </DropdownMenuItem>
+            <DropdownMenuItem
               disabled={!hasWorkspace}
-              onClick={() => setClearOpen(true)}
+              onSelect={() => setClearOpen(true)}
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
               {t("build.clear")}
-            </Button>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="application/json,.json"
-              aria-label={t("build.import")}
-              className="sr-only"
-              onChange={(event) => void reviewImport(event.target.files?.[0])}
-            />
-          </div>
-        </CardContent>
-        {status && (
-          <CardContent className="border-t border-border p-3">
-            <StatusBanner message={status.message} tone={status.tone} />
-          </CardContent>
-        )}
-      </Card>
+            </DropdownMenuItem>
+          </>
+        }
+      />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/json,.json"
+        aria-label={t("build.import")}
+        className="sr-only"
+        onChange={(event) => void reviewImport(event.target.files?.[0])}
+      />
+      {status && <StatusBanner message={status.message} tone={status.tone} />}
 
       <ConfirmDialog
         open={pendingImport !== null}

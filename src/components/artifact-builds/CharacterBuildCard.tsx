@@ -1,13 +1,20 @@
 import { Plus } from "lucide-react";
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router-dom";
+import { SelectField } from "@/components/builds/BuildControls";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from "@/components/ui/responsive-dialog";
 import { APP_PATHS } from "@/config/navigation";
-import type { Character, LightCone } from "@/domain/account/schemas";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
@@ -22,12 +29,12 @@ import { BuildCard } from "./BuildCard";
 
 interface CharacterBuildCardProps {
   character: CharacterDefinition;
-  ownedCharacter?: Character;
-  equippedLightCone?: LightCone;
   builds: readonly BuildConfiguration[];
   profiles: ReadonlyMap<string, ScoreProfile>;
   references: BuildReferences;
-  onAddBuild: () => void;
+  onAddBuild: (
+    setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">
+  ) => void;
   onBuildChange: (build: BuildConfiguration) => void;
   onProfileChange: (profile: ScoreProfile) => void;
   onDeleteBuild: (build: BuildConfiguration) => void;
@@ -35,8 +42,6 @@ interface CharacterBuildCardProps {
 
 function CharacterBuildCardComponent({
   character,
-  ownedCharacter,
-  equippedLightCone,
   builds,
   profiles,
   references,
@@ -46,6 +51,14 @@ function CharacterBuildCardComponent({
   onDeleteBuild,
 }: CharacterBuildCardProps) {
   const { locale, t } = useI18n();
+  const [adding, setAdding] = useState(false);
+  const [cavernSetId, setCavernSetId] = useState("");
+  const [planarSetId, setPlanarSetId] = useState("");
+  const openAddBuild = () => {
+    setCavernSetId("");
+    setPlanarSetId("");
+    setAdding(true);
+  };
   const isVeryNarrow = useMediaQuery("(max-width: 560px)");
   const iconSize: ItemIconSize = isVeryNarrow ? "md" : "lg";
   const presentation = characterCatalogPresentation(
@@ -58,51 +71,7 @@ function CharacterBuildCardComponent({
   const combatType = references.properties.combatTypeById.get(
     character.combat_type_id
   );
-  const lightCone = equippedLightCone
-    ? references.lightCones.byId.get(equippedLightCone.definitionId)
-    : undefined;
-  const lightConePath = lightCone
-    ? references.properties.pathById.get(lightCone.path_id)
-    : undefined;
-  const lightConeName = lightCone
-    ? localizedName(lightCone.name, locale, lightCone.id)
-    : t("characterLoadout.noLightCone");
-  const lightConePathName = lightConePath
-    ? localizedName(lightConePath.name, locale, lightConePath.id)
-    : undefined;
-
-  const characterIconLabel = [
-    presentation.name,
-    t("field.rarity", { value: character.rarity }),
-    ownedCharacter
-      ? t("field.level", { value: ownedCharacter.level })
-      : undefined,
-    ownedCharacter
-      ? t("field.eidolon", { value: ownedCharacter.eidolon })
-      : undefined,
-  ]
-    .filter(Boolean)
-    .join(", ");
-  const lightConeIconLabel = [
-    lightConeName,
-    lightCone ? t("field.rarity", { value: lightCone.rarity }) : undefined,
-    equippedLightCone
-      ? t("field.level", { value: equippedLightCone.level })
-      : undefined,
-    equippedLightCone
-      ? t("field.superimposition", {
-          value: equippedLightCone.superimposition,
-        })
-      : undefined,
-    equippedLightCone?.locked === true
-      ? t("field.locked")
-      : equippedLightCone?.locked === null
-        ? t("field.lockUnknown")
-        : undefined,
-    lightConePathName,
-  ]
-    .filter(Boolean)
-    .join(", ");
+  const characterIconLabel = presentation.name;
 
   return (
     <Card
@@ -136,8 +105,6 @@ function CharacterBuildCardComponent({
               sourcePath={character.icon_path}
               alt={characterIconLabel}
               rarity={character.rarity}
-              badge={ownedCharacter?.eidolon}
-              level={ownedCharacter ? `Lv. ${ownedCharacter.level}` : undefined}
               cornerAsset={
                 combatType
                   ? {
@@ -158,14 +125,6 @@ function CharacterBuildCardComponent({
                 <h2 className="truncate text-lg font-bold text-foreground md:text-xl">
                   {presentation.name}
                 </h2>
-                {ownedCharacter && (
-                  <Badge
-                    variant="secondary"
-                    className="hidden shrink-0 sm:inline-flex"
-                  >
-                    {t("build.owned")}
-                  </Badge>
-                )}
               </div>
 
               <div className="flex min-w-0 flex-wrap items-center gap-1 md:gap-2">
@@ -206,51 +165,6 @@ function CharacterBuildCardComponent({
                 </Badge>
               </div>
             </div>
-
-            <section
-              className="shrink-0"
-              aria-label={t("characterLoadout.lightCone")}
-              title={lightConeIconLabel}
-            >
-              {lightCone ? (
-                <ItemIcon
-                  kind="light-cone"
-                  id={lightCone.id}
-                  sourcePath={lightCone.icon_path}
-                  alt={lightConeIconLabel}
-                  rarity={lightCone.rarity}
-                  badge={equippedLightCone?.superimposition}
-                  level={
-                    equippedLightCone
-                      ? `Lv. ${equippedLightCone.level}`
-                      : undefined
-                  }
-                  locked={equippedLightCone?.locked}
-                  cornerAsset={
-                    lightConePath
-                      ? {
-                          kind: "path",
-                          id: lightConePath.id,
-                          sourcePath: lightConePath.icon_path,
-                          alt: lightConePathName ?? lightConePath.id,
-                        }
-                      : undefined
-                  }
-                  size={iconSize}
-                />
-              ) : (
-                <div
-                  role="img"
-                  aria-label={lightConeName}
-                  className={cn(
-                    "grid shrink-0 place-items-center rounded-lg border-2 border-dashed border-border bg-background/40 text-muted-foreground",
-                    isVeryNarrow ? "h-14 w-14" : "h-16 w-16"
-                  )}
-                >
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                </div>
-              )}
-            </section>
           </div>
         </div>
       </CardHeader>
@@ -266,7 +180,7 @@ function CharacterBuildCardComponent({
                   "gap-2",
                   isVeryNarrow ? "h-7 text-xs" : "h-9 text-sm"
                 )}
-                onClick={onAddBuild}
+                onClick={openAddBuild}
               >
                 <Plus
                   className={isVeryNarrow ? "h-3 w-3" : "h-4 w-4"}
@@ -304,7 +218,7 @@ function CharacterBuildCardComponent({
                 "flex-1 gap-2",
                 isVeryNarrow ? "h-7 text-xs" : "h-9 text-sm"
               )}
-              onClick={onAddBuild}
+              onClick={openAddBuild}
             >
               <Plus
                 className={isVeryNarrow ? "h-3 w-3" : "h-4 w-4"}
@@ -315,6 +229,63 @@ function CharacterBuildCardComponent({
           </div>
         )}
       </CardContent>
+      <ResponsiveDialog open={adding} onOpenChange={setAdding}>
+        <ResponsiveDialogContent closeLabel={t("common.close")}>
+          <ResponsiveDialogHeader>
+            <ResponsiveDialogTitle>{t("build.addBuild")}</ResponsiveDialogTitle>
+            <ResponsiveDialogDescription>
+              {t("build.chooseSetsHelp")}
+            </ResponsiveDialogDescription>
+          </ResponsiveDialogHeader>
+          <div className="mt-4 space-y-4">
+            <SelectField
+              label={t("build.cavernFourPiece")}
+              value={cavernSetId}
+              onChange={setCavernSetId}
+              options={[
+                { value: "", label: t("build.chooseSet") },
+                ...references.relicSets.values
+                  .filter((set) => set.kind === "cavern_relic")
+                  .map((set) => ({
+                    value: set.id,
+                    label: localizedName(set.name, locale, set.id),
+                  })),
+              ]}
+            />
+            <SelectField
+              label={t("build.planarTwoPiece")}
+              value={planarSetId}
+              onChange={setPlanarSetId}
+              options={[
+                { value: "", label: t("build.chooseSet") },
+                ...references.relicSets.values
+                  .filter((set) => set.kind === "planar_ornament")
+                  .map((set) => ({
+                    value: set.id,
+                    label: localizedName(set.name, locale, set.id),
+                  })),
+              ]}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setAdding(false)}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                disabled={!cavernSetId || !planarSetId}
+                onClick={() => {
+                  onAddBuild({
+                    cavern: { mode: "four-piece", setId: cavernSetId },
+                    planarSetId,
+                  });
+                  setAdding(false);
+                }}
+              >
+                {t("build.addBuild")}
+              </Button>
+            </div>
+          </div>
+        </ResponsiveDialogContent>
+      </ResponsiveDialog>
     </Card>
   );
 }

@@ -22,9 +22,17 @@ async function prepareCard() {
   );
   const build = createCharacterBuild(
     character,
-    undefined,
-    [],
-    references.relicSets.values,
+    {
+      cavern: {
+        mode: "four-piece",
+        setId: references.relicSets.values.find(
+          (set) => set.kind === "cavern_relic"
+        )!.id,
+      },
+      planarSetId: references.relicSets.values.find(
+        (set) => set.kind === "planar_ornament"
+      )!.id,
+    },
     references.properties,
     references.progression,
     profile.id,
@@ -35,6 +43,52 @@ async function prepareCard() {
 }
 
 describe("BuildCard", () => {
+  it("keeps both Cavern 2-piece sets editable without converting the build", async () => {
+    const { build, profile, references } = await prepareCard();
+    const [first, second, replacement] = references.relicSets.values.filter(
+      (set) => set.kind === "cavern_relic"
+    );
+    if (!first || !second || !replacement)
+      throw new Error("Cavern sets missing");
+    const mixedBuild = {
+      ...build,
+      cavern: {
+        mode: "two-plus-two" as const,
+        setIds: [first.id, second.id] as [string, string],
+      },
+    };
+    const onBuildChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <I18nProvider>
+        <BuildCard
+          build={mixedBuild}
+          profile={profile}
+          references={references}
+          onBuildChange={onBuildChange}
+          onProfileChange={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </I18nProvider>
+    );
+    expect(
+      screen.getByRole("button", { name: /Second Cavern 2-piece set:/ })
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: /First Cavern 2-piece set:/ })
+    );
+    expect(
+      screen.queryByRole("menuitem", { name: second.name.en.value })
+    ).toBeNull();
+    await user.click(
+      screen.getByRole("menuitem", { name: replacement.name.en.value })
+    );
+    expect(onBuildChange).toHaveBeenLastCalledWith({
+      ...mixedBuild,
+      cavern: { mode: "two-plus-two", setIds: [replacement.id, second.id] },
+    });
+  });
+
   it("uses ItemIcons for the 4+2 set plan and only shows variable main-stat slots", async () => {
     const { build, profile, references } = await prepareCard();
     const view = render(

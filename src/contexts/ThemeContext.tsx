@@ -15,6 +15,9 @@ export const THEME_IDS: readonly ThemeId[] = [
   "astral",
   "express",
   "dreamscape",
+  "jarilo",
+  "luofu",
+  "amphoreus",
 ];
 
 interface ThemeContextValue {

@@ -1,10 +1,11 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { APP_PATHS } from "@/config/navigation";
 import { I18nProvider } from "@/i18n/I18nContext";
+import { loadBuildReferences } from "@/lib/buildReferences";
 import CharacterView from "@/pages/account-data/CharacterView";
 import InventoryView from "@/pages/account-data/InventoryView";
 import CharacterBuildView from "@/pages/artifact-builds/CharacterBuildView";
@@ -16,6 +17,26 @@ function renderPage(page: ReactElement) {
       <MemoryRouter>{page}</MemoryRouter>
     </I18nProvider>
   );
+}
+
+async function chooseBuildSets(user: ReturnType<typeof userEvent.setup>) {
+  const references = await loadBuildReferences();
+  const cavern = references.relicSets.values.find(
+    (set) => set.kind === "cavern_relic"
+  )!;
+  const planar = references.relicSets.values.find(
+    (set) => set.kind === "planar_ornament"
+  )!;
+  const dialog = screen.getByRole("dialog");
+  await user.selectOptions(
+    within(dialog).getByRole("combobox", { name: "Cavern 4-piece set" }),
+    cavern.id
+  );
+  await user.selectOptions(
+    within(dialog).getByRole("combobox", { name: "Planar 2-piece set" }),
+    planar.id
+  );
+  await user.click(within(dialog).getByRole("button", { name: "Add Build" }));
 }
 
 beforeEach(() => {
@@ -30,15 +51,15 @@ describe("Fresh workspace actions", () => {
   it.each([
     ["characters", () => <CharacterView />],
     ["inventory", () => <InventoryView />],
-  ])("offers account import before demo data on %s", (_name, page) => {
+  ])("offers real account import without demo data on %s", (_name, page) => {
     renderPage(page());
 
     expect(
       screen.getByRole("button", { name: "Import account" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Load demo account" })
-    ).toBeInTheDocument();
+      screen.queryByRole("button", { name: "Load demo account" })
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Data source details" })
     ).toHaveAttribute("href", APP_PATHS.imports);
@@ -57,25 +78,10 @@ describe("Fresh workspace actions", () => {
       "UID profile showcase",
       "HoYoLAB / 米游社 credential import",
       "Local account import",
-      "Demo account",
     ]);
     expect(screen.getByLabelText("Choose JSON file").parentElement).toHaveClass(
       "focus-within:ring-2"
     );
-  });
-
-  it("loads the built-in demo into the workspace", async () => {
-    const user = userEvent.setup();
-    renderPage(<CharacterView />);
-
-    await user.click(screen.getByRole("button", { name: "Load demo account" }));
-
-    await waitFor(() => {
-      expect(useWorkspaceStore.getState().account).toMatchObject({
-        profileId: "demo-account:v3",
-        source: { provider: "demo-account" },
-      });
-    });
   });
 
   it("creates and edits a full-catalog build without an account", async () => {
@@ -100,6 +106,7 @@ describe("Fresh workspace actions", () => {
     ).not.toBeInTheDocument();
 
     await user.click(createButtons[0]);
+    await chooseBuildSets(user);
     await waitFor(() => {
       expect(useWorkspaceStore.getState().account).toBeNull();
       expect(useWorkspaceStore.getState().builds).toHaveLength(1);
@@ -125,6 +132,7 @@ describe("Fresh workspace actions", () => {
       name: "Add First Build",
     });
     await user.click(createButton);
+    await chooseBuildSets(user);
     const state = useWorkspaceStore.getState();
     const bundle = {
       schema: "ggstarrail.build-workspace",
@@ -175,6 +183,7 @@ describe("Fresh workspace actions", () => {
       name: "Add First Build",
     });
     await user.click(createButton);
+    await chooseBuildSets(user);
     const state = useWorkspaceStore.getState();
     const build = state.builds[0];
     if (!build) throw new Error("Expected a generated build");

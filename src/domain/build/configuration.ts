@@ -1,4 +1,4 @@
-import type { Relic, RelicSlot } from "@/domain/account/schemas";
+import type { RelicSlot } from "@/domain/account/schemas";
 import {
   type BuildConfiguration,
   BuildConfigurationSchema,
@@ -39,11 +39,6 @@ export interface BuildPropertyCatalog {
     string,
     { id: string; valid_main_properties: readonly string[] }
   >;
-}
-
-export interface BuildRelicSetDefinition {
-  id: string;
-  kind: "cavern_relic" | "planar_ornament";
 }
 
 export const DEFAULT_GRADE_THRESHOLDS = {
@@ -160,7 +155,9 @@ function preferredMainStats(
     const selected = weighted
       .filter(({ weight }) => weight === maximum && weight > 0)
       .map(({ propertyId }) => propertyId);
-    return selected.length > 0 ? selected : candidates.slice(0, 1);
+    // Without character scoring data, leave every valid main stat accepted.
+    // Catalog ordering is not a recommendation for this Character.
+    return selected.length > 0 ? selected : [...candidates];
   };
 
   return {
@@ -171,57 +168,22 @@ function preferredMainStats(
   };
 }
 
-function equippedSetCounts(
-  characterKey: string | undefined,
-  relics: readonly Relic[],
-  kind: "cavern" | "planar"
-): Array<[string, number]> {
-  if (!characterKey) return [];
-  const counts = new Map<string, number>();
-  for (const relic of relics) {
-    const isPlanar = relic.slot === "planarSphere" || relic.slot === "linkRope";
-    if (
-      relic.equippedCharacterKey !== characterKey ||
-      (kind === "planar") !== isPlanar
-    ) {
-      continue;
-    }
-    counts.set(relic.setId, (counts.get(relic.setId) ?? 0) + 1);
-  }
-  return [...counts].sort(
-    ([leftId, leftCount], [rightId, rightCount]) =>
-      rightCount - leftCount || leftId.localeCompare(rightId)
-  );
-}
-
 export function createCharacterBuild(
   character: CharacterBuildDefinition,
-  characterKey: string | undefined,
-  relics: readonly Relic[],
-  relicSets: readonly BuildRelicSetDefinition[],
+  setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">,
   properties: BuildPropertyCatalog,
   progression: BuildProgressionTables,
   scoreProfileId: string,
   name: string,
   id = newId("build")
 ): BuildConfiguration {
-  const cavernSets = relicSets.filter((set) => set.kind === "cavern_relic");
-  const planarSets = relicSets.filter((set) => set.kind === "planar_ornament");
-  const equippedCavern = equippedSetCounts(characterKey, relics, "cavern");
-  const equippedPlanar = equippedSetCounts(characterKey, relics, "planar");
-  const cavernIds = equippedCavern.map(([setId]) => setId);
-  const defaultCavernId = cavernIds[0] ?? cavernSets[0]?.id;
-  const defaultPlanarId = equippedPlanar[0]?.[0] ?? planarSets[0]?.id;
-  if (!defaultCavernId || !defaultPlanarId) {
-    throw new Error("The Relic set catalog is incomplete");
-  }
   return BuildConfigurationSchema.parse({
     id,
     name,
     characterDefinitionId: character.id,
     scoreProfileId,
-    cavern: { mode: "four-piece", setId: defaultCavernId },
-    planarSetId: defaultPlanarId,
+    cavern: setPlan.cavern,
+    planarSetId: setPlan.planarSetId,
     preferredMainStats: preferredMainStats(character, progression, properties),
   });
 }

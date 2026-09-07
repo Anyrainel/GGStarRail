@@ -15,8 +15,8 @@ import {
   createRelicScoringContext,
   loadBuildReferences,
 } from "@/lib/buildReferences";
-import { createDemoAccount } from "@/lib/demoAccount";
 import { accountRelicSlot } from "@/providers/accountNormalization";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 type Setup = Omit<ResourceRecommendationInput, "settings"> & {
   references: BuildReferences;
@@ -41,9 +41,21 @@ beforeAll(async () => {
   );
   const build = createCharacterBuild(
     character,
-    ownedCharacter.key,
-    account.relics,
-    references.relicSets.values,
+    {
+      cavern: {
+        mode: "four-piece",
+        setId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "head"
+        )!.setId,
+      },
+      planarSetId: account.relics.find(
+        (relic) =>
+          relic.equippedCharacterKey === ownedCharacter.key &&
+          relic.slot === "planarSphere"
+      )!.setId,
+    },
     references.properties,
     references.progression,
     profile.id,
@@ -69,6 +81,52 @@ beforeAll(async () => {
 });
 
 describe("HSR resource suggestions", () => {
+  it("labels existing Relic actions with their actual main stat when a build accepts alternatives", () => {
+    const build = setup.builds[0]!;
+    const suggestions = generateResourceSuggestions({
+      ...setup,
+      builds: [
+        {
+          ...build,
+          preferredMainStats: {
+            body: [
+              ...(setup.references.properties.relicSlotById.get("BODY")
+                ?.valid_main_properties ?? []),
+            ].reverse(),
+            feet: [
+              ...(setup.references.properties.relicSlotById.get("FOOT")
+                ?.valid_main_properties ?? []),
+            ].reverse(),
+            planarSphere: [
+              ...(setup.references.properties.relicSlotById.get("NECK")
+                ?.valid_main_properties ?? []),
+            ].reverse(),
+            linkRope: [
+              ...(setup.references.properties.relicSlotById.get("OBJECT")
+                ?.valid_main_properties ?? []),
+            ].reverse(),
+          },
+        },
+      ],
+      settings: {
+        ...DEFAULT_RESOURCE_SETTINGS,
+        minimumScoreGap: { "level-up": 0, synthesize: 0, reroll: 0 },
+      },
+    });
+    const actualRelicActions = suggestions.filter(
+      (suggestion) => suggestion.kind !== "synthesize"
+    );
+    expect(
+      actualRelicActions.some((suggestion) => suggestion.slot === "body")
+    ).toBe(true);
+    for (const suggestion of actualRelicActions) {
+      const relic = setup.account.relics.find(
+        (relic) => relic.key === suggestion.relicKey
+      )!;
+      expect(suggestion.mainStatId).toBe(relic.mainStat.statId);
+    }
+  });
+
   it("covers leveling, synthesis, and Variable Dice across all six slots", () => {
     const suggestions = generateResourceSuggestions({
       ...setup,

@@ -10,11 +10,11 @@ import {
 } from "@/domain/build/configuration";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { loadBuildReferences } from "@/lib/buildReferences";
-import { createDemoAccount } from "@/lib/demoAccount";
 import { ResourceView } from "@/pages/account-data/ResourceView";
 import { TriageView } from "@/pages/account-data/TriageView";
 import { useResourceSettingsStore } from "@/stores/useResourceSettingsStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 function renderView(view: React.ReactNode) {
   return render(
@@ -44,9 +44,21 @@ async function prepareBuildWorkspace(accountOverride?: AccountSnapshot) {
   );
   const build = createCharacterBuild(
     character,
-    ownedCharacter.key,
-    account.relics,
-    references.relicSets.values,
+    {
+      cavern: {
+        mode: "four-piece",
+        setId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "head"
+        )!.setId,
+      },
+      planarSetId: account.relics.find(
+        (relic) =>
+          relic.equippedCharacterKey === ownedCharacter.key &&
+          relic.slot === "planarSphere"
+      )!.setId,
+    },
     references.properties,
     references.progression,
     profile.id,

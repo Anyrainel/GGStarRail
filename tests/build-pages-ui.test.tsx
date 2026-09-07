@@ -18,8 +18,8 @@ import {
 } from "@/domain/build/configuration";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { loadBuildReferences } from "@/lib/buildReferences";
-import { createDemoAccount } from "@/lib/demoAccount";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 function renderRoute(path: string) {
   return render(
@@ -50,9 +50,21 @@ async function prepareBuildWorkspace() {
   );
   const build = createCharacterBuild(
     character,
-    ownedCharacter.key,
-    account.relics,
-    references.relicSets.values,
+    {
+      cavern: {
+        mode: "four-piece",
+        setId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "head"
+        )!.setId,
+      },
+      planarSetId: account.relics.find(
+        (relic) =>
+          relic.equippedCharacterKey === ownedCharacter.key &&
+          relic.slot === "planarSphere"
+      )!.setId,
+    },
     references.properties,
     references.progression,
     profile.id,
@@ -90,6 +102,49 @@ afterEach(() => {
 });
 
 describe("Build route interactions", () => {
+  it("creates a catalog build only after the player chooses both sets", async () => {
+    const references = await loadBuildReferences();
+    const character = references.characters.values[0];
+    const cavern = references.relicSets.values.find(
+      (set) => set.kind === "cavern_relic"
+    );
+    const planar = references.relicSets.values.find(
+      (set) => set.kind === "planar_ornament"
+    );
+    if (!character || !cavern || !planar)
+      throw new Error("Catalog fixture missing");
+    const user = userEvent.setup();
+    renderRoute(APP_PATHS.builds);
+    await user.type(
+      await screen.findByRole("searchbox", { name: "Search" }),
+      character.id
+    );
+    await user.click(
+      screen.getAllByRole("button", { name: "Add First Build" })[0]
+    );
+    const dialog = within(screen.getByRole("dialog", { name: "Add Build" }));
+    const create = dialog.getByRole("button", { name: "Add Build" });
+    expect(create).toBeDisabled();
+    expect(useWorkspaceStore.getState().builds).toHaveLength(0);
+    await user.selectOptions(
+      dialog.getByRole("combobox", { name: "Cavern 4-piece set" }),
+      cavern.id
+    );
+    expect(create).toBeDisabled();
+    await user.selectOptions(
+      dialog.getByRole("combobox", { name: "Planar 2-piece set" }),
+      planar.id
+    );
+    await user.click(create);
+    expect(useWorkspaceStore.getState().builds).toHaveLength(1);
+    expect(useWorkspaceStore.getState().builds[0]).toMatchObject({
+      characterDefinitionId: character.id,
+      cavern: { mode: "four-piece", setId: cavern.id },
+      planarSetId: planar.id,
+    });
+    expect(useWorkspaceStore.getState().account).toBeNull();
+  });
+
   it("configures a 4+2 build with four variable slots and edits its scoring profile", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();

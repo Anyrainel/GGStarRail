@@ -1,30 +1,27 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
+import {
+  CharacterFilterPanel,
+  characterFilterCount,
+  defaultCharacterFilters,
+} from "@/components/account-data/CharacterFilterPanel";
 import { CharacterBuildCard } from "@/components/artifact-builds/CharacterBuildCard";
-import { SelectField, ToggleField } from "@/components/builds/BuildControls";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { ConfirmDialog } from "@/components/builds/ConfirmDialog";
 import { StatusBanner } from "@/components/builds/StatusBanner";
+import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
 } from "@/domain/build/configuration";
 import type { BuildConfiguration } from "@/domain/build/schemas";
+import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import {
@@ -32,11 +29,14 @@ import {
   localizedName,
   localizedSearchText,
 } from "@/lib/catalogPresentation";
-import { cn } from "@/lib/utils";
+import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 export default function CharacterBuildView() {
   const { locale, t } = useI18n();
+  const priorityAssignments = useCharacterPriorityStore(
+    (state) => state.assignments
+  );
   const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
   const scoreProfiles = useWorkspaceStore((state) => state.scoreProfiles);
@@ -46,18 +46,16 @@ export default function CharacterBuildView() {
     (state) => state.upsertScoreProfile
   );
   const { data, error, loading } = useBuildReferences();
-  const [query, setQuery] = useState("");
-  const [pathId, setPathId] = useState("all");
-  const [combatTypeId, setCombatTypeId] = useState("all");
-  const [ownedOnly, setOwnedOnly] = useState(false);
+  const [filters, setFilters] = useState(defaultCharacterFilters);
   const [createError, setCreateError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<BuildConfiguration | null>(
     null
   );
 
   useEffect(() => {
-    if (!account && ownedOnly) setOwnedOnly(false);
-  }, [account, ownedOnly]);
+    if (!account && filters.ownedOnly)
+      setFilters((current) => ({ ...current, ownedOnly: false }));
+  }, [account, filters.ownedOnly]);
 
   const ownedByDefinition = useMemo(
     () =>
@@ -65,16 +63,6 @@ export default function CharacterBuildView() {
         (account?.characters ?? []).map((character) => [
           character.definitionId,
           character,
-        ])
-      ),
-    [account]
-  );
-  const lightConeByKey = useMemo(
-    () =>
-      new Map(
-        (account?.lightCones ?? []).map((lightCone) => [
-          lightCone.key,
-          lightCone,
         ])
       ),
     [account]
@@ -95,14 +83,26 @@ export default function CharacterBuildView() {
 
   const visibleCharacters = useMemo(() => {
     if (!data) return [];
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = filters.query.trim().toLocaleLowerCase();
     return [...data.characters.values]
       .filter((character) => {
-        if (ownedOnly && !ownedByDefinition.has(character.id)) return false;
-        if (pathId !== "all" && character.path_id !== pathId) return false;
+        if (filters.ownedOnly && !ownedByDefinition.has(character.id))
+          return false;
         if (
-          combatTypeId !== "all" &&
-          character.combat_type_id !== combatTypeId
+          filters.paths.length > 0 &&
+          !filters.paths.includes(character.path_id)
+        )
+          return false;
+        if (
+          filters.rarities.length > 0 &&
+          !filters.rarities.includes(character.rarity)
+        )
+          return false;
+        if (filters.configuredOnly && !buildsByCharacter.has(character.id))
+          return false;
+        if (
+          filters.combatTypes.length > 0 &&
+          !filters.combatTypes.includes(character.combat_type_id)
         ) {
           return false;
         }
@@ -120,47 +120,53 @@ export default function CharacterBuildView() {
         );
       })
       .sort((left, right) => {
-        const leftOwned = Number(ownedByDefinition.has(left.id));
-        const rightOwned = Number(ownedByDefinition.has(right.id));
-        const leftConfigured = Number(buildsByCharacter.has(left.id));
-        const rightConfigured = Number(buildsByCharacter.has(right.id));
+        const leftName = characterCatalogPresentation(
+          left,
+          data.properties,
+          locale,
+          t("terms.trailblazer")
+        ).name;
+        const rightName = characterCatalogPresentation(
+          right,
+          data.properties,
+          locale,
+          t("terms.trailblazer")
+        ).name;
+        if (filters.sort === "priority")
+          return (
+            compareCharacterPriority(
+              left.id,
+              right.id,
+              priorityAssignments,
+              filters.direction
+            ) || leftName.localeCompare(rightName, locale)
+          );
+        const comparison =
+          filters.sort === "rarity"
+            ? left.rarity - right.rarity
+            : leftName.localeCompare(rightName, locale);
         return (
-          rightOwned - leftOwned ||
-          rightConfigured - leftConfigured ||
-          right.rarity - left.rarity ||
-          characterCatalogPresentation(
-            left,
-            data.properties,
-            locale,
-            t("terms.trailblazer")
-          ).name.localeCompare(
-            characterCatalogPresentation(
-              right,
-              data.properties,
-              locale,
-              t("terms.trailblazer")
-            ).name,
-            locale
-          )
+          comparison * (filters.direction === "ascending" ? 1 : -1) ||
+          leftName.localeCompare(rightName, locale)
         );
       });
   }, [
     buildsByCharacter,
-    combatTypeId,
+    filters,
     data,
     locale,
     ownedByDefinition,
-    ownedOnly,
-    pathId,
-    query,
+    priorityAssignments,
     t,
   ]);
 
-  function addBuild(characterId: string) {
+  function addBuild(
+    characterId: string,
+    setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">
+  ) {
     if (!data) return;
     const definition = data.characters.byId.get(characterId);
     if (!definition) return;
-    const owned = ownedByDefinition.get(characterId);
     const characterName = characterCatalogPresentation(
       definition,
       data.properties,
@@ -175,9 +181,7 @@ export default function CharacterBuildView() {
       );
       const build = createCharacterBuild(
         definition,
-        owned?.key,
-        account?.relics ?? [],
-        data.relicSets.values,
+        setPlan,
         data.properties,
         data.progression,
         profile.id,
@@ -191,87 +195,36 @@ export default function CharacterBuildView() {
     }
   }
 
-  const activeFilterCount =
-    Number(query.trim().length > 0) +
-    Number(pathId !== "all") +
-    Number(combatTypeId !== "all") +
-    Number(ownedOnly);
-
+  const activeFilterCount = characterFilterCount(filters);
   const renderFilterPanel = (
     references: NonNullable<typeof data>,
     className?: string
   ) => (
-    <Card
-      className={cn(
-        "overflow-hidden lg:sticky lg:top-3 lg:max-h-[calc(100dvh-9.5rem)]",
-        className
+    <CharacterFilterPanel
+      className={className}
+      filters={filters}
+      hasPriorityData={Object.keys(priorityAssignments).length > 0}
+      onChange={setFilters}
+      pathOptions={references.properties.paths.map((path) => ({
+        value: path.id,
+        label: localizedName(path.name, locale, path.id),
+        iconPath: path.icon_path,
+      }))}
+      combatTypeOptions={references.properties.combatTypes.map(
+        (combatType) => ({
+          value: combatType.id,
+          label: localizedName(combatType.name, locale, combatType.id),
+          iconPath: combatType.icon_path,
+        })
       )}
-    >
-      <CardContent className="space-y-4 overflow-y-auto p-4">
-        <label className="block">
-          <span className="sr-only">{t("common.search")}</span>
-          <span className="relative block">
-            <Search
-              className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              value={query}
-              placeholder={t("build.searchPlaceholder")}
-              className="h-9 w-full rounded-md border border-border bg-background/70 pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </span>
-        </label>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-          <SelectField
-            label={t("filter.path")}
-            value={pathId}
-            options={[
-              { value: "all", label: t("filter.allPaths") },
-              ...references.properties.paths.map((path) => ({
-                value: path.id,
-                label: localizedName(path.name, locale, path.id),
-              })),
-            ]}
-            onChange={setPathId}
-          />
-          <SelectField
-            label={t("filter.combatType")}
-            value={combatTypeId}
-            options={[
-              {
-                value: "all",
-                label: t("filter.allCombatTypes"),
-              },
-              ...references.properties.combatTypes.map((combatType) => ({
-                value: combatType.id,
-                label: localizedName(combatType.name, locale, combatType.id),
-              })),
-            ]}
-            onChange={setCombatTypeId}
-          />
-          <ToggleField
-            label={t("build.ownedOnly")}
-            description={
-              account
-                ? t("build.ownedOnlyHelp")
-                : t("build.ownedOnlyUnavailable")
-            }
-            checked={ownedOnly}
-            disabled={!account}
-            onChange={setOwnedOnly}
-          />
-        </div>
-        <p className="text-xs text-muted-foreground" aria-live="polite">
-          {t("build.catalogCount", {
-            shown: visibleCharacters.length,
-            total: references.characters.values.length,
-          })}
-        </p>
-      </CardContent>
-    </Card>
+      countLabel={t("build.catalogCount", {
+        shown: visibleCharacters.length,
+        total: references.characters.values.length,
+      })}
+      searchPlaceholder={t("build.searchPlaceholder")}
+      showOwnedOnly
+      hasAccount={account !== null}
+    />
   );
 
   return (
@@ -288,57 +241,22 @@ export default function CharacterBuildView() {
       ) : error || !data ? (
         <CatalogLoadError error={error} />
       ) : (
-        <div className="min-w-0 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-2 xl:grid-cols-[17.5rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)] 3xl:grid-cols-[17.5rem_minmax(0,1fr)] 3xl:gap-3">
-          <div className="mb-3 lg:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-                  {t("characterLoadout.filters")}
-                  {activeFilterCount > 0 && (
-                    <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground tabular-nums">
-                      {activeFilterCount}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                closeLabel={t("common.close")}
-                className="overflow-y-auto"
-              >
-                <SheetTitle>{t("characterLoadout.filters")}</SheetTitle>
-                <SheetDescription>
-                  {t("route.builds.description")}
-                </SheetDescription>
-                {renderFilterPanel(
-                  data,
-                  "mt-4 border-0 bg-transparent shadow-none lg:static"
-                )}
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          <div className="hidden min-w-0 lg:block">
-            {renderFilterPanel(data)}
-          </div>
-
+        <SidebarLayout
+          sidebar={renderFilterPanel(data)}
+          triggerLabel={t("characterLoadout.filters")}
+          description={t("route.builds.description")}
+          activeFilterCount={activeFilterCount}
+        >
           <div className="min-w-0 space-y-4">
             {visibleCharacters.map((character) => {
-              const owned = ownedByDefinition.get(character.id);
-              const equippedLightCone = owned?.lightConeKey
-                ? lightConeByKey.get(owned.lightConeKey)
-                : undefined;
               return (
                 <CharacterBuildCard
                   key={character.id}
                   character={character}
-                  ownedCharacter={owned}
-                  equippedLightCone={equippedLightCone}
                   builds={buildsByCharacter.get(character.id) ?? []}
                   profiles={profilesById}
                   references={data}
-                  onAddBuild={() => addBuild(character.id)}
+                  onAddBuild={(setPlan) => addBuild(character.id, setPlan)}
                   onBuildChange={upsertBuild}
                   onProfileChange={upsertScoreProfile}
                   onDeleteBuild={setPendingDelete}
@@ -352,7 +270,7 @@ export default function CharacterBuildView() {
               />
             )}
           </div>
-        </div>
+        </SidebarLayout>
       )}
       <ConfirmDialog
         open={pendingDelete !== null}

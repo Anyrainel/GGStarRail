@@ -6,13 +6,13 @@ import {
   createRelicScoringContext,
   loadBuildReferences,
 } from "@/lib/buildReferences";
-import { createDemoAccount } from "@/lib/demoAccount";
 import type {
   PropertyDefinition,
   RelicPieceDefinition,
   SubAffixDefinition,
 } from "@/providers/gilore/types";
 import { parseVersionedScannerExport } from "@/providers/scanner/schema";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 function displayValue(property: PropertyDefinition, sourceValue: number) {
   const value =

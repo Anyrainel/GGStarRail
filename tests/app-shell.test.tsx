@@ -196,13 +196,41 @@ describe("GGArtifact family shell", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows separate home utilities and keeps build actions in the app bar", async () => {
+    const user = userEvent.setup();
+    const home = renderApp(APP_PATHS.home);
+    expect(
+      screen.getByRole("button", { name: "Language" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Theme" })).toBeInTheDocument();
+    home.unmount();
+    renderApp(APP_PATHS.builds);
+    const header = document.querySelector("header");
+    expect(header).not.toBeNull();
+    expect(
+      await within(header!).findByRole("button", { name: "Import builds" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Build workspace backup")
+    ).not.toBeInTheDocument();
+    await user.click(within(header!).getByRole("button", { name: "More" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Export builds" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Clear workspace" })
+    ).toBeInTheDocument();
+  });
+
   it("persists an explicitly selected theme", async () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.characters);
 
     await user.click(screen.getByRole("button", { name: "More" }));
     await user.click(
-      await screen.findByRole("menuitemradio", { name: "Dreamscape" })
+      await screen.findByRole("menuitemradio", {
+        name: "Penacony · Dream neon",
+      })
     );
 
     expect(document.documentElement.dataset.theme).toBe("dreamscape");

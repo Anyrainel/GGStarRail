@@ -1,10 +1,9 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
 import { AccountImportPanel } from "@/components/account/AccountImportPanel";
 import { AccountSnapshotSchema } from "@/domain/account/schemas";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { createDemoAccount } from "@/lib/demoAccount";
 import {
   loadCharacters,
   loadLightCones,
@@ -24,6 +23,7 @@ import {
 } from "@/providers/scanner/schema";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "./fixtures";
+import { createDemoAccount } from "./fixtures/demoAccount";
 import goodScannerFixture from "./fixtures/goodscanner-hsr-experimental-v1.json";
 
 afterEach(() => {
@@ -449,32 +449,17 @@ describe("Account import and demo workflows", () => {
     expect(fingerprint).toHaveValue("");
   });
 
-  it("confirms before replacing a real local snapshot with demo data", async () => {
+  it("does not offer synthetic accounts or mutate an existing snapshot", () => {
     const existing = makeAccountSnapshot();
     useWorkspaceStore.getState().replaceAccount(existing);
-    const user = userEvent.setup();
     render(
       <I18nProvider>
         <AccountImportPanel />
       </I18nProvider>
     );
-
-    await user.click(screen.getByRole("button", { name: "Replace with demo" }));
-
-    const confirmation = screen.getByRole("dialog", {
-      name: "Replace this account with demo data?",
-    });
+    expect(
+      screen.queryByRole("button", { name: /demo/i })
+    ).not.toBeInTheDocument();
     expect(useWorkspaceStore.getState().account).toEqual(existing);
-    await act(async () => {
-      await user.click(
-        within(confirmation).getByRole("button", { name: "Replace with demo" })
-      );
-    });
-
-    await waitFor(() => {
-      expect(useWorkspaceStore.getState().account?.source.provider).toBe(
-        "demo-account"
-      );
-    });
   });
 });

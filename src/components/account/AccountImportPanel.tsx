@@ -1,7 +1,6 @@
 import {
   CheckCircle2,
   FileJson,
-  FlaskConical,
   Globe2,
   KeyRound,
   TriangleAlert,
@@ -17,19 +16,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  ResponsiveDialog,
-  ResponsiveDialogContent,
-  ResponsiveDialogDescription,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from "@/components/ui/responsive-dialog";
-import {
   type AccountImportMode,
   resolveAccountImportIdentity,
 } from "@/domain/account/merge";
 import type { ImportCoverage } from "@/domain/account/schemas";
 import { useI18n } from "@/i18n/I18nContext";
-import { createDemoAccount } from "@/lib/demoAccount";
 import { redactDiagnostic } from "@/lib/security";
 import { importFromUidShowcase } from "@/providers/enka/client";
 import {
@@ -56,7 +47,7 @@ import {
 import type { AccountImportDraft } from "@/providers/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
-type SuccessState = "import" | "demo" | null;
+type SuccessState = "import" | null;
 
 const FIELD_CLASS =
   "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30";
@@ -84,7 +75,6 @@ export function AccountImportPanel({
 }: AccountImportPanelProps = {}) {
   const { t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
-  const replaceAccount = useWorkspaceStore((state) => state.replaceAccount);
   const applyAccountImport = useWorkspaceStore(
     (state) => state.applyAccountImport
   );
@@ -99,7 +89,6 @@ export function AccountImportPanel({
   const [deviceId, setDeviceId] = useState("");
   const [deviceFp, setDeviceFp] = useState("");
   const [replacementConfirmed, setReplacementConfirmed] = useState(false);
-  const [demoConfirmationOpen, setDemoConfirmationOpen] = useState(false);
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -171,23 +160,6 @@ export function AccountImportPanel({
       setRawCookie("");
       setDeviceId("");
       setDeviceFp("");
-      setBusy(false);
-    }
-  };
-
-  const loadDemo = async () => {
-    setBusy(true);
-    setDraft(null);
-    setError(null);
-    setSuccess(null);
-    setReplacementConfirmed(false);
-    try {
-      replaceAccount(await createDemoAccount());
-      setSuccess("demo");
-      setDemoConfirmationOpen(false);
-    } catch (reason: unknown) {
-      setError(reason);
-    } finally {
       setBusy(false);
     }
   };
@@ -491,40 +463,6 @@ export function AccountImportPanel({
         </CardContent>
       </Card>
 
-      <Card className="border-dashed bg-card/40">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FlaskConical
-              className="h-4 w-4 text-muted-foreground"
-              aria-hidden
-            />
-            {t("imports.demo.title")}
-          </CardTitle>
-          <CardDescription>{t("imports.demo.body")}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              account ? setDemoConfirmationOpen(true) : loadDemo()
-            }
-            disabled={busy}
-          >
-            {busy
-              ? t("common.loading")
-              : account
-                ? t("imports.demo.replace")
-                : t("imports.demo.load")}
-          </Button>
-          {account && (
-            <p className="text-sm text-muted-foreground">
-              {t("imports.existingWarning")}
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
       {draft && (
         <Card className="border-primary/35 lg:col-span-2">
           <CardHeader>
@@ -687,40 +625,9 @@ export function AccountImportPanel({
           role="status"
         >
           <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />
-          {success === "demo" ? t("imports.demo.loaded") : t("imports.success")}
+          {t("imports.success")}
         </div>
       )}
-
-      <ResponsiveDialog
-        open={demoConfirmationOpen}
-        onOpenChange={setDemoConfirmationOpen}
-      >
-        <ResponsiveDialogContent
-          closeLabel={t("common.close")}
-          className="md:w-[min(30rem,calc(100vw-2rem))]"
-        >
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>
-              {t("imports.demo.confirmTitle")}
-            </ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>
-              {t("imports.demo.confirmBody")}
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
-          <div className="mt-5 flex flex-wrap justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDemoConfirmationOpen(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button type="button" variant="destructive" onClick={loadDemo}>
-              {t("imports.demo.confirmAction")}
-            </Button>
-          </div>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
     </section>
   );
 }

@@ -57,7 +57,8 @@ values, and provenance.
 
 Account Data owns the primary responsive import action and empty-state entry.
 It accepts scanner files, public UID showcase imports, and transient Global/CN
-Battle Chronicle credentials; the demo loader is a secondary development aid.
+Battle Chronicle credentials. Synthetic accounts exist only as test fixtures;
+the application does not generate or offer demo account data.
 Data Sources remains help and diagnostics rather than a required workflow
 step. All sources converge on the same account schema, carry prominently
 displayed per-section coverage, and pass through review plus explicit account

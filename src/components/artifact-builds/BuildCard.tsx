@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { StatSelect } from "@/components/artifact-builds/StatSelect";
 import {
   NumberField,
+  SelectField,
   TextField,
   ToggleField,
 } from "@/components/builds/BuildControls";
@@ -310,9 +311,9 @@ function WeightToken({
 }: WeightTokenProps) {
   const percentage = Math.round(weight * 100);
   const weightClass = cn(
-    percentage === 100 && "font-bold text-amber-500",
-    percentage >= 75 && percentage < 100 && "text-amber-400",
-    percentage >= 50 && percentage < 75 && "text-amber-200",
+    percentage === 100 && "font-bold text-primary",
+    percentage >= 75 && percentage < 100 && "text-primary",
+    percentage >= 50 && percentage < 75 && "text-foreground",
     percentage >= 25 && percentage < 50 && "text-foreground",
     percentage < 25 && "text-muted-foreground"
   );
@@ -323,10 +324,10 @@ function WeightToken({
         <button
           type="button"
           aria-label={`${accessibleName}: ${percentage}%`}
-          className="flex h-7 max-w-full items-center rounded-md border border-border/60 bg-gradient-select text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex h-7 max-w-full items-center rounded-md border border-border bg-gradient-select text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring"
         >
           <span className="max-w-20 truncate px-2">{propertyName}</span>
-          <span className="h-4 w-px shrink-0 bg-white/10" aria-hidden="true" />
+          <span className="h-4 w-px shrink-0 bg-border" aria-hidden="true" />
           <span
             className={cn(
               "min-w-8 px-1.5 font-mono text-[0.68rem]",
@@ -343,7 +344,7 @@ function WeightToken({
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {label}
             </span>
-            <span className="font-mono text-lg font-bold text-amber-100">
+            <span className="font-mono text-lg font-bold text-primary">
               {percentage}%
             </span>
           </div>
@@ -367,7 +368,7 @@ function WeightToken({
                 className={cn(
                   "h-6 flex-1 px-0 text-xs",
                   percentage === preset &&
-                    "border-amber-500/50 bg-amber-500/20 text-amber-100"
+                    "border-primary bg-primary/20 text-primary"
                 )}
                 onClick={() => onChange(preset / 100)}
               >
@@ -491,7 +492,7 @@ export function BuildCard({
   return (
     <>
       <article
-        className="overflow-hidden rounded-lg border border-border/50 bg-muted/30"
+        className="overflow-hidden rounded-lg border border-border bg-muted/30"
         data-build-card
       >
         <div className="px-2 pt-2 md:px-3">
@@ -544,29 +545,72 @@ export function BuildCard({
         </div>
 
         <div className="px-2 py-1.5 md:py-2">
-          <div className="border-t border-border/30 pt-1.5">
+          <div className="border-t border-border pt-1.5">
             <div className="flex min-w-0 items-start justify-center gap-2 md:gap-3 2xl:gap-2 3xl:gap-3">
               <section
                 aria-label={t("build.setPlanTitle")}
-                className="flex w-[6.25rem] shrink-0 justify-center gap-1 md:w-[8.25rem]"
+                className="flex w-[6.25rem] shrink-0 flex-wrap justify-center gap-1 md:w-[8.25rem]"
               >
                 <SetPicker
-                  label={t("build.cavernFourPiece")}
-                  pieceCount={4}
+                  label={
+                    build.cavern.mode === "four-piece"
+                      ? t("build.cavernFourPiece")
+                      : t("build.cavernFirstTwoPiece")
+                  }
+                  pieceCount={build.cavern.mode === "four-piece" ? 4 : 2}
                   iconSize={useCompactSetIcons ? "sm" : "lg"}
                   mobile={useCompactSetIcons}
                   value={fourPieceSetId}
-                  options={cavernSets}
+                  options={
+                    build.cavern.mode === "two-plus-two"
+                      ? cavernSets.filter(
+                          (set) =>
+                            set.value !==
+                            (build.cavern.mode === "two-plus-two" &&
+                              build.cavern.setIds[1])
+                        )
+                      : cavernSets
+                  }
                   searchLabel={`${t("common.search")}: ${t("build.cavernFourPiece")}`}
                   emptyLabel={t("empty.filtered")}
                   closeLabel={t("common.close")}
                   onChange={(setId) =>
                     onBuildChange({
                       ...build,
-                      cavern: { mode: "four-piece", setId },
+                      cavern:
+                        build.cavern.mode === "four-piece"
+                          ? { mode: "four-piece", setId }
+                          : {
+                              mode: "two-plus-two",
+                              setIds: [setId, build.cavern.setIds[1]],
+                            },
                     })
                   }
                 />
+                {build.cavern.mode === "two-plus-two" && (
+                  <SetPicker
+                    label={t("build.cavernSecondTwoPiece")}
+                    pieceCount={2}
+                    iconSize={useCompactSetIcons ? "sm" : "lg"}
+                    mobile={useCompactSetIcons}
+                    value={build.cavern.setIds[1]}
+                    options={cavernSets.filter(
+                      (set) => set.value !== fourPieceSetId
+                    )}
+                    searchLabel={`${t("common.search")}: ${t("build.cavernSecondTwoPiece")}`}
+                    emptyLabel={t("empty.filtered")}
+                    closeLabel={t("common.close")}
+                    onChange={(setId) =>
+                      onBuildChange({
+                        ...build,
+                        cavern: {
+                          mode: "two-plus-two",
+                          setIds: [fourPieceSetId, setId],
+                        },
+                      })
+                    }
+                  />
+                )}
                 <SetPicker
                   label={t("build.planarTwoPiece")}
                   pieceCount={2}
@@ -616,7 +660,7 @@ export function BuildCard({
                               ),
                             };
                           })}
-                          maxLength={3}
+                          maxLength={validProperties.length}
                           minimumLength={1}
                           compact={useCompactSetIcons}
                           addLabel={t("build.addMainStat", { slot: slotName })}
@@ -658,12 +702,6 @@ export function BuildCard({
                 </div>
               </section>
             </div>
-
-            {build.cavern.mode === "two-plus-two" && (
-              <p className="mt-1.5 rounded-md border border-border bg-background/40 p-1.5 text-xs leading-5 text-muted-foreground">
-                {t("build.legacyTwoPlusTwo")}
-              </p>
-            )}
           </div>
         </div>
       </article>
@@ -680,6 +718,29 @@ export function BuildCard({
           </ResponsiveDialogHeader>
           <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(15rem,0.45fr)_minmax(0,1fr)]">
             <div className="space-y-3">
+              <SelectField
+                label={t("build.advancedTwoPlusTwo")}
+                value={
+                  build.cavern.mode === "two-plus-two"
+                    ? build.cavern.setIds[1]
+                    : ""
+                }
+                options={[
+                  { value: "", label: t("build.cavernFourPiece") },
+                  ...cavernSets.filter((set) => set.value !== fourPieceSetId),
+                ]}
+                onChange={(setId) =>
+                  onBuildChange({
+                    ...build,
+                    cavern: setId
+                      ? {
+                          mode: "two-plus-two",
+                          setIds: [fourPieceSetId, setId],
+                        }
+                      : { mode: "four-piece", setId: fourPieceSetId },
+                  })
+                }
+              />
               <TextField
                 label={t("scoring.profileName")}
                 value={profile.name}

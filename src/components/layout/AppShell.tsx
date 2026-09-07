@@ -7,15 +7,22 @@ import {
   Menu,
   MoreVertical,
   Palette,
-  Sparkles,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
+import {
+  type PageActionContent,
+  PageActionContext,
+} from "@/components/layout/PageActions";
+import {
+  LocaleChoices,
+  ThemeChoices,
+  ThemeLocaleControls,
+} from "@/components/layout/ThemeLocaleControls";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheck,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -35,8 +42,6 @@ import {
   NAVIGATION_SECTIONS,
   navigationSection,
 } from "@/config/navigation";
-import { THEME_IDS, useTheme } from "@/contexts/ThemeContext";
-import type { ThemeId } from "@/contexts/themeTypes";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
@@ -67,7 +72,11 @@ function SiteSwitcher() {
         <DropdownMenuLabel>{t("site.switcher.label")}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={GENSHIN_SITE_URL}>
-            <Sparkles className="h-7 w-7 text-primary" aria-hidden="true" />
+            <img
+              src="/assets/ggstarrail/genshin.svg"
+              className="h-7 w-7"
+              alt=""
+            />
             <span className="min-w-0 flex-1">
               <span className="block font-medium">GGArtifact</span>
               <span className="block text-xs text-muted-foreground">
@@ -97,20 +106,8 @@ function SiteSwitcher() {
   );
 }
 
-function ThemeAndLocaleMenu() {
-  const { locale, setLocale, t } = useI18n();
-  const { theme, setTheme } = useTheme();
-
-  const themeLabel = (themeId: ThemeId) => {
-    switch (themeId) {
-      case "astral":
-        return t("theme.astral");
-      case "express":
-        return t("theme.express");
-      case "dreamscape":
-        return t("theme.dreamscape");
-    }
-  };
+function ThemeAndLocaleMenu({ actions }: { actions: ReactNode }) {
+  const { t } = useI18n();
 
   return (
     <DropdownMenu>
@@ -119,7 +116,9 @@ function ThemeAndLocaleMenu() {
           <MoreVertical className="h-4 w-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
+      <DropdownMenuContent align="end" className="w-64">
+        {actions}
+        {actions && <DropdownMenuSeparator />}
         <DropdownMenuItem asChild>
           <Link to={APP_PATHS.imports}>
             <Database className="h-4 w-4" aria-hidden="true" />
@@ -131,38 +130,13 @@ function ThemeAndLocaleMenu() {
           <Languages className="h-4 w-4" aria-hidden="true" />
           {t("app.locale")}
         </DropdownMenuLabel>
-        <DropdownMenuItem
-          onSelect={() => setLocale("en")}
-          role="menuitemradio"
-          aria-checked={locale === "en"}
-        >
-          <DropdownMenuCheck visible={locale === "en"} />
-          {t("app.locale.english")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => setLocale("zh-CN")}
-          role="menuitemradio"
-          aria-checked={locale === "zh-CN"}
-        >
-          <DropdownMenuCheck visible={locale === "zh-CN"} />
-          {t("app.locale.chinese")}
-        </DropdownMenuItem>
+        <LocaleChoices />
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="flex items-center gap-2">
           <Palette className="h-4 w-4" aria-hidden="true" />
           {t("theme.label")}
         </DropdownMenuLabel>
-        {THEME_IDS.map((themeId) => (
-          <DropdownMenuItem
-            key={themeId}
-            onSelect={() => setTheme(themeId)}
-            role="menuitemradio"
-            aria-checked={theme === themeId}
-          >
-            <DropdownMenuCheck visible={theme === themeId} />
-            {themeLabel(themeId)}
-          </DropdownMenuItem>
-        ))}
+        <ThemeChoices />
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -337,42 +311,52 @@ function SectionTabs() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
+  const [actions, setActions] = useState<PageActionContent | null>(null);
   const showAccountImport =
     navigationSection(pathname)?.path === "/account-data";
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
-      <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
-        <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
-          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
-            <MobileMenu />
-            <SiteSwitcher />
-            <DesktopNavigation />
+    <PageActionContext.Provider value={setActions}>
+      <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
+        <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
+          <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
+            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
+              <MobileMenu />
+              <SiteSwitcher />
+              <DesktopNavigation />
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {showAccountImport && (
+                <AccountImportAction
+                  variant="outline"
+                  compactOnMobile
+                  className="bg-background/70"
+                />
+              )}
+              <div className="hidden items-center gap-2 sm:flex">
+                {actions?.primary}
+              </div>
+              {pathname === "/" ? (
+                <ThemeLocaleControls />
+              ) : (
+                <ThemeAndLocaleMenu actions={actions?.overflow} />
+              )}
+            </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {showAccountImport && (
-              <AccountImportAction
-                variant="outline"
-                compactOnMobile
-                className="bg-background/70"
-              />
+        </header>
+        <SectionTabs />
+        <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+          <div
+            className={cn(
+              "min-w-0 space-y-4 py-3 2xl:py-4",
+              pathname === "/" ? "container mx-auto px-4" : "wide-container"
             )}
-            <ThemeAndLocaleMenu />
+            data-testid="app-content"
+          >
+            {children}
           </div>
-        </div>
-      </header>
-      <SectionTabs />
-      <main className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
-        <div
-          className={cn(
-            "min-w-0 space-y-4 py-3 2xl:py-4",
-            pathname === "/" ? "container mx-auto px-4" : "wide-container"
-          )}
-          data-testid="app-content"
-        >
-          {children}
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </PageActionContext.Provider>
   );
 }

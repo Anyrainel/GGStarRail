@@ -1,4 +1,28 @@
 export const messagesEn = {
+  "filter.sortPriority": "Priority",
+  "filter.priorityUnavailable":
+    "Assign Characters in Character Priority to sort by priority.",
+  "filter.sort": "Sort",
+  "filter.sortName": "Name",
+  "filter.sortRarity": "Rarity",
+  "filter.sortLevel": "Level",
+  "filter.ascending": "Ascending",
+  "filter.descending": "Descending",
+  "filter.configuredOnly": "Configured builds only",
+  "filter.reset": "Reset filters",
+  "home.brand": "GGArtifact",
+  "home.tool.tiers.title": "Set your priorities",
+  "home.tool.tiers.body":
+    "Rank Characters, Light Cones, and Relic sets around your own plans.",
+  "home.openBuilds": "Configure builds",
+  "home.openTiers": "Arrange priorities",
+  "build.chooseSet": "Choose a set",
+  "build.chooseSetsHelp":
+    "Choose the sets you want this build to use. You can switch to two Cavern 2-piece sets after creating it.",
+  "theme.jarilo": "Jarilo-VI · Ice & steel",
+  "theme.luofu": "Xianzhou Luofu · Jade",
+  "theme.amphoreus": "Amphoreus · Dawn gold",
+
   "beta.releasedSummary": "Verified released catalog",
   "beta.previews": "Source previews",
   "beta.previewBadge": "PREVIEW",
@@ -31,9 +55,9 @@ export const messagesEn = {
   "site.starRail": "Honkai: Star Rail",
   "site.starRail.short": "Star Rail",
   "theme.label": "Theme",
-  "theme.astral": "Astral Night",
+  "theme.astral": "Herta Space Station · Starlight",
   "theme.express": "Astral Express",
-  "theme.dreamscape": "Dreamscape",
+  "theme.dreamscape": "Penacony · Dream neon",
   "common.more": "More",
   "common.close": "Close",
   "stat.short.hp": "HP",
@@ -86,24 +110,23 @@ export const messagesEn = {
   "nav.imports": "Data Sources",
   "route.home.title": "Build better. Keep the relics that matter.",
   "route.home.description":
-    "GGArtifact's familiar account and relic workflows, rebuilt for Honkai: Star Rail with local-first imports and a complete bilingual archive.",
+    "Your Honkai: Star Rail companion for Relics, builds, and account planning.",
   "home.openAccount": "Open account data",
   "home.openArchive": "Browse the archive",
-  "home.tools.title": "Star Rail tools",
-  "home.tools.body":
-    "The same task-focused structure as GGArtifact, adapted to Characters, Light Cones, Relics, and Planar Ornaments.",
+  "home.tools.title": "Find your next step",
+  "home.tools.body": "Jump straight to the tool you need.",
   "home.tool.account.title": "Review your account",
   "home.tool.account.body":
-    "Browse imported Characters and equipment in one local workspace.",
+    "Review your Characters, equipment, and Relic upgrade options.",
   "home.tool.builds.title": "Plan Relic builds",
   "home.tool.builds.body":
-    "Configure builds, tune scoring, compute filters, and review safe Relic triage suggestions.",
+    "Choose Relic sets and stats, then find pieces that fit your builds.",
   "home.tool.archive.title": "Explore game data",
   "home.tool.archive.body":
-    "Search Characters, Light Cones, Relic sets, and achievements with complete source-backed details.",
+    "Look up Characters, Light Cones, Relic set effects, and achievements.",
   "route.characters.title": "Characters",
   "route.characters.description":
-    "Owned characters, progression, Eidolons, Traces, and equipped item references.",
+    "Review your Characters, Eidolons, Traces, and equipped gear.",
   "route.inventory.title": "Inventory",
   "route.inventory.description":
     "Browse imported Characters, Light Cones, Cavern Relics, and Planar Ornaments in one inventory.",
@@ -114,14 +137,13 @@ export const messagesEn = {
   "route.relics.description":
     "Cavern Relics across Head, Hands, Body, and Feet slots.",
   "route.planar.title": "Planar Ornaments",
-  "route.planar.description":
-    "Planar Spheres and Link Ropes are modeled as distinct HSR equipment slots.",
+  "route.planar.description": "Browse your Planar Spheres and Link Ropes.",
   "route.builds.title": "Character Builds",
   "route.builds.description":
     "Create per-Character 4-piece Cavern and 2-piece Planar targets with editable main-stat preferences and scoring profiles.",
   "route.scoring.title": "Relic scoring",
   "route.scoring.description":
-    "Tune source-derived stat weights and grade thresholds, then inspect deterministic per-piece and equipped-build scores.",
+    "Adjust stat weights and score thresholds to evaluate your Relics and builds.",
   "route.filters.title": "Relic Filters",
   "route.filters.description":
     "Turn each build into six slot-specific filters and find the strongest matching loadout in the imported account.",
@@ -142,22 +164,22 @@ export const messagesEn = {
     "Browse Cavern Relic and Planar Ornament sets, pieces, rarities, and set effects.",
   "route.archiveAchievements.title": "Achievement archive",
   "route.archiveAchievements.description":
-    "Browse Star Rail achievements by category, completion status, and source-supported version data, with captured or locally tracked progress.",
+    "Find achievements by category and track your completion progress.",
   "route.tierCharacters.title": "Character Priority",
   "route.tierCharacters.description":
     "Arrange every Character by Combat Type in a personal planning list.",
   "route.tierLightCones.title": "Light Cone Priority",
   "route.tierLightCones.description":
-    "Arrange every Light Cone by Path without treating the result as a universal recommendation.",
+    "Arrange Light Cones by Path to keep track of your personal priorities.",
   "route.tierRelics.title": "Relic Priority",
   "route.tierRelics.description":
     "Organize Cavern Relic and Planar Ornament sets together by role and personal priority.",
   "route.imports.title": "Data sources",
   "route.imports.description":
-    "Review scanner files, import a public UID showcase, or request your own equipped account data through the local Worker.",
+    "Import scanner files or your public UID showcase, and review the available account import options.",
   "route.notFound.title": "Page not found",
   "route.notFound.description":
-    "This route is not part of the GGStarRail foundation.",
+    "This page could not be found. Choose a tool from the navigation to continue.",
   "home.ready.title": "Ready now",
   "home.ready.body":
     "Verified bilingual catalogs, responsive Archives, local and partial account imports, editable builds, scoring, filters, triage, persistence, and safe backups.",
@@ -225,8 +247,6 @@ export const messagesEn = {
   "empty.builds.prototype":
     "Build editing is not available in this prototype yet. You can review account data or manage imports while this workflow is being connected.",
   "empty.openAccount": "View account data",
-  "empty.demoError":
-    "The built-in demo could not be loaded. Your account data was not changed.",
   "empty.archive": "No provenanced game-data bundle has been loaded.",
   "scoring.engine.title": "Neutral scoring service",
   "scoring.engine.body":
@@ -805,18 +825,8 @@ export const messagesEn = {
   "imports.error.title": "Import could not be reviewed",
   "imports.error.hint":
     "The source was rejected and your current account data was not changed.",
-  "imports.demo.title": "Demo account",
-  "imports.demo.body":
-    "Load a review-ready local account built from real catalog IDs. This replaces only the local account snapshot and does not connect to the game.",
-  "imports.demo.load": "Load demo account",
-  "imports.demo.replace": "Replace with demo",
-  "imports.demo.loaded": "Demo account loaded.",
-  "imports.demo.confirmTitle": "Replace this account with demo data?",
-  "imports.demo.confirmBody":
-    "This removes the current local account snapshot and replaces it with the built-in demo. Builds and scoring profiles are not changed.",
-  "imports.demo.confirmAction": "Replace with demo",
   "imports.existingWarning":
-    "Partial website imports merge without deleting richer local inventory. Complete file imports can replace the sections they cover; loading the demo replaces the snapshot.",
+    "Partial website imports merge without deleting richer local inventory. Complete file imports can replace the sections they cover.",
   "imports.warning.traces":
     "This scanner export does not include Trace levels; imported Characters keep an empty Trace record.",
   "imports.warning.unknownLock":

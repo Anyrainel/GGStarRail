@@ -19,7 +19,6 @@ import {
   createRelicScoringContext,
   loadBuildReferences,
 } from "@/lib/buildReferences";
-import { createDemoAccount } from "@/lib/demoAccount";
 import {
   createManagerInstructionEnvelope,
   createManagerInstructionPreview,
@@ -29,6 +28,7 @@ import {
 import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
 import { DEFAULT_WORKSPACE, PersistedWorkspaceSchema } from "@/stores/schemas";
 import { makeRelic } from "./fixtures";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 async function setupBuild() {
   const [account, references] = await Promise.all([
@@ -47,9 +47,21 @@ async function setupBuild() {
   );
   const build = createCharacterBuild(
     character,
-    ownedCharacter.key,
-    account.relics,
-    references.relicSets.values,
+    {
+      cavern: {
+        mode: "four-piece",
+        setId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "head"
+        )!.setId,
+      },
+      planarSetId: account.relics.find(
+        (relic) =>
+          relic.equippedCharacterKey === ownedCharacter.key &&
+          relic.slot === "planarSphere"
+      )!.setId,
+    },
     references.properties,
     references.progression,
     profile.id,
@@ -61,6 +73,27 @@ async function setupBuild() {
 }
 
 describe("end-to-end build workspace domain", () => {
+  it("preserves explicit sets and accepts all valid main stats when character defaults are absent", async () => {
+    const { references, character, build, profile } = await setupBuild();
+    const unknown = { ...character, id: "unlisted-character" };
+    const created = createCharacterBuild(
+      unknown,
+      { cavern: build.cavern, planarSetId: build.planarSetId },
+      references.properties,
+      references.progression,
+      profile.id,
+      "Custom build"
+    );
+    expect(created.cavern).toEqual(build.cavern);
+    expect(created.planarSetId).toBe(build.planarSetId);
+    expect(created.preferredMainStats.body).toEqual(
+      references.properties.relicSlotById.get("BODY")!.valid_main_properties
+    );
+    expect(created.preferredMainStats.linkRope).toEqual(
+      references.properties.relicSlotById.get("OBJECT")!.valid_main_properties
+    );
+  });
+
   it("derives generated defaults and discounts flat stats by source roll units", async () => {
     const { profile, build } = await setupBuild();
     const percentWeight = profile.statWeights.AttackAddedRatio ?? 0;

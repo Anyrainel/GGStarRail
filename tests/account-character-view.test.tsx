@@ -12,11 +12,13 @@ import { loadBuildReferences } from "@/lib/buildReferences";
 import {
   characterCatalogName,
   formatAccountStatValue,
+  localizedName,
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
-import { createDemoAccount } from "@/lib/demoAccount";
 import CharacterView from "@/pages/account-data/CharacterView";
+import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 function renderView() {
   return render(
@@ -29,19 +31,22 @@ function renderView() {
 }
 
 afterEach(() => {
-  act(() => useWorkspaceStore.getState().clearWorkspace());
+  act(() => {
+    useWorkspaceStore.getState().clearWorkspace();
+    useCharacterPriorityStore.getState().resetPriorities();
+  });
 });
 
 describe("Account Character loadouts", () => {
-  it("keeps the fresh-state demo handoff on the parity view", async () => {
-    const user = userEvent.setup();
+  it("starts with account import and offers no demo account", () => {
     renderView();
-
-    await user.click(screen.getByRole("button", { name: "Load demo account" }));
-
     expect(
-      await screen.findAllByRole("article", { name: / loadout$/ })
-    ).toHaveLength(6);
+      screen.getByRole("button", { name: "Import account" })
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /demo/i })
+    ).not.toBeInTheDocument();
+    expect(useWorkspaceStore.getState().account).toBeNull();
   });
 
   it("shows the Light Cone, all six Relic slots, set summary, and build scores", async () => {
@@ -63,9 +68,21 @@ describe("Account Character loadouts", () => {
     );
     const build = createCharacterBuild(
       definition,
-      ownedCharacter.key,
-      account.relics,
-      references.relicSets.values,
+      {
+        cavern: {
+          mode: "four-piece",
+          setId: account.relics.find(
+            (relic) =>
+              relic.equippedCharacterKey === ownedCharacter.key &&
+              relic.slot === "head"
+          )!.setId,
+        },
+        planarSetId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "planarSphere"
+        )!.setId,
+      },
       references.properties,
       references.progression,
       profile.id,
@@ -223,7 +240,7 @@ describe("Account Character loadouts", () => {
     ).toBeVisible();
 
     const clear = within(filterDialog).getByRole("button", {
-      name: "Clear filters",
+      name: "Reset filters",
     });
     await user.click(clear);
     await waitFor(() => {
@@ -234,6 +251,88 @@ describe("Account Character loadouts", () => {
     );
     expect(screen.getAllByRole("article", { name: / loadout$/ })).toHaveLength(
       6
+    );
+  });
+
+  it("combines multiple Combat Types with rarity and sorts real account levels", async () => {
+    const [account, references] = await Promise.all([
+      createDemoAccount(),
+      loadBuildReferences(),
+    ]);
+    account.characters = account.characters.map((character, index) => ({
+      ...character,
+      level: 10 + index,
+    }));
+    useWorkspaceStore.getState().replaceAccount(account);
+    const user = userEvent.setup();
+    renderView();
+    await screen.findAllByRole("article", { name: / loadout$/ });
+    const panel = within(
+      screen.getByRole("complementary", { name: "Character filters" })
+    );
+    expect(
+      panel.getByRole("button", { name: "Priority: Descending" })
+    ).toBeDisabled();
+    const prioritized = account.characters.at(-1)!;
+    act(() =>
+      useCharacterPriorityStore.getState().setPriorityState({
+        assignments: {
+          [prioritized.definitionId]: { tier: "S", position: 0 },
+        },
+      })
+    );
+    await user.click(
+      panel.getByRole("button", { name: "Priority: Descending" })
+    );
+    expect(
+      screen.getAllByRole("article", { name: / loadout$/ })[0]
+    ).toHaveAccessibleName(
+      `${characterCatalogName(references.characters.byId.get(prioritized.definitionId)!, "en", "Trailblazer")} loadout`
+    );
+    const selectedTypes = [
+      ...new Set(account.characters.map((character) => character.combatTypeId)),
+    ].slice(0, 2);
+    for (const id of selectedTypes) {
+      const name = localizedName(
+        references.properties.combatTypeById.get(id)?.name,
+        "en",
+        id
+      );
+      if (!name) throw new Error("Combat Type name missing");
+      await user.click(panel.getByRole("checkbox", { name }));
+    }
+    const matchingTypes = account.characters.filter((character) =>
+      selectedTypes.includes(character.combatTypeId)
+    );
+    expect(screen.getAllByRole("article", { name: / loadout$/ })).toHaveLength(
+      matchingTypes.length
+    );
+    const rarity = references.characters.byId.get(
+      matchingTypes[0].definitionId
+    )!.rarity;
+    await user.click(panel.getByRole("checkbox", { name: `★ ${rarity}` }));
+    const matching = matchingTypes.filter(
+      (character) =>
+        references.characters.byId.get(character.definitionId)?.rarity ===
+        rarity
+    );
+    expect(screen.getAllByRole("article", { name: / loadout$/ })).toHaveLength(
+      matching.length
+    );
+    await user.click(panel.getByRole("button", { name: "Level: Ascending" }));
+    const first = [...matching].sort(
+      (left, right) => left.level - right.level
+    )[0];
+    const definition = references.characters.byId.get(first.definitionId);
+    if (!definition) throw new Error("Character name missing");
+    expect(
+      screen.getAllByRole("article", { name: / loadout$/ })[0]
+    ).toHaveAccessibleName(
+      `${characterCatalogName(definition, "en", "Trailblazer")} loadout`
+    );
+    await user.click(panel.getByRole("button", { name: "Reset filters" }));
+    expect(screen.getAllByRole("article", { name: / loadout$/ })).toHaveLength(
+      account.characters.length
     );
   });
 

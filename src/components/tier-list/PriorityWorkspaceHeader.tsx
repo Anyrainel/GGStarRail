@@ -1,7 +1,9 @@
 import { RotateCcw, ShieldCheck } from "lucide-react";
 import { type ReactNode, useState } from "react";
+import { PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -29,6 +31,30 @@ export function PriorityWorkspaceHeader({
 
   return (
     <>
+      <PageActions
+        primary={
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={assignedCount === 0}
+            onClick={() => setResetOpen(true)}
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            {t("tier.priority.reset")}
+          </Button>
+        }
+        overflow={
+          <DropdownMenuItem
+            className="sm:hidden"
+            disabled={assignedCount === 0}
+            onSelect={() => setResetOpen(true)}
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            {t("tier.priority.reset")}
+          </DropdownMenuItem>
+        }
+      />
       <Card className="overflow-hidden">
         <CardContent className="space-y-4 p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -45,16 +71,6 @@ export function PriorityWorkspaceHeader({
                 </p>
               </div>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              disabled={assignedCount === 0}
-              onClick={() => setResetOpen(true)}
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              {t("tier.priority.reset")}
-            </Button>
           </div>
           <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">

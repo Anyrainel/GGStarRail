@@ -1,1 +1,7 @@
-export type ThemeId = "astral" | "express" | "dreamscape";
+export type ThemeId =
+  | "astral"
+  | "express"
+  | "dreamscape"
+  | "jarilo"
+  | "luofu"
+  | "amphoreus";
