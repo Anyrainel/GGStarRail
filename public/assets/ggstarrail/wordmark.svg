@@ -50,7 +50,7 @@
   </g>
   <!-- The Express rises from the lettering's baseline through the crescent.
        Its connected silhouette suggests a locomotive without miniature hardware. -->
-  <g transform="translate(207 155) rotate(-24) scale(.9 1)">
+  <g transform="translate(221 167) rotate(-24) scale(.9 1)">
     <use href="#express-body" fill="url(#express)"/>
     <use href="#express-body" fill="url(#express-metal)"/>
     <!-- Long inset planes and interrupted highlights imply machinery, not windows. -->
