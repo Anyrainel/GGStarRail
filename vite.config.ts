@@ -56,10 +56,18 @@ export default defineConfig({
           path.resolve(__dirname, "public/_headers"),
           path.resolve(__dirname, "dist/_headers")
         );
-        await copyFile(
-          path.resolve(__dirname, "public/assets/ggstarrail/mark.svg"),
-          path.resolve(__dirname, "dist/assets/ggstarrail/mark.svg")
-        );
+        for (const asset of [
+          "logo-gi.svg",
+          "logo-hsr.svg",
+          "favicon.svg",
+          "favicon-48.png",
+          "apple-touch-icon.png",
+        ]) {
+          await copyFile(
+            path.resolve(__dirname, "public", asset),
+            path.resolve(__dirname, "dist", asset)
+          );
+        }
         for (const image of images) {
           if (!/^webp\/[a-f0-9]{64}\.webp$/.test(image))
             throw new Error(`Invalid WebP path: ${image}`);

@@ -109,9 +109,7 @@ describe("catalog asset lookup", () => {
   });
 
   it("keeps application asset URLs local and traversal-free", () => {
-    expect(getAssetUrl("/assets/ggstarrail/mark.svg")).toBe(
-      "/assets/ggstarrail/mark.svg"
-    );
+    expect(getAssetUrl("/logo-hsr.svg")).toBe("/logo-hsr.svg");
     expect(() => getAssetUrl("https://example.com/image.png")).toThrow();
     expect(() => getAssetUrl("assets/../secret")).toThrow();
   });

@@ -43,6 +43,7 @@ import {
   navigationSection,
 } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
+import { getAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
 
 const GENSHIN_SITE_URL =
@@ -58,7 +59,7 @@ function SiteSwitcher() {
           className="h-10 min-w-0 gap-2 px-1.5 text-muted-foreground hover:bg-transparent hover:text-foreground sm:px-2"
           aria-label={t("site.switcher.label")}
         >
-          <img src="/assets/ggstarrail/mark.svg" className="h-8 w-8" alt="" />
+          <img src={getAssetUrl("logo-hsr.svg")} className="h-8 w-8" alt="" />
           <span className="hidden text-base font-semibold sm:inline">
             GGArtifact
           </span>
@@ -72,11 +73,7 @@ function SiteSwitcher() {
         <DropdownMenuLabel>{t("site.switcher.label")}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={GENSHIN_SITE_URL}>
-            <img
-              src="/assets/ggstarrail/genshin.svg"
-              className="h-7 w-7"
-              alt=""
-            />
+            <img src={getAssetUrl("logo-gi.svg")} className="h-7 w-7" alt="" />
             <span className="min-w-0 flex-1 font-medium">
               {t("site.genshin")}
             </span>
@@ -88,7 +85,7 @@ function SiteSwitcher() {
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to={APP_PATHS.home} aria-current="page">
-            <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
+            <img src={getAssetUrl("logo-hsr.svg")} className="h-7 w-7" alt="" />
             <span className="min-w-0 flex-1 font-medium">
               {t("site.starRail")}
             </span>
@@ -188,7 +185,7 @@ function MobileMenu() {
         closeLabel={t("common.close")}
       >
         <SheetTitle className="flex items-center gap-2 pr-8">
-          <img src="/assets/ggstarrail/mark.svg" className="h-7 w-7" alt="" />
+          <img src={getAssetUrl("logo-hsr.svg")} className="h-7 w-7" alt="" />
           GGArtifact
           <span className="text-sm font-normal text-primary">
             {t("site.starRail.short")}
