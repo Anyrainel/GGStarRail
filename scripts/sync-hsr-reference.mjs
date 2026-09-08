@@ -2086,6 +2086,43 @@ function validateManifest(manifest) {
   return object;
 }
 
+export function validateReferenceCatalog(
+  documents,
+  schemaVersion,
+  sourceRevision
+) {
+  const localizedMemberFiles = [
+    "characters.json",
+    "light_cones.json",
+    "progression.json",
+    "relic_sets.json",
+    "relic_pieces.json",
+    "property_tables.json",
+  ];
+  if (schemaVersion === "1.2.0") {
+    localizedMemberFiles.unshift(
+      "achievement_categories.json",
+      "achievements.json"
+    );
+  }
+  for (const fileName of localizedMemberFiles) {
+    assertLocalizedIdentities(
+      documents[fileName].value,
+      sourceRevision,
+      fileName
+    );
+  }
+  assertCatalogRelations(documents);
+  if (schemaVersion === "1.0.0") {
+    assertLegacyCatalogShapes(documents);
+  } else {
+    assertExpandedCatalogRelations(documents);
+  }
+  if (schemaVersion === "1.2.0") {
+    assertAchievementCatalogRelations(documents);
+  }
+}
+
 export async function validateBundleDirectory(directory) {
   const absoluteDirectory = path.resolve(directory);
   const manifestPath = path.join(absoluteDirectory, "manifest.json");
@@ -2185,36 +2222,11 @@ export async function validateBundleDirectory(directory) {
       `manifest/computed count drift for ${key}`
     );
   }
-  const localizedMemberFiles = [
-    "characters.json",
-    "light_cones.json",
-    "progression.json",
-    "relic_sets.json",
-    "relic_pieces.json",
-    "property_tables.json",
-  ];
-  if (manifest.schema_version === "1.2.0") {
-    localizedMemberFiles.unshift(
-      "achievement_categories.json",
-      "achievements.json"
-    );
-  }
-  for (const fileName of localizedMemberFiles) {
-    assertLocalizedIdentities(
-      documents[fileName].value,
-      manifest.source.revision,
-      fileName
-    );
-  }
-  assertCatalogRelations(documents);
-  if (manifest.schema_version === "1.0.0") {
-    assertLegacyCatalogShapes(documents);
-  } else {
-    assertExpandedCatalogRelations(documents);
-  }
-  if (manifest.schema_version === "1.2.0") {
-    assertAchievementCatalogRelations(documents);
-  }
+  validateReferenceCatalog(
+    documents,
+    manifest.schema_version,
+    manifest.source.revision
+  );
   const diagnosticSummary = assertDiagnostics(
     documents["diagnostics.json"],
     manifest.schema_version

@@ -5,6 +5,8 @@ import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { root, sha256 } from "./crawl-common.mjs";
 
+import { validateCurrentReference } from "./validate-current-reference.mjs";
+
 const baseMembers = [
   "characters",
   "light_cones",
@@ -238,6 +240,7 @@ export async function checkGameData(repositoryRoot = root) {
       "utf8"
     )
   );
+  validateCurrentReference(documents, capture, manifest);
   assert.equal(capture.formatVersion, 1);
   assert.equal(capture.snapshot.revision, manifest.source_revision);
   assert.equal(capture.packet.sourceRevision, manifest.source_revision);

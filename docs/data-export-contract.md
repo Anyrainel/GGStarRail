@@ -13,6 +13,13 @@ Nanoka, publishes split files directly into this checkout, and prepares WebP ass
 Any failed source request, checksum, schema, pagination, or coverage check fails the
 command. No source failure becomes an empty successful catalog.
 
+`data:website:check` reconstructs the full released/beta catalog and validates
+localized text provenance, character skills/traces/progression, Light Cone
+superimpositions, Relic properties and affixes, and achievement categories/rewards/
+chains. It also compares GOODCapture's public JSON field values against that
+catalog, including bilingual names, equipment ownership keys, and numeric affix
+progression. Matching counts or IDs alone do not pass this check.
+
 Options:
 
 - `--cached`: regenerate from existing GIlore source snapshots without crawling or
@@ -35,7 +42,7 @@ Their `--no-images` option is for source inspection, not a complete publication.
 The producer command is:
 
 ```sh
-uv run python -m hsr_data.website_export --evidence data/raw/honkai_star_rail/hoyolab.json --nanoka-root data/raw/honkai_star_rail/nanoka --website-root ../GGStarRail
+uv run python -m hsr_data.exporters.website --evidence data/raw/honkai_star_rail/hoyolab.json --nanoka-root data/raw/honkai_star_rail/nanoka --website-root ../GGStarRail
 ```
 
 It also retains split snapshots in GIlore

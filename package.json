@@ -28,7 +28,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "vitest run",
-    "test:data-sources": "node --test scripts/crawl-sources.test.mjs",
+    "test:data-sources": "node --test scripts/crawl-sources.test.mjs scripts/validate-current-reference.test.mjs",
     "test:worker": "vitest run -c vitest.worker.config.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

@@ -75,7 +75,7 @@ run(
     "run",
     "python",
     "-m",
-    "hsr_data.website_export",
+    "hsr_data.exporters.website",
     "--reference-root",
     referenceRoot,
     "--evidence",
