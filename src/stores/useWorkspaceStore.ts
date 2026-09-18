@@ -9,6 +9,10 @@ import {
   type AccountSnapshot,
   AchievementCompletionSchema,
 } from "@/domain/account/schemas";
+import {
+  type CharacterLightConeChoices,
+  CharacterLightConeChoicesSchema,
+} from "@/domain/build/lightConeChoices";
 import type {
   BuildConfiguration,
   ScoreProfile,
@@ -25,6 +29,9 @@ import {
 } from "./schemas";
 
 interface WorkspaceActions {
+  setCharacterLightCones: (characterId: string, ids: string[]) => void;
+  duplicateBuild: (buildId: string, name: string) => void;
+  moveBuild: (buildId: string, direction: "up" | "down") => void;
   replaceAccount: (account: AccountSnapshot) => void;
   applyAccountImport: (
     account: AccountSnapshot,
@@ -42,6 +49,7 @@ interface WorkspaceActions {
   removeScoreProfile: (profileId: string) => void;
   setTriageRules: (rules: TriageRules) => void;
   replaceBuildWorkspace: (value: {
+    characterLightConeIds?: CharacterLightConeChoices;
     builds: BuildConfiguration[];
     scoreProfiles: ScoreProfile[];
     triageRules: TriageRules;
@@ -56,6 +64,57 @@ export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
       ...structuredClone(DEFAULT_WORKSPACE),
+      setCharacterLightCones: (characterId, ids) =>
+        set((state) => ({
+          characterLightConeIds: CharacterLightConeChoicesSchema.parse({
+            ...state.characterLightConeIds,
+            [characterId]: ids,
+          }),
+        })),
+      duplicateBuild: (buildId, name) =>
+        set((state) => {
+          const index = state.builds.findIndex((build) => build.id === buildId);
+          const build = state.builds[index];
+          const profile = state.scoreProfiles.find(
+            (entry) => entry.id === build?.scoreProfileId
+          );
+          if (!build || !profile) return state;
+          const scoreProfileId = `score:${crypto.randomUUID()}`;
+          const copy = {
+            ...structuredClone(build),
+            id: `build:${crypto.randomUUID()}`,
+            name,
+            scoreProfileId,
+          };
+          return {
+            builds: [
+              ...state.builds.slice(0, index + 1),
+              copy,
+              ...state.builds.slice(index + 1),
+            ],
+            scoreProfiles: [
+              ...state.scoreProfiles,
+              { ...structuredClone(profile), id: scoreProfileId },
+            ],
+          };
+        }),
+      moveBuild: (buildId, direction) =>
+        set((state) => {
+          const index = state.builds.findIndex((build) => build.id === buildId);
+          const build = state.builds[index];
+          if (!build) return state;
+          const siblings = state.builds.flatMap((entry, i) =>
+            entry.characterDefinitionId === build.characterDefinitionId
+              ? [i]
+              : []
+          );
+          const target =
+            siblings[siblings.indexOf(index) + (direction === "up" ? -1 : 1)];
+          if (target === undefined) return state;
+          const builds = [...state.builds];
+          [builds[index], builds[target]] = [builds[target]!, build];
+          return { builds };
+        }),
       replaceAccount: (account) => set({ account }),
       applyAccountImport: (account, mode) =>
         set((state) => ({
@@ -131,8 +190,12 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           ),
         })),
       setTriageRules: (triageRules) => set({ triageRules }),
-      replaceBuildWorkspace: ({ builds, scoreProfiles, triageRules }) =>
-        set({ builds, scoreProfiles, triageRules }),
+      replaceBuildWorkspace: ({
+        builds,
+        scoreProfiles,
+        triageRules,
+        characterLightConeIds = {},
+      }) => set({ builds, scoreProfiles, triageRules, characterLightConeIds }),
       replaceWorkspace: (workspace) => set(workspace),
       clearWorkspace: () => set(structuredClone(DEFAULT_WORKSPACE)),
     }),
@@ -141,6 +204,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
       version: WORKSPACE_STORE_VERSION,
       partialize: (state) => ({
         schemaVersion: state.schemaVersion,
+        characterLightConeIds: state.characterLightConeIds,
         account: state.account,
         builds: state.builds,
         scoreProfiles: state.scoreProfiles,

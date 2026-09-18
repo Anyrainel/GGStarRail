@@ -105,6 +105,17 @@ function referenceImportIssue(
   references: BuildReferences,
   t: ReturnType<typeof useI18n>["t"]
 ): string | null {
+  for (const [characterId, coneIds] of Object.entries(
+    bundle.characterLightConeIds
+  )) {
+    const character = references.characters.byId.get(characterId);
+    if (!character) return t("build.importIssueCharacter", { id: characterId });
+    for (const id of coneIds) {
+      const cone = references.lightCones.byId.get(id);
+      if (!cone || cone.path_id !== character.path_id)
+        return t("build.importIssueLightCone", { id });
+    }
+  }
   for (const build of bundle.builds) {
     if (!references.characters.byId.has(build.characterDefinitionId)) {
       return t("build.importIssueCharacter", {
@@ -151,6 +162,9 @@ export function BuildWorkspaceActions({
 }) {
   const { t } = useI18n();
   const builds = useWorkspaceStore((state) => state.builds);
+  const characterLightConeIds = useWorkspaceStore(
+    (state) => state.characterLightConeIds
+  );
   const scoreProfiles = useWorkspaceStore((state) => state.scoreProfiles);
   const triageRules = useWorkspaceStore((state) => state.triageRules);
   const replaceBuildWorkspace = useWorkspaceStore(
@@ -165,6 +179,7 @@ export function BuildWorkspaceActions({
   function exportWorkspace() {
     const json = serializeBuildWorkspaceBundle({
       builds,
+      characterLightConeIds,
       scoreProfiles,
       triageRules,
     });
@@ -211,6 +226,7 @@ export function BuildWorkspaceActions({
     if (!pendingImport) return;
     replaceBuildWorkspace({
       builds: pendingImport.builds,
+      characterLightConeIds: pendingImport.characterLightConeIds,
       scoreProfiles: pendingImport.scoreProfiles,
       triageRules: pendingImport.triageRules,
     });
@@ -224,13 +240,17 @@ export function BuildWorkspaceActions({
   function clearWorkspace() {
     replaceBuildWorkspace({
       builds: [],
+      characterLightConeIds: {},
       scoreProfiles: [],
       triageRules: structuredClone(DEFAULT_WORKSPACE.triageRules),
     });
     setStatus({ tone: "success", message: t("build.cleared") });
   }
 
-  const hasWorkspace = builds.length > 0 || scoreProfiles.length > 0;
+  const hasWorkspace =
+    builds.length > 0 ||
+    scoreProfiles.length > 0 ||
+    Object.values(characterLightConeIds).some((ids) => ids.length > 0);
 
   return (
     <>

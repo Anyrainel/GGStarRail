@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AccountSnapshotSchema } from "@/domain/account/schemas";
+import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
@@ -8,7 +9,8 @@ import {
 
 export const PersistedWorkspaceSchema = z
   .object({
-    schemaVersion: z.literal(3),
+    schemaVersion: z.literal(4),
+    characterLightConeIds: CharacterLightConeChoicesSchema,
     account: AccountSnapshotSchema.nullable(),
     builds: z.array(BuildConfigurationSchema),
     scoreProfiles: z.array(ScoreProfileSchema),
@@ -51,7 +53,8 @@ export const PersistedWorkspaceSchema = z
 export type PersistedWorkspace = z.infer<typeof PersistedWorkspaceSchema>;
 
 export const DEFAULT_WORKSPACE: PersistedWorkspace = {
-  schemaVersion: 3,
+  schemaVersion: 4,
+  characterLightConeIds: {},
   account: null,
   builds: [],
   scoreProfiles: [],

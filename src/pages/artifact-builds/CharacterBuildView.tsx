@@ -15,6 +15,7 @@ import { ConfirmDialog } from "@/components/builds/ConfirmDialog";
 import { StatusBanner } from "@/components/builds/StatusBanner";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ItemPicker } from "@/components/shared/ItemPicker";
 import { PageHeader } from "@/components/shared/PageHeader";
 import {
   createCharacterBuild,
@@ -24,6 +25,10 @@ import type { BuildConfiguration } from "@/domain/build/schemas";
 import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import {
+  catalogPickerItems,
+  rarityPickerFilter,
+} from "@/lib/catalogPickerItems";
 import {
   characterCatalogPresentation,
   localizedName,
@@ -46,6 +51,13 @@ export default function CharacterBuildView() {
     (state) => state.upsertScoreProfile
   );
   const { data, error, loading } = useBuildReferences();
+  const characterItems = useMemo(
+    () =>
+      data
+        ? catalogPickerItems("character", data, locale, t("terms.trailblazer"))
+        : [],
+    [data, locale, t]
+  );
   const [filters, setFilters] = useState(defaultCharacterFilters);
   const [createError, setCreateError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<BuildConfiguration | null>(
@@ -243,6 +255,46 @@ export default function CharacterBuildView() {
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0 space-y-4">
+            <div className="flex items-center gap-2">
+              <ItemPicker
+                kind="character"
+                label={t("build.selectCharacter")}
+                value={
+                  characterItems.find(
+                    (item) =>
+                      item.name === filters.query &&
+                      filters.paths.includes(
+                        data.characters.byId.get(item.id)!.path_id
+                      )
+                  )?.id ?? null
+                }
+                items={characterItems}
+                compact
+                filters={[
+                  rarityPickerFilter(characterItems, t("filter.rarity")),
+                  {
+                    id: "path",
+                    label: t("filter.path"),
+                    options: data.properties.paths.map((path) => ({
+                      id: path.id,
+                      label: localizedName(path.name, locale, path.id),
+                    })),
+                  },
+                ]}
+                onChange={(id) => {
+                  const character = data.characters.byId.get(id)!;
+                  setFilters({
+                    ...defaultCharacterFilters(),
+                    query: characterItems.find((item) => item.id === id)!.name,
+                    paths: [character.path_id],
+                  });
+                }}
+                onClear={() => setFilters(defaultCharacterFilters())}
+              />
+              <span className="text-sm font-medium">
+                {t("build.selectCharacter")}
+              </span>
+            </div>
             {visibleCharacters.map((character) => {
               return (
                 <CharacterBuildCard

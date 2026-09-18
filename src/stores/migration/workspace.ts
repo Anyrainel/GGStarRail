@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  AccountSnapshotSchema,
   AccountSnapshotV1Schema,
   AccountSnapshotV2Schema,
   migrateAccountSnapshotV1,
@@ -19,7 +20,19 @@ import {
   PersistedWorkspaceSchema,
 } from "../schemas";
 
-export const WORKSPACE_STORE_VERSION = 3;
+export const WORKSPACE_STORE_VERSION = 4;
+
+// Store v3 had no Character-level Light Cone choices. Keep every existing
+// build, profile, account, and its order; initialize only the new empty choices.
+const PersistedWorkspaceV3Schema = z
+  .object({
+    schemaVersion: z.literal(3),
+    account: AccountSnapshotSchema.nullable(),
+    builds: z.array(BuildConfigurationSchema),
+    scoreProfiles: z.array(ScoreProfileSchema),
+    triageRules: TriageRulesSchema,
+  })
+  .strict();
 
 // Store v2 used AccountSnapshot v2 and otherwise had the current build,
 // score-profile, and triage shapes. Achievement completion did not exist.
@@ -156,7 +169,8 @@ function migrateV1(
   });
 
   return PersistedWorkspaceSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
+    characterLightConeIds: {},
     account: input.account ? migrateAccountSnapshotV1(input.account) : null,
     builds,
     scoreProfiles,
@@ -174,7 +188,8 @@ function migrateV2(
 ): PersistedWorkspace {
   return PersistedWorkspaceSchema.parse({
     ...input,
-    schemaVersion: 3,
+    schemaVersion: 4,
+    characterLightConeIds: {},
     account: input.account ? migrateAccountSnapshotV2(input.account) : null,
   });
 }
@@ -182,6 +197,13 @@ function migrateV2(
 export function parseVersionedWorkspace(input: unknown): PersistedWorkspace {
   const current = PersistedWorkspaceSchema.safeParse(input);
   if (current.success) return current.data;
+  const versionThree = PersistedWorkspaceV3Schema.safeParse(input);
+  if (versionThree.success)
+    return PersistedWorkspaceSchema.parse({
+      ...versionThree.data,
+      schemaVersion: 4,
+      characterLightConeIds: {},
+    });
   const versionTwo = PersistedWorkspaceV2Schema.safeParse(input);
   if (versionTwo.success) return migrateV2(versionTwo.data);
   const previous = PersistedWorkspaceV1Schema.safeParse(input);
@@ -193,6 +215,16 @@ export function migrateWorkspace(
   persistedState: unknown,
   persistedVersion: number
 ): PersistedWorkspace {
+  if (persistedVersion === 3) {
+    const previous = PersistedWorkspaceV3Schema.safeParse(persistedState);
+    return previous.success
+      ? PersistedWorkspaceSchema.parse({
+          ...previous.data,
+          schemaVersion: 4,
+          characterLightConeIds: {},
+        })
+      : structuredClone(DEFAULT_WORKSPACE);
+  }
   if (persistedVersion === 1) {
     const previous = PersistedWorkspaceV1Schema.safeParse(persistedState);
     return previous.success

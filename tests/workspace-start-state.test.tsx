@@ -177,6 +177,17 @@ describe("Fresh workspace actions", () => {
     };
     const cases = [
       {
+        name: "unknown-light-cone",
+        value: {
+          ...baseBundle,
+          schemaVersion: 2,
+          characterLightConeIds: {
+            [build.characterDefinitionId]: ["cone:missing"],
+          },
+        },
+        message: "is missing or does not match the Character's Path",
+      },
+      {
         name: "duplicate",
         value: { ...baseBundle, builds: [build, build] },
         message: "Every build and scoring profile must have a unique ID",

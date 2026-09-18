@@ -1,5 +1,9 @@
 import { z } from "zod";
 import {
+  type CharacterLightConeChoices,
+  CharacterLightConeChoicesSchema,
+} from "@/domain/build/lightConeChoices";
+import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
   TriageRulesSchema,
@@ -9,7 +13,8 @@ import { assertNoSensitiveFields } from "./security";
 export const BuildWorkspaceBundleSchema = z
   .object({
     schema: z.literal("ggstarrail.build-workspace"),
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
+    characterLightConeIds: CharacterLightConeChoicesSchema,
     exportedAt: z.string().datetime(),
     builds: z.array(BuildConfigurationSchema),
     scoreProfiles: z.array(ScoreProfileSchema),
@@ -53,13 +58,31 @@ export const BuildWorkspaceBundleSchema = z
 
 export type BuildWorkspaceBundle = z.infer<typeof BuildWorkspaceBundleSchema>;
 
+// Bundle v1 contained builds, profiles, and triage rules only.
+const BuildWorkspaceBundleV1Schema = z
+  .object({
+    schema: z.literal("ggstarrail.build-workspace"),
+    schemaVersion: z.literal(1),
+    exportedAt: z.string().datetime(),
+    builds: z.array(BuildConfigurationSchema),
+    scoreProfiles: z.array(ScoreProfileSchema),
+    triageRules: TriageRulesSchema,
+  })
+  .strict();
+
+type BuildWorkspaceInput = Omit<
+  BuildWorkspaceBundle,
+  "schema" | "schemaVersion" | "exportedAt" | "characterLightConeIds"
+> & { characterLightConeIds?: CharacterLightConeChoices };
+
 export function createBuildWorkspaceBundle(
-  input: Omit<BuildWorkspaceBundle, "schema" | "schemaVersion" | "exportedAt">,
+  input: BuildWorkspaceInput,
   now = new Date()
 ): BuildWorkspaceBundle {
   const bundle = BuildWorkspaceBundleSchema.parse({
     schema: "ggstarrail.build-workspace",
-    schemaVersion: 1,
+    schemaVersion: 2,
+    characterLightConeIds: {},
     exportedAt: now.toISOString(),
     ...input,
   });
@@ -68,7 +91,7 @@ export function createBuildWorkspaceBundle(
 }
 
 export function serializeBuildWorkspaceBundle(
-  input: Omit<BuildWorkspaceBundle, "schema" | "schemaVersion" | "exportedAt">
+  input: BuildWorkspaceInput
 ): string {
   return JSON.stringify(createBuildWorkspaceBundle(input), null, 2);
 }
@@ -76,5 +99,12 @@ export function serializeBuildWorkspaceBundle(
 export function parseBuildWorkspaceBundle(input: string): BuildWorkspaceBundle {
   const parsed: unknown = JSON.parse(input);
   assertNoSensitiveFields(parsed);
+  const previous = BuildWorkspaceBundleV1Schema.safeParse(parsed);
+  if (previous.success)
+    return BuildWorkspaceBundleSchema.parse({
+      ...previous.data,
+      schemaVersion: 2,
+      characterLightConeIds: {},
+    });
   return BuildWorkspaceBundleSchema.parse(parsed);
 }

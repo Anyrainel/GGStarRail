@@ -78,10 +78,10 @@ describe("BuildCard", () => {
       screen.getByRole("button", { name: /First Cavern 2-piece set:/ })
     );
     expect(
-      screen.queryByRole("menuitem", { name: second.name.en.value })
+      screen.queryByRole("button", { name: second.name.en.value })
     ).toBeNull();
     await user.click(
-      screen.getByRole("menuitem", { name: replacement.name.en.value })
+      screen.getByRole("button", { name: replacement.name.en.value })
     );
     expect(onBuildChange).toHaveBeenLastCalledWith({
       ...mixedBuild,
@@ -273,7 +273,7 @@ describe("BuildCard", () => {
       })
     ).toBeVisible();
     await user.click(
-      screen.getByRole("menuitem", { name: replacement.name.en.value })
+      screen.getByRole("button", { name: replacement.name.en.value })
     );
     expect(onBuildChange).toHaveBeenCalledWith({
       ...build,

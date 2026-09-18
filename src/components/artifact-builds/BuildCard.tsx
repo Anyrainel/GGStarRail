@@ -1,4 +1,11 @@
-import { MoreVertical, Search, SlidersHorizontal, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Copy,
+  MoreVertical,
+  SlidersHorizontal,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { StatSelect } from "@/components/artifact-builds/StatSelect";
 import {
@@ -6,13 +13,12 @@ import {
   TextField,
   ToggleField,
 } from "@/components/builds/BuildControls";
-import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import { ItemPicker } from "@/components/shared/ItemPicker";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -27,18 +33,17 @@ import {
   ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
-  ResponsiveDialogTrigger,
 } from "@/components/ui/responsive-dialog";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import type { BuildReferences } from "@/lib/buildReferences";
+import { catalogPickerItems } from "@/lib/catalogPickerItems";
 import {
   localizedName,
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
-import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { cn } from "@/lib/utils";
 import type { RelicSlotId } from "@/providers/gilore/types";
 
@@ -103,197 +108,10 @@ interface BuildCardProps {
   onBuildChange: (build: BuildConfiguration) => void;
   onProfileChange: (profile: ScoreProfile) => void;
   onDelete: () => void;
-}
-
-interface SetOption {
-  value: string;
-  label: string;
-  iconPath: string;
-  rarity: number | null;
-}
-
-interface SetPickerProps {
-  label: string;
-  pieceCount: 2 | 4;
-  iconSize: ItemIconSize;
-  mobile: boolean;
-  value: string;
-  options: readonly SetOption[];
-  searchLabel: string;
-  emptyLabel: string;
-  closeLabel: string;
-  onChange: (value: string) => void;
-}
-
-function SetPicker({
-  label,
-  pieceCount,
-  iconSize,
-  mobile,
-  value,
-  options,
-  searchLabel,
-  emptyLabel,
-  closeLabel,
-  onChange,
-}: SetPickerProps) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const selected = options.find((option) => option.value === value);
-  const name = selected?.label ?? value;
-  const needle = query.trim().toLocaleLowerCase();
-  const filteredOptions = options.filter(
-    (option) => !needle || option.label.toLocaleLowerCase().includes(needle)
-  );
-
-  function handleOpenChange(nextOpen: boolean) {
-    setOpen(nextOpen);
-    if (!nextOpen) setQuery("");
-  }
-
-  function handleSelect(nextValue: string) {
-    onChange(nextValue);
-    handleOpenChange(false);
-  }
-
-  const trigger = (
-    <button
-      type="button"
-      aria-label={`${label}: ${name}`}
-      title={`${label}: ${name}`}
-      className="group flex w-12 shrink-0 cursor-pointer select-none flex-col items-center gap-1 rounded-lg border border-border bg-gradient-select pb-1 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring md:w-16 md:gap-2"
-    >
-      <ItemIcon
-        kind="relic-set"
-        id={selected?.value ?? value}
-        sourcePath={selected?.iconPath ?? ""}
-        alt=""
-        aria-hidden="true"
-        rarity={selected?.rarity ?? null}
-        badge={pieceCount}
-        size={iconSize}
-      />
-      <span className="line-clamp-2 max-w-12 text-center text-[0.65rem] font-medium leading-tight text-foreground md:max-w-16">
-        {name}
-      </span>
-    </button>
-  );
-  const searchControl = (
-    <div className="relative px-3 pb-3">
-      <Search
-        className="pointer-events-none absolute left-5 top-2.5 h-4 w-4 text-muted-foreground"
-        aria-hidden="true"
-      />
-      <input
-        type="search"
-        value={query}
-        aria-label={searchLabel}
-        className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        onChange={(event) => setQuery(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key !== "Escape") event.stopPropagation();
-        }}
-      />
-    </div>
-  );
-  const optionContent = (option: SetOption) => (
-    <>
-      <span
-        className={cn(
-          "rounded-md",
-          option.value === value && "ring-2 ring-primary"
-        )}
-      >
-        <ItemIcon
-          kind="relic-set"
-          id={option.value}
-          sourcePath={option.iconPath}
-          alt=""
-          aria-hidden="true"
-          rarity={option.rarity}
-          size="md"
-        />
-      </span>
-      <span className="line-clamp-2 w-full text-[0.62rem] leading-tight">
-        {option.label}
-      </span>
-    </>
-  );
-
-  if (mobile) {
-    return (
-      <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
-        <ResponsiveDialogTrigger asChild>{trigger}</ResponsiveDialogTrigger>
-        <ResponsiveDialogContent
-          closeLabel={closeLabel}
-          className="flex h-[85dvh] max-h-[85dvh] flex-col p-0"
-        >
-          <ResponsiveDialogHeader className="px-4 pb-2 pt-4">
-            <ResponsiveDialogTitle>{label}</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription className="sr-only">
-              {searchLabel}
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
-          {searchControl}
-          <div className="grid min-h-0 flex-1 grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] gap-1 overflow-y-auto border-t border-border p-2">
-            {filteredOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                aria-label={option.label}
-                title={option.label}
-                aria-current={option.value === value ? "true" : undefined}
-                className="flex min-w-0 flex-col items-center gap-1 rounded-md p-1 text-center outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
-                onClick={() => handleSelect(option.value)}
-              >
-                {optionContent(option)}
-              </button>
-            ))}
-            {filteredOptions.length === 0 && (
-              <span className="col-span-full px-2 py-6 text-center text-xs text-muted-foreground">
-                {emptyLabel}
-              </span>
-            )}
-          </div>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
-    );
-  }
-
-  return (
-    <DropdownMenu open={open} onOpenChange={handleOpenChange}>
-      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        collisionPadding={8}
-        side="right"
-        className="w-[30rem] max-w-[calc(100vw-1rem)] p-0"
-      >
-        <DropdownMenuLabel className="px-3 pt-2">{label}</DropdownMenuLabel>
-        {searchControl}
-        <DropdownMenuSeparator className="my-0" />
-        <div className="grid max-h-[32rem] grid-cols-[repeat(auto-fill,minmax(3.5rem,1fr))] gap-1 overflow-y-auto p-2">
-          {filteredOptions.map((option) => (
-            <DropdownMenuItem
-              key={option.value}
-              aria-label={option.label}
-              title={option.label}
-              aria-current={option.value === value ? "true" : undefined}
-              className="relative flex min-w-0 flex-col gap-1 p-1 text-center"
-              onSelect={() => handleSelect(option.value)}
-            >
-              {optionContent(option)}
-            </DropdownMenuItem>
-          ))}
-          {filteredOptions.length === 0 && (
-            <span className="col-span-full px-2 py-6 text-center text-xs text-muted-foreground">
-              {emptyLabel}
-            </span>
-          )}
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  onDuplicate?: () => void;
+  onMove?: (direction: "up" | "down") => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 interface WeightTokenProps {
@@ -391,6 +209,10 @@ export function BuildCard({
   onBuildChange,
   onProfileChange,
   onDelete,
+  onDuplicate,
+  onMove,
+  canMoveUp,
+  canMoveDown,
 }: BuildCardProps) {
   const { locale, t } = useI18n();
   const useCompactSetIcons = useMediaQuery("(max-width: 767px)");
@@ -401,35 +223,23 @@ export function BuildCard({
     setNameDraft(build.name);
   }, [build.name]);
 
-  const setRarityById = useMemo(
-    () => createRelicSetRarityMap(references.relicPieces.values),
-    [references.relicPieces.values]
+  const setItems = useMemo(
+    () =>
+      catalogPickerItems(
+        "relic-set",
+        references,
+        locale,
+        t("terms.trailblazer")
+      ),
+    [references, locale, t]
   );
   const cavernSets = useMemo(
-    () =>
-      references.relicSets.values
-        .filter((set) => set.kind === "cavern_relic")
-        .map((set) => ({
-          value: set.id,
-          label: localizedName(set.name, locale, set.id),
-          iconPath: set.icon_path,
-          rarity: setRarityById.get(set.id) ?? null,
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    [locale, references.relicSets.values, setRarityById]
+    () => setItems.filter((item) => item.tags?.includes("cavern_relic")),
+    [setItems]
   );
   const planarSets = useMemo(
-    () =>
-      references.relicSets.values
-        .filter((set) => set.kind === "planar_ornament")
-        .map((set) => ({
-          value: set.id,
-          label: localizedName(set.name, locale, set.id),
-          iconPath: set.icon_path,
-          rarity: setRarityById.get(set.id) ?? null,
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    [locale, references.relicSets.values, setRarityById]
+    () => setItems.filter((item) => item.tags?.includes("planar_ornament")),
+    [setItems]
   );
   const fourPieceSetId =
     build.cavern.mode === "four-piece"
@@ -529,6 +339,31 @@ export function BuildCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {onDuplicate && (
+                  <DropdownMenuItem onSelect={onDuplicate}>
+                    <Copy />
+                    {t("build.duplicate")}
+                  </DropdownMenuItem>
+                )}
+                {onMove && (
+                  <>
+                    <DropdownMenuItem
+                      disabled={!canMoveUp}
+                      onSelect={() => onMove("up")}
+                    >
+                      <ArrowUp />
+                      {t("build.moveUp")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      disabled={!canMoveDown}
+                      onSelect={() => onMove("down")}
+                    >
+                      <ArrowDown />
+                      {t("build.moveDown")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onSelect={() => setScoringOpen(true)}>
                   <SlidersHorizontal />
                   {t("build.scoringConfigure")}
@@ -551,31 +386,29 @@ export function BuildCard({
             <div className="flex min-w-0 items-start justify-center gap-2 md:gap-3 2xl:gap-2 3xl:gap-3">
               <section
                 aria-label={t("build.setPlanTitle")}
-                className="flex w-[6.25rem] shrink-0 flex-wrap justify-center gap-1 md:w-[8.25rem]"
+                className="flex w-[6.5rem] shrink-0 flex-wrap justify-center gap-1 max-[360px]:w-[3.125rem] md:w-[8.5rem]"
               >
-                <SetPicker
+                <ItemPicker
+                  kind="relic-set"
+                  showName
                   label={
                     build.cavern.mode === "four-piece"
                       ? t("build.cavernFourPiece")
                       : t("build.cavernFirstTwoPiece")
                   }
-                  pieceCount={build.cavern.mode === "four-piece" ? 4 : 2}
-                  iconSize={useCompactSetIcons ? "sm" : "lg"}
-                  mobile={useCompactSetIcons}
+                  badge={build.cavern.mode === "four-piece" ? 4 : 2}
+                  triggerSize={useCompactSetIcons ? "sm" : "lg"}
                   value={fourPieceSetId}
-                  options={
+                  items={
                     build.cavern.mode === "two-plus-two"
                       ? cavernSets.filter(
                           (set) =>
-                            set.value !==
+                            set.id !==
                             (build.cavern.mode === "two-plus-two" &&
                               build.cavern.setIds[1])
                         )
                       : cavernSets
                   }
-                  searchLabel={`${t("common.search")}: ${t("build.cavernFourPiece")}`}
-                  emptyLabel={t("empty.filtered")}
-                  closeLabel={t("common.close")}
                   onChange={(setId) =>
                     onBuildChange({
                       ...build,
@@ -590,18 +423,16 @@ export function BuildCard({
                   }
                 />
                 {build.cavern.mode === "two-plus-two" && (
-                  <SetPicker
+                  <ItemPicker
+                    kind="relic-set"
+                    showName
                     label={t("build.cavernSecondTwoPiece")}
-                    pieceCount={2}
-                    iconSize={useCompactSetIcons ? "sm" : "lg"}
-                    mobile={useCompactSetIcons}
+                    badge={2}
+                    triggerSize={useCompactSetIcons ? "sm" : "lg"}
                     value={build.cavern.setIds[1]}
-                    options={cavernSets.filter(
-                      (set) => set.value !== fourPieceSetId
+                    items={cavernSets.filter(
+                      (set) => set.id !== fourPieceSetId
                     )}
-                    searchLabel={`${t("common.search")}: ${t("build.cavernSecondTwoPiece")}`}
-                    emptyLabel={t("empty.filtered")}
-                    closeLabel={t("common.close")}
                     onChange={(setId) =>
                       onBuildChange({
                         ...build,
@@ -613,16 +444,14 @@ export function BuildCard({
                     }
                   />
                 )}
-                <SetPicker
+                <ItemPicker
+                  kind="relic-set"
+                  showName
                   label={t("build.planarTwoPiece")}
-                  pieceCount={2}
-                  iconSize={useCompactSetIcons ? "sm" : "lg"}
-                  mobile={useCompactSetIcons}
+                  badge={2}
+                  triggerSize={useCompactSetIcons ? "sm" : "lg"}
                   value={build.planarSetId}
-                  options={planarSets}
-                  searchLabel={`${t("common.search")}: ${t("build.planarTwoPiece")}`}
-                  emptyLabel={t("empty.filtered")}
-                  closeLabel={t("common.close")}
+                  items={planarSets}
                   onChange={(planarSetId) =>
                     onBuildChange({ ...build, planarSetId })
                   }

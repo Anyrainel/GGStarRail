@@ -110,7 +110,7 @@ describe("independent persistence and backup identity", () => {
     });
 
     const parsed = parseBackup(serialized);
-    expect(parsed.payload.schemaVersion).toBe(3);
+    expect(parsed.payload.schemaVersion).toBe(4);
     expect(parsed.payload.account?.schemaVersion).toBe(3);
     expect(parsed.payload.account?.relics[0]?.discarded).toBeNull();
     expect(parsed.payload.account?.source.coverage.relics).toBe("unknown");
@@ -142,8 +142,10 @@ describe("independent persistence and backup identity", () => {
       schemaVersion: 1,
       createdAt: "2026-09-03T00:00:00.000Z",
       payload: {
-        ...structuredClone(DEFAULT_WORKSPACE),
         schemaVersion: 2,
+        builds: [],
+        scoreProfiles: [],
+        triageRules: structuredClone(DEFAULT_WORKSPACE.triageRules),
         account: {
           ...accountWithoutCompletion,
           schemaVersion: 2,
@@ -152,7 +154,7 @@ describe("independent persistence and backup identity", () => {
     });
 
     const parsed = parseBackup(serialized);
-    expect(parsed.payload.schemaVersion).toBe(3);
+    expect(parsed.payload.schemaVersion).toBe(4);
     expect(parsed.payload.account?.schemaVersion).toBe(3);
     expect(parsed.payload.account?.achievementCompletion).toBeUndefined();
   });
