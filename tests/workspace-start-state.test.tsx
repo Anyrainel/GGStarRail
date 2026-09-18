@@ -1,11 +1,10 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { APP_PATHS } from "@/config/navigation";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { loadBuildReferences } from "@/lib/buildReferences";
 import CharacterView from "@/pages/account-data/CharacterView";
 import InventoryView from "@/pages/account-data/InventoryView";
 import CharacterBuildView from "@/pages/artifact-builds/CharacterBuildView";
@@ -17,26 +16,6 @@ function renderPage(page: ReactElement) {
       <MemoryRouter>{page}</MemoryRouter>
     </I18nProvider>
   );
-}
-
-async function chooseBuildSets(user: ReturnType<typeof userEvent.setup>) {
-  const references = await loadBuildReferences();
-  const cavern = references.relicSets.values.find(
-    (set) => set.kind === "cavern_relic"
-  )!;
-  const planar = references.relicSets.values.find(
-    (set) => set.kind === "planar_ornament"
-  )!;
-  const dialog = screen.getByRole("dialog");
-  await user.selectOptions(
-    within(dialog).getByRole("combobox", { name: "Cavern 4-piece set" }),
-    cavern.id
-  );
-  await user.selectOptions(
-    within(dialog).getByRole("combobox", { name: "Planar 2-piece set" }),
-    planar.id
-  );
-  await user.click(within(dialog).getByRole("button", { name: "Add Build" }));
 }
 
 beforeEach(() => {
@@ -106,7 +85,6 @@ describe("Fresh workspace actions", () => {
     ).not.toBeInTheDocument();
 
     await user.click(createButtons[0]);
-    await chooseBuildSets(user);
     await waitFor(() => {
       expect(useWorkspaceStore.getState().account).toBeNull();
       expect(useWorkspaceStore.getState().builds).toHaveLength(1);
@@ -132,7 +110,6 @@ describe("Fresh workspace actions", () => {
       name: "Add First Build",
     });
     await user.click(createButton);
-    await chooseBuildSets(user);
     const state = useWorkspaceStore.getState();
     const bundle = {
       schema: "ggstarrail.build-workspace",
@@ -183,7 +160,6 @@ describe("Fresh workspace actions", () => {
       name: "Add First Build",
     });
     await user.click(createButton);
-    await chooseBuildSets(user);
     const state = useWorkspaceStore.getState();
     const build = state.builds[0];
     if (!build) throw new Error("Expected a generated build");

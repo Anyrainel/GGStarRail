@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { StatSelect } from "@/components/artifact-builds/StatSelect";
 import {
   NumberField,
-  SelectField,
   TextField,
   ToggleField,
 } from "@/components/builds/BuildControls";
@@ -154,14 +153,15 @@ function SetPicker({
 
   function handleSelect(nextValue: string) {
     onChange(nextValue);
-    setOpen(false);
+    handleOpenChange(false);
   }
 
   const trigger = (
     <button
       type="button"
       aria-label={`${label}: ${name}`}
-      className="group flex w-12 shrink-0 cursor-pointer select-none flex-col items-center gap-1 rounded-lg outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring md:w-16 md:gap-2"
+      title={`${label}: ${name}`}
+      className="group flex w-12 shrink-0 cursor-pointer select-none flex-col items-center gap-1 rounded-lg border border-border bg-gradient-select pb-1 outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring md:w-16 md:gap-2"
     >
       <ItemIcon
         kind="relic-set"
@@ -241,6 +241,7 @@ function SetPicker({
                 key={option.value}
                 type="button"
                 aria-label={option.label}
+                title={option.label}
                 aria-current={option.value === value ? "true" : undefined}
                 className="flex min-w-0 flex-col items-center gap-1 rounded-md p-1 text-center outline-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => handleSelect(option.value)}
@@ -276,6 +277,7 @@ function SetPicker({
             <DropdownMenuItem
               key={option.value}
               aria-label={option.label}
+              title={option.label}
               aria-current={option.value === value ? "true" : undefined}
               className="relative flex min-w-0 flex-col gap-1 p-1 text-center"
               onSelect={() => handleSelect(option.value)}
@@ -718,29 +720,6 @@ export function BuildCard({
           </ResponsiveDialogHeader>
           <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(15rem,0.45fr)_minmax(0,1fr)]">
             <div className="space-y-3">
-              <SelectField
-                label={t("build.advancedTwoPlusTwo")}
-                value={
-                  build.cavern.mode === "two-plus-two"
-                    ? build.cavern.setIds[1]
-                    : ""
-                }
-                options={[
-                  { value: "", label: t("build.cavernFourPiece") },
-                  ...cavernSets.filter((set) => set.value !== fourPieceSetId),
-                ]}
-                onChange={(setId) =>
-                  onBuildChange({
-                    ...build,
-                    cavern: setId
-                      ? {
-                          mode: "two-plus-two",
-                          setIds: [fourPieceSetId, setId],
-                        }
-                      : { mode: "four-piece", setId: fourPieceSetId },
-                  })
-                }
-              />
               <TextField
                 label={t("scoring.profileName")}
                 value={profile.name}

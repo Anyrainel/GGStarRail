@@ -301,6 +301,9 @@ describe("BuildCard", () => {
       })
     );
     expect(screen.getByRole("dialog")).toBeVisible();
+    expect(
+      within(screen.getByRole("dialog")).queryByRole("combobox")
+    ).toBeNull();
     expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
   });
 });

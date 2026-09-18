@@ -1,28 +1,17 @@
 import { Plus } from "lucide-react";
-import { memo, useState } from "react";
+import { memo } from "react";
 import { Link } from "react-router-dom";
-import { SelectField } from "@/components/builds/BuildControls";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import {
-  ResponsiveDialog,
-  ResponsiveDialogContent,
-  ResponsiveDialogDescription,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from "@/components/ui/responsive-dialog";
 import { APP_PATHS } from "@/config/navigation";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildReferences } from "@/lib/buildReferences";
-import {
-  characterCatalogPresentation,
-  localizedName,
-} from "@/lib/catalogPresentation";
+import { characterCatalogPresentation } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
 import type { CharacterDefinition } from "@/providers/gilore/types";
 import { BuildCard } from "./BuildCard";
@@ -51,13 +40,25 @@ function CharacterBuildCardComponent({
   onDeleteBuild,
 }: CharacterBuildCardProps) {
   const { locale, t } = useI18n();
-  const [adding, setAdding] = useState(false);
-  const [cavernSetId, setCavernSetId] = useState("");
-  const [planarSetId, setPlanarSetId] = useState("");
   const openAddBuild = () => {
-    setCavernSetId("");
-    setPlanarSetId("");
-    setAdding(true);
+    const previous = builds.at(-1);
+    const cavernSetId = previous
+      ? previous.cavern.mode === "four-piece"
+        ? previous.cavern.setId
+        : previous.cavern.setIds[0]
+      : references.relicSets.values.find((set) => set.kind === "cavern_relic")
+          ?.id;
+    const planarSetId =
+      previous?.planarSetId ??
+      references.relicSets.values.find((set) => set.kind === "planar_ornament")
+        ?.id;
+    if (!cavernSetId || !planarSetId) {
+      throw new Error("Build creation requires Cavern and Planar set catalogs");
+    }
+    onAddBuild({
+      cavern: { mode: "four-piece", setId: cavernSetId },
+      planarSetId,
+    });
   };
   const isVeryNarrow = useMediaQuery("(max-width: 560px)");
   const iconSize: ItemIconSize = isVeryNarrow ? "md" : "lg";
@@ -229,63 +230,6 @@ function CharacterBuildCardComponent({
           </div>
         )}
       </CardContent>
-      <ResponsiveDialog open={adding} onOpenChange={setAdding}>
-        <ResponsiveDialogContent closeLabel={t("common.close")}>
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>{t("build.addBuild")}</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>
-              {t("build.chooseSetsHelp")}
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
-          <div className="mt-4 space-y-4">
-            <SelectField
-              label={t("build.cavernFourPiece")}
-              value={cavernSetId}
-              onChange={setCavernSetId}
-              options={[
-                { value: "", label: t("build.chooseSet") },
-                ...references.relicSets.values
-                  .filter((set) => set.kind === "cavern_relic")
-                  .map((set) => ({
-                    value: set.id,
-                    label: localizedName(set.name, locale, set.id),
-                  })),
-              ]}
-            />
-            <SelectField
-              label={t("build.planarTwoPiece")}
-              value={planarSetId}
-              onChange={setPlanarSetId}
-              options={[
-                { value: "", label: t("build.chooseSet") },
-                ...references.relicSets.values
-                  .filter((set) => set.kind === "planar_ornament")
-                  .map((set) => ({
-                    value: set.id,
-                    label: localizedName(set.name, locale, set.id),
-                  })),
-              ]}
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setAdding(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button
-                disabled={!cavernSetId || !planarSetId}
-                onClick={() => {
-                  onAddBuild({
-                    cavern: { mode: "four-piece", setId: cavernSetId },
-                    planarSetId,
-                  });
-                  setAdding(false);
-                }}
-              >
-                {t("build.addBuild")}
-              </Button>
-            </div>
-          </div>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
     </Card>
   );
 }

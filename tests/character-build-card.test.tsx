@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -37,7 +37,7 @@ describe("CharacterBuildCard", () => {
     ).toBeNull();
   });
 
-  it("requires explicit set choices before creating a build", async () => {
+  it("creates a 4+2 build immediately without a set-selection dialog", async () => {
     const references = await loadBuildReferences();
     const character = references.characters.values[0]!;
     const cavern = references.relicSets.values.find(
@@ -65,20 +65,7 @@ describe("CharacterBuildCard", () => {
       </I18nProvider>
     );
     await user.click(screen.getByRole("button", { name: "Add First Build" }));
-    const dialog = screen.getByRole("dialog");
-    const create = within(dialog).getByRole("button", { name: "Add Build" });
-    expect(create).toBeDisabled();
-    expect(onAddBuild).not.toHaveBeenCalled();
-    await user.selectOptions(
-      within(dialog).getByRole("combobox", { name: "Cavern 4-piece set" }),
-      cavern.id
-    );
-    expect(create).toBeDisabled();
-    await user.selectOptions(
-      within(dialog).getByRole("combobox", { name: "Planar 2-piece set" }),
-      planar.id
-    );
-    await user.click(create);
+    expect(screen.queryByRole("dialog")).toBeNull();
     expect(onAddBuild).toHaveBeenCalledExactlyOnceWith({
       cavern: { mode: "four-piece", setId: cavern.id },
       planarSetId: planar.id,

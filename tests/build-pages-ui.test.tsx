@@ -102,7 +102,7 @@ afterEach(() => {
 });
 
 describe("Build route interactions", () => {
-  it("creates a catalog build only after the player chooses both sets", async () => {
+  it("creates a catalog build directly with editable 4+2 sets", async () => {
     const references = await loadBuildReferences();
     const character = references.characters.values[0];
     const cavern = references.relicSets.values.find(
@@ -122,20 +122,7 @@ describe("Build route interactions", () => {
     await user.click(
       screen.getAllByRole("button", { name: "Add First Build" })[0]
     );
-    const dialog = within(screen.getByRole("dialog", { name: "Add Build" }));
-    const create = dialog.getByRole("button", { name: "Add Build" });
-    expect(create).toBeDisabled();
-    expect(useWorkspaceStore.getState().builds).toHaveLength(0);
-    await user.selectOptions(
-      dialog.getByRole("combobox", { name: "Cavern 4-piece set" }),
-      cavern.id
-    );
-    expect(create).toBeDisabled();
-    await user.selectOptions(
-      dialog.getByRole("combobox", { name: "Planar 2-piece set" }),
-      planar.id
-    );
-    await user.click(create);
+    expect(screen.queryByRole("dialog", { name: "Add Build" })).toBeNull();
     expect(useWorkspaceStore.getState().builds).toHaveLength(1);
     expect(useWorkspaceStore.getState().builds[0]).toMatchObject({
       characterDefinitionId: character.id,
