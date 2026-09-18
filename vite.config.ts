@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile } from "node:fs/promises";
+import { copyFile, cp, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
@@ -62,12 +62,18 @@ export default defineConfig({
           "favicon.svg",
           "favicon-48.png",
           "apple-touch-icon.png",
+          "assets/ggstarrail/wordmark.svg",
         ]) {
           await copyFile(
             path.resolve(__dirname, "public", asset),
             path.resolve(__dirname, "dist", asset)
           );
         }
+        await cp(
+          path.resolve(__dirname, "public/assets/ggstarrail/home"),
+          path.resolve(__dirname, "dist/assets/ggstarrail/home"),
+          { recursive: true }
+        );
         for (const image of images) {
           if (!/^webp\/[a-f0-9]{64}\.webp$/.test(image))
             throw new Error(`Invalid WebP path: ${image}`);
