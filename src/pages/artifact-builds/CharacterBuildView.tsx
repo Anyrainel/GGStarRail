@@ -229,11 +229,7 @@ export default function CharacterBuildView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.builds.title"
-        descriptionKey="route.builds.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.builds.title" visuallyHidden />
       <BuildWorkspaceActions references={data} />
       {createError && <StatusBanner message={createError} tone="error" />}
       {loading ? (
@@ -244,7 +240,6 @@ export default function CharacterBuildView() {
         <SidebarLayout
           sidebar={renderFilterPanel(data)}
           triggerLabel={t("characterLoadout.filters")}
-          description={t("route.builds.description")}
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0 space-y-4">

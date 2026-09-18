@@ -63,11 +63,7 @@ export default function CharacterTierListView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        titleKey="route.tierCharacters.title"
-        descriptionKey="route.tierCharacters.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.tierCharacters.title" visuallyHidden />
       <PriorityWorkspaceHeader
         assignedCount={Object.keys(assignments).length}
         totalCount={items.length}

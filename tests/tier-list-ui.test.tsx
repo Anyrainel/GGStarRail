@@ -145,14 +145,13 @@ describe("HSR Tier List views", () => {
     expect(planarItems.length).toBeLessThan(58);
   });
 
-  it("renders the priority contract and Relic categories in zh-CN", async () => {
+  it("renders the priority controls and Relic categories in zh-CN", async () => {
     localStorage.setItem(STORAGE_KEYS.locale, "zh-CN");
     renderView(<RelicTierListView />);
 
     expect(
       await screen.findByRole("heading", { name: "遗器优先级" }, catalogTimeout)
     ).toBeVisible();
-    expect(screen.getByText("这是你的个人优先级列表")).toBeVisible();
     expect(screen.getByRole("button", { name: "隧洞遗器" })).toBeVisible();
     expect(screen.getByRole("button", { name: "位面饰品" })).toBeVisible();
   });

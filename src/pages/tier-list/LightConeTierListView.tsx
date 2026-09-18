@@ -63,11 +63,7 @@ export default function LightConeTierListView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        titleKey="route.tierLightCones.title"
-        descriptionKey="route.tierLightCones.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.tierLightCones.title" visuallyHidden />
       <PriorityWorkspaceHeader
         assignedCount={Object.keys(assignments).length}
         totalCount={items.length}

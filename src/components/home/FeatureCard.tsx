@@ -6,8 +6,6 @@ import { getAssetUrl } from "@/lib/assets";
 interface FeatureCardProps {
   icon: ReactNode;
   title: string;
-  problem: string;
-  guideline: string;
   link: string;
   bgImage: string;
   bgPosition?: string;
@@ -18,8 +16,6 @@ interface FeatureCardProps {
 export function FeatureCard({
   icon,
   title,
-  problem,
-  guideline,
   link,
   bgImage,
   bgPosition = "center center",
@@ -52,16 +48,10 @@ export function FeatureCard({
           <div className="rounded-lg border border-primary/30 bg-primary/20 p-2 text-primary shadow-lg shadow-primary/10 backdrop-blur-sm">
             {icon}
           </div>
-          <span className="text-sm font-semibold uppercase tracking-wider text-foreground/70">
+          <h2 className="text-lg font-bold text-foreground md:text-2xl">
             {title}
-          </span>
+          </h2>
         </div>
-        <h2 className="text-lg font-bold leading-tight text-foreground md:text-2xl">
-          {problem}
-        </h2>
-        <p className="text-sm leading-relaxed text-foreground/75">
-          {guideline}
-        </p>
       </div>
       <span className="absolute bottom-4 right-5 z-10 inline-flex h-10 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-md shadow-primary/10 transition-shadow group-hover:shadow-lg group-hover:shadow-primary/20">
         {ctaText}

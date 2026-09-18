@@ -1,27 +1,6 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
-  "guide.open": "快速上手",
-  "guide.previous": "上一步",
-  "guide.next": "下一步",
-  "guide.done": "开始使用",
-  "guide.progress": "快速上手 · {current} / {total}",
-  "guide.account.body":
-    "进入账号数据，点击顶部应用栏的「导入账号」。选择兼容的扫描器 JSON 文件，或通过 UID 获取公开角色展柜数据，确认预览后再导入。",
-  "guide.account.hint":
-    "公开展柜仅包含展示的角色及其装备。要导入背包中的其他装备，请使用扫描器导出的文件。",
-  "guide.builds.body":
-    "选择角色，指定隧洞遗器和位面饰品套装来创建配装。设置主词条和副词条权重后，前往遗器筛选，查看账号内符合条件的装备。",
-  "guide.builds.hint":
-    "无需导入账号即可配置配装；查看匹配装备和账号结果则需要先导入遗器。",
-  "guide.priority.body":
-    "将角色、光锥和遗器套装排入自己的优先级档位。按优先级排序角色时，会使用你设置的角色优先级。",
-  "guide.priority.hint":
-    "这是你自己的培养与收集计划，可以随时按角色池和目标调整。",
-  "guide.archive.body":
-    "查阅角色、光锥和遗器套装。通过搜索与筛选，快速找到配装时需要的信息。",
-  "guide.archive.hint":
-    "浏览图鉴无需导入账号。需要时，随时可以从首页重新打开本指南。",
   "filter.sortPriority": "优先级",
   "filter.priorityUnavailable":
     "在角色优先级页面为角色分级后即可按优先级排序。",
@@ -34,13 +13,9 @@ export const messagesZhCn = {
   "filter.configuredOnly": "仅已配置配装",
   "filter.reset": "重置筛选",
   "home.brand": "GGArtifact",
-  "home.tool.tiers.title": "规划养成优先级",
-  "home.tool.tiers.body": "按自己的养成计划整理角色、光锥和遗器套装。",
   "home.openBuilds": "配置配装",
   "home.openTiers": "整理优先级",
   "build.chooseSet": "选择套装",
-  "build.chooseSetsHelp":
-    "选择这套配装要使用的套装。创建后可切换为两套隧洞遗器 2 件套。",
   "theme.jarilo": "雅利洛-Ⅵ · 冰雪与钢铁",
   "theme.luofu": "仙舟「罗浮」· 青玉",
   "theme.amphoreus": "翁法罗斯 · 黎明金",
@@ -134,43 +109,18 @@ export const messagesZhCn = {
   "home.openAccount": "打开账号数据",
   "home.openArchive": "浏览图鉴",
   "home.tools.title": "从这里开始",
-  "home.tools.body": "直接前往你需要的工具。",
-  "home.index.characters": "查看养成与装备",
-  "home.index.inventory": "浏览已有装备",
-  "home.index.resources": "规划下一步提升",
-  "home.index.triage": "决定遗器去留",
-  "home.index.builds": "选择套装与词条",
-  "home.index.filters": "筛选适配遗器",
-  "home.index.tierCharacters": "安排角色养成顺序",
-  "home.index.tierLightCones": "安排光锥养成顺序",
-  "home.index.tierRelics": "安排遗器刷取顺序",
-  "home.index.archiveCharacters": "查询技能与行迹",
-  "home.index.archiveLightCones": "对比光锥效果",
-  "home.index.archiveRelicSets": "查询套装效果",
-  "home.index.archiveAchievements": "记录成就进度",
-  "home.tool.account.title": "查看账号数据",
-  "home.tool.account.body": "查看角色、装备与遗器提升建议。",
-  "home.tool.builds.title": "规划遗器配装",
-  "home.tool.builds.body": "选好遗器套装与词条，找出适合角色配装的遗器。",
-  "home.tool.archive.title": "浏览游戏图鉴",
-  "home.tool.archive.body": "查询角色、光锥、遗器套装效果与成就。",
   "route.characters.title": "角色",
   "route.characters.description": "查看角色养成、星魂、行迹与当前装备。",
   "route.inventory.title": "背包",
   "route.inventory.description":
     "在同一背包中查看已导入的角色、光锥、隧洞遗器和位面饰品。",
   "route.lightCones.title": "光锥",
-  "route.lightCones.description":
-    "按命途、等级、叠影、锁定及装备状态查看已拥有光锥。",
   "route.relics.title": "遗器",
-  "route.relics.description": "查看头部、手部、躯干和脚部的隧洞遗器。",
   "route.planar.title": "位面饰品",
-  "route.planar.description": "查看已拥有的位面球与连结绳。",
   "route.builds.title": "角色配装",
   "route.builds.description":
     "为角色配置四件隧洞遗器与两件位面饰品，编辑主词条偏好和评分方案。",
   "route.scoring.title": "遗器评分",
-  "route.scoring.description": "调整词条权重与评分门槛，评估遗器和当前配装。",
   "route.filters.title": "遗器筛选",
   "route.filters.description":
     "把每套配装转成六个部位筛选，并从已导入账号中推荐匹配度最高的整套遗器。",
@@ -204,14 +154,6 @@ export const messagesZhCn = {
     "导入扫描器文件或公开 UID 展示，查看可用的账号导入方式。",
   "route.notFound.title": "页面不存在",
   "route.notFound.description": "找不到此页面，请从导航中选择工具继续使用。",
-  "home.ready.title": "现已实现",
-  "home.ready.body":
-    "已校验双语图鉴、响应式资料库、本地与部分账号导入、可编辑配装、评分、筛选、整理、持久化和安全备份。",
-  "home.scaffolded.title": "仍需外部验证",
-  "home.scaffolded.body":
-    "真实登录凭据成功、打开游戏客户端后的扫描实测、生产 Worker 配置和云备份仍不会被提前宣称完成。",
-  "home.excluded.title": "明确排除",
-  "home.excluded.body": "队伍伤害优化、原神伤害引擎和充能计算器均未引入。",
   "home.snapshot.title": "本地工作区",
   "home.snapshot.empty": "尚未导入账号快照。",
   "home.snapshot.source": "来源：{source}",
@@ -255,9 +197,8 @@ export const messagesZhCn = {
   "field.equipped": "已装备",
   "field.discarded": "已标记弃置",
   "field.discardUnknown": "弃置状态未知",
-  "empty.characters": "导入账号快照后即可查看已拥有角色。",
-  "empty.inventory":
-    "导入通过校验的账号快照后，即可浏览角色、光锥、遗器与位面饰品。",
+  "empty.characters": "尚未导入账号。",
+  "empty.inventory": "尚未导入账号。",
   "empty.inventoryCharacters": "本地工作区中没有角色。",
   "empty.lightCones": "本地工作区中没有光锥。",
   "empty.relics": "本地工作区中没有隧洞遗器。",
@@ -269,20 +210,7 @@ export const messagesZhCn = {
     "配装编辑器目前仍处于原型阶段，暂未开放。你可以先查看账号数据或管理导入来源。",
   "empty.openAccount": "查看账号数据",
   "empty.archive": "尚未加载具有完整来源信息的游戏数据包。",
-  "scoring.engine.title": "中立评分服务",
-  "scoring.engine.body":
-    "评分引擎已通过测试，可汇总标准化词条与权重；本原型暂不提供权重编辑器和遗器评分结果页。",
-  "filters.engine.title": "类型化筛选计算器",
-  "filters.engine.body":
-    "筛选引擎已通过测试，可对星铁背包字段应用全部或任一条件；本原型暂不提供条件编辑器和结果页。",
-  "triage.engine.title": "仅提供整理建议",
-  "triage.engine.body":
-    "整理引擎已通过测试，并会保护锁定或已装备物品；本原型暂不提供交互整理流程，也不会修改游戏内物品。",
-  "build.needsAccount":
-    "无需导入账号即可使用完整角色图鉴创建配装；账号数据只用于可选的持有筛选和当前装备预设。",
   "build.backupTitle": "配装工作区文件",
-  "build.backupHelp":
-    "可导出或恢复配装、评分方案和整理规则；不会包含账号数据或登录凭据。",
   "build.export": "导出配装",
   "build.import": "导入配装",
   "build.exported": "配装工作区已导出。",
@@ -313,14 +241,10 @@ export const messagesZhCn = {
     "当前参考图鉴中不存在“{id}”，或它不是位面饰品套装。",
   "build.importIssueMainStat": "主词条“{id}”不适用于所配置的遗器部位。",
   "build.newTitle": "新建角色配装",
-  "build.newHelp": "可选择任意角色；已拥有角色还会以当前装备套装作为起点。",
   "build.catalogTitle": "角色图鉴",
-  "build.catalogFilterHelp": "可搜索完整图鉴，或按命途、属性和持有情况筛选。",
   "build.searchPlaceholder": "搜索角色",
   "build.ownedOnly": "只看已拥有角色",
-  "build.ownedOnlyHelp": "只显示当前账号快照中包含的角色。",
-  "build.ownedOnlyUnavailable":
-    "导入账号后可使用此筛选；未导入时仍可配置所有角色。",
+  "build.ownedOnlyUnavailable": "需要先导入账号。",
   "build.catalogCount": "当前显示 {shown} / {total} 名角色",
   "build.createFor": "为{character}创建配装",
   "build.characterIdentity": "{character} · 命途：{path} · 属性：{combatType}",
@@ -329,14 +253,11 @@ export const messagesZhCn = {
   "build.buildCount": "{count} 套配装",
   "build.noCatalogMatches": "没有角色符合当前图鉴筛选条件。",
   "build.character": "角色",
-  "build.characterChangeHelp":
-    "更换角色会重新生成套装、主词条和数据表评分预设。",
   "build.create": "创建配装",
   "build.created": "已创建配装和评分方案。",
   "build.createError": "无法使用当前参考图鉴创建配装。",
   "build.noOwnedCharacters": "此账号来源没有提供可配置的角色。",
   "build.savedTitle": "已保存配装（{count}）",
-  "build.savedLocally": "更改已保存在此设备。",
   "build.defaultProfileName": "{character}评分",
   "build.defaultBuildName": "{character}配装",
   "build.name": "配装名称",
@@ -346,10 +267,7 @@ export const messagesZhCn = {
   "build.deleteConfirm": "要从此设备删除“{name}”吗？",
   "build.deleted": "配装已删除。",
   "build.setPlanTitle": "套装方案",
-  "build.setPlanHelp": "常规目标为一套隧洞遗器 4 件套加一套位面饰品 2 件套。",
   "build.advancedTwoPlusTwo": "进阶：使用两套隧洞遗器 2 件套",
-  "build.advancedTwoPlusTwoHelp":
-    "部分角色仍适合混搭两个不同的隧洞 2 件套，可在这里启用；位面 2 件套保持不变。",
   "build.cavernFourPiece": "隧洞遗器 4 件套",
   "build.cavernFirstTwoPiece": "第一套隧洞遗器 2 件套",
   "build.cavernSecondTwoPiece": "第二套隧洞遗器 2 件套",
@@ -362,8 +280,6 @@ export const messagesZhCn = {
   "build.addMainStat": "添加{slot}主词条",
   "build.deselectMainStat": "取消选择",
   "build.mainStatsTitle": "主词条偏好",
-  "build.mainStatsHelp":
-    "头部和手部主词条由游戏固定；可为躯干、脚部、位面球和连结绳选择一个或多个可接受主词条。",
   "build.fixed": "固定",
   "build.lockUnknown": "锁定状态未知",
   "build.coverageNoticeTitle": "结果受导入来源覆盖范围限制",
@@ -377,7 +293,6 @@ export const messagesZhCn = {
   "scoring.createProfile": "创建方案",
   "scoring.profileCreated": "评分方案已创建。",
   "scoring.profileDeleted": "评分方案已删除。",
-  "scoring.createFirst": "创建方案后即可编辑词条权重、评级门槛并查看遗器评分。",
   "scoring.settingsTitle": "方案设置",
   "scoring.linkedBuilds": "有 {count} 套配装使用",
   "scoring.profileName": "方案名称",
@@ -389,22 +304,13 @@ export const messagesZhCn = {
     "不符合配装要求的可变主词条仍不评级；符合要求的主词条可按遗器等级计分。",
   "scoring.mainWeight": "主词条占比",
   "scoring.gradesTitle": "评级门槛",
-  "scoring.gradesHelp": "门槛必须按 S 到 C 依次降低；低于 C 的评分为 D。",
   "scoring.gradeThreshold": "{grade} 级起始分",
   "scoring.weightsTitle": "副词条权重",
-  "scoring.weightsHelp":
-    "每项权重均可在 0% 至 100% 之间调整；默认值来自生成的角色属性表。",
-  "scoring.normalizationNote":
-    "评分把词条换算为最高档强化次数，再与该遗器可达到的最佳合法副词条分布比较；小攻击、小生命等固定值词条保留数据表中的相对权重。",
+  "scoring.weightsHelp": "0–100%",
   "scoring.contextTitle": "配装上下文",
-  "scoring.contextHelp":
-    "配装会提供可接受主词条，并用于评估该角色当前装备的六件遗器。",
   "scoring.buildContext": "要评估的配装",
-  "scoring.noBuildContext":
-    "此评分方案尚未分配给配装。仍可查看背包遗器评分，但不会按具体配装判断主词条。",
   "scoring.openBuilds": "配置配装",
   "scoring.equippedTitle": "当前配装 · {name}",
-  "scoring.equippedHelp": "平均分使用导入账号中当前关联到该角色的六件遗器。",
   "scoring.sixSlotsComplete": "六个部位齐全",
   "scoring.slotsMissing": "缺少 {count} 个部位",
   "scoring.setsComplete": "套装方案达成",
@@ -416,18 +322,16 @@ export const messagesZhCn = {
   "scoring.average": "平均 {value}",
   "scoring.missingSlot": "未装备{slot}",
   "scoring.inventoryTitle": "遗器评分",
-  "scoring.inventoryHelp": "结果由当前评分方案和配装上下文确定，并按分数排序。",
   "scoring.showingTop": "显示前 {shown} / {total} 件",
   "scoring.substatScore": "副词条评分",
   "scoring.mainStatScore": "主词条评分",
   "scoring.offTargetMain": "此可变主词条不在所选配装的接受范围内，因此不评级。",
   "scoring.noRelics": "此账号来源没有提供可评分的遗器。",
-  "filters.needsBuild": "请先创建配装，再生成各部位的遗器筛选。",
+  "filters.needsBuild": "尚未配置配装。",
   "filters.openBuilds": "配置配装",
   "filters.missingProfile":
     "所选配装引用的评分方案不存在。请导入有效配装工作区或重新分配评分方案。",
-  "filters.needsAccount":
-    "筛选已经生成。载入账号后即可查找匹配遗器并推荐整套配装。",
+  "filters.needsAccount": "匹配遗器需要先导入账号。",
   "filters.build": "配装",
   "filters.generatedCount": "已生成 {count} 个部位筛选",
   "filters.rulesTitle": "配装生成的筛选规则",
@@ -443,14 +347,11 @@ export const messagesZhCn = {
   "filters.minimumStats": "至少 {count} 项",
   "filters.minimumScore": "最低评分",
   "filters.recommendationTitle": "推荐配装",
-  "filters.recommendationHelp":
-    "为每个部位选择评分最高的合法候选；使用 2+2 时会评估所有隧洞遗器分配方式。",
   "filters.loadoutComplete": "六个部位均有候选",
   "filters.loadoutMissing": "缺少 {count} 个候选",
   "filters.noCandidate": "没有匹配的{slot}",
   "filters.inventoryTitle": "账号遗器候选",
-  "filters.inventoryHelp":
-    "查看已导入遗器如何通过当前部位规则；最多显示前 18 件。",
+  "filters.inventoryHelp": "最多显示 18 件。",
   "filters.matchesOnly": "只显示匹配项",
   "filters.matches": "匹配",
   "filters.doesNotMatch": "不匹配",
@@ -465,8 +366,8 @@ export const messagesZhCn = {
   "filters.reason.mainStatMissing": "主词条不符",
   "filters.reason.substatsMissing": "有效副词条不足",
   "filters.reason.scoreMissing": "评分未达标",
-  "triage.needsAccount": "请先载入账号，再查看遗器保留和分解建议。",
-  "triage.needsBuild": "请至少创建一套配装，以保护符合已配置目标的遗器。",
+  "triage.needsAccount": "需要先导入账号。",
+  "triage.needsBuild": "尚未配置配装。",
   "triage.openBuilds": "配置配装",
   "triage.rulesTitle": "整理规则",
   "triage.rulesHelp":
@@ -474,12 +375,8 @@ export const messagesZhCn = {
   "triage.keepThreshold": "达到此分保留",
   "triage.reviewThreshold": "达到此分人工复核",
   "triage.protectLocked": "保护已锁定遗器",
-  "triage.protectLockedHelp": "启用后，已锁定遗器会在评分前归为保留。",
   "triage.protectEquipped": "保护已装备遗器",
-  "triage.protectEquippedHelp": "启用后，已装备遗器会在评分前归为保留。",
   "triage.managerTitle": "GOODScanner 管理器预览",
-  "triage.managerHelp":
-    "生成用于复核锁定或弃置标记的隐私安全指令文件；文件只包含画面可见的遗器匹配信息，不含本地或服务器物品 ID。",
   "triage.managerPreview": "准备预览",
   "triage.managerPreparing": "正在准备…",
   "triage.managerDownload": "下载指令",
@@ -501,12 +398,9 @@ export const messagesZhCn = {
   "triage.managerFreshEvidence":
     "每条指令都包含完整扫描导入的操作前状态；GOODScanner 执行前仍会重新核对画面可见信息。",
   "triage.summaryTitle": "整理概览",
-  "triage.summaryHelp":
-    "复核所有已导入的隧洞遗器和位面饰品；点击概览卡片可只查看该类结果。",
   "triage.managerBlockedLockedDiscard": "已拦截的锁定弃置",
   "triage.resultsTitle": "整理结果",
-  "triage.resultsHelp":
-    "每项结果都会说明判定依据；分解复核只是候选清单，绝不会自动分解。",
+  "triage.resultsHelp": "分解复核不会自动分解物品。",
   "triage.filterLabel": "筛选整理结果",
   "triage.filterSlot": "遗器部位",
   "triage.allSlots": "全部部位",
@@ -530,20 +424,13 @@ export const messagesZhCn = {
   "triage.reason.keepScore": "达到保留分数",
   "triage.reason.reviewScore": "达到复核分数",
   "triage.reason.lowScore": "低于复核分数",
-  "resource.needsAccount": "请先导入账号数据，再对照配装检查遗器背包。",
-  "resource.needsBuild": "请先创建至少一套配装和评分方案，再查看资源建议。",
+  "resource.needsAccount": "需要先导入账号。",
+  "resource.needsBuild": "尚未配置配装。",
   "resource.openBuilds": "配置配装",
   "resource.settingsTitle": "建议设置",
-  "resource.settingsHelp": "选择要评估的操作，并设置各操作所需的最低评分空间。",
   "resource.action.levelUp": "强化遗器",
   "resource.action.synthesize": "合成遗器",
   "resource.action.reroll": "使用变量骰子",
-  "resource.actionHelp.levelUp":
-    "查找尚未达到数据表满级、且含有有效副词条的五星遗器。",
-  "resource.actionHelp.synthesize":
-    "用遗器残骸定向选择套装和部位；主词条可变的部位会同时标注自塑尘脂。",
-  "resource.actionHelp.reroll":
-    "复核副词条类型有价值、但强化分配不理想的满级五星遗器。",
   "resource.minimumGap": "最低评分空间",
   "resource.minimumGapHelp": "此数值只用于排序筛选，不代表必定提升。",
   "resource.suggestionCount": "建议：{count} 条",
@@ -572,8 +459,6 @@ export const messagesZhCn = {
     "使用 {dice} 个变量骰子复核。当前分数 {before}；相同副词条类型下的乐观上限 {ceiling}。这不是提升概率，游戏内仍可保留原结果。",
   "resource.currentScore": "当前分数：{value}",
   "archive.provenance.title": "必须提供来源信息",
-  "archive.provenance.body":
-    "每份数据都必须声明上游来源、修订版本、生成时间、语言覆盖、许可说明和校验和。",
   "archive.eyebrow": "已审计参考图鉴",
   "archive.tabs.label": "图鉴分类",
   "archive.loading": "正在加载本地参考图鉴…",
@@ -593,10 +478,9 @@ export const messagesZhCn = {
   "archive.achievement.status.unfinished": "未完成",
   "archive.achievement.status.finished": "已完成",
   "archive.achievement.version.unknown": "版本未知",
-  "archive.achievement.completion.noAccount":
-    "导入账号后即可记录成就完成情况。",
+  "archive.achievement.completion.noAccount": "记录成就需要先导入账号。",
   "archive.achievement.completion.availableToTrack":
-    "当前账号来源未包含成就数据。手动标记任一成就即可开始本地记录，也可以导入完整捕获。",
+    "此账号来源未提供成就进度。",
   "archive.achievement.completion.manual": "正在本地记录",
   "archive.achievement.completion.captured": "已导入完整成就捕获",
   "archive.achievement.completion.capturedEdited":
@@ -647,8 +531,6 @@ export const messagesZhCn = {
   "archive.promotion": "晋阶",
   "archive.maxLevel": "等级上限",
   "archive.sourceScoring": "高级遗器评分数据",
-  "archive.sourceScoringHint":
-    "这些数据源表仅作为透明的评分输入，不代表伤害计算、价值判断或配装排名。",
   "archive.sourceValueMissing": "主要数据源中缺失",
   "archive.provenance.primary":
     "本地化值来源 · 以 TurnBasedGameData 为主要数据源",
@@ -661,8 +543,6 @@ export const messagesZhCn = {
   "archive.pieceBonus": "{value} 件套",
   "archive.logicalPieces": "逻辑部位（{value}）",
   "archive.referenceTables": "高级图鉴数据",
-  "archive.referenceTablesHint":
-    "可检查规范 ID、本地化名称、有效部位、完整词条档位、养成数据和数据源评分表。",
   "archive.taxonomyCounts":
     "分类 · {paths} 种命途 · {combatTypes} 种战斗属性 · {slots} 个部位",
   "archive.paths": "命途",
@@ -687,9 +567,6 @@ export const messagesZhCn = {
   "archive.additiveUnavailable":
     "架构 1.0.0 数据包不包含详细星魂、行迹、召唤物、赛季强化与养成道具解析；仍会显示通用图鉴数据，不会虚构缺失记录。",
   "archive.baseSkills": "技能（{skills}）",
-  "archive.skillSource.simple": "展示摘要采用主要数据源中的简述。",
-  "archive.skillSource.fallback":
-    "主要数据源未提供简述；此处明确回退为数据源中的完整描述。",
   "archive.fullDescription": "数据源完整描述",
   "archive.levelRows": "等级数据（{value}）",
   "archive.level": "等级 {value}",
@@ -718,11 +595,7 @@ export const messagesZhCn = {
   "archive.promotionRequired": "晋阶 {value}",
   "archive.characterLevelRequired": "角色等级 {value}",
   "archive.servants": "召唤物（{servants}）",
-  "archive.servantBoundary":
-    "召唤物保留为带有独立稳定 ID 和技能的数据源记录，不会并入角色的基础技能列表。",
   "archive.seasonalEnhancements": "赛季强化（{value} 个独立变体）",
-  "archive.seasonalBoundary":
-    "这些限时活动变体与基础角色严格分开；图鉴不会用赛季数据覆盖基础技能、星魂或行迹。",
   "archive.seasonMetadata":
     "赛季 {season} · 活动 {activity} · 强化 ID {enhanced}",
   "archive.variantCounts":
@@ -742,30 +615,22 @@ export const messagesZhCn = {
   "archive.abilityId": "能力 ID",
   "archive.promotionsWithCosts": "养成（{promotions} 阶）",
   "imports.gilore.title": "GIlore 数据包",
-  "imports.gilore.body":
-    "本地双语数据包只有在清单、字节数、哈希、封装、修订、数量和语言全部通过校验后才会被接受。",
+  "imports.gilore.body": "English · 简体中文",
   "imports.scanner.title": "扫描器导出",
   "imports.scanner.body":
-    "原生导出、旧版 GOODScanner 星铁 v1/v2 封装与正式版 v3 导出均使用严格适配器。v3 可在不包含账号标识的情况下携带抓包取得的完整成就进度，并会拒绝疑似凭据字段。",
+    "GGArtifact、GOODScanner 星铁、Reliquary、HSR-Scanner、Kel 和 Fribbels JSON。",
   "imports.hoyolab.title": "HoYoLAB 账号导入",
   "imports.hoyolab.body":
-    "本地 Worker 分开处理国际服与国服契约，可请求本人账号的角色列表及已装备物品；未经授权凭据实测，不会宣称登录导入已经验证成功。",
+    "仅限本人账号的角色及已装备物品，不含未装备背包。凭据导入尚未通过实测。",
   "imports.security.title": "身份 Cookie 安全",
-  "imports.security.body":
-    "Cookie 只允许在单次请求期间保留于内存，随后清除；绝不持久化、备份或写入日志。",
+  "imports.security.body": "身份 Cookie 不会被保存、导出或写入日志。",
   "imports.boundary.ready": "契约已就绪",
   "imports.boundary.future": "尚未用真实凭据验证",
   "imports.open": "导入账号",
   "imports.dialog.title": "导入账号数据",
-  "imports.dialog.description":
-    "选择在线账号来源或本地扫描器导出，确认覆盖范围与账号身份后，再决定如何更新当前工作区。",
   "imports.help.open": "查看数据来源说明",
-  "imports.help.title": "从账号数据导入",
-  "imports.help.body":
-    "“数据来源”页面用于说明各来源的覆盖范围、隐私边界与诊断状态。你也可以在这里开始导入，或在任意“账号数据”页面使用“导入账号”。",
+  "imports.help.title": "账号导入",
   "imports.account.title": "本地账号导入",
-  "imports.account.body":
-    "选择带版本的 GGArtifact 或兼容的 GOODScanner 星铁 JSON 导出文件。文件通过校验并完成预览后，才会合并到本地账号数据。",
   "imports.selectFile": "选择 JSON 文件",
   "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",
   "imports.review.title": "导入前确认",
@@ -816,8 +681,6 @@ export const messagesZhCn = {
   "imports.warning.discard":
     "此来源未能观测所有弃置标记；未知值会保持未知，相关指令只能预览。",
   "imports.uid.title": "UID 个人展示导入",
-  "imports.uid.body":
-    "匿名读取公开展示，优先使用 Enka，失败时改用 MiHoMo 原始接口。",
   "imports.uid.label": "星铁 UID",
   "imports.uid.placeholder": "9 位 UID",
   "imports.uid.help":
@@ -825,7 +688,7 @@ export const messagesZhCn = {
   "imports.uid.action": "预览 UID 展示",
   "imports.credentials.title": "HoYoLAB / 米游社凭据导入",
   "imports.credentials.body":
-    "只请求本人账号的角色列表及各角色已装备物品，无法获得未装备背包。截至 2026 年 9 月 2 日，登录成功及最低 Cookie 字段要求仍未经过授权真实凭据验证。",
+    "仅限本人账号的角色及已装备物品，不含未装备背包。凭据导入尚未通过实测。",
   "imports.credentials.region": "账号服务",
   "imports.credentials.global": "国际服 · HoYoLAB",
   "imports.credentials.cn": "国服 · 米游社",
@@ -833,7 +696,7 @@ export const messagesZhCn = {
   "imports.credentials.deviceId": "设备 ID",
   "imports.credentials.deviceFp": "设备指纹",
   "imports.credentials.help":
-    "原始 Cookie、设备 ID 和设备指纹只会经本地 Worker 用于一次请求，随后立即清空；绝不会保存、导出、写入日志或放入网址。",
+    "Cookie、设备 ID 和设备指纹仅用于单次请求，不会保存、导出或写入日志。",
   "imports.credentials.action": "预览已装备账号数据",
   "imports.error.verification":
     "HoYoLAB 或米游社要求账号验证。请在官方应用或网站完成验证后重试；GGArtifact 无法代办或绕过验证。",
@@ -899,8 +762,7 @@ export const messagesZhCn = {
   "characterLoadout.aggregateScore": "遗器平均分",
   "characterLoadout.scoredCount": "已评分 {count} / 6 件",
   "characterLoadout.scoreUnavailable": "尚未配置遗器评分",
-  "characterLoadout.scoreUnavailableHelp":
-    "为该角色创建配装与评分方案后，即可为整套遗器评分。",
+  "characterLoadout.scoreUnavailableHelp": "需要匹配的配装和评分方案。",
   "characterLoadout.buildTarget": "按{name}评分",
   "characterLoadout.discardMarked": "已标记弃置",
   "inventory.section.characters": "角色",
@@ -940,25 +802,16 @@ export const messagesZhCn = {
   "filter.discarded": "已标记弃置",
   "filter.notDiscarded": "未标记弃置",
   "filter.unknownDiscard": "弃置状态未知",
-  "tier.priority.notice.title": "这是你的个人优先级列表",
-  "tier.priority.notice.body":
-    "GGArtifact 不会提供或暗示权威排名。图鉴中的全部条目默认留在待分类池，只有你亲自选择的位置才会保存。",
   "tier.priority.summary": "已分类 {assigned} · 待分类 {pool}",
-  "tier.priority.instructions":
-    "可拖动图标调整层级，也可点按图标直接选择；改动只保存在本设备。",
   "tier.priority.pool": "待分类",
   "tier.priority.groups": "优先级分栏",
-  "tier.priority.dropHere": "拖放至此",
   "tier.priority.reset": "重置优先级",
   "tier.priority.resetTitle": "要重置这张优先级列表吗？",
   "tier.priority.resetDescription":
     "全部条目都会回到待分类池；游戏图鉴与账号数据不会改变。",
   "tier.priority.editTitle": "设置 {item}",
-  "tier.priority.editDescription":
-    "请选择优先级。遗器套装还可以在输出、辅助与其他分栏之间移动。",
   "tier.priority.chooseTier": "优先级",
   "tier.priority.chooseRole": "遗器用途分栏",
-  "tier.priority.savedLocally": "此选择会保存在本设备。",
   "tier.priority.moved": "已将 {item} 移至 {tier}。",
   "tier.priority.categoryLabel": "遗器分类",
   "tier.priority.role.dps": "输出",

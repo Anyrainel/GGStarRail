@@ -1,4 +1,4 @@
-import { RotateCcw, ShieldCheck } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
@@ -57,31 +57,13 @@ export function PriorityWorkspaceHeader({
       />
       <Card className="overflow-hidden">
         <CardContent className="space-y-4 p-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 gap-3">
-              <span className="mt-0.5 rounded-lg bg-primary/15 p-2 text-primary">
-                <ShieldCheck className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <div className="min-w-0 space-y-1">
-                <h2 className="text-sm font-semibold">
-                  {t("tier.priority.notice.title")}
-                </h2>
-                <p className="max-w-4xl text-xs leading-5 text-muted-foreground">
-                  {t("tier.priority.notice.body")}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <p className="text-sm font-medium tabular-nums">
                 {t("tier.priority.summary", {
                   assigned: assignedCount,
                   pool: Math.max(0, totalCount - assignedCount),
                 })}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("tier.priority.instructions")}
               </p>
             </div>
             {filters}

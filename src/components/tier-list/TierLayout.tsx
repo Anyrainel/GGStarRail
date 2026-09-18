@@ -10,7 +10,6 @@ import type { TierGroupConfig, TierItemData } from "./tierTableTypes";
 interface TierLayoutProps<Group extends string> {
   groups: readonly TierGroupConfig<Group>[];
   itemsByCell: ReadonlyMap<string, readonly TierItemData<Group>[]>;
-  emptyLabel: string;
   groupsLabel: string;
   poolLabel: string;
   onSelect: (itemId: string) => void;
@@ -77,7 +76,6 @@ function TierLabel({
 export function TierLayout<Group extends string>({
   groups,
   itemsByCell,
-  emptyLabel,
   groupsLabel,
   poolLabel,
   onSelect,
@@ -163,7 +161,6 @@ export function TierLayout<Group extends string>({
                 group={mobileGroup.id}
                 tier={tier}
                 items={itemsByCell.get(cellKey(mobileGroup.id, tier)) ?? []}
-                emptyLabel={emptyLabel}
                 onSelect={onSelect}
                 compact
               />
@@ -195,7 +192,6 @@ export function TierLayout<Group extends string>({
               group={group.id}
               tier={tier}
               items={itemsByCell.get(cellKey(group.id, tier)) ?? []}
-              emptyLabel={emptyLabel}
               onSelect={onSelect}
             />
           )),

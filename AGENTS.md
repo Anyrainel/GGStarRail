@@ -85,8 +85,8 @@ directory name is used by the current HSR build UI; it is not a Genshin engine.
   unchecked keys or cast arbitrary strings to bypass the catalog.
 - Reuse localized catalog names and `src/i18n/gameTerms.ts` for game terminology.
   Chinese must use natural community wording and official HSR names.
-- Public copy should explain player actions and outcomes. Keep implementation
-  status, schema details, and architecture notes in contributor documentation.
+- Do not add explanatory or instructional UI copy; make the interface self-explanatory through intuitive UX design, and reserve supporting text for rules and restrictions.
+- Keep implementation status, schema details, and architecture notes in contributor documentation.
 
 ## Error Handling And Imports
 

@@ -251,11 +251,7 @@ export function CharacterFilterPanel({
                   "flex items-center gap-2 text-sm font-medium",
                   hasAccount ? "cursor-pointer" : "text-muted-foreground"
                 )}
-                title={
-                  hasAccount
-                    ? t("build.ownedOnlyHelp")
-                    : t("build.ownedOnlyUnavailable")
-                }
+                title={hasAccount ? undefined : t("build.ownedOnlyUnavailable")}
               >
                 <input
                   type="checkbox"

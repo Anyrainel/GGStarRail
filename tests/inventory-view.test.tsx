@@ -29,11 +29,7 @@ describe("combined Account inventory", () => {
     expect(
       screen.getByRole("heading", { name: "Inventory" })
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Import a validated account snapshot to browse Characters, Light Cones, Relics, and Planar Ornaments."
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText("No account imported.")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Import account" })
     ).toBeInTheDocument();

@@ -326,7 +326,7 @@ describe("Archive catalogs", () => {
     await user.click(queryElement(fallbackSkill, "summary"));
     expect(fallbackSkill).toHaveTextContent("Attack");
     expect(fallbackSkill).toHaveTextContent(
-      "No simple description exists; this display summary honestly falls back to the primary source's full description."
+      "Attacks an enemy, and after entering combat, reduces their Toughness of the corresponding Type."
     );
     expect(fallbackSkill).toHaveTextContent("Level rows (1)");
     expect(fallbackSkill).not.toHaveTextContent("<unbreak>");
@@ -406,9 +406,6 @@ describe("Archive catalogs", () => {
         selector: "summary",
       })
     );
-    expect(servants).toHaveTextContent(
-      "Servants remain separate source records"
-    );
     const garmentmaker = queryElement(servants, '[data-servant-id="11402"]');
     await user.click(queryElement(garmentmaker, "summary"));
     expect(garmentmaker).toHaveTextContent("Garmentmaker · 11402");
@@ -432,9 +429,6 @@ describe("Archive catalogs", () => {
         "Seasonal enhancements (1 separate variants)",
         { selector: "summary" }
       )
-    );
-    expect(enhancements).toHaveTextContent(
-      "These activity-bound variants stay separate from the base Character."
     );
     const variant = within(enhancements).getByTestId("enhancement-variant-1");
     await user.click(queryElement(variant, "summary"));

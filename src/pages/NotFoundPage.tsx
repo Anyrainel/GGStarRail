@@ -9,10 +9,7 @@ export default function NotFoundPage() {
   const { t } = useI18n();
   return (
     <>
-      <PageHeader
-        titleKey="route.notFound.title"
-        descriptionKey="route.notFound.description"
-      />
+      <PageHeader titleKey="route.notFound.title" />
       <Button asChild variant="outline">
         <Link to={APP_PATHS.home}>
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />

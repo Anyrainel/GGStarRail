@@ -124,11 +124,7 @@ export default function ArtifactBuildsView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.filters.title"
-        descriptionKey="route.filters.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.filters.title" visuallyHidden />
       <BuildWorkspaceActions references={data} />
       <SourceCoverageNotice account={account} />
       {loading ? (
@@ -224,9 +220,6 @@ export default function ArtifactBuildsView() {
                     <CardTitle className="text-sm">
                       {t("filters.recommendationTitle")}
                     </CardTitle>
-                    <CardDescription className="text-xs">
-                      {t("filters.recommendationHelp")}
-                    </CardDescription>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge

@@ -200,11 +200,7 @@ export default function CharacterView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.characters.title"
-        descriptionKey="route.characters.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.characters.title" visuallyHidden />
       <AccountCoverageNotice account={account} />
       {characters.length === 0 ? (
         account ? (
@@ -223,7 +219,6 @@ export default function CharacterView() {
         <SidebarLayout
           sidebar={renderFilterPanel()}
           triggerLabel={t("characterLoadout.filters")}
-          description={t("route.characters.description")}
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0">

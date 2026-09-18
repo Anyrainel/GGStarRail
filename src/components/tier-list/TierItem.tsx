@@ -54,7 +54,7 @@ export function TierItem<Group extends string>({
         rarity={item.rarity}
         size="lg"
       />
-      <span className="absolute left-0.5 top-0.5 rounded bg-background/80 p-0.5 text-muted-foreground opacity-0 transition-opacity group-hover/item:opacity-100 group-focus-visible/item:opacity-100">
+      <span className="absolute left-0.5 top-0.5 z-10 rounded bg-background/80 p-0.5 text-muted-foreground">
         <GripVertical className="h-3 w-3" aria-hidden="true" />
       </span>
     </button>

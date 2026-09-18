@@ -185,11 +185,7 @@ function SkillRecord({
         <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
           {displayDescription}
         </p>
-        <p className="rounded-md border border-primary/20 bg-primary/5 p-2 text-xs leading-5 text-muted-foreground">
-          {skill.display_description_source === "simple_description"
-            ? t("archive.skillSource.simple")
-            : t("archive.skillSource.fallback")}
-        </p>
+
         <details className="rounded-md border border-border p-2">
           <summary className="cursor-pointer text-xs font-medium">
             {t("archive.fullDescription")}
@@ -750,9 +746,6 @@ export function CharacterExtendedDetails({
             })}
           </summary>
           <div className="mt-3 space-y-3">
-            <p className="text-xs leading-5 text-muted-foreground">
-              {t("archive.servantBoundary")}
-            </p>
             {character.servants.map((servant) => (
               <details
                 key={servant.id}
@@ -791,9 +784,6 @@ export function CharacterExtendedDetails({
             })}
           </summary>
           <div className="mt-3 space-y-3">
-            <p className="text-xs leading-5 text-muted-foreground">
-              {t("archive.seasonalBoundary")}
-            </p>
             {character.enhancements.map((variant) => (
               <EnhancementVariant
                 key={variant.enhanced_id}

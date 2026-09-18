@@ -1,7 +1,6 @@
 import { Award, Database, Filter, Library } from "lucide-react";
 import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
-import { WelcomeGuideManual } from "@/components/home/WelcomeGuideManual";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
@@ -26,19 +25,11 @@ export default function HomePage() {
             {t("site.starRail")}
           </p>
         </div>
-        <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-foreground/75 sm:text-lg">
-          {t("route.home.description")}
-        </p>
-        <div className="pt-1">
-          <WelcomeGuideManual />
-        </div>
       </section>
       <section className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
         <FeatureCard
           icon={<Database className="size-6" />}
           title={t("nav.accountData")}
-          problem={t("home.tool.account.title")}
-          guideline={t("home.tool.account.body")}
           link={APP_PATHS.characters}
           bgImage="assets/ggstarrail/home/firefly.webp"
           bgPosition="55% center"
@@ -47,8 +38,6 @@ export default function HomePage() {
         <FeatureCard
           icon={<Filter className="size-6" />}
           title={t("nav.planning")}
-          problem={t("home.tool.builds.title")}
-          guideline={t("home.tool.builds.body")}
           link={APP_PATHS.builds}
           bgImage="assets/ggstarrail/home/ruan-mei.webp"
           bgPosition="80% center"
@@ -57,8 +46,6 @@ export default function HomePage() {
         <FeatureCard
           icon={<Award className="size-6" />}
           title={t("nav.tierList")}
-          problem={t("home.tool.tiers.title")}
-          guideline={t("home.tool.tiers.body")}
           link={APP_PATHS.tierCharacters}
           bgImage="assets/ggstarrail/home/hysilens.webp"
           bgPosition="45% center"
@@ -67,8 +54,6 @@ export default function HomePage() {
         <FeatureCard
           icon={<Library className="size-6" />}
           title={t("nav.archive")}
-          problem={t("home.tool.archive.title")}
-          guideline={t("home.tool.archive.body")}
           link={APP_PATHS.archiveCharacters}
           bgImage="assets/ggstarrail/home/evernight.webp"
           bgPosition="55% center"

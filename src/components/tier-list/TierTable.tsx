@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
-  ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
@@ -295,7 +294,6 @@ export function TierTable<Group extends string>({
         <TierLayout
           groups={groups}
           itemsByCell={itemsByCell}
-          emptyLabel={t("tier.priority.dropHere")}
           groupsLabel={t("tier.priority.groups")}
           poolLabel={t("tier.priority.pool")}
           onSelect={setSelectedItemId}
@@ -310,6 +308,7 @@ export function TierTable<Group extends string>({
         onOpenChange={(open) => !open && setSelectedItemId(null)}
       >
         <ResponsiveDialogContent
+          aria-describedby={undefined}
           closeLabel={t("common.close")}
           className="md:max-w-lg"
         >
@@ -319,9 +318,6 @@ export function TierTable<Group extends string>({
                 <ResponsiveDialogTitle>
                   {t("tier.priority.editTitle", { item: selectedItem.name })}
                 </ResponsiveDialogTitle>
-                <ResponsiveDialogDescription>
-                  {t("tier.priority.editDescription")}
-                </ResponsiveDialogDescription>
               </ResponsiveDialogHeader>
               <div className="mt-5 space-y-5">
                 <fieldset className="space-y-2">
@@ -376,9 +372,6 @@ export function TierTable<Group extends string>({
                     </div>
                   </fieldset>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  {t("tier.priority.savedLocally")}
-                </p>
               </div>
             </>
           )}

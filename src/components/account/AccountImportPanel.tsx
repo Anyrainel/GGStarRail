@@ -302,7 +302,6 @@ export function AccountImportPanel({
             <Globe2 className="h-5 w-5 text-primary" aria-hidden />
             {t("imports.uid.title")}
           </CardTitle>
-          <CardDescription>{t("imports.uid.body")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-3" onSubmit={importUid}>
@@ -438,7 +437,6 @@ export function AccountImportPanel({
             <FileJson className="h-5 w-5 text-primary" aria-hidden />
             {t("imports.account.title")}
           </CardTitle>
-          <CardDescription>{t("imports.account.body")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">

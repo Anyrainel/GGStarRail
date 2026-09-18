@@ -79,12 +79,6 @@ function actionLabelKey(kind: ResourceActionKind): MessageKey {
   return "resource.action.reroll";
 }
 
-function actionHelpKey(kind: ResourceActionKind): MessageKey {
-  if (kind === "level-up") return "resource.actionHelp.levelUp";
-  if (kind === "synthesize") return "resource.actionHelp.synthesize";
-  return "resource.actionHelp.reroll";
-}
-
 function priorityLabelKey(priority: ResourceSuggestionPriority): MessageKey {
   if (priority === "high") return "resource.priority.high";
   if (priority === "medium") return "resource.priority.medium";
@@ -179,11 +173,7 @@ export function ResourceView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.resources.title"
-        descriptionKey="route.resources.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.resources.title" visuallyHidden />
       <SourceCoverageNotice account={account} />
       {!account ? (
         <WorkspaceStartState
@@ -212,9 +202,6 @@ export function ResourceView() {
                   <span className="block text-sm font-semibold">
                     {t("resource.settingsTitle")}
                   </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
-                    {t("resource.settingsHelp")}
-                  </span>
                 </span>
                 <ChevronDown
                   className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
@@ -226,7 +213,6 @@ export function ResourceView() {
                   <div key={kind} className="space-y-3">
                     <ToggleField
                       label={t(actionLabelKey(kind))}
-                      description={t(actionHelpKey(kind))}
                       checked={settings.enabledActions[kind]}
                       onChange={(enabled) => setActionEnabled(kind, enabled)}
                     />

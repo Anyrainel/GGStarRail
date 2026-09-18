@@ -122,7 +122,6 @@ export default function App() {
               <ArchivePage
                 kind="characters"
                 titleKey="route.archiveCharacters.title"
-                descriptionKey="route.archiveCharacters.description"
               />
             }
           />
@@ -132,7 +131,6 @@ export default function App() {
               <ArchivePage
                 kind="lightCones"
                 titleKey="route.archiveLightCones.title"
-                descriptionKey="route.archiveLightCones.description"
               />
             }
           />
@@ -142,7 +140,6 @@ export default function App() {
               <ArchivePage
                 kind="relicSets"
                 titleKey="route.archiveRelicSets.title"
-                descriptionKey="route.archiveRelicSets.description"
               />
             }
           />
@@ -152,7 +149,6 @@ export default function App() {
               <ArchivePage
                 kind="achievements"
                 titleKey="route.archiveAchievements.title"
-                descriptionKey="route.archiveAchievements.description"
               />
             }
           />

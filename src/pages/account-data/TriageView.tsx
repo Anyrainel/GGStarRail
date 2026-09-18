@@ -172,11 +172,7 @@ export function TriageView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.triage.title"
-        descriptionKey="route.triage.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.triage.title" visuallyHidden />
       <SourceCoverageNotice account={account} />
       {!account ? (
         <WorkspaceStartState
@@ -203,9 +199,6 @@ export function TriageView() {
               <h2 id="triage-summary-heading" className="text-sm font-semibold">
                 {t("triage.summaryTitle")}
               </h2>
-              <p className="text-xs text-muted-foreground">
-                {t("triage.summaryHelp")}
-              </p>
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {DECISIONS.map((decision) => (
@@ -271,7 +264,6 @@ export function TriageView() {
               />
               <ToggleField
                 label={t("triage.protectLocked")}
-                description={t("triage.protectLockedHelp")}
                 checked={rules.protectLocked}
                 onChange={(protectLocked) =>
                   updateRules({ ...rules, protectLocked })
@@ -279,7 +271,6 @@ export function TriageView() {
               />
               <ToggleField
                 label={t("triage.protectEquipped")}
-                description={t("triage.protectEquippedHelp")}
                 checked={rules.protectEquipped}
                 onChange={(protectEquipped) =>
                   updateRules({ ...rules, protectEquipped })
@@ -295,9 +286,6 @@ export function TriageView() {
                   <CardTitle className="text-sm">
                     {t("triage.managerTitle")}
                   </CardTitle>
-                  <CardDescription className="max-w-3xl text-xs">
-                    {t("triage.managerHelp")}
-                  </CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button

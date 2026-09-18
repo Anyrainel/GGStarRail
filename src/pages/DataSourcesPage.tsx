@@ -15,10 +15,7 @@ export default function DataSourcesPage() {
   const { t } = useI18n();
   return (
     <>
-      <PageHeader
-        titleKey="route.imports.title"
-        descriptionKey="route.imports.description"
-      />
+      <PageHeader titleKey="route.imports.title" />
       <section className="grid gap-4 lg:grid-cols-3">
         <StatusCard
           titleKey="imports.gilore.title"
@@ -45,7 +42,6 @@ export default function DataSourcesPage() {
       <Card>
         <CardHeader>
           <CardTitle>{t("imports.help.title")}</CardTitle>
-          <CardDescription>{t("imports.help.body")}</CardDescription>
         </CardHeader>
         <CardContent>
           <AccountImportAction variant="outline" />

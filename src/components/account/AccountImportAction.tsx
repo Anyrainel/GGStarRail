@@ -5,7 +5,6 @@ import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
-  ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
@@ -51,14 +50,14 @@ export function AccountImportAction({
         </Button>
       </ResponsiveDialogTrigger>
       {open && (
-        <ResponsiveDialogContent closeLabel={t("common.close")}>
+        <ResponsiveDialogContent
+          aria-describedby={undefined}
+          closeLabel={t("common.close")}
+        >
           <ResponsiveDialogHeader>
             <ResponsiveDialogTitle>
               {t("imports.dialog.title")}
             </ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>
-              {t("imports.dialog.description")}
-            </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           <div className="mt-4">
             <AccountImportPanel />

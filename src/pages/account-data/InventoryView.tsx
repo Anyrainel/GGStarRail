@@ -15,11 +15,7 @@ export function InventoryView() {
 
   return (
     <>
-      <PageHeader
-        titleKey="route.inventory.title"
-        descriptionKey="route.inventory.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.inventory.title" visuallyHidden />
       <AccountCoverageNotice account={account} />
       {!account ? (
         <WorkspaceStartState messageKey="empty.inventory" icon={Gem} />

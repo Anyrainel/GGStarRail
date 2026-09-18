@@ -418,10 +418,6 @@ function ReferenceTables({
         {t("archive.referenceTables")}
       </summary>
       <div className="mt-4 space-y-4">
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("archive.referenceTablesHint")}
-        </p>
-
         <details className="rounded-lg border border-border bg-background/45 p-3">
           <summary className="cursor-pointer font-semibold">
             {t("archive.taxonomyCounts", {
@@ -586,9 +582,7 @@ function ReferenceTables({
                 progression.relic_scoring.main_affix_character_weights.length,
             })}
           </summary>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            {t("archive.sourceScoringHint")}
-          </p>
+
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <AffixTable
               title={t("archive.mainScoreBases")}

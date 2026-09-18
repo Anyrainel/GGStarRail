@@ -541,9 +541,7 @@ function CharacterDetail({
           <summary className="cursor-pointer font-semibold">
             {t("archive.sourceScoring")}
           </summary>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            {t("archive.sourceScoringHint")}
-          </p>
+
           <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
             {Object.entries(scoringWeights).map(([key, value]) => (
               <div

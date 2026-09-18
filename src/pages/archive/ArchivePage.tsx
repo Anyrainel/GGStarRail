@@ -22,23 +22,14 @@ export type ArchiveKind =
 interface ArchivePageProps {
   kind: ArchiveKind;
   titleKey: MessageKey;
-  descriptionKey: MessageKey;
 }
 
-export default function ArchivePage({
-  kind,
-  titleKey,
-  descriptionKey,
-}: ArchivePageProps) {
+export default function ArchivePage({ kind, titleKey }: ArchivePageProps) {
   const { t } = useI18n();
   const { changeSearch, error } = useBetaSearch(() => {});
   return (
     <>
-      <PageHeader
-        titleKey={titleKey}
-        descriptionKey={descriptionKey}
-        visuallyHidden
-      />
+      <PageHeader titleKey={titleKey} visuallyHidden />
       {betaEnabled() && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
           <Badge>{t("beta.enabled")}</Badge>

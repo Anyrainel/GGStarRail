@@ -28,20 +28,15 @@ describe("GGArtifact Star Rail home", () => {
         ).toBe(true);
       }
     }
-    for (const title of [
-      "Review your account",
-      "Plan Relic builds",
-      "Set your priorities",
-      "Explore game data",
-    ]) {
+    for (const title of ["Account Data", "Builds", "Tier List", "Archive"]) {
       expect(
-        screen.getByRole("heading", { name: title }).closest("a")
+        screen.getByRole("heading", { name: title, level: 2 }).closest("a")
       ).toHaveAttribute("href");
     }
     expect(
       screen.queryByRole("button", { name: /demo/i })
     ).not.toBeInTheDocument();
     // Let the asset lookup settle so unmounting does not leave a pending update.
-    await screen.findByRole("heading", { name: "Explore game data" });
+    await screen.findByRole("heading", { name: "Archive", level: 2 });
   });
 });

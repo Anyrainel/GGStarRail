@@ -1,25 +1,4 @@
 export const messagesEn = {
-  "guide.open": "Quick Guide",
-  "guide.previous": "Previous",
-  "guide.next": "Next",
-  "guide.done": "Let's go",
-  "guide.progress": "Quick guide · {current} / {total}",
-  "guide.account.body":
-    "Open Account Data and choose Import account in the app bar. Import a compatible scanner JSON file or look up your public UID showcase, then review the data before applying it.",
-  "guide.account.hint":
-    "A public showcase only includes the displayed Characters and their equipped gear. Use a scanner export to include the rest of your inventory.",
-  "guide.builds.body":
-    "Choose a Character and create a build with your Cavern Relic and Planar Ornament sets. Set the main stats and substat weights, then open Relic Filters to see the matching pieces in your account.",
-  "guide.builds.hint":
-    "You can configure builds before importing an account. Matching gear and account results need imported Relics.",
-  "guide.priority.body":
-    "Arrange Characters, Light Cones, and Relic sets into your own priority tiers. Use Character Priority when sorting Characters by your plans.",
-  "guide.priority.hint":
-    "These are your personal priorities; adjust them as your roster and goals change.",
-  "guide.archive.body":
-    "Browse Characters, Light Cones, and Relic sets. Search or use the filters to find the details you need while planning a build.",
-  "guide.archive.hint":
-    "No account import is needed to browse the Archive. Reopen this guide from the home page whenever you need it.",
   "filter.sortPriority": "Priority",
   "filter.priorityUnavailable":
     "Assign Characters in Character Priority to sort by priority.",
@@ -32,14 +11,9 @@ export const messagesEn = {
   "filter.configuredOnly": "Configured builds only",
   "filter.reset": "Reset filters",
   "home.brand": "GGArtifact",
-  "home.tool.tiers.title": "Set your priorities",
-  "home.tool.tiers.body":
-    "Rank Characters, Light Cones, and Relic sets around your own plans.",
   "home.openBuilds": "Configure builds",
   "home.openTiers": "Arrange priorities",
   "build.chooseSet": "Choose a set",
-  "build.chooseSetsHelp":
-    "Choose the sets you want this build to use. You can switch to two Cavern 2-piece sets after creating it.",
   "theme.jarilo": "Jarilo-VI · Ice & steel",
   "theme.luofu": "Xianzhou Luofu · Jade",
   "theme.amphoreus": "Amphoreus · Dawn gold",
@@ -135,29 +109,6 @@ export const messagesEn = {
   "home.openAccount": "Open account data",
   "home.openArchive": "Browse the archive",
   "home.tools.title": "Find your next step",
-  "home.tools.body": "Jump straight to the tool you need.",
-  "home.index.characters": "Review levels and equipment",
-  "home.index.inventory": "Browse your gear",
-  "home.index.resources": "Plan your next upgrades",
-  "home.index.triage": "Decide which Relics to keep",
-  "home.index.builds": "Choose sets and stats",
-  "home.index.filters": "Find matching Relics",
-  "home.index.tierCharacters": "Rank your roster",
-  "home.index.tierLightCones": "Prioritize Light Cones",
-  "home.index.tierRelics": "Prioritize Relic sets",
-  "home.index.archiveCharacters": "Look up skills and Traces",
-  "home.index.archiveLightCones": "Compare Light Cone effects",
-  "home.index.archiveRelicSets": "Look up set bonuses",
-  "home.index.archiveAchievements": "Track your achievements",
-  "home.tool.account.title": "Review your account",
-  "home.tool.account.body":
-    "Review your Characters, equipment, and Relic upgrade options.",
-  "home.tool.builds.title": "Plan Relic builds",
-  "home.tool.builds.body":
-    "Choose Relic sets and stats, then find pieces that fit your builds.",
-  "home.tool.archive.title": "Explore game data",
-  "home.tool.archive.body":
-    "Look up Characters, Light Cones, Relic set effects, and achievements.",
   "route.characters.title": "Characters",
   "route.characters.description":
     "Review your Characters, Eidolons, Traces, and equipped gear.",
@@ -165,19 +116,12 @@ export const messagesEn = {
   "route.inventory.description":
     "Browse imported Characters, Light Cones, Cavern Relics, and Planar Ornaments in one inventory.",
   "route.lightCones.title": "Light Cones",
-  "route.lightCones.description":
-    "Owned Light Cones with Path, level, Superimposition, lock, and equip state.",
   "route.relics.title": "Relics",
-  "route.relics.description":
-    "Cavern Relics across Head, Hands, Body, and Feet slots.",
   "route.planar.title": "Planar Ornaments",
-  "route.planar.description": "Browse your Planar Spheres and Link Ropes.",
   "route.builds.title": "Character Builds",
   "route.builds.description":
     "Create per-Character 4-piece Cavern and 2-piece Planar targets with editable main-stat preferences and scoring profiles.",
   "route.scoring.title": "Relic scoring",
-  "route.scoring.description":
-    "Adjust stat weights and score thresholds to evaluate your Relics and builds.",
   "route.filters.title": "Relic Filters",
   "route.filters.description":
     "Turn each build into six slot-specific filters and find the strongest matching loadout in the imported account.",
@@ -214,15 +158,6 @@ export const messagesEn = {
   "route.notFound.title": "Page not found",
   "route.notFound.description":
     "This page could not be found. Choose a tool from the navigation to continue.",
-  "home.ready.title": "Ready now",
-  "home.ready.body":
-    "Verified bilingual catalogs, responsive Archives, local and partial account imports, editable builds, scoring, filters, triage, persistence, and safe backups.",
-  "home.scaffolded.title": "External verification still required",
-  "home.scaffolded.body":
-    "Authenticated credential success, an open-client scanner run, production Worker configuration, and cloud backup remain intentionally unclaimed.",
-  "home.excluded.title": "Outside scope",
-  "home.excluded.body":
-    "Team damage optimization, the Genshin damage engine, and energy calculators are intentionally absent.",
   "home.snapshot.title": "Local workspace",
   "home.snapshot.empty": "No account snapshot has been imported.",
   "home.snapshot.source": "Source: {source}",
@@ -266,9 +201,8 @@ export const messagesEn = {
   "field.equipped": "Equipped",
   "field.discarded": "Marked for discard",
   "field.discardUnknown": "Discard state unknown",
-  "empty.characters": "Import an account snapshot to list owned characters.",
-  "empty.inventory":
-    "Import a validated account snapshot to browse Characters, Light Cones, Relics, and Planar Ornaments.",
+  "empty.characters": "No account imported.",
+  "empty.inventory": "No account imported.",
   "empty.inventoryCharacters":
     "No Characters are present in the local workspace.",
   "empty.lightCones": "No Light Cones are present in the local workspace.",
@@ -282,20 +216,7 @@ export const messagesEn = {
     "Build editing is not available in this prototype yet. You can review account data or manage imports while this workflow is being connected.",
   "empty.openAccount": "View account data",
   "empty.archive": "No provenanced game-data bundle has been loaded.",
-  "scoring.engine.title": "Neutral scoring service",
-  "scoring.engine.body":
-    "The tested engine combines normalized stat values and user weights, but this prototype does not provide a profile editor or scored Relic view yet.",
-  "filters.engine.title": "Typed filter evaluator",
-  "filters.engine.body":
-    "The tested engine evaluates all/any conditions over stable HSR inventory fields, but this prototype does not provide a filter editor or results view yet.",
-  "triage.engine.title": "Advisory triage only",
-  "triage.engine.body":
-    "The tested engine protects locked and equipped pieces, but this prototype does not provide the interactive triage workflow or change items in-game.",
-  "build.needsAccount":
-    "Builds use the full Character catalog. Importing an account is optional and only adds owned-character filtering and equipped-set defaults.",
   "build.backupTitle": "Build workspace file",
-  "build.backupHelp":
-    "Export or restore builds, score profiles, and triage rules. Account data and credentials are never included.",
   "build.export": "Export builds",
   "build.import": "Import builds",
   "build.exported": "Build workspace exported.",
@@ -329,17 +250,10 @@ export const messagesEn = {
   "build.importIssueMainStat":
     "Main stat “{id}” is not valid for its configured Relic slot.",
   "build.newTitle": "New Character build",
-  "build.newHelp":
-    "Choose any Character. Owned Characters also use their currently equipped sets as a starting point.",
   "build.catalogTitle": "Character catalog",
-  "build.catalogFilterHelp":
-    "Search the full catalog or narrow it by Path, Combat Type, and ownership.",
   "build.searchPlaceholder": "Search Characters",
   "build.ownedOnly": "Owned Characters only",
-  "build.ownedOnlyHelp":
-    "Show only Characters included in the current account snapshot.",
-  "build.ownedOnlyUnavailable":
-    "Importing an account enables this optional filter; every Character remains configurable.",
+  "build.ownedOnlyUnavailable": "Account import required.",
   "build.catalogCount": "Showing {shown} of {total} Characters",
   "build.createFor": "Create build for {character}",
   "build.characterIdentity":
@@ -349,8 +263,6 @@ export const messagesEn = {
   "build.buildCount": "{count} builds",
   "build.noCatalogMatches": "No Characters match the current catalog filters.",
   "build.character": "Character",
-  "build.characterChangeHelp":
-    "Changing the Character refreshes set, main-stat, and source-derived scoring defaults.",
   "build.create": "Create build",
   "build.created": "Build and scoring profile created.",
   "build.createError":
@@ -358,7 +270,6 @@ export const messagesEn = {
   "build.noOwnedCharacters":
     "This account source did not provide any Characters to configure.",
   "build.savedTitle": "Saved builds ({count})",
-  "build.savedLocally": "Changes saved on this device.",
   "build.defaultProfileName": "{character} scoring",
   "build.defaultBuildName": "{character} build",
   "build.name": "Build name",
@@ -369,11 +280,7 @@ export const messagesEn = {
   "build.deleteConfirm": "Delete “{name}” from this device?",
   "build.deleted": "Build deleted.",
   "build.setPlanTitle": "Set plan",
-  "build.setPlanHelp":
-    "The normal target is one 4-piece Cavern set plus one 2-piece Planar set.",
   "build.advancedTwoPlusTwo": "Advanced: use two 2-piece Cavern sets",
-  "build.advancedTwoPlusTwoHelp":
-    "Use this for Characters whose viable builds still mix two different Cavern set bonuses. The Planar 2-piece remains unchanged.",
   "build.cavernFourPiece": "Cavern 4-piece set",
   "build.cavernFirstTwoPiece": "First Cavern 2-piece set",
   "build.cavernSecondTwoPiece": "Second Cavern 2-piece set",
@@ -386,8 +293,6 @@ export const messagesEn = {
   "build.addMainStat": "Add a {slot} main stat",
   "build.deselectMainStat": "Deselect",
   "build.mainStatsTitle": "Main-stat preferences",
-  "build.mainStatsHelp":
-    "Head and Hands are fixed by the game. Select one or more accepted main stats for Body, Feet, Planar Sphere, and Link Rope.",
   "build.fixed": "Fixed",
   "build.lockUnknown": "Lock unknown",
   "build.coverageNoticeTitle": "Results follow the imported source coverage",
@@ -401,8 +306,6 @@ export const messagesEn = {
   "scoring.createProfile": "Create profile",
   "scoring.profileCreated": "Scoring profile created.",
   "scoring.profileDeleted": "Scoring profile deleted.",
-  "scoring.createFirst":
-    "Create a profile to edit stat weights, thresholds, and scored Relic results.",
   "scoring.settingsTitle": "Profile settings",
   "scoring.linkedBuilds": "Used by {count} builds",
   "scoring.profileName": "Profile name",
@@ -414,24 +317,13 @@ export const messagesEn = {
     "Off-target configurable main stats remain ungraded. Accepted main stats can contribute based on Relic level.",
   "scoring.mainWeight": "Main-stat share",
   "scoring.gradesTitle": "Grade thresholds",
-  "scoring.gradesHelp":
-    "Thresholds must descend from S to C. Scores below C receive D.",
   "scoring.gradeThreshold": "Grade {grade} starts at",
   "scoring.weightsTitle": "Substat weights",
-  "scoring.weightsHelp":
-    "Each weight is editable from 0% to 100%. Defaults come from the generated Character property tables.",
-  "scoring.normalizationNote":
-    "Scores compare normalized high-roll equivalents with the best legal substat distribution. Flat stats retain their source-derived relative weight.",
+  "scoring.weightsHelp": "0–100%",
   "scoring.contextTitle": "Build context",
-  "scoring.contextHelp":
-    "A build supplies accepted main stats and lets this page evaluate the Character's equipped six-piece loadout.",
   "scoring.buildContext": "Build to evaluate",
-  "scoring.noBuildContext":
-    "This profile is not assigned to a build. Inventory scores remain available without build-specific main-stat grading.",
   "scoring.openBuilds": "Configure a build",
   "scoring.equippedTitle": "Equipped loadout · {name}",
-  "scoring.equippedHelp":
-    "The average uses the six pieces currently linked to this Character in the imported account.",
   "scoring.sixSlotsComplete": "6 / 6 slots",
   "scoring.slotsMissing": "{count} slots missing",
   "scoring.setsComplete": "Set plan complete",
@@ -443,8 +335,6 @@ export const messagesEn = {
   "scoring.average": "Average {value}",
   "scoring.missingSlot": "No equipped {slot}",
   "scoring.inventoryTitle": "Scored Relics",
-  "scoring.inventoryHelp":
-    "Results are deterministic for the selected profile and build context, ordered by score.",
   "scoring.showingTop": "Top {shown} of {total}",
   "scoring.substatScore": "Substat score",
   "scoring.mainStatScore": "Main-stat score",
@@ -452,13 +342,11 @@ export const messagesEn = {
     "Ungraded because this configurable main stat is not accepted by the selected build.",
   "scoring.noRelics":
     "This account source did not provide any Relics to score.",
-  "filters.needsBuild":
-    "Create a build before computing slot-specific Relic filters.",
+  "filters.needsBuild": "No builds configured.",
   "filters.openBuilds": "Configure builds",
   "filters.missingProfile":
     "The selected build references a missing scoring profile. Import a valid build workspace or assign a profile.",
-  "filters.needsAccount":
-    "The filters are ready. Load an account to find matching pieces and recommend a loadout.",
+  "filters.needsAccount": "Account import required for matching Relics.",
   "filters.build": "Build",
   "filters.generatedCount": "{count} derived slot filters",
   "filters.rulesTitle": "Derived filter rules",
@@ -474,14 +362,11 @@ export const messagesEn = {
   "filters.minimumStats": "At least {count}",
   "filters.minimumScore": "Minimum score",
   "filters.recommendationTitle": "Recommended loadout",
-  "filters.recommendationHelp":
-    "Selects the highest-scoring legal candidate for every slot and evaluates all Cavern assignments for a 2+2 plan.",
   "filters.loadoutComplete": "6 / 6 candidates",
   "filters.loadoutMissing": "{count} candidates missing",
   "filters.noCandidate": "No matching {slot}",
   "filters.inventoryTitle": "Account candidates",
-  "filters.inventoryHelp":
-    "Inspect how imported Relics pass the selected slot rule. Showing at most 18 highest-ranked results.",
+  "filters.inventoryHelp": "Up to 18 results.",
   "filters.matchesOnly": "Show matches only",
   "filters.matches": "Matches",
   "filters.doesNotMatch": "Does not match",
@@ -496,10 +381,8 @@ export const messagesEn = {
   "filters.reason.mainStatMissing": "Main stat not accepted",
   "filters.reason.substatsMissing": "Needs weighted substats",
   "filters.reason.scoreMissing": "Below minimum score",
-  "triage.needsAccount":
-    "Load an account before reviewing Relic keep and salvage suggestions.",
-  "triage.needsBuild":
-    "Create at least one build so triage can protect Relics that match a configured target.",
+  "triage.needsAccount": "Account import required.",
+  "triage.needsBuild": "No builds configured.",
   "triage.openBuilds": "Configure builds",
   "triage.rulesTitle": "Triage rules",
   "triage.rulesHelp":
@@ -507,14 +390,8 @@ export const messagesEn = {
   "triage.keepThreshold": "Keep at or above",
   "triage.reviewThreshold": "Review at or above",
   "triage.protectLocked": "Protect locked Relics",
-  "triage.protectLockedHelp":
-    "When enabled, locked pieces are classified as keep before scoring.",
   "triage.protectEquipped": "Protect equipped Relics",
-  "triage.protectEquippedHelp":
-    "When enabled, equipped pieces are classified as keep before scoring.",
   "triage.managerTitle": "GOODScanner manager preview",
-  "triage.managerHelp":
-    "Create a privacy-safe instruction file for lock or discard-mark review. The file contains visible Relic matchers, not local or server item IDs.",
   "triage.managerPreview": "Prepare preview",
   "triage.managerPreparing": "Preparing…",
   "triage.managerDownload": "Download instructions",
@@ -538,12 +415,9 @@ export const messagesEn = {
   "triage.managerFreshEvidence":
     "Every instruction includes observed prior state from a complete scanner import. GOODScanner still rechecks the exact visible match before applying it.",
   "triage.summaryTitle": "Decision summary",
-  "triage.summaryHelp":
-    "Review every imported Cavern Relic and Planar Ornament. Select a summary card to focus that decision.",
   "triage.managerBlockedLockedDiscard": "Blocked locked discards",
   "triage.resultsTitle": "Triage results",
-  "triage.resultsHelp":
-    "Every result includes the rules that decided it. Salvage review is a candidate list, never an automatic salvage action.",
+  "triage.resultsHelp": "Salvage review never salvages items automatically.",
   "triage.filterLabel": "Filter triage decisions",
   "triage.filterSlot": "Relic slot",
   "triage.allSlots": "All slots",
@@ -567,23 +441,13 @@ export const messagesEn = {
   "triage.reason.keepScore": "Meets keep score",
   "triage.reason.reviewScore": "Meets review score",
   "triage.reason.lowScore": "Below review score",
-  "resource.needsAccount":
-    "Import account data to compare your Relic inventory with configured builds.",
-  "resource.needsBuild":
-    "Create at least one build and scoring profile before reviewing resource suggestions.",
+  "resource.needsAccount": "Account import required.",
+  "resource.needsBuild": "No builds configured.",
   "resource.openBuilds": "Configure builds",
   "resource.settingsTitle": "Suggestion settings",
-  "resource.settingsHelp":
-    "Choose which actions to consider and the minimum score headroom each action must show.",
   "resource.action.levelUp": "Level Relics",
   "resource.action.synthesize": "Synthesize Relics",
   "resource.action.reroll": "Use Variable Dice",
-  "resource.actionHelp.levelUp":
-    "Find five-star Relics with useful substats that have not reached their catalog maximum level.",
-  "resource.actionHelp.synthesize":
-    "Target a build slot and set with Relic Remains; variable-main-stat slots also call out Self-Modeling Resin.",
-  "resource.actionHelp.reroll":
-    "Review max-level five-star Relics with useful substat types but weak enhancement distribution.",
   "resource.minimumGap": "Minimum score headroom",
   "resource.minimumGapHelp":
     "This is a ranking filter, not a promised score increase.",
@@ -613,8 +477,6 @@ export const messagesEn = {
     "Review with {dice} Variable Dice. Current score {before}; optimistic same-substat-type ceiling {ceiling}. This is not an upgrade probability, and the original result can still be kept in-game.",
   "resource.currentScore": "Current score: {value}",
   "archive.provenance.title": "Provenance required",
-  "archive.provenance.body":
-    "Every dataset must declare upstream source, revision, generation time, locale coverage, license note, and checksum.",
   "archive.eyebrow": "Audited reference catalog",
   "archive.tabs.label": "Archive catalogs",
   "archive.loading": "Loading the local reference catalog…",
@@ -636,9 +498,9 @@ export const messagesEn = {
   "archive.achievement.status.finished": "Finished",
   "archive.achievement.version.unknown": "Version unknown",
   "archive.achievement.completion.noAccount":
-    "Import an account to track achievement completion.",
+    "Account import required to track achievements.",
   "archive.achievement.completion.availableToTrack":
-    "This account source did not include achievements. Mark one to start local tracking, or import a complete capture.",
+    "No achievement progress from this account source.",
   "archive.achievement.completion.manual": "Tracked locally",
   "archive.achievement.completion.captured": "Complete achievement capture",
   "archive.achievement.completion.capturedEdited":
@@ -691,8 +553,6 @@ export const messagesEn = {
   "archive.promotion": "Promotion",
   "archive.maxLevel": "Max level",
   "archive.sourceScoring": "Advanced Relic scoring data",
-  "archive.sourceScoringHint":
-    "These source tables are transparent scoring inputs, not damage calculations, valuations, or build rankings.",
   "archive.sourceValueMissing": "Missing in the primary source",
   "archive.provenance.primary":
     "Localized value provenance · TurnBasedGameData is primary",
@@ -705,8 +565,6 @@ export const messagesEn = {
   "archive.pieceBonus": "{value}-piece",
   "archive.logicalPieces": "Logical pieces ({value})",
   "archive.referenceTables": "Advanced catalog data",
-  "archive.referenceTablesHint":
-    "The catalog keeps canonical IDs, localized labels, valid slots, full affix rolls, progression, and source-derived scoring tables inspectable.",
   "archive.taxonomyCounts":
     "Taxonomy · {paths} Paths · {combatTypes} Combat Types · {slots} slots",
   "archive.paths": "Paths",
@@ -731,10 +589,6 @@ export const messagesEn = {
   "archive.additiveUnavailable":
     "Detailed Eidolons, Traces, servants, seasonal variants, and progression-item resolution are unavailable in a schema 1.0.0 bundle. The common catalog remains available without invented records.",
   "archive.baseSkills": "Skills ({skills})",
-  "archive.skillSource.simple":
-    "Display summary uses the primary source's simple description.",
-  "archive.skillSource.fallback":
-    "No simple description exists; this display summary honestly falls back to the primary source's full description.",
   "archive.fullDescription": "Full source description",
   "archive.levelRows": "Level rows ({value})",
   "archive.level": "Level {value}",
@@ -763,12 +617,8 @@ export const messagesEn = {
   "archive.promotionRequired": "Promotion {value}",
   "archive.characterLevelRequired": "Character level {value}",
   "archive.servants": "Servants ({servants})",
-  "archive.servantBoundary":
-    "Servants remain separate source records with their own stable IDs and skills; they are not merged into the Character's base skill list.",
   "archive.seasonalEnhancements":
     "Seasonal enhancements ({value} separate variants)",
-  "archive.seasonalBoundary":
-    "These activity-bound variants stay separate from the base Character. The Archive never overwrites base skills, Eidolons, or Traces with seasonal data.",
   "archive.seasonMetadata":
     "Season {season} · Activity {activity} · Enhanced ID {enhanced}",
   "archive.variantCounts":
@@ -788,30 +638,23 @@ export const messagesEn = {
   "archive.abilityId": "Ability ID",
   "archive.promotionsWithCosts": "Progression ({promotions} promotions)",
   "imports.gilore.title": "GIlore bundle",
-  "imports.gilore.body":
-    "The local bilingual bundle is accepted only after manifest, byte, hash, envelope, revision, count, and locale validation.",
+  "imports.gilore.body": "English · 简体中文",
   "imports.scanner.title": "Scanner export",
   "imports.scanner.body":
-    "Native exports, legacy GOODScanner HSR v1/v2 envelopes, and production v3 exports use strict adapters. V3 can include complete packet-captured achievement completion without account identifiers, and credential-shaped fields are rejected.",
+    "GGArtifact, GOODScanner HSR, Reliquary, HSR-Scanner, Kel, and Fribbels JSON.",
   "imports.hoyolab.title": "HoYoLAB account import",
   "imports.hoyolab.body":
-    "The local Worker supports separate global and CN request contracts for an owned account's Character roster and equipped gear. Authenticated live success is not claimed without an authorized credential test.",
+    "Owned Characters and equipped gear only. Unequipped inventory unavailable. Live credential import unverified.",
   "imports.security.title": "Authentication-cookie safety",
   "imports.security.body":
-    "Cookie material must remain in memory for one request, then be cleared. It is never persisted, backed up, or logged.",
+    "Authentication cookies are never stored, exported, or logged.",
   "imports.boundary.ready": "Contract ready",
   "imports.boundary.future": "Live credentials unverified",
   "imports.open": "Import account",
   "imports.dialog.title": "Import account data",
-  "imports.dialog.description":
-    "Choose a live account source or a local scanner export, review its coverage and identity, then decide how it should update this workspace.",
   "imports.help.open": "Data source details",
-  "imports.help.title": "Import from Account Data",
-  "imports.help.body":
-    "Data Sources documents provider coverage, privacy, and diagnostics. Start an import here if you arrived while checking those details, or use Import account from any Account Data page.",
+  "imports.help.title": "Account import",
   "imports.account.title": "Local account import",
-  "imports.account.body":
-    "Choose a versioned GGArtifact or compatible GOODScanner HSR JSON export. The file is validated and reviewed before merging it into local account data.",
   "imports.selectFile": "Choose JSON file",
   "imports.fileHelp":
     "JSON only. Importing never sends the file or account data over the network.",
@@ -868,8 +711,6 @@ export const messagesEn = {
   "imports.warning.discard":
     "This source did not observe every discard mark. Unknown values remain unknown and preview-only.",
   "imports.uid.title": "UID profile showcase",
-  "imports.uid.body":
-    "Anonymous public import using Enka first and MiHoMo raw as failover.",
   "imports.uid.label": "Star Rail UID",
   "imports.uid.placeholder": "9-digit UID",
   "imports.uid.help":
@@ -877,7 +718,7 @@ export const messagesEn = {
   "imports.uid.action": "Review UID showcase",
   "imports.credentials.title": "HoYoLAB / 米游社 credential import",
   "imports.credentials.body":
-    "Requests your own Character roster and each Character's equipped gear only; unequipped inventory is unavailable. Authenticated success and the minimum required cookie fields remain unverified as of September 2, 2026.",
+    "Owned Characters and equipped gear only. Unequipped inventory unavailable. Live credential import unverified.",
   "imports.credentials.region": "Account service",
   "imports.credentials.global": "Global · HoYoLAB",
   "imports.credentials.cn": "China · 米游社",
@@ -885,7 +726,7 @@ export const messagesEn = {
   "imports.credentials.deviceId": "Device ID",
   "imports.credentials.deviceFp": "Device fingerprint",
   "imports.credentials.help":
-    "The raw Cookie, device ID, and fingerprint are sent through the local Worker for one request, then cleared. They are never stored, exported, logged, or placed in a URL.",
+    "Cookie, device ID, and fingerprint are used for one request only; never stored, exported, or logged.",
   "imports.credentials.action": "Review equipped account data",
   "imports.error.verification":
     "HoYoLAB or 米游社 requires account verification. Complete it in the official app or site, then retry; GGArtifact cannot solve or bypass it.",
@@ -953,7 +794,7 @@ export const messagesEn = {
   "characterLoadout.scoredCount": "{count} / 6 scored",
   "characterLoadout.scoreUnavailable": "Relic score not configured",
   "characterLoadout.scoreUnavailableHelp":
-    "Create a matching Character build and scoring profile to score this loadout.",
+    "A matching build and scoring profile are required.",
   "characterLoadout.buildTarget": "Scored against {name}",
   "characterLoadout.discardMarked": "Marked for discard",
   "inventory.section.characters": "Characters",
@@ -993,25 +834,16 @@ export const messagesEn = {
   "filter.discarded": "Marked for discard",
   "filter.notDiscarded": "Not marked for discard",
   "filter.unknownDiscard": "Discard state unknown",
-  "tier.priority.notice.title": "This priority list belongs to you",
-  "tier.priority.notice.body":
-    "GGArtifact does not publish or imply an authoritative ranking. Every catalog entry starts in Pool; only your explicit placements are saved.",
   "tier.priority.summary": "{assigned} ranked · {pool} in Pool",
-  "tier.priority.instructions":
-    "Drag an icon between rows, or tap it to choose a tier. Changes stay on this device.",
   "tier.priority.pool": "Pool",
   "tier.priority.groups": "Priority groups",
-  "tier.priority.dropHere": "Drop here",
   "tier.priority.reset": "Reset priorities",
   "tier.priority.resetTitle": "Reset this priority list?",
   "tier.priority.resetDescription":
     "Every item will return to Pool. The game catalog and your account data will not change.",
   "tier.priority.editTitle": "Place {item}",
-  "tier.priority.editDescription":
-    "Choose a tier. Relic sets can also move between your DPS, Support, and Other columns.",
   "tier.priority.chooseTier": "Priority tier",
   "tier.priority.chooseRole": "Relic role column",
-  "tier.priority.savedLocally": "This choice is saved locally.",
   "tier.priority.moved": "{item} moved to {tier}.",
   "tier.priority.categoryLabel": "Relic category",
   "tier.priority.role.dps": "DPS",

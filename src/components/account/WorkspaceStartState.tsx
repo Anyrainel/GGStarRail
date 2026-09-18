@@ -11,24 +11,17 @@ import type { MessageKey } from "@/i18n/messages.en";
 interface WorkspaceStartStateProps {
   messageKey: MessageKey;
   icon: LucideIcon;
-  detailKey?: MessageKey;
   primaryAction?: "import-account" | "open-account";
 }
 
 export function WorkspaceStartState({
   messageKey,
   icon,
-  detailKey,
   primaryAction = "import-account",
 }: WorkspaceStartStateProps) {
   const { t } = useI18n();
   return (
     <EmptyState messageKey={messageKey} icon={icon}>
-      {detailKey && (
-        <p className="max-w-lg text-sm leading-6 text-muted-foreground">
-          {t(detailKey)}
-        </p>
-      )}
       <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
         {primaryAction === "open-account" ? (
           <Button asChild>

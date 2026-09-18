@@ -9,7 +9,6 @@ interface TierCellProps<Group extends string> {
   group: Group;
   tier: PriorityTier;
   items: readonly TierItemData<Group>[];
-  emptyLabel: string;
   onSelect: (itemId: string) => void;
   compact?: boolean;
 }
@@ -18,7 +17,6 @@ export function TierCell<Group extends string>({
   group,
   tier,
   items,
-  emptyLabel,
   onSelect,
   compact = false,
 }: TierCellProps<Group>) {
@@ -52,11 +50,6 @@ export function TierCell<Group extends string>({
           />
         ))}
       </SortableContext>
-      {items.length === 0 && (
-        <span className="m-auto text-xs text-muted-foreground">
-          {emptyLabel}
-        </span>
-      )}
     </div>
   );
 }

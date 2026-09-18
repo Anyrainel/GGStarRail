@@ -81,11 +81,7 @@ export default function RelicTierListView() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        titleKey="route.tierRelics.title"
-        descriptionKey="route.tierRelics.description"
-        visuallyHidden
-      />
+      <PageHeader titleKey="route.tierRelics.title" visuallyHidden />
       <PriorityWorkspaceHeader
         assignedCount={Object.keys(assignments).length}
         totalCount={items.length}

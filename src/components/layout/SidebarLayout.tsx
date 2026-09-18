@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -14,7 +13,6 @@ interface SidebarLayoutProps {
   sidebar: ReactNode;
   triggerIcon?: LucideIcon;
   triggerLabel: string;
-  description: string;
   activeFilterCount?: number;
   children: ReactNode;
 }
@@ -24,7 +22,6 @@ export function SidebarLayout({
   sidebar,
   triggerIcon: TriggerIcon = SlidersHorizontal,
   triggerLabel,
-  description,
   activeFilterCount = 0,
   children,
 }: SidebarLayoutProps) {
@@ -46,12 +43,12 @@ export function SidebarLayout({
             </Button>
           </SheetTrigger>
           <SheetContent
+            aria-describedby={undefined}
             side="left"
             closeLabel={t("common.close")}
             className="overflow-y-auto"
           >
             <SheetTitle>{triggerLabel}</SheetTitle>
-            <SheetDescription>{description}</SheetDescription>
             <div className="mt-4 [&_aside]:border-0 [&_aside]:bg-transparent [&_aside]:p-0 [&_aside]:shadow-none">
               {sidebar}
             </div>
