@@ -317,9 +317,212 @@ export interface CharacterDefinitionV1_1 extends CharacterDefinitionCommon {
   enhancements: readonly CharacterEnhancementVariant[];
 }
 
+export interface CurrencyWarSkill {
+  id: string;
+  source_table: string;
+  name: LocalizedText;
+  description: LocalizedText;
+  simple_description: LocalizedText | null;
+  condition_description: LocalizedText | null;
+  condition_parameters: readonly number[];
+  tag: LocalizedText | null;
+  type_description: LocalizedText | null;
+  icon_path: string;
+  parameters: readonly number[];
+  simple_parameters: readonly number[];
+  level: number;
+  max_level: number;
+  levels: readonly {
+    level: number;
+    parameters: readonly number[];
+    simple_parameters: readonly number[];
+  }[];
+}
+
+export interface CurrencyWarPosition {
+  position: "Front" | "Back";
+  name: LocalizedText;
+  icon_path: string;
+  tags: readonly string[];
+  tag_names: readonly LocalizedText[];
+}
+
+export interface CurrencyWarStarLevel {
+  star: number;
+  front_description: LocalizedText | null;
+  back_description: LocalizedText | null;
+  front_skills: readonly CurrencyWarSkill[];
+  back_skills: readonly CurrencyWarSkill[];
+  servant_skills: readonly CurrencyWarSkill[];
+  properties: readonly CurrencyWarPropertyValue[];
+  front_power: number | null;
+  back_power: number | null;
+  initial_energy: number | null;
+  max_energy: number | null;
+  energy_bar: number | null;
+  initial_energy_bar: number | null;
+  luck_chance: number | null;
+  luck_damage: number | null;
+  heal_base: number | null;
+  shield_base: number | null;
+}
+
+export interface CurrencyWarRank {
+  id: string;
+  rank: number;
+  name: LocalizedText;
+  description: LocalizedText;
+  icon_path: string;
+  parameters: readonly number[];
+}
+
+export interface CurrencyWarLightConeAdaptation {
+  light_cone_id: string;
+  level: number;
+  description: LocalizedText;
+  parameters: readonly number[];
+  parameter_format: string | null;
+}
+
+export interface CurrencyWarSpecialEffect {
+  id: string;
+  source_table: string;
+  group_id: number;
+  name: LocalizedText;
+  description: LocalizedText;
+  simple_description: LocalizedText | null;
+  parameters: readonly number[];
+  cost: number;
+  quality: number | null;
+  icon_path: string;
+}
+
+export interface CurrencyWarCharacter {
+  id: string;
+  character_id: string;
+  rarity: number;
+  preferred_position: "Front" | "Back" | "Both";
+  bond_ids: readonly string[];
+  season_ids: readonly number[];
+  in_pool: boolean;
+  in_handbook: boolean;
+  charge_types: readonly string[];
+  remark: LocalizedText | null;
+  positions: readonly CurrencyWarPosition[];
+  star_levels: readonly CurrencyWarStarLevel[];
+  ranks: readonly CurrencyWarRank[];
+  light_cone_adaptations: readonly CurrencyWarLightConeAdaptation[];
+  special_effects: readonly CurrencyWarSpecialEffect[];
+  is_expert: boolean;
+}
+
+export interface CurrencyWarEquipment {
+  id: string;
+  name: LocalizedText;
+  description: LocalizedText | null;
+  parameters: readonly number[];
+  icon_path: string;
+  category: string;
+  category_name: LocalizedText;
+  kind: "equipment" | "consumable" | "forge";
+  tags: readonly LocalizedText[];
+  properties: readonly CurrencyWarPropertyValue[];
+  recipes: readonly (readonly string[])[];
+  upgrade_ids: readonly string[];
+  recommended_character_ids: readonly string[];
+  season_ids: readonly number[];
+  in_handbook: boolean;
+  dress_rule: string | null;
+  dress_rule_parameters: readonly number[];
+  equip_type: string | null;
+  function: string | null;
+  function_parameters: readonly number[];
+}
+
+export interface CurrencyWarEnvironment {
+  id: string;
+  name: LocalizedText;
+  description: LocalizedText;
+  parameters: readonly number[];
+  icon_path: string;
+  season_ids: readonly number[];
+  in_handbook: boolean;
+  remarks: readonly LocalizedText[];
+}
+
+export interface CurrencyWarStrategy {
+  id: string;
+  name: LocalizedText;
+  description: LocalizedText;
+  parameters: readonly number[];
+  icon_path: string;
+  quality: string;
+  category_id: number;
+  chapter_limits: readonly number[];
+  season_ids: readonly number[];
+  in_handbook: boolean;
+  remarks: readonly LocalizedText[];
+}
+
+export interface CurrencyWarBondTier {
+  required_count: number;
+  quality: string | null;
+  description: LocalizedText | null;
+  parameters: readonly number[];
+  property_description: LocalizedText | null;
+  property_parameters: readonly number[];
+  member_properties: readonly CurrencyWarPropertyValue[];
+  team_properties: readonly CurrencyWarPropertyValue[];
+}
+
+export interface CurrencyWarPropertyValue {
+  property_id: string;
+  value: number;
+  name: LocalizedText;
+  value_kind: "flat" | "ratio" | "unknown";
+}
+
+export interface CurrencyWarBondRemark {
+  description: LocalizedText;
+  simple_description: LocalizedText | null;
+  parameters: readonly number[];
+  position: string | null;
+  condition_type: string | null;
+  condition_parameters: readonly number[];
+}
+
+export interface CurrencyWarBond {
+  id: string;
+  name: LocalizedText;
+  description: LocalizedText;
+  simple_description: LocalizedText | null;
+  parameters: readonly number[];
+  icon_path: string;
+  activation_type: string;
+  type: string | null;
+  season_ids: readonly number[];
+  in_handbook: boolean;
+  character_ids: readonly string[];
+  tiers: readonly CurrencyWarBondTier[];
+  remarks: readonly CurrencyWarBondRemark[];
+  sub_bonds: readonly {
+    id: string;
+    name: LocalizedText;
+    description: LocalizedText;
+    simple_description: LocalizedText | null;
+    parameters: readonly number[];
+    tiers: readonly CurrencyWarBondTier[];
+  }[];
+}
+
+export interface CharacterDefinitionV1_3 extends CharacterDefinitionV1_1 {
+  currency_war: readonly CurrencyWarCharacter[];
+}
+
 export type CharacterDefinition =
   | CharacterDefinitionV1
-  | CharacterDefinitionV1_1;
+  | CharacterDefinitionV1_1
+  | CharacterDefinitionV1_3;
 
 export interface LightConeSuperimposition extends EffectLevel {
   name: LocalizedText;
@@ -587,23 +790,24 @@ export interface DefinitionCatalog<
 
 export type AchievementCategoryCatalog = DefinitionCatalog<
   AchievementCategoryDefinition,
-  "1.2.0"
+  "1.2.0" | "1.3.0"
 >;
 
 export type AchievementCatalog = DefinitionCatalog<
   AchievementDefinition,
-  "1.2.0"
+  "1.2.0" | "1.3.0"
 >;
 
 export type CharacterCatalog =
   | DefinitionCatalog<CharacterDefinitionV1, "1.0.0">
   | DefinitionCatalog<CharacterDefinitionV1_1, "1.1.0">
-  | DefinitionCatalog<CharacterDefinitionV1_1, "1.2.0">;
+  | DefinitionCatalog<CharacterDefinitionV1_1, "1.2.0">
+  | DefinitionCatalog<CharacterDefinitionV1_3, "1.3.0">;
 
 export type LightConeCatalog =
   | DefinitionCatalog<LightConeDefinitionV1, "1.0.0">
   | DefinitionCatalog<LightConeDefinitionV1_1, "1.1.0">
-  | DefinitionCatalog<LightConeDefinitionV1_1, "1.2.0">;
+  | DefinitionCatalog<LightConeDefinitionV1_1, "1.2.0" | "1.3.0">;
 
 interface PropertyCatalogCommon<
   TProperty extends PropertyDefinition,
@@ -627,7 +831,7 @@ export type PropertyCatalogV1 = PropertyCatalogCommon<
 
 export type PropertyCatalogV1_1 = PropertyCatalogCommon<
   PropertyDefinitionV1_1,
-  "1.1.0" | "1.2.0"
+  "1.1.0" | "1.2.0" | "1.3.0"
 >;
 
 export type PropertyCatalog = PropertyCatalogV1 | PropertyCatalogV1_1;

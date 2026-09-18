@@ -82,8 +82,8 @@ export function mergeReleasedData(released: unknown, beta: unknown): unknown {
   return released;
 }
 
-/** A released base character does not establish release of its enhancements. */
-export function mergeBetaCharacterEnhancements(
+/** A released base character does not establish release of additions in a mode. */
+export function mergeBetaCharacterAdditions(
   merged: unknown,
   beta: unknown
 ): unknown {
@@ -93,7 +93,7 @@ export function mergeBetaCharacterEnhancements(
     !Array.isArray(merged.value) ||
     !Array.isArray(beta.value)
   ) {
-    throw new Error("Invalid character enhancement overlay");
+    throw new Error("Invalid character additions overlay");
   }
   const betaById = new Map(
     beta.value.filter(isObject).map((entry) => [entry.id, entry])
@@ -103,13 +103,24 @@ export function mergeBetaCharacterEnhancements(
     value: merged.value.map((entry: unknown) => {
       if (!isObject(entry)) throw new Error("Invalid character record");
       const extra = betaById.get(entry.id);
-      if (
-        !Array.isArray(entry.enhancements) ||
-        entry.enhancements.length > 0 ||
-        !Array.isArray(extra?.enhancements)
-      )
-        return entry;
-      return { ...entry, enhancements: extra.enhancements };
+      if (!extra) return entry;
+      return {
+        ...entry,
+        ...(Array.isArray(entry.enhancements) &&
+        entry.enhancements.length === 0 &&
+        Array.isArray(extra.enhancements)
+          ? { enhancements: extra.enhancements }
+          : {}),
+        ...(Array.isArray(entry.currency_war) &&
+        Array.isArray(extra.currency_war)
+          ? {
+              currency_war: mergeReleasedData(
+                entry.currency_war,
+                extra.currency_war
+              ),
+            }
+          : {}),
+      };
     }),
   };
 }

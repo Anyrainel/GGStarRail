@@ -70,8 +70,11 @@ describe("provider and credential boundaries", () => {
       }).schema_version
     ).toBe("1.1.0");
     expect(() =>
-      parseGIloreManifest({ ...manifest, schema_version: "1.3.0" })
+      parseGIloreManifest({ ...manifest, schema_version: "1.4.0" })
     ).toThrow(/schema_version/);
+    expect(() =>
+      parseGIloreManifest({ ...manifest, schema_version: "1.3.0" })
+    ).toThrow(/currency_war/);
     expect(() =>
       parseGIloreManifest({
         ...manifest,

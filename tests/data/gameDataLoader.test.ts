@@ -9,7 +9,7 @@ describe("published game transport", () => {
   it("fetches only the requested released member and no beta assets by default", async () => {
     const { loadGameMember } = await import("@/data/gameDataLoader");
     const value = await loadGameMember("characters");
-    expect(value).toHaveProperty("schema_version", "1.2.0");
+    expect(value).toHaveProperty("schema_version", "1.3.0");
     const requests = vi.mocked(fetch).mock.calls.map(([url]) => String(url));
     expect(requests).toHaveLength(3);
     expect(

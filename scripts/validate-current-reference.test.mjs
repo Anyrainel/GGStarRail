@@ -85,3 +85,47 @@ test("rejects broken achievement category relationships", () => {
     /category/
   );
 });
+
+for (const [label, mutate, expected] of [
+  [
+    "recipe ingredient",
+    (data) => {
+      data.currency_war_equipment.released.find(
+        (row) => row.recipes.length
+      ).recipes[0][0] = "999999999";
+    },
+    /recipe.*missing referenced ID/,
+  ],
+  [
+    "character bond",
+    (data) => {
+      data.characters.released.find(
+        (row) => row.currency_war.length
+      ).currency_war[0].bond_ids[0] = "999999999";
+    },
+    /bond|Conflicting character.*channels/,
+  ],
+  [
+    "effect parameter",
+    (data) => {
+      data.currency_war_strategies.released[0].parameters = [null];
+    },
+    /finite parameters/,
+  ],
+  [
+    "empty environment catalog",
+    (data) => {
+      data.currency_war_environments = { released: [], beta: [] };
+    },
+    /Empty currency_war_environments/,
+  ],
+]) {
+  test(`rejects Currency War ${label} corruption`, () => {
+    const changed = structuredClone(documents);
+    mutate(changed);
+    assert.throws(
+      () => validateCurrentReference(changed, capture, manifest),
+      expected
+    );
+  });
+}

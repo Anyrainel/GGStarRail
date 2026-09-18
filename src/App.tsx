@@ -153,6 +153,15 @@ export default function App() {
             }
           />
           <Route path={APP_PATHS.imports} element={<DataSourcesPage />} />
+          <Route
+            path={APP_PATHS.archiveCurrencyWar}
+            element={
+              <ArchivePage
+                kind="currencyWar"
+                titleKey="route.archiveCurrencyWar.title"
+              />
+            }
+          />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>

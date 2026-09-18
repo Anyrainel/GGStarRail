@@ -1,7 +1,7 @@
 import { betaEnabled } from "./betaState";
 import manifest from "./game/manifest.json";
 import {
-  mergeBetaCharacterEnhancements,
+  mergeBetaCharacterAdditions,
   mergeReleasedData,
   restoreLocalizedText,
   restoreSourceRevision,
@@ -90,7 +90,7 @@ export function loadGameMember(member: string): Promise<unknown> {
       );
       const merged = mergeReleasedData(released, beta);
       return member === "characters"
-        ? mergeBetaCharacterEnhancements(merged, beta)
+        ? mergeBetaCharacterAdditions(merged, beta)
         : merged;
     })().catch((error: unknown) => {
       // A transient connection failure must not poison retries for this tab.

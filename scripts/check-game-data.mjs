@@ -4,7 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { root, sha256 } from "./crawl-common.mjs";
-
+import { currencyWarMembers } from "./validate-currency-war.mjs";
 import { validateCurrentReference } from "./validate-current-reference.mjs";
 
 const baseMembers = [
@@ -16,6 +16,7 @@ const baseMembers = [
   "achievements",
   "progression",
   "property_tables",
+  ...currencyWarMembers,
 ];
 const previewMembers = [
   "nanoka_characters",
@@ -105,7 +106,7 @@ export async function checkGameData(repositoryRoot = root) {
     manifest.reference_manifest.source.revision,
     manifest.source_revision
   );
-  assert.equal(manifest.reference_manifest.schema_version, "1.2.0");
+  assert.equal(manifest.reference_manifest.schema_version, "1.3.0");
   assert.equal(Object.hasOwn(manifest.reference_manifest, "files"), false);
   assert.deepEqual(
     Object.keys(manifest.members).sort(),
@@ -171,7 +172,7 @@ export async function checkGameData(repositoryRoot = root) {
       assert.equal(values.stats.source_revision, "$source_revision");
       assert.equal(values.stats.collection, member);
       assert.equal(values.stats.game_id, "honkai_star_rail");
-      assert.equal(values.stats.schema_version, "1.2.0");
+      assert.equal(values.stats.schema_version, "1.3.0");
       const document = reconstruct(
         values.stats,
         values.en,
@@ -209,6 +210,7 @@ export async function checkGameData(repositoryRoot = root) {
     "relic_sets",
     "achievements",
     "achievement_categories",
+    ...currencyWarMembers,
   ])
     assert.equal(
       documents[key].released.length,

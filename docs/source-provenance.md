@@ -197,6 +197,25 @@ commits none of the binaries. The entire local output under
 `public/assets/ggstarrail/cache/` is ignored and must not be published or
 claimed as GGStarRail-owned content without a separate rights review.
 
+## Currency War catalog artwork
+
+Currency War IDs, localized text, mechanics, and archive membership come from
+GIlore's checksummed TurnBasedGameData reference members. Nanoka's Currency War
+JSON is used to investigate source relationships, not as a replacement for those
+primary values. The website obtains catalog artwork separately from Nanoka's
+`assets/hsr/gridfight/` image endpoints using each normalized record's datamine
+icon path.
+
+`node scripts/currency-war-assets.mjs` validates the four normalized member
+checksums and source revisions, maps supported icon namespaces, and adds the
+content-hashed WebPs to `data/source-assets/`. Each manifest entry preserves the
+source URL, source image checksum, WebP checksum, and encoded byte count. The
+tracked source-asset restore step adds these four asset kinds to the runtime
+lookup, so archive pages serve local artwork through the usual asset helpers.
+`npm run data:update` includes acquisition; `--cached` only verifies existing
+artwork and fails if an image is missing. A previously unknown icon namespace
+also fails for explicit review instead of generating an unverified URL.
+
 ## Home card publisher wallpapers
 
 The four curated images in `public/assets/ggstarrail/home/` come directly from

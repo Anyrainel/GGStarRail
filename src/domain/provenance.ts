@@ -17,7 +17,12 @@ const BundleFileEntrySchema = z
 
 export const ReferenceLocaleSchema = z.enum(["en", "zh-CN"]);
 
-export const BundleSchemaVersionSchema = z.enum(["1.0.0", "1.1.0", "1.2.0"]);
+export const BundleSchemaVersionSchema = z.enum([
+  "1.0.0",
+  "1.1.0",
+  "1.2.0",
+  "1.3.0",
+]);
 
 const CommonCountsShape = {
   cavern_relic_sets: z.number().int().nonnegative(),
@@ -87,6 +92,14 @@ const CommonManifestFilesShape = {
   "relic_sets.json": BundleFileEntrySchema,
 } as const;
 
+const V1_3CountsSchema = V1_2CountsSchema.extend({
+  currency_war_characters: z.number().int().nonnegative(),
+  currency_war_equipment: z.number().int().nonnegative(),
+  currency_war_environments: z.number().int().nonnegative(),
+  currency_war_strategies: z.number().int().nonnegative(),
+  currency_war_bonds: z.number().int().nonnegative(),
+});
+
 const ManifestFilesSchema = z.object(CommonManifestFilesShape).strict();
 const ManifestFilesV1_2Schema = z
   .object({
@@ -108,6 +121,13 @@ const ManifestSourceSchema = z
     source_version: z.string().min(1),
   })
   .strict();
+
+const ManifestFilesV1_3Schema = ManifestFilesV1_2Schema.extend({
+  "currency_war_equipment.json": BundleFileEntrySchema,
+  "currency_war_environments.json": BundleFileEntrySchema,
+  "currency_war_strategies.json": BundleFileEntrySchema,
+  "currency_war_bonds.json": BundleFileEntrySchema,
+});
 
 const CommonManifestShape = {
   bundle_id: z.literal("ggstarrail-reference"),
@@ -142,6 +162,14 @@ export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
       schema_version: z.literal("1.2.0"),
     })
     .strict(),
+  z
+    .object({
+      ...CommonManifestShape,
+      counts: V1_3CountsSchema,
+      files: ManifestFilesV1_3Schema,
+      schema_version: z.literal("1.3.0"),
+    })
+    .strict(),
 ]);
 
 export type DataBundleManifest = z.infer<typeof DataBundleManifestSchema>;
@@ -153,6 +181,7 @@ export const RuntimeReferenceManifestSchema = z.discriminatedUnion(
     DataBundleManifestSchema.options[0].omit({ files: true }),
     DataBundleManifestSchema.options[1].omit({ files: true }),
     DataBundleManifestSchema.options[2].omit({ files: true }),
+    DataBundleManifestSchema.options[3].omit({ files: true }),
   ]
 );
 export type RuntimeReferenceManifest = z.infer<

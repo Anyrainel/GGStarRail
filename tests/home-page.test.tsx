@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
-import { NAVIGATION_SECTIONS } from "@/config/navigation";
+import { APP_PATHS, NAVIGATION_SECTIONS } from "@/config/navigation";
 import { I18nProvider } from "@/i18n/I18nContext";
 import HomePage from "@/pages/HomePage";
 
@@ -18,7 +18,10 @@ describe("GGArtifact Star Rail home", () => {
       screen.getByRole("heading", { level: 1, name: "GGArtifact" })
     ).toBeInTheDocument();
     const index = screen.getByRole("region", { name: "Find your next step" });
-    expect(within(index).getAllByRole("link")).toHaveLength(13);
+    expect(within(index).getAllByRole("link")).toHaveLength(14);
+    expect(
+      within(index).getByRole("link", { name: "Currency War" })
+    ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
         expect(

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { validateReferenceCatalog } from "./sync-hsr-reference.mjs";
+import { validateCurrencyWarCatalog } from "./validate-currency-war.mjs";
 
 // Reassemble the complete source catalog before checking joins. Enhanced
 // characters occur in both channels; the beta copy retains their enhancements.
@@ -23,10 +24,17 @@ export function mergeCatalog(documents) {
         if (rows.has(row.id)) {
           assert.equal(trail, "characters", `Overlapping catalog: ${trail}`);
           assert.deepEqual(
-            { ...rows.get(row.id), enhancements: [] },
-            { ...row, enhancements: [] },
+            { ...rows.get(row.id), enhancements: [], currency_war: [] },
+            { ...row, enhancements: [], currency_war: [] },
             `Conflicting character channels: ${row.id}`
           );
+          for (const mode of rows.get(row.id).currency_war ?? []) {
+            assert.deepEqual(
+              row.currency_war?.find((candidate) => candidate.id === mode.id),
+              mode,
+              `Conflicting character Currency War channels: ${row.id}/${mode.id}`
+            );
+          }
         }
         rows.set(row.id, row);
       }
@@ -68,6 +76,7 @@ export function validateCurrentReference(documents, capture, manifest) {
     manifest.reference_manifest.schema_version,
     manifest.source_revision
   );
+  validateCurrencyWarCatalog(catalog);
   const name = (text) => ({ en: text.en.value, zhCn: text["zh-CN"].value });
   const compare = (actual, expected, label) => {
     const stable = (value) =>

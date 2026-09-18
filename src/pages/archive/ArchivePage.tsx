@@ -10,6 +10,7 @@ import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
 import { AchievementArchiveView } from "./AchievementArchiveView";
 import { BetaPreviews } from "./BetaPreviews";
 import { CharacterCatalog } from "./CharacterCatalog";
+import { CurrencyWarArchiveView } from "./CurrencyWarArchiveView";
 import { LightConeCatalog } from "./LightConeCatalog";
 import { RelicSetCatalog } from "./RelicSetCatalog";
 
@@ -17,7 +18,8 @@ export type ArchiveKind =
   | "characters"
   | "lightCones"
   | "relicSets"
-  | "achievements";
+  | "achievements"
+  | "currencyWar";
 
 interface ArchivePageProps {
   kind: ArchiveKind;
@@ -42,11 +44,14 @@ export default function ArchivePage({ kind, titleKey }: ArchivePageProps) {
           {error && <span role="alert">{error}</span>}
         </div>
       )}
-      {betaEnabled() && kind !== "achievements" && <BetaPreviews kind={kind} />}
+      {betaEnabled() && kind !== "achievements" && kind !== "currencyWar" && (
+        <BetaPreviews kind={kind} />
+      )}
       {kind === "characters" && <CharacterCatalog />}
       {kind === "lightCones" && <LightConeCatalog />}
       {kind === "relicSets" && <RelicSetCatalog />}
       {kind === "achievements" && <AchievementArchiveView />}
+      {kind === "currencyWar" && <CurrencyWarArchiveView />}
       <CatalogProvenance />
     </>
   );
@@ -97,7 +102,7 @@ function CatalogProvenance() {
                   })}
                 </p>
               )}
-              {manifest.schema_version === "1.2.0" && (
+              {"achievements" in manifest.counts && (
                 <p className="mt-2 text-xs leading-5 text-muted-foreground">
                   {t("archive.bundle.achievementSummary", {
                     categories: manifest.counts.achievement_categories,

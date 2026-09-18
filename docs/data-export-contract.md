@@ -63,6 +63,24 @@ Members are `characters`, `light_cones`, `relic_sets`, `relic_pieces`,
 partial preview members `nanoka_characters`, `nanoka_light_cones`,
 `nanoka_relic_sets`.
 
+Reference schema 1.3 adds `currency_war_equipment`, `currency_war_environments`,
+`currency_war_strategies`, and `currency_war_bonds`. Every character contains a
+`currency_war` array: alternate mode identities remain attached to the same
+base character, with their original role IDs, positions, bonds, star levels,
+skill parameters, Eidolon adaptations, and Light Cone adaptations. These fields
+use the same locale pointer and revision-token transport as other game text.
+The four catalogs retain recipes, upgrade relationships, stat modifiers,
+activation tiers, source handbook visibility, and season memberships.
+
+Currency War visibility comes from its datamine handbook flags and season
+indexes in an `OSPRODWin` client snapshot. Hidden definitions and nonproduction
+snapshots remain in the opt-in source channel; a character's mode adaptations
+also require that base character to pass the existing official release gate.
+This policy does not use Nanoka's version number to claim an item is released.
+The beta overlay can add hidden Currency War role variants without replacing
+any released base-character fields. The complete source catalog validator
+checks mode joins, numeric parameters, and bilingual provenance.
+
 Each `members[name]` has `released` and `beta`, each containing `stats`, `en`,
 and `zh` descriptors. A descriptor is `{path, sha256, byte_count}`; its checksum
 and byte count cover the actual file bytes, including gzip compression.

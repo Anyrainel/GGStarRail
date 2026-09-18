@@ -16,12 +16,37 @@ import {
   loadRelicPieces,
   loadRelicSets,
 } from "@/providers/gilore/catalog";
+import { loadCurrencyWarCatalog } from "@/providers/gilore/currencyWar";
 import type { CharacterDefinitionV1_1 } from "@/providers/gilore/types";
 
 describe("lazy GIlore catalog provider", () => {
   // Coverage of the complete normalized snapshot, including opt-in records.
   // The released-only transport and network gate are tested separately.
   beforeEach(() => setBetaEnabled(true));
+  it("reconstructs all Currency War collections from independent bilingual members", async () => {
+    const catalog = await loadCurrencyWarCatalog();
+    expect(catalog.equipment).toHaveLength(165);
+    expect(catalog.environments).toHaveLength(84);
+    expect(catalog.strategies).toHaveLength(334);
+    expect(catalog.bonds).toHaveLength(33);
+    for (const collection of [
+      catalog.equipment,
+      catalog.environments,
+      catalog.strategies,
+      catalog.bonds,
+    ]) {
+      expect(new Set(collection.map((entry) => entry.id)).size).toBe(
+        collection.length
+      );
+      for (const entry of collection) {
+        expect(entry.name.en.value).not.toBe("");
+        expect(entry.name["zh-CN"].value).not.toBe("");
+        expect(entry.name.en.provenance.source_revision).toBe(
+          HSR_REFERENCE_MANIFEST.source.revision
+        );
+      }
+    }
+  });
   it("loads complete typed catalogs with stable bilingual identities", async () => {
     const [
       achievementCategories,
@@ -46,7 +71,7 @@ describe("lazy GIlore catalog provider", () => {
     expect(HSR_REFERENCE_MANIFEST.source.revision).toBe(
       "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
     );
-    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("1.2.0");
+    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("1.3.0");
     expect(achievementCategories.values).toHaveLength(9);
     expect(achievements.values).toHaveLength(1921);
     expect(achievementIds.size).toBe(1921);
@@ -58,11 +83,11 @@ describe("lazy GIlore catalog provider", () => {
     expect(propertyTables.paths).toHaveLength(9);
     expect(propertyTables.combatTypes).toHaveLength(7);
     expect(propertyTables.relicSlots).toHaveLength(6);
-    expect(achievementCategories.schemaVersion).toBe("1.2.0");
-    expect(achievements.schemaVersion).toBe("1.2.0");
-    expect(characters.schemaVersion).toBe("1.2.0");
-    expect(lightCones.schemaVersion).toBe("1.2.0");
-    expect(propertyTables.schemaVersion).toBe("1.2.0");
+    expect(achievementCategories.schemaVersion).toBe("1.3.0");
+    expect(achievements.schemaVersion).toBe("1.3.0");
+    expect(characters.schemaVersion).toBe("1.3.0");
+    expect(lightCones.schemaVersion).toBe("1.3.0");
+    expect(propertyTables.schemaVersion).toBe("1.3.0");
 
     const trailblazerCategory = achievementCategories.byId.get(1);
     expect(getLocalizedValue(trailblazerCategory?.name, "en")).toBe(

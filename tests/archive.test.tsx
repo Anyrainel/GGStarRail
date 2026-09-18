@@ -67,6 +67,47 @@ function catalogItem(
 describe("Archive catalogs", () => {
   beforeEach(() => setBetaEnabled(true));
 
+  it("preserves a character deep link while its catalog is loading", async () => {
+    const user = userEvent.setup();
+    renderArchive(`${APP_PATHS.archiveCharacters}?id=1004`);
+    await catalogRegion("Character catalog results", 97);
+    await waitFor(() =>
+      expect(
+        within(screen.getByTestId("character-detail")).getByRole("heading", {
+          level: 2,
+          name: "Welt",
+        })
+      ).toBeInTheDocument()
+    );
+    expect(
+      catalogItem(
+        screen.getByRole("region", { name: "Character catalog results" }),
+        "character",
+        "1004"
+      )
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(screen.getByTestId("character-currency-war")).queryByRole(
+        "button",
+        { name: "Off-Field" }
+      )
+    ).not.toBeInTheDocument();
+    await user.click(
+      catalogItem(
+        screen.getByRole("region", { name: "Character catalog results" }),
+        "character",
+        "1409"
+      )
+    );
+    const mode = screen.getByTestId("character-currency-war");
+    expect(
+      within(mode).getByRole("button", { name: "On-Field" })
+    ).toBeInTheDocument();
+    expect(
+      within(mode).getByRole("heading", { name: "Servants (2)" })
+    ).toBeInTheDocument();
+  });
+
   it("shows only verified Light Cones and no source previews by default", async () => {
     setBetaEnabled(false);
     renderArchive(APP_PATHS.archiveLightCones);

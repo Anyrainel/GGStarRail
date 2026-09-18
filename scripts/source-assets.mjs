@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { crawlRoot, root, saveJson, sha256 } from "./crawl-common.mjs";
+import { currencyWarAssetKinds } from "./currency-war-assets.mjs";
 
 const directory = path.join(root, "data/source-assets");
 const manifestPath = path.join(directory, "manifest.json");
@@ -8,6 +9,7 @@ const kindByCollection = {
   characters: "character",
   light_cones: "light-cone",
   relic_sets: "relic-set",
+  ...currencyWarAssetKinds,
 };
 
 export async function publishSourceAssets(

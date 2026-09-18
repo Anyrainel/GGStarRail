@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Archive,
   Boxes,
+  Coins,
   Crown,
   Database,
   DatabaseZap,
@@ -32,6 +33,7 @@ export const APP_PATHS = {
   archiveLightCones: "/archive/light-cones",
   archiveRelicSets: "/archive/relic-sets",
   archiveAchievements: "/archive/achievements",
+  archiveCurrencyWar: "/archive/currency-war",
   imports: "/data-sources",
 } as const;
 
@@ -124,6 +126,11 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         path: APP_PATHS.archiveAchievements,
         labelKey: "nav.archiveAchievements",
         icon: Trophy,
+      },
+      {
+        path: APP_PATHS.archiveCurrencyWar,
+        labelKey: "nav.archiveCurrencyWar",
+        icon: Coins,
       },
     ],
   },

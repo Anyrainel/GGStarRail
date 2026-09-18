@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import path from "node:path";
+import { publishCurrencyWarAssets } from "./currency-war-assets.mjs";
 import { crawlHoyolab } from "./hoyolab.mjs";
 import { crawlNanoka } from "./nanoka.mjs";
 import { publishSourceAssets } from "./source-assets.mjs";
@@ -88,6 +89,7 @@ run(
   producer
 );
 if (!args.has("--cached")) await publishSourceAssets(nanokaRoot, evidencePath);
+await publishCurrencyWarAssets({ referenceRoot, cached: args.has("--cached") });
 run(process.execPath, ["scripts/prepare-web-assets.mjs"]);
 run(process.execPath, ["scripts/check-game-data.mjs"]);
 if (args.has("--genshin"))

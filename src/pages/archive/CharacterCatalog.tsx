@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { formatGameText } from "@/lib/gameText";
 import {
   getLocalizedValue,
   isCharacterDefinitionV1_1,
+  isCharacterDefinitionV1_3,
   isProgressionTablesV1_1,
   loadCharacters,
   loadProgression,
@@ -33,10 +35,12 @@ import {
   useCatalogDetailSheet,
 } from "./CatalogDetailSheet";
 import { CatalogSourceDisclosure } from "./CatalogSourceDisclosure";
+import { CharacterCurrencyWarDetails } from "./CharacterCurrencyWarDetails";
 import {
   CharacterExtendedDetails,
   characterExtendedSearchText,
 } from "./CharacterExtendedDetails";
+import { currencyWarSearchText } from "./CurrencyWarDetails";
 import {
   createProgressionItemIndex,
   MaterialCosts,
@@ -63,13 +67,23 @@ export function CharacterCatalog() {
   const [pathId, setPathId] = useState("all");
   const [combatTypeId, setCombatTypeId] = useState("all");
   const [rarity, setRarity] = useState("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const [selectedId, setSelectedId] = useState<string | null>(
+    searchParams.get("id")
+  );
   const {
     open: detailOpen,
     setOpen: setDetailOpen,
     openOnNarrowScreen,
     restoreTriggerFocus,
   } = useCatalogDetailSheet();
+
+  useEffect(() => {
+    const linkedId = searchParams.get("id");
+    if (!linkedId || !resource.data?.characters.byId.has(linkedId)) return;
+    setSelectedId(linkedId);
+    if (window.matchMedia("(max-width: 1023px)").matches) setDetailOpen(true);
+  }, [searchParams, resource.data, setDetailOpen]);
 
   const searchIndex = useMemo(() => {
     if (!resource.data) return new Map<string, string>();
@@ -101,7 +115,7 @@ export function CharacterCatalog() {
         return [
           character.id,
           searchText(
-            `${localizedValues.join(" ")} ${character.id} ${extended}`
+            `${localizedValues.join(" ")} ${character.id} ${extended} ${isCharacterDefinitionV1_3(character) ? currencyWarSearchText(character.currency_war) : ""}`
           ),
         ];
       })
@@ -145,6 +159,7 @@ export function CharacterCatalog() {
   ]);
 
   useEffect(() => {
+    if (!resource.data) return;
     if (filtered.length === 0) {
       setSelectedId(null);
       return;
@@ -152,7 +167,7 @@ export function CharacterCatalog() {
     if (!selectedId || !filtered.some((entry) => entry.id === selectedId)) {
       setSelectedId(filtered[0]?.id ?? null);
     }
-  }, [filtered, selectedId]);
+  }, [filtered, selectedId, resource.data]);
 
   if (resource.loading) return <CatalogLoading />;
   if (resource.error) return <CatalogFailure error={resource.error} />;
@@ -462,6 +477,15 @@ function CharacterDetail({
       <p className="break-words whitespace-pre-line text-sm leading-6 text-muted-foreground">
         {description}
       </p>
+
+      {isCharacterDefinitionV1_3(character) &&
+        character.currency_war.length > 0 && (
+          <CharacterCurrencyWarDetails
+            key={character.id}
+            variants={character.currency_war}
+            properties={propertyTables}
+          />
+        )}
 
       {additiveCharacter && additiveProgression && additivePropertyTables ? (
         <CharacterExtendedDetails

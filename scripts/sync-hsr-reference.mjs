@@ -1334,7 +1334,7 @@ function assertCharacterTrace(trace, itemIds, propertyIds, label) {
   }
 }
 
-function assertExpandedCatalogRelations(documents) {
+function assertExpandedCatalogRelations(documents, schemaVersion) {
   const characters = assertArray(
     documents["characters.json"].value,
     "characters"
@@ -1421,6 +1421,7 @@ function assertExpandedCatalogRelations(documents) {
         "combat_type_id",
         "description",
         "enhancements",
+        ...(schemaVersion === "1.3.0" ? ["currency_war"] : []),
         "experience_type",
         "icon_path",
         "id",
@@ -2099,10 +2100,18 @@ export function validateReferenceCatalog(
     "relic_pieces.json",
     "property_tables.json",
   ];
-  if (schemaVersion === "1.2.0") {
+  if (schemaVersion === "1.2.0" || schemaVersion === "1.3.0") {
     localizedMemberFiles.unshift(
       "achievement_categories.json",
       "achievements.json"
+    );
+  }
+  if (schemaVersion === "1.3.0") {
+    localizedMemberFiles.push(
+      "currency_war_equipment.json",
+      "currency_war_environments.json",
+      "currency_war_strategies.json",
+      "currency_war_bonds.json"
     );
   }
   for (const fileName of localizedMemberFiles) {
@@ -2116,9 +2125,9 @@ export function validateReferenceCatalog(
   if (schemaVersion === "1.0.0") {
     assertLegacyCatalogShapes(documents);
   } else {
-    assertExpandedCatalogRelations(documents);
+    assertExpandedCatalogRelations(documents, schemaVersion);
   }
-  if (schemaVersion === "1.2.0") {
+  if (schemaVersion === "1.2.0" || schemaVersion === "1.3.0") {
     assertAchievementCatalogRelations(documents);
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  mergeBetaCharacterEnhancements,
+  mergeBetaCharacterAdditions,
   mergeReleasedData,
   restoreLocalizedText,
   restoreSourceRevision,
@@ -33,7 +33,7 @@ describe("partitioned game data", () => {
       value: [{ id: "1004", hp: 100, enhancements: [{ enhanced_id: 1 }] }],
     };
     expect(
-      mergeBetaCharacterEnhancements(mergeReleasedData(released, beta), beta)
+      mergeBetaCharacterAdditions(mergeReleasedData(released, beta), beta)
     ).toEqual({
       value: [{ id: "1004", hp: 200, enhancements: [{ enhanced_id: 1 }] }],
     });
@@ -54,6 +54,47 @@ describe("partitioned game data", () => {
         hp: 100,
       },
     ]);
+  });
+
+  it("adds hidden Currency War roles only through the opt-in overlay and preserves released role values", () => {
+    const released = {
+      value: [
+        {
+          id: "1004",
+          hp: 200,
+          enhancements: [],
+          currency_war: [{ id: "1004", rarity: 3 }],
+        },
+      ],
+    };
+    const beta = {
+      value: [
+        {
+          id: "1004",
+          hp: 100,
+          enhancements: [],
+          currency_war: [
+            { id: "1004", rarity: 1 },
+            { id: "21004", rarity: 5 },
+          ],
+        },
+      ],
+    };
+    const merged = mergeReleasedData(released, beta);
+    expect(merged).toEqual(released);
+    expect(mergeBetaCharacterAdditions(merged, beta)).toEqual({
+      value: [
+        {
+          id: "1004",
+          hp: 200,
+          enhancements: [],
+          currency_war: [
+            { id: "1004", rarity: 3 },
+            { id: "21004", rarity: 5 },
+          ],
+        },
+      ],
+    });
   });
 
   it("rejects incomplete locale files instead of hiding corrupt exports", () => {

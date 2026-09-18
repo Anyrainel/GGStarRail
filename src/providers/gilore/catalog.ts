@@ -12,6 +12,7 @@ import type {
   CharacterDefinition,
   CharacterDefinitionV1,
   CharacterDefinitionV1_1,
+  CharacterDefinitionV1_3,
   CharacterSkill,
   CharacterSkillV1_1,
   CombatTypeDefinition,
@@ -77,6 +78,12 @@ export function isCharacterDefinitionV1_1(
   return "servants" in character;
 }
 
+export function isCharacterDefinitionV1_3(
+  character: CharacterDefinition
+): character is CharacterDefinitionV1_3 {
+  return "currency_war" in character;
+}
+
 export function isCharacterSkillV1_1(
   skill: CharacterSkill
 ): skill is CharacterSkillV1_1 {
@@ -123,7 +130,7 @@ export async function loadAchievementCategories(): Promise<AchievementCategoryCa
   ]);
   const document = module as MemberDocument<
     readonly AchievementCategoryDefinition[],
-    "1.2.0"
+    "1.2.0" | "1.3.0"
   >;
   assertMemberSchema(document, "achievement_categories");
   return createDefinitionCatalog(document.value, document.schema_version);
@@ -136,7 +143,7 @@ export async function loadAchievements(): Promise<AchievementCatalog> {
   ]);
   const document = module as MemberDocument<
     readonly AchievementDefinition[],
-    "1.2.0"
+    "1.2.0" | "1.3.0"
   >;
   assertMemberSchema(document, "achievements");
   return createDefinitionCatalog(document.value, document.schema_version);
@@ -154,8 +161,12 @@ export async function loadCharacters(): Promise<CharacterCatalog> {
   const document = module as
     | MemberDocument<readonly CharacterDefinitionV1[], "1.0.0">
     | MemberDocument<readonly CharacterDefinitionV1_1[], "1.1.0">
-    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.2.0">;
+    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.2.0">
+    | MemberDocument<readonly CharacterDefinitionV1_3[], "1.3.0">;
   assertMemberSchema(document, "characters");
+  if (document.schema_version === "1.3.0") {
+    return createDefinitionCatalog(document.value, document.schema_version);
+  }
   return document.schema_version === "1.0.0"
     ? createDefinitionCatalog(document.value, document.schema_version)
     : createDefinitionCatalog(document.value, document.schema_version);
@@ -169,7 +180,7 @@ export async function loadLightCones(): Promise<LightConeCatalog> {
   const document = module as
     | MemberDocument<readonly LightConeDefinitionV1[], "1.0.0">
     | MemberDocument<readonly LightConeDefinitionV1_1[], "1.1.0">
-    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.2.0">;
+    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.2.0" | "1.3.0">;
   assertMemberSchema(document, "light_cones");
   return document.schema_version === "1.0.0"
     ? createDefinitionCatalog(document.value, document.schema_version)
@@ -208,7 +219,7 @@ export async function loadPropertyTables(): Promise<PropertyCatalog> {
   const document = module as
     | MemberDocument<PropertyTablesV1, "1.0.0">
     | MemberDocument<PropertyTablesV1_1, "1.1.0">
-    | MemberDocument<PropertyTablesV1_1, "1.2.0">;
+    | MemberDocument<PropertyTablesV1_1, "1.2.0" | "1.3.0">;
   assertMemberSchema(document, "property_tables");
   if (document.schema_version === "1.0.0") {
     const {
@@ -270,7 +281,7 @@ export async function loadProgression(): Promise<ProgressionTables> {
   const document = (await loadGameMember("progression")) as
     | MemberDocument<ProgressionTablesV1, "1.0.0">
     | MemberDocument<ProgressionTablesV1_1, "1.1.0">
-    | MemberDocument<ProgressionTablesV1_1, "1.2.0">;
+    | MemberDocument<ProgressionTablesV1_1, "1.2.0" | "1.3.0">;
   assertMemberSchema(document, "progression");
   return document.value;
 }
