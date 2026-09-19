@@ -213,10 +213,12 @@ export function CharacterCatalog() {
   const roster = (
     <div className="min-w-0 space-y-2">
       <p className="px-2 text-xs text-muted-foreground" aria-live="polite">
-        {t("archive.results", {
-          shown: filtered.length,
-          total: characters.values.length,
-        })}
+        {t(
+          filtered.length === 1
+            ? "archive.characterCountOne"
+            : "archive.characterCount",
+          { count: filtered.length }
+        )}
       </p>
       <section
         className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-1 md:grid-cols-1 md:gap-0.5 md:p-1"
@@ -271,7 +273,6 @@ function CharacterListRow({
 }) {
   const { locale, t } = useI18n();
   const name = characterCatalogName(character, locale, t("terms.trailblazer"));
-  const path = propertyTables.pathById.get(character.path_id);
   const combat = propertyTables.combatTypeById.get(character.combat_type_id);
   return (
     <button
@@ -306,10 +307,6 @@ function CharacterListRow({
       <span className="min-w-0 text-center md:flex-1 md:text-left">
         <span className="block w-full truncate text-xs font-medium md:text-sm">
           {name}
-        </span>
-        <span className="hidden truncate text-xs text-muted-foreground md:block">
-          {getLocalizedValue(path?.name, locale)} ·{" "}
-          {getLocalizedValue(combat?.name, locale)}
         </span>
       </span>
       <BetaBadge member="characters" id={character.id} />

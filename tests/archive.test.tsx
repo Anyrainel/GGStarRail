@@ -160,8 +160,8 @@ describe("Character archive", () => {
     expect(iceChip).toBeDisabled();
     expect(rows()).toHaveLength(2);
     const huntMarch = characterRow(region, "1224");
-    expect(huntMarch).toHaveTextContent("The Hunt");
-    expect(huntMarch).toHaveTextContent("Imaginary");
+    expect(huntMarch).not.toHaveTextContent("The Hunt");
+    expect(huntMarch).not.toHaveTextContent("Imaginary");
     expect(huntMarch).not.toHaveTextContent("1224");
     await user.click(huntMarch);
     expect(
