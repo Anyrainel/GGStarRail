@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { ItemIcon } from "@/components/shared/ItemIcon";
+import { RarityStars } from "@/components/shared/RarityStars";
 import { Badge } from "@/components/ui/badge";
 import {
   ResponsiveDialog,
@@ -130,6 +131,7 @@ function PreviewCard({
             <span className="line-clamp-2 block text-sm font-medium">
               {name}
             </span>
+            {kind === "lightCones" && <RarityStars rarity={entry.rarity} />}
             <Badge variant="outline" className="mt-1">
               {t("beta.previewBadge")}
             </Badge>
@@ -153,6 +155,7 @@ function PreviewCard({
             />
             <div className="space-y-2">
               <ResponsiveDialogTitle>{name}</ResponsiveDialogTitle>
+              {kind === "lightCones" && <RarityStars rarity={entry.rarity} />}
               <Badge variant="outline">{t("beta.previewBadge")}</Badge>
             </div>
           </div>

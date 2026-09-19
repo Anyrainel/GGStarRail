@@ -24,7 +24,8 @@ describe("ItemIcon", () => {
     );
     if (kind === "light-cone") {
       expect(art).not.toHaveClass("ring-1");
-      expect(img).toHaveClass("h-[101%]", "w-auto");
+      expect(img).toHaveClass("h-[calc(100%+2px)]", "w-auto", "-top-px");
+      expect(art.style.backgroundImage).toBe("");
     }
   });
   it.each([

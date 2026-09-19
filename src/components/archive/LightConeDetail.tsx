@@ -1,6 +1,7 @@
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
+import { RarityStars } from "@/components/shared/RarityStars";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
@@ -57,6 +58,7 @@ export function LightConeDetail({
         />
         <div className="min-w-0 space-y-2">
           <h2 className="text-xl font-semibold leading-tight">{name}</h2>
+          <RarityStars rarity={lightCone.rarity} />
           <BetaBadge member="light_cones" id={lightCone.id} />
           <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2 py-1 text-xs font-medium">
             <AssetImage

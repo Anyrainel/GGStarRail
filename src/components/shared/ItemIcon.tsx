@@ -159,7 +159,8 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
         )}
         data-item-artwork
         style={{
-          backgroundImage: rarityBackground(rarity),
+          backgroundImage:
+            kind === "light-cone" ? undefined : rarityBackground(rarity),
           width: config.icon,
           height: artworkHeight,
           borderTopLeftRadius: badge === undefined ? radius : cornerRadius,
@@ -184,7 +185,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
             // Intrinsic width keeps Chromium's high-quality downsampling for
             // large Light Cone art; object-cover aliases these tiny thumbnails.
             kind === "light-cone" &&
-              "absolute left-1/2 -top-[0.5%] h-[101%] w-auto max-w-none -translate-x-1/2"
+              "absolute left-1/2 -top-px h-[calc(100%+2px)] w-auto max-w-none -translate-x-1/2"
           )}
         />
 

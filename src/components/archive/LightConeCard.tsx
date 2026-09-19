@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
+import { RarityStars } from "@/components/shared/RarityStars";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -33,6 +34,7 @@ export function LightConeCard({
           type="button"
           data-light-cone-id={lightCone.id}
           aria-label={name}
+          aria-description={t("field.rarity", { value: lightCone.rarity })}
           className="flex h-full min-h-20 items-center gap-2 rounded-lg border border-border bg-card/60 p-2 text-left transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ItemIcon
@@ -47,6 +49,7 @@ export function LightConeCard({
             <span className="line-clamp-2 block text-sm font-medium leading-tight">
               {name}
             </span>
+            <RarityStars rarity={lightCone.rarity} />
             <BetaBadge member="light_cones" id={lightCone.id} />
           </span>
         </button>

@@ -35,7 +35,8 @@ npm run assets:webp
 
 ItemIcon uses square Light Cone corners, reduced Character corners, and the
 existing Relic corners. Character art covers its frame and aligns at the
-bottom. Light Cones use intrinsic width, centered at 101% frame height; their
+bottom. Light Cones use intrinsic width with one CSS pixel of vertical bleed
+on each edge and no rarity background; their
 source aspect ratios are wider than the 11:16 frame. This crops the tiny
 source border and omits the inset ring without Chromium's object-cover
 downsampling artifacts on large source images.
