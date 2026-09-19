@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -24,6 +24,50 @@ function renderApp(path: string) {
 describe("GGArtifact family shell", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("owns tier file actions in the appbar and clears them on route changes", async () => {
+    const user = userEvent.setup();
+    renderApp("/tier-list/characters");
+    const appbar = screen.getByRole("banner");
+    expect(
+      await within(appbar).findByRole(
+        "button",
+        { name: "Import list" },
+        { timeout: 15000 }
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("main")).queryByRole("button", {
+        name: "Import list",
+      })
+    ).toBeNull();
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Export list" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Download image" })
+    ).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("link", { name: "Light Cone Priority" }));
+    expect(
+      await screen.findByRole("heading", { name: "Light Cone Priority" })
+    ).toBeInTheDocument();
+    expect(
+      within(appbar).getAllByRole("button", { name: "Import list" })
+    ).toHaveLength(1);
+    await user.click(screen.getByRole("link", { name: "Archive" }));
+    await waitFor(() =>
+      expect(
+        within(appbar).queryByRole("button", { name: "Import list" })
+      ).toBeNull()
+    );
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    expect(screen.queryByRole("menuitem", { name: "Export list" })).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "Download image" })
+    ).toBeNull();
   });
 
   it("exposes a selected Star Rail site and a plain Genshin site link", async () => {

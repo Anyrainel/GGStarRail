@@ -7,8 +7,16 @@ import {
   Upload,
   Wrench,
 } from "lucide-react";
-import { type RefObject, useEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { WideLayout } from "@/components/layout/WideLayout";
 import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -23,8 +31,11 @@ import {
 } from "@/domain/tier-list/document";
 import { useI18n } from "@/i18n/I18nContext";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
+import { TierPageActions } from "./TierPageActions";
 
 interface TierToolbarProps {
+  children: ReactNode;
+  filters: ReactNode;
   document: TierDocument;
   itemIds: ReadonlySet<string>;
   onApply: (document: TierDocument) => void;
@@ -40,6 +51,8 @@ function download(href: string, filename: string) {
 }
 
 export function TierToolbar({
+  children,
+  filters,
   document,
   itemIds,
   onApply,
@@ -137,70 +150,97 @@ export function TierToolbar({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-3 py-3">
-        <div className="text-xl font-bold" aria-hidden="true">
-          {title}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
+      <TierPageActions
+        assignedCount={Object.keys(document.assignments).length}
+        totalCount={itemIds.size}
+        onReset={() =>
+          onApply({ ...document, assignments: {}, groupAssignments: {} })
+        }
+        primary={
           <Button
             size="sm"
-            variant="secondary"
-            className="gap-2"
-            onClick={() => setDialog("customize")}
-          >
-            <Wrench className="h-4 w-4" />
-            {t("tier.controls.customize")}
-          </Button>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="gap-2"
-            onClick={() => {
-              keepCurrent();
-              setDialog("lists");
-            }}
-          >
-            <ArrowLeftRight className="h-4 w-4" />
-            {t("tier.controls.manage")}
-          </Button>
-          <Button
-            size="icon"
             variant="outline"
-            title={t("tier.controls.import")}
-            aria-label={t("tier.controls.import")}
             onClick={() => fileInput.current?.click()}
           >
             <Upload className="h-4 w-4" />
+            {t("tier.controls.import")}
           </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            title={t("tier.controls.export")}
-            aria-label={t("tier.controls.export")}
-            onClick={() => {
-              const url = URL.createObjectURL(
-                new Blob([JSON.stringify(document, null, 2)], {
-                  type: "application/json",
-                })
-              );
-              download(url, `${title}.json`);
-              setTimeout(() => URL.revokeObjectURL(url), 1000);
-            }}
-          >
-            <FileDown className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            disabled={exporting}
-            title={t("tier.controls.image")}
-            aria-label={t("tier.controls.image")}
-            onClick={() => void exportImage()}
-          >
-            <Download className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+        }
+        overflow={
+          <>
+            <DropdownMenuItem
+              className="sm:hidden"
+              onSelect={() => fileInput.current?.click()}
+            >
+              <Upload className="h-4 w-4" />
+              {t("tier.controls.import")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => {
+                const url = URL.createObjectURL(
+                  new Blob([JSON.stringify(document, null, 2)], {
+                    type: "application/json",
+                  })
+                );
+                download(url, `${title}.json`);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+              }}
+            >
+              <FileDown className="h-4 w-4" />
+              {t("tier.controls.export")}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={exporting}
+              onSelect={() => void exportImage()}
+            >
+              <Download className="h-4 w-4" />
+              {t("tier.controls.image")}
+            </DropdownMenuItem>
+          </>
+        }
+      />
+      <WideLayout
+        title={title}
+        filters={filters}
+        actions={
+          <div className="flex shrink-0 items-center gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              aria-label={t("tier.controls.customize")}
+              onClick={() => setDialog("customize")}
+            >
+              <Wrench className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("tier.controls.customize")}
+              </span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="gap-2"
+              aria-label={t("tier.controls.manage")}
+              onClick={() => {
+                keepCurrent();
+                setDialog("lists");
+              }}
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("tier.controls.manage")}
+              </span>
+            </Button>
+          </div>
+        }
+      >
+        {error && (
+          <p role="alert" className="mb-3 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        {children}
+      </WideLayout>
       <input
         ref={fileInput}
         type="file"
@@ -213,11 +253,6 @@ export function TierToolbar({
           if (file) void importFile(file);
         }}
       />
-      {error && (
-        <p role="alert" className="mb-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
       <ResponsiveDialog
         open={dialog !== null}
         onOpenChange={(open) => !open && setDialog(null)}

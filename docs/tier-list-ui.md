@@ -34,4 +34,13 @@ The existing priority stores remain the active rankings, including on first
 upgrade; no existing assignments are rewritten. Named list JSON import/export
 has its own strict versioned HSR document schema and validates category and IDs
 before applying. The account/build backup does not include tier lists (as before).
-Export tier lists with their own toolbar.
+Export tier lists through their route-owned appbar actions.
+
+`WideLayout` keeps the title, Customize/Manage controls, and filters above an
+independently scrolling body with no container width cap. Body gutters match
+GenshinTools (16/24/32/48px). Below 1000px, the table switches to category tabs;
+560–999px retains a tier-label column, and below 560px each tier stacks its label
+over its items. Filters move into a side sheet below 768px. The appbar hosts
+Import, with Export, Download image, and Reset in its overflow menu; below
+640px Import also moves into overflow. `PageActions` registers page-owned
+callbacks with `AppShell` and unregisters them when the route unmounts.

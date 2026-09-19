@@ -3,9 +3,6 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { ScrollLayout } from "@/components/layout/ScrollLayout";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { PriorityWorkspaceHeader } from "@/components/tier-list/PriorityWorkspaceHeader";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
@@ -23,9 +20,6 @@ export default function LightConeTierListView() {
   const assignments = useLightConePriorityStore((state) => state.assignments);
   const setPriorityState = useLightConePriorityStore(
     (state) => state.setPriorityState
-  );
-  const resetPriorities = useLightConePriorityStore(
-    (state) => state.resetPriorities
   );
 
   const groups = useMemo<readonly TierGroupConfig<string>[]>(
@@ -63,18 +57,7 @@ export default function LightConeTierListView() {
   );
 
   return (
-    <ScrollLayout
-      header={
-        <>
-          <PageHeader titleKey="route.tierLightCones.title" visuallyHidden />
-          <PriorityWorkspaceHeader
-            assignedCount={Object.keys(assignments).length}
-            totalCount={items.length}
-            onReset={resetPriorities}
-          />
-        </>
-      }
-    >
+    <>
       {loading ? (
         <CatalogLoading />
       ) : error || !data ? (
@@ -87,6 +70,6 @@ export default function LightConeTierListView() {
           onChange={setPriorityState}
         />
       )}
-    </ScrollLayout>
+    </>
   );
 }

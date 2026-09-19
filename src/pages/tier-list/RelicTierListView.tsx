@@ -4,10 +4,7 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { FilterChip } from "@/components/shared/FilterChip";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { PriorityWorkspaceHeader } from "@/components/tier-list/PriorityWorkspaceHeader";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
@@ -33,9 +30,7 @@ export default function RelicTierListView() {
   const setPriorityState = useRelicPriorityStore(
     (state) => state.setPriorityState
   );
-  const resetPriorities = useRelicPriorityStore(
-    (state) => state.resetPriorities
-  );
+
   const [kind, setKind] = useState<RelicKindFilter>("all");
 
   const groups = useMemo<readonly TierGroupConfig<RelicPriorityGroup>[]>(
@@ -81,18 +76,7 @@ export default function RelicTierListView() {
   ];
 
   return (
-    <ScrollLayout
-      header={
-        <>
-          <PageHeader titleKey="route.tierRelics.title" visuallyHidden />
-          <PriorityWorkspaceHeader
-            assignedCount={Object.keys(assignments).length}
-            totalCount={items.length}
-            onReset={resetPriorities}
-          />
-        </>
-      }
-    >
+    <>
       {loading ? (
         <CatalogLoading />
       ) : error || !data ? (
@@ -121,6 +105,6 @@ export default function RelicTierListView() {
           onChange={setPriorityState}
         />
       )}
-    </ScrollLayout>
+    </>
   );
 }

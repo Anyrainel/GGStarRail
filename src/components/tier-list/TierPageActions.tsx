@@ -1,5 +1,5 @@
 import { RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -12,54 +12,47 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { useI18n } from "@/i18n/I18nContext";
 
-interface PriorityWorkspaceHeaderProps {
+interface TierPageActionsProps {
+  primary: ReactNode;
+  overflow: ReactNode;
   assignedCount: number;
   totalCount: number;
   onReset: () => void;
 }
 
-export function PriorityWorkspaceHeader({
+export function TierPageActions({
+  primary,
+  overflow,
   assignedCount,
   totalCount,
   onReset,
-}: PriorityWorkspaceHeaderProps) {
+}: TierPageActionsProps) {
   const { t } = useI18n();
   const [resetOpen, setResetOpen] = useState(false);
 
   return (
     <>
       <PageActions
-        primary={
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={assignedCount === 0}
-            onClick={() => setResetOpen(true)}
-          >
-            <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            {t("tier.priority.reset")}
-          </Button>
-        }
+        primary={primary}
         overflow={
-          <DropdownMenuItem
-            className="sm:hidden"
-            disabled={assignedCount === 0}
-            onSelect={() => setResetOpen(true)}
-          >
-            <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            {t("tier.priority.reset")}
-          </DropdownMenuItem>
+          <>
+            {overflow}
+            <DropdownMenuItem
+              disabled={assignedCount === 0}
+              onSelect={() => setResetOpen(true)}
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              {t("tier.priority.reset")}
+            </DropdownMenuItem>
+          </>
         }
       />
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="sr-only">
-          {t("tier.priority.summary", {
-            assigned: assignedCount,
-            pool: Math.max(0, totalCount - assignedCount),
-          })}
-        </p>
-      </div>
+      <p className="sr-only">
+        {t("tier.priority.summary", {
+          assigned: assignedCount,
+          pool: Math.max(0, totalCount - assignedCount),
+        })}
+      </p>
 
       <ResponsiveDialog open={resetOpen} onOpenChange={setResetOpen}>
         <ResponsiveDialogContent

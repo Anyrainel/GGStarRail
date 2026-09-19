@@ -94,8 +94,8 @@ export function TierLayout<Group extends string>({
   poolLabel,
   onSelect,
 }: TierLayoutProps<Group>) {
-  const desktop = useMediaQuery("(min-width: 1280px)");
-  const tablet = useMediaQuery("(min-width: 640px)");
+  const desktop = useMediaQuery("(min-width: 1000px)");
+  const tablet = useMediaQuery("(min-width: 560px)");
   const tiers = PRIORITY_ROWS.filter(
     (tier) => !presentation.hidden.includes(tier)
   );
@@ -154,7 +154,7 @@ export function TierLayout<Group extends string>({
             </button>
           ))}
         </div>
-        <div className="space-y-3">
+        <div className={cn("relative isolate", !tablet && "space-y-3")}>
           {tiers.map((tier) => (
             <section
               key={tier}

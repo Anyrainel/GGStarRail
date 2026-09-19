@@ -12,8 +12,8 @@ import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
 import {
-  type PageActionContent,
   PageActionContext,
+  type RegisteredPageActions,
 } from "@/components/layout/PageActions";
 import {
   LocaleChoices,
@@ -302,7 +302,10 @@ function SectionTabs() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
-  const [actions, setActions] = useState<PageActionContent | null>(null);
+  const [registeredActions, setActions] =
+    useState<RegisteredPageActions | null>(null);
+  const actions =
+    registeredActions?.pathname === pathname ? registeredActions : null;
   const showAccountImport =
     navigationSection(pathname)?.path === "/account-data";
 
