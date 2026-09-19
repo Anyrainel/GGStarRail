@@ -27,6 +27,31 @@ const catalogWait = { timeout: 15_000 };
 describe("Light Cone archive cards", () => {
   beforeEach(() => setBetaEnabled(false));
 
+  it("orders each Path by newest release patch before rarity", async () => {
+    renderCatalog(<LightConeCatalog />);
+    const region = await screen.findByRole(
+      "region",
+      { name: "Light Cone catalog results" },
+      catalogWait
+    );
+    const catalog = await loadLightCones();
+    const byPath = new Map<string, string[]>();
+    for (const card of region.querySelectorAll("[data-light-cone-id]")) {
+      const cone = catalog.byId.get(card.getAttribute("data-light-cone-id")!)!;
+      const versions = byPath.get(cone.path_id) ?? [];
+      if (cone.release_version) versions.push(cone.release_version);
+      byPath.set(cone.path_id, versions);
+    }
+    expect(byPath.size).toBeGreaterThan(6);
+    for (const versions of byPath.values()) {
+      expect(versions).toEqual(
+        [...versions].sort((left, right) =>
+          right.localeCompare(left, "en", { numeric: true })
+        )
+      );
+    }
+  });
+
   it("preserves authored effect changes at an individual Superimposition", async () => {
     const [catalog, properties] = await Promise.all([
       loadLightCones(),

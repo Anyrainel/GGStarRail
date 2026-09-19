@@ -225,6 +225,7 @@ export interface CharacterEnhancementVariant {
 
 export interface CharacterDefinition {
   id: string;
+  release_version: string | null;
   rarity: number;
   path_id: string;
   combat_type_id: string;
@@ -456,6 +457,7 @@ export interface LightConeEffect {
 
 export interface LightConeDefinition {
   id: string;
+  release_version: string | null;
   rarity: number;
   path_id: string;
   name: LocalizedText;

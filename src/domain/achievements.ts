@@ -1,4 +1,5 @@
 import { itemMatchesArchiveFilterScope } from "@/lib/archiveFilters";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 
 export const UNKNOWN_ACHIEVEMENT_VERSION = "unknown";
 
@@ -35,7 +36,7 @@ function searchTerms(query: string): string[] {
 
 function majorVersion(version: string | null): number | null {
   if (version === null) return null;
-  const match = /^(\d+)(?:\.|$)/.exec(version.trim());
+  const match = /^(\d+)(?:\.\d+)*$/.exec(version.trim());
   if (!match?.[1]) return null;
   const value = Number(match[1]);
   return Number.isSafeInteger(value) && value >= 0 ? value : null;
@@ -101,28 +102,30 @@ export function achievementMatchesFilters(
 export function groupAchievementSeries<T extends AchievementArchiveItem>(
   achievements: readonly T[]
 ): AchievementSeries<T>[] {
-  const groups = new Map<
-    string,
-    { items: T[]; seriesIds: readonly number[] }
-  >();
+  const sorted = [...achievements].sort(
+    (left, right) =>
+      compareReleaseVersionsDescending(
+        left.releaseVersion,
+        right.releaseVersion
+      ) ||
+      right.order - left.order ||
+      left.id - right.id
+  );
+  const groups: { items: T[]; seriesIds: readonly number[] }[] = [];
+  let previousKey: string | undefined;
 
-  for (const achievement of achievements) {
+  // A chain can span patches or be interrupted by another achievement's
+  // priority. Only join adjacent rows, preserving the displayed release order
+  // while retaining the full authoritative chain for completion updates.
+  for (const achievement of sorted) {
     const seriesIds = achievement.chainIds;
     const key = seriesIds.join(":");
-    const group = groups.get(key);
-    if (group) group.items.push(achievement);
-    else groups.set(key, { items: [achievement], seriesIds });
+    const group = groups.at(-1);
+    if (group && key === previousKey) group.items.push(achievement);
+    else groups.push({ items: [achievement], seriesIds: [...seriesIds] });
+    previousKey = key;
   }
-
-  return [...groups.values()].map(({ items, seriesIds }) => ({
-    items: items.sort(
-      (left, right) =>
-        left.chainIndex - right.chainIndex ||
-        right.order - left.order ||
-        left.id - right.id
-    ),
-    seriesIds: [...seriesIds],
-  }));
+  return groups;
 }
 
 export function achievementCompletionProgress(

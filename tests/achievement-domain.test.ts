@@ -3,6 +3,7 @@ import {
   type AchievementArchiveItem,
   achievementCompletionProgress,
   achievementMatchesFilters,
+  achievementVersionFilterValue,
   buildAchievementVideoSearchUrl,
   deriveAchievementVersionFilters,
   groupAchievementSeries,
@@ -151,10 +152,27 @@ describe("achievement archive filtering", () => {
       )
     ).toBe(true);
   });
+
+  it("accepts full numeric release versions and rejects partial or malformed versions", () => {
+    expect(achievementVersionFilterValue(" 4.10.2 ")).toBe("4");
+    expect(achievementVersionFilterValue("10.0")).toBe("10");
+    for (const version of [
+      null,
+      "",
+      "unknown",
+      "4.beta",
+      "4..1",
+      "4.1-preview",
+    ]) {
+      expect(achievementVersionFilterValue(version)).toBe(
+        UNKNOWN_ACHIEVEMENT_VERSION
+      );
+    }
+  });
 });
 
 describe("achievement series and completion", () => {
-  it("groups by the authoritative chain and orders visible steps by chain index", () => {
+  it("groups adjacent chain members in game-priority order while retaining completion dependencies", () => {
     const chain = [20, 10, 30];
     const grouped = groupAchievementSeries([
       achievement(10, { chainIds: chain, chainIndex: 1, order: 100 }),
@@ -164,10 +182,54 @@ describe("achievement series and completion", () => {
     ]);
 
     expect(grouped.map((group) => group.items.map((item) => item.id))).toEqual([
-      [20, 10, 30],
+      [30, 10, 20],
       [40],
     ]);
     expect(grouped[0]?.seriesIds).toEqual(chain);
+  });
+
+  it("sorts releases numerically before game priority and splits chains across intervening rows", () => {
+    const chain = [20, 10, 30];
+    const items = [
+      achievement(20, {
+        chainIds: chain,
+        chainIndex: 0,
+        releaseVersion: null,
+        order: 9999,
+      }),
+      achievement(10, {
+        chainIds: chain,
+        chainIndex: 1,
+        releaseVersion: "2.7",
+        order: 9000,
+      }),
+      achievement(40, { releaseVersion: "4.2", order: 500 }),
+      achievement(30, {
+        chainIds: chain,
+        chainIndex: 2,
+        releaseVersion: "4.10",
+        order: 1,
+      }),
+      achievement(50, { releaseVersion: "4.10.0", order: 8 }),
+      achievement(60, { releaseVersion: "4.10", order: 8 }),
+      achievement(70, { releaseVersion: "unverified", order: 9998 }),
+    ];
+    const grouped = groupAchievementSeries(items);
+    expect(
+      grouped.flatMap((group) => group.items.map((item) => item.id))
+    ).toEqual([50, 60, 30, 40, 10, 20, 70]);
+    expect(
+      grouped
+        .filter((group) => group.seriesIds.length === 3)
+        .map((group) => group.seriesIds)
+    ).toEqual([chain, chain]);
+    expect(items[0]?.id).toBe(20);
+    // Filtering out a newer chain member cannot raise its older displayed member.
+    expect(
+      groupAchievementSeries(
+        items.filter((item) => [10, 40].includes(item.id))
+      ).flatMap((group) => group.items.map((item) => item.id))
+    ).toEqual([40, 10]);
   });
 
   it("counts completion from an empty or partly completed checklist", () => {

@@ -7,6 +7,7 @@ import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
+import { loadCharacters } from "@/providers/gilore/catalog";
 
 function renderArchive(path: string = APP_PATHS.archiveCharacters) {
   return render(
@@ -81,6 +82,29 @@ describe("Character archive", () => {
       removeListener: vi.fn(),
       dispatchEvent: vi.fn(),
     }));
+  });
+
+  it("orders the roster by release patch before rarity and keeps that order across locales", async () => {
+    const user = userEvent.setup();
+    renderArchive();
+    const region = await catalogRegion();
+    const catalog = await loadCharacters();
+    const displayedIds = () =>
+      [...region.querySelectorAll("[data-character-id]")].map(
+        (row) => row.getAttribute("data-character-id")!
+      );
+    const ids = displayedIds();
+    const dated = ids
+      .map((id) => catalog.byId.get(id)!.release_version)
+      .filter((version): version is string => Boolean(version));
+    expect(new Set(dated).size).toBeGreaterThan(10);
+    expect(dated).toEqual(
+      [...dated].sort((left, right) =>
+        right.localeCompare(left, "en", { numeric: true })
+      )
+    );
+    await switchLocale(user, true);
+    expect(displayedIds()).toEqual(ids);
   });
 
   it("preserves incoming deep links through async loading and places Currency War last", async () => {

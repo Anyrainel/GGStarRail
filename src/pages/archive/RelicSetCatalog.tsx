@@ -7,6 +7,7 @@ import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { filterArchiveItems } from "@/lib/archiveFilters";
 import { formatGameText } from "@/lib/gameText";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 import {
   getLocalizedValue,
   loadRelicPieces,
@@ -55,9 +56,10 @@ export function RelicSetCatalog() {
         // IDs only break ties within the same patch, keeping bilingual order equal.
         .sort(
           (left, right) =>
-            right.release_version.localeCompare(left.release_version, "en", {
-              numeric: true,
-            }) || Number(right.id) - Number(left.id)
+            compareReleaseVersionsDescending(
+              left.release_version,
+              right.release_version
+            ) || Number(right.id) - Number(left.id)
         )
     );
   }, [kinds, query, resource.data]);

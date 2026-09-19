@@ -39,6 +39,14 @@ test("current published catalog and capture values agree", () => {
   assert.ok(capture.snapshot.characters.some((row) => row.gameId === 1508));
 });
 
+test("unobserved character and Light Cone release versions remain nullable", () => {
+  const changed = structuredClone(documents);
+  for (const member of ["characters", "light_cones"])
+    for (const channel of Object.values(changed[member]))
+      for (const entry of channel) entry.release_version = null;
+  validateCurrentReference(changed, capture, manifest);
+});
+
 for (const [label, mutate] of [
   [
     "character path",
@@ -135,6 +143,27 @@ for (const [label, mutate, expected] of [
 }
 
 for (const [label, mutate, expected] of [
+  [
+    "missing character release version",
+    (data) => {
+      delete data.characters[0].release_version;
+    },
+    /release_version/,
+  ],
+  [
+    "invalid character release version",
+    (data) => {
+      data.characters[0].release_version = "OSPRODWin4.5.0";
+    },
+    /release_version/,
+  ],
+  [
+    "invalid Light Cone release version",
+    (data) => {
+      data.light_cones[0].release_version = "unknown";
+    },
+    /release_version/,
+  ],
   [
     "text provenance",
     (data) => {

@@ -18,6 +18,7 @@ import {
 } from "@/lib/archiveFilters";
 import { characterCatalogName } from "@/lib/catalogPresentation";
 import { formatGameText } from "@/lib/gameText";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
@@ -111,17 +112,14 @@ export function CharacterCatalog() {
           (!rarities.size || rarities.has(character.rarity))
       ).sort(
         (left, right) =>
+          compareReleaseVersionsDescending(
+            left.release_version,
+            right.release_version
+          ) ||
           right.rarity - left.rarity ||
-          characterCatalogName(
-            left,
-            locale,
-            TRAILBLAZER_TERMS[locale]
-          ).localeCompare(
-            characterCatalogName(right, locale, TRAILBLAZER_TERMS[locale]),
-            locale
-          )
+          Number(right.id) - Number(left.id)
       ),
-    [resource.data, query, searchIndex, paths, combatTypes, rarities, locale]
+    [resource.data, query, searchIndex, paths, combatTypes, rarities]
   );
 
   useEffect(() => {

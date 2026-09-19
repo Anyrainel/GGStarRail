@@ -115,6 +115,17 @@ fields are removed. Currency War special effects use a semantic `kind` instead o
 source table. Stable entity IDs and artwork paths remain functional join/asset
 references and are never rendered as archive labels.
 
+Characters, Light Cones, and achievements carry a nullable `release_version`.
+GIlore derives it from the first matching production datamine snapshot in its
+checked-in release history, with reviewed availability corrections for preloaded
+characters. Historical snapshot revisions, checksums, and correction evidence
+remain producer-only. Unknown or unobserved records remain null. This patch
+metadata is separate from the existing released/beta visibility gate and does
+not claim an exact calendar or banner date. Archive lists sort known patches
+newest first. Achievement categories retain game priority, with achievements
+sorted by descending patch and then game priority; version chips show the exact
+patch and filters group by major version.
+
 Each `members[name]` has `released` and `beta`, each containing `stats`, `en`,
 and `zh` descriptors. A descriptor is `{path, sha256, byte_count}`; its checksum
 and byte count cover the actual file bytes, including gzip compression.

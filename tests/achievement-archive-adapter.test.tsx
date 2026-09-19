@@ -64,7 +64,7 @@ afterEach(() => {
 
 describe("achievement archive GIlore adapter", () => {
   beforeEach(() => setBetaEnabled(true));
-  it("maps the complete real bilingual 1.2 catalogs without changing visibility", async () => {
+  it("maps the complete real bilingual catalogs with release versions and visibility", async () => {
     const [english, chinese] = await Promise.all([
       loadRealViewData("en", "[dynamic in-game text]", "Trailblazer"),
       loadRealViewData("zh-CN", "【游戏内动态文本】", "开拓者"),
@@ -74,6 +74,40 @@ describe("achievement archive GIlore adapter", () => {
     expect(english.viewData.achievements).toHaveLength(1921);
     expect(chinese.viewData.categories).toHaveLength(9);
     expect(chinese.viewData.achievements).toHaveLength(1921);
+    expect(
+      english.viewData.achievements.every((achievement) =>
+        /^\d+\.\d+$/.test(achievement.releaseVersion ?? "")
+      )
+    ).toBe(true);
+    expect(
+      new Set(
+        english.viewData.achievements.map(
+          (achievement) => achievement.releaseVersion
+        )
+      ).size
+    ).toBe(30);
+    expect(
+      english.viewData.achievements.map((achievement) => [
+        achievement.id,
+        achievement.releaseVersion,
+      ])
+    ).toEqual(
+      english.rawAchievements.map((achievement) => [
+        achievement.id,
+        achievement.release_version,
+      ])
+    );
+    expect(
+      chinese.viewData.achievements.map((achievement) => [
+        achievement.id,
+        achievement.releaseVersion,
+      ])
+    ).toEqual(
+      english.viewData.achievements.map((achievement) => [
+        achievement.id,
+        achievement.releaseVersion,
+      ])
+    );
     expect(
       english.viewData.categories.find((category) => category.id === 1)?.name
     ).toBe("I, Trailblazer");

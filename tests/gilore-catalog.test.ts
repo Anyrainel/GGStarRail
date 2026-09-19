@@ -108,10 +108,17 @@ describe("lazy GIlore catalog provider", () => {
       chain_index: 0,
       previous_id: null,
       next_ids: [],
-      release_version: null,
+      release_version: "1.0",
       reward: { item_id: 1, count: 20 },
     });
     expect(achievementIds.has(4_010_101)).toBe(true);
+    expect(
+      new Set(
+        achievements.values
+          .filter((achievement) => achievement.release_version !== null)
+          .map((achievement) => achievement.release_version!.split(".")[0])
+      )
+    ).toEqual(new Set(["1", "2", "3", "4"]));
     const hidden = achievements.values.find(
       (achievement) => achievement.visibility === "hidden_description"
     );
@@ -126,6 +133,15 @@ describe("lazy GIlore catalog provider", () => {
     expect(getLocalizedValue(march?.name, "en")).toBe("March 7th");
     expect(getLocalizedValue(march?.name, "zh-CN")).toBe("三月七");
     expect(march?.path_id).toBe("Knight");
+    expect(march?.release_version).toBe("1.0");
+    // Tutorial/preloaded records must use playable availability, not client presence.
+    expect(characters.byId.get("1005")?.release_version).toBe("1.2");
+    expect(characters.byId.get("1006")?.release_version).toBe("1.1");
+    expect(characters.byId.get("1203")?.release_version).toBe("1.1");
+    expect(characters.byId.get("1224")?.release_version).toBe("2.4");
+    expect(characters.byId.get("8005")?.release_version).toBe("2.2");
+    expect(lightCones.byId.get("22000")?.release_version).toBe("1.1");
+    expect(lightCones.byId.get("22002")?.release_version).toBe("2.2");
     expect(propertyTables.pathById.get("Knight")).toBeDefined();
     expect(propertyTables.combatTypeById.get("Ice")).toBeDefined();
     const stanceBreak = propertyTables.propertyById.get(

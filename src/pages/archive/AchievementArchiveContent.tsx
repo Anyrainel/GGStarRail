@@ -12,6 +12,7 @@ import {
   type AchievementVersionFilter,
   achievementCompletionProgress,
   achievementMatchesFilters,
+  achievementVersionFilterValue,
   buildAchievementVideoSearchUrl,
   deriveAchievementVersionFilters,
   groupAchievementSeries,
@@ -320,9 +321,11 @@ function AchievementSeriesCard({
                     >
                       {achievement.name}
                     </h3>
-                    {achievement.releaseVersion && (
+                    {achievementVersionFilterValue(
+                      achievement.releaseVersion
+                    ) !== UNKNOWN_ACHIEVEMENT_VERSION && (
                       <Badge variant="secondary" className="px-1.5 py-0">
-                        v{achievement.releaseVersion}
+                        v{achievement.releaseVersion?.trim()}
                       </Badge>
                     )}
                   </div>
@@ -456,9 +459,7 @@ export function AchievementArchiveContent({
   );
   const achievementsByCategory = useMemo(() => {
     const result = new Map<number, AchievementArchiveItemView[]>();
-    for (const achievement of [...achievementInput].sort(
-      (left, right) => right.order - left.order || left.id - right.id
-    )) {
+    for (const achievement of achievementInput) {
       const existing = result.get(achievement.categoryId);
       if (existing) existing.push(achievement);
       else result.set(achievement.categoryId, [achievement]);
@@ -524,24 +525,10 @@ export function AchievementArchiveContent({
   );
   const visibleSeries = useMemo(() => {
     if (selectedCategoryId === null) return [];
-    const matchingIds = new Set(
-      (matchingAchievementsByCategory.get(selectedCategoryId) ?? []).map(
-        (achievement) => achievement.id
-      )
-    );
     return groupAchievementSeries(
-      achievementsByCategory.get(selectedCategoryId) ?? []
-    ).flatMap(({ items, seriesIds }) => {
-      const matching = items.filter((achievement) =>
-        matchingIds.has(achievement.id)
-      );
-      return matching.length > 0 ? [{ series: matching, seriesIds }] : [];
-    });
-  }, [
-    achievementsByCategory,
-    matchingAchievementsByCategory,
-    selectedCategoryId,
-  ]);
+      matchingAchievementsByCategory.get(selectedCategoryId) ?? []
+    ).map(({ items, seriesIds }) => ({ series: items, seriesIds }));
+  }, [matchingAchievementsByCategory, selectedCategoryId]);
 
   const handleCategorySelect = useCallback(
     (categoryId: number) => {
@@ -624,7 +611,7 @@ export function AchievementArchiveContent({
             <div className="min-w-0 space-y-1.5">
               {visibleSeries.map(({ series, seriesIds }) => (
                 <AchievementSeriesCard
-                  key={seriesIds.join(":")}
+                  key={series[0]!.id}
                   series={series}
                   seriesIds={seriesIds}
                   completedIds={liveCompletedIds}

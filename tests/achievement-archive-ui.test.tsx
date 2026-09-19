@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
@@ -202,6 +202,89 @@ describe("AchievementArchiveContent completion coverage", () => {
 });
 
 describe("AchievementArchiveContent visibility and filtering", () => {
+  it("shows release badges and major-version chips with newest releases first inside in-game category order", async () => {
+    const user = userEvent.setup();
+    setDesktopLayout(true);
+    const item = (
+      id: number,
+      name: string,
+      releaseVersion: string | null,
+      order: number
+    ): AchievementArchiveItemView => ({
+      ...ACHIEVEMENTS[0]!,
+      id,
+      name,
+      releaseVersion,
+      order,
+      chainIds: [id],
+      chainIndex: 0,
+    });
+    render(
+      <I18nProvider>
+        <AchievementArchiveContent
+          categories={[...CATEGORIES].reverse()}
+          achievements={[
+            {
+              ...item(301, "Older chain member", "1.0", 999),
+              chainIds: [301, 303],
+            },
+            item(302, "Middle patch", "4.2", 500),
+            {
+              ...item(303, "Newest chain member", "4.10.1", 1),
+              chainIds: [301, 303],
+              chainIndex: 1,
+            },
+            item(304, "High-priority same patch", "4.10.1", 8),
+            item(305, "Unknown release", null, 9999),
+            { ...ACHIEVEMENTS[2]!, releaseVersion: "10.0" },
+          ]}
+        />
+      </I18nProvider>
+    );
+
+    await screen.findByRole("article", { name: "Newest chain member" });
+    const categories = within(
+      screen.getByRole("complementary", { name: "Achievement category list" })
+    ).getAllByRole("button");
+    expect(categories[0]).toHaveTextContent("The Rail Unto the Stars");
+    expect(categories[1]).toHaveTextContent("Fathom the Unfathomable");
+    expect(
+      screen
+        .getAllByRole("article")
+        .map((row) => row.getAttribute("aria-label"))
+    ).toEqual([
+      "High-priority same patch",
+      "Newest chain member",
+      "Middle patch",
+      "Older chain member",
+      "Unknown release",
+    ]);
+    expect(
+      within(
+        screen.getByRole("article", { name: "Newest chain member" })
+      ).getByText("v4.10.1")
+    ).toBeVisible();
+    for (const version of ["v1.x", "v4.x", "v10.x"])
+      expect(screen.getByRole("button", { name: version })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "v4.x" }));
+    expect(
+      screen
+        .getAllByRole("article")
+        .map((row) => row.getAttribute("aria-label"))
+    ).toEqual([
+      "High-priority same patch",
+      "Newest chain member",
+      "Middle patch",
+    ]);
+    await user.click(
+      screen.getByRole("button", { name: "Mark Newest chain member finished" })
+    );
+    expect(
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([301, 303]);
+  });
+
   it("omits unknown-version clutter and internal IDs", async () => {
     setDesktopLayout(true);
     useWorkspaceStore.setState({ account: accountWithKnownCompletion([]) });
@@ -432,5 +515,11 @@ describe("AchievementArchiveContent at 390px", () => {
     expect(screen.getByRole("button", { name: "成就分类" })).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "搜索成就" })).toBeVisible();
     expect(screen.getByRole("group", { name: "成就筛选" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "v3.x" })).toBeVisible();
+    expect(
+      within(screen.getByRole("article", { name: "First Footstep" })).getByText(
+        "v3.4"
+      )
+    ).toBeVisible();
   });
 });

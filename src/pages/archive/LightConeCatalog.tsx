@@ -10,6 +10,7 @@ import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
 import { filterArchiveItems } from "@/lib/archiveFilters";
 import { formatGameText } from "@/lib/gameText";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
@@ -64,13 +65,14 @@ export function LightConeCatalog() {
         (rarities.size === 0 || rarities.has(cone.rarity))
     ).sort(
       (left, right) =>
+        compareReleaseVersionsDescending(
+          left.release_version,
+          right.release_version
+        ) ||
         right.rarity - left.rarity ||
-        formatGameText(getLocalizedValue(left.name, locale)).localeCompare(
-          formatGameText(getLocalizedValue(right.name, locale)),
-          locale
-        )
+        Number(right.id) - Number(left.id)
     );
-  }, [locale, paths, query, rarities, resource.data]);
+  }, [paths, query, rarities, resource.data]);
 
   if (resource.loading) return <CatalogLoading />;
   if (resource.error) return <CatalogFailure error={resource.error} />;

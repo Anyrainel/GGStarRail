@@ -405,6 +405,18 @@
           "title": "Id",
           "type": "string"
         },
+        "release_version": {
+          "anyOf": [
+            {
+              "pattern": "^[1-9]\\d*\\.\\d+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Release Version"
+        },
         "rarity": {
           "title": "Rarity",
           "type": "integer"
@@ -506,6 +518,7 @@
       },
       "required": [
         "id",
+        "release_version",
         "rarity",
         "path_id",
         "combat_type_id",
@@ -2378,6 +2391,18 @@
           "title": "Id",
           "type": "string"
         },
+        "release_version": {
+          "anyOf": [
+            {
+              "pattern": "^[1-9]\\d*\\.\\d+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Release Version"
+        },
         "rarity": {
           "title": "Rarity",
           "type": "integer"
@@ -2420,6 +2445,7 @@
       },
       "required": [
         "id",
+        "release_version",
         "rarity",
         "path_id",
         "name",
