@@ -1,5 +1,5 @@
-import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
 import { getLocalizedValue } from "@/providers/gilore/catalog";
@@ -40,12 +40,17 @@ export function RelicSetCard({
     >
       <div className="bg-gradient-to-b from-accent/40 to-transparent px-4 pb-3 pt-4">
         <div className="flex items-center gap-3">
-          <AssetImage
+          <ItemIcon
             kind="relic-set"
             id={relicSet.id}
             sourcePath={relicSet.icon_path}
-            alt=""
-            className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16"
+            alt={name}
+            rarity={
+              pieces.length
+                ? Math.max(...pieces.map((piece) => piece.rarity))
+                : null
+            }
+            size="lg"
           />
           <div className="min-w-0">
             <h2 className="text-lg font-semibold leading-tight">{name}</h2>
@@ -60,14 +65,15 @@ export function RelicSetCard({
               getLocalizedValue(piece.name, locale)
             );
             return (
-              <AssetImage
+              <ItemIcon
                 key={slot}
                 kind="relic-piece"
                 id={piece.id}
                 sourcePath={piece.icon_path}
                 alt={pieceName}
                 title={pieceName}
-                className="h-10 w-10 shrink-0 object-contain drop-shadow-sm sm:h-11 sm:w-11"
+                rarity={piece.rarity}
+                size="xs"
               />
             );
           })}

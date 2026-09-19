@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { AssetImage } from "@/components/shared/AssetImage";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -87,12 +86,13 @@ function PreviewCard({
     return (
       <article className="space-y-3 rounded-xl border border-border bg-card/60 p-4">
         <div className="flex items-center gap-3">
-          <AssetImage
+          <ItemIcon
             kind={config.asset}
             id={entry.id}
             sourcePath={entry.image_path}
             alt={name}
-            className="h-11 w-11 object-contain"
+            rarity={entry.rarity}
+            size="sm"
           />
           <div>
             <h3 className="font-semibold">{name}</h3>

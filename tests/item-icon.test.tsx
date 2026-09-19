@@ -1,8 +1,50 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { ItemIcon } from "@/components/shared/ItemIcon";
+import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 
 describe("ItemIcon", () => {
+  it.each([
+    ["character", 7 / 8],
+    ["light-cone", 11 / 16],
+    ["relic-piece", 1],
+    ["relic-set", 1],
+  ] as const)("preserves %s card proportions at every size, including the level strip", (kind, ratio) => {
+    for (const size of [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl",
+    ] satisfies ItemIconSize[]) {
+      const { container, unmount } = render(
+        <ItemIcon
+          kind={kind}
+          id="test"
+          alt="Item"
+          rarity={5}
+          size={size}
+          level="Lv. 80"
+          badge={2}
+          locked
+        />
+      );
+      const icon = container.querySelector<HTMLElement>(
+        "[data-item-icon-kind]"
+      )!;
+      const artwork = container.querySelector<HTMLElement>(
+        "[data-item-artwork]"
+      )!;
+      const width = Number.parseFloat(artwork.style.width);
+      const height = Number.parseFloat(artwork.style.height);
+      expect(width / height).toBeCloseTo(ratio);
+      expect(Number.parseFloat(icon.style.width)).toBe(width);
+      expect(Number.parseFloat(icon.style.height)).toBeGreaterThan(height);
+      expect(artwork.querySelector("[data-item-badge]")).not.toBeNull();
+      expect(artwork.querySelector("[data-item-lock]")).not.toBeNull();
+      unmount();
+    }
+  });
+
   it.each([
     [5, "linear-gradient(180deg, #a35d55, #d0aa6e)"],
     [4, "linear-gradient(180deg, #3f4064, #9c65d7)"],

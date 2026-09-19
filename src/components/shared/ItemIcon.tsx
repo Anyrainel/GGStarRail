@@ -87,6 +87,7 @@ export interface ItemIconProps
   locked?: boolean | null;
   /** Optional Path or Combat Type marker when no lock marker takes precedence. */
   cornerAsset?: CornerAsset;
+  /** Artwork width preset; height follows the asset kind's card proportions. */
   size?: ItemIconSize;
   imageClassName?: string;
 }
@@ -138,7 +139,10 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
     const config = ICON_CONFIG[size];
     const showLevel = level !== undefined;
     const showStatus = locked === true || locked === null;
-    const totalHeight = config.icon + (showLevel ? config.levelHeight : 0);
+    const artworkHeight =
+      config.icon *
+      (kind === "character" ? 8 / 7 : kind === "light-cone" ? 16 / 11 : 1);
+    const totalHeight = artworkHeight + (showLevel ? config.levelHeight : 0);
 
     const artwork = (
       <div
@@ -147,7 +151,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
         style={{
           backgroundImage: rarityBackground(rarity),
           width: config.icon,
-          height: config.icon,
+          height: artworkHeight,
           borderTopLeftRadius:
             badge === undefined ? config.radius : config.cornerRadius,
           borderTopRightRadius:

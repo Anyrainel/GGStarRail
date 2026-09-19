@@ -8,6 +8,7 @@ import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/config/navigation";
@@ -359,12 +360,13 @@ export function CurrencyWarCharacterLinks({
             to={`${APP_PATHS.archiveCharacters}?id=${character.id}`}
             className="flex items-center gap-2 rounded-lg border border-border bg-background/60 py-1.5 pl-1.5 pr-3 text-xs font-medium hover:border-primary/60"
           >
-            <AssetImage
+            <ItemIcon
               kind="character"
               id={character.id}
               sourcePath={character.icon_path}
               alt=""
-              className="h-9 w-9 rounded-md object-cover"
+              rarity={character.rarity}
+              size="xs"
             />
             {characterCatalogName(character, locale, t("terms.trailblazer"))}
           </Link>
@@ -452,12 +454,14 @@ function CurrencyWarDetail({
       )}
     >
       <div className="flex items-start gap-4">
-        <AssetImage
+        <ItemIcon
           kind={config.asset}
           id={record.id}
           sourcePath={record.icon_path}
           alt=""
-          className="h-16 w-16 shrink-0 rounded-xl bg-secondary/60 object-contain p-1.5"
+          rarity={null}
+          size="lg"
+          imageClassName="p-1.5"
         />
         <div className="min-w-0 space-y-2">
           <h2 className="break-words text-lg font-semibold">
