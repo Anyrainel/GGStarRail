@@ -3,9 +3,7 @@ import { setBetaEnabled } from "@/data/betaState";
 import {
   getLocalizedValue,
   HSR_REFERENCE_MANIFEST,
-  isCharacterDefinitionV1_1,
-  isProgressionTablesV1_1,
-  isPropertyDefinitionV1_1,
+  HSR_REFERENCE_REVISION,
   loadAchievementCategories,
   loadAchievementIds,
   loadAchievements,
@@ -17,7 +15,15 @@ import {
   loadRelicSets,
 } from "@/providers/gilore/catalog";
 import { loadCurrencyWarCatalog } from "@/providers/gilore/currencyWar";
-import type { CharacterDefinitionV1_1 } from "@/providers/gilore/types";
+
+function payloadKeys(value: unknown): string[] {
+  if (value === null || typeof value !== "object") return [];
+  if (Array.isArray(value)) return value.flatMap(payloadKeys);
+  return Object.entries(value).flatMap(([key, child]) => [
+    key,
+    ...payloadKeys(child),
+  ]);
+}
 
 describe("lazy GIlore catalog provider", () => {
   // Coverage of the complete normalized snapshot, including opt-in records.
@@ -41,9 +47,8 @@ describe("lazy GIlore catalog provider", () => {
       for (const entry of collection) {
         expect(entry.name.en.value).not.toBe("");
         expect(entry.name["zh-CN"].value).not.toBe("");
-        expect(entry.name.en.provenance.source_revision).toBe(
-          HSR_REFERENCE_MANIFEST.source.revision
-        );
+        expect(Object.keys(entry.name.en)).toEqual(["value"]);
+        expect(Object.keys(entry.name["zh-CN"])).toEqual(["value"]);
       }
     }
   });
@@ -68,10 +73,10 @@ describe("lazy GIlore catalog provider", () => {
       loadPropertyTables(),
     ]);
 
-    expect(HSR_REFERENCE_MANIFEST.source.revision).toBe(
+    expect(HSR_REFERENCE_REVISION).toBe(
       "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
     );
-    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("1.3.0");
+    expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("2.0.0");
     expect(achievementCategories.values).toHaveLength(9);
     expect(achievements.values).toHaveLength(1921);
     expect(achievementIds.size).toBe(1921);
@@ -83,11 +88,11 @@ describe("lazy GIlore catalog provider", () => {
     expect(propertyTables.paths).toHaveLength(9);
     expect(propertyTables.combatTypes).toHaveLength(7);
     expect(propertyTables.relicSlots).toHaveLength(6);
-    expect(achievementCategories.schemaVersion).toBe("1.3.0");
-    expect(achievements.schemaVersion).toBe("1.3.0");
-    expect(characters.schemaVersion).toBe("1.3.0");
-    expect(lightCones.schemaVersion).toBe("1.3.0");
-    expect(propertyTables.schemaVersion).toBe("1.3.0");
+    expect(achievementCategories.schemaVersion).toBe("2.0.0");
+    expect(achievements.schemaVersion).toBe("2.0.0");
+    expect(characters.schemaVersion).toBe("2.0.0");
+    expect(lightCones.schemaVersion).toBe("2.0.0");
+    expect(propertyTables.schemaVersion).toBe("2.0.0");
 
     const trailblazerCategory = achievementCategories.byId.get(1);
     expect(getLocalizedValue(trailblazerCategory?.name, "en")).toBe(
@@ -127,19 +132,9 @@ describe("lazy GIlore catalog provider", () => {
       "StanceBreakAddedRatio"
     );
     expect(stanceBreak?.icon_path).toBe("0");
-    expect(stanceBreak && isPropertyDefinitionV1_1(stanceBreak)).toBe(true);
-    if (!stanceBreak || !isPropertyDefinitionV1_1(stanceBreak)) {
-      throw new Error("expected schema 1.1 property definition");
-    }
-    expect(stanceBreak.usable_icon_path).toBeNull();
+    expect(stanceBreak?.usable_icon_path).toBeNull();
 
-    const expandedCharacters: CharacterDefinitionV1_1[] = [];
-    for (const character of characters.values) {
-      if (!isCharacterDefinitionV1_1(character)) {
-        throw new Error("expected schema 1.1 character definitions");
-      }
-      expandedCharacters.push(character);
-    }
+    const expandedCharacters = characters.values;
 
     const skills = expandedCharacters.flatMap((character) => character.skills);
     const ranks = expandedCharacters.flatMap((character) => character.ranks);
@@ -154,11 +149,6 @@ describe("lazy GIlore catalog provider", () => {
     expect(ranks).toHaveLength(582);
     expect(traces).toHaveLength(1_771);
     expect(traces.flatMap((trace) => trace.levels)).toHaveLength(5_018);
-    expect(
-      skills.filter(
-        (skill) => skill.display_description_source === "description"
-      )
-    ).toHaveLength(96);
     expect(servants).toHaveLength(8);
     expect(new Set(servants.map((servant) => servant.id)).size).toBe(7);
     expect(
@@ -191,13 +181,11 @@ describe("lazy GIlore catalog provider", () => {
       .flatMap((servant) => servant.skills)
       .find((skill) => skill.id === "1140710");
     expect(servantDescriptionFallback?.description).not.toBeNull();
-    expect(
-      servantDescriptionFallback?.description.en.provenance.source_id
-    ).toBe("turn_based_game_data");
-    expect(
-      servantDescriptionFallback?.description.en.provenance.source_key
-    ).toBe(
-      servantDescriptionFallback?.simple_description?.en.provenance.source_key
+    expect(servantDescriptionFallback?.description.en.value).toBe(
+      servantDescriptionFallback?.simple_description?.en.value
+    );
+    expect(servantDescriptionFallback?.description["zh-CN"].value).toBe(
+      servantDescriptionFallback?.simple_description?.["zh-CN"].value
     );
 
     expect(
@@ -214,11 +202,8 @@ describe("lazy GIlore catalog provider", () => {
     ).toBe(true);
   });
 
-  it("exposes complete progression lazily", async () => {
+  it("exposes calculator affixes and scoring without archive EXP or cost tables", async () => {
     const progression = await loadProgression();
-    if (!isProgressionTablesV1_1(progression)) {
-      throw new Error("expected schema 1.1 progression tables");
-    }
     expect(progression.relic_main_affixes).toHaveLength(117);
     expect(progression.relic_sub_affixes).toHaveLength(48);
     expect(progression.relic_scoring.main_affix_base_values).toHaveLength(20);
@@ -229,27 +214,86 @@ describe("lazy GIlore catalog provider", () => {
     expect(progression.relic_scoring.sub_affix_character_weights).toHaveLength(
       97
     );
-    expect(progression.items).toHaveLength(242);
-    expect(
-      progression.items.filter((item) => item.source_table === "ItemConfig")
-    ).toHaveLength(150);
-    expect(
-      progression.items.filter(
-        (item) => item.source_table === "ItemConfigAvatarRank"
-      )
-    ).toHaveLength(92);
-    expect(
-      progression.items.filter(
-        (item) =>
-          item.character_experience !== null ||
-          item.light_cone_experience !== null
-      )
-    ).toHaveLength(6);
-    expect(getLocalizedValue(progression.items[0].name, "en")).toBe("Credit");
+    expect(Object.keys(progression).sort()).toEqual([
+      "relic_main_affixes",
+      "relic_scoring",
+      "relic_sub_affixes",
+    ]);
+  });
+
+  it("keeps player content and stat scaling while omitting technical source and material payloads", async () => {
+    const [
+      characters,
+      lightCones,
+      relicSets,
+      relicPieces,
+      properties,
+      progression,
+      mode,
+      categories,
+      achievements,
+    ] = await Promise.all([
+      loadCharacters(),
+      loadLightCones(),
+      loadRelicSets(),
+      loadRelicPieces(),
+      loadPropertyTables(),
+      loadProgression(),
+      loadCurrencyWarCatalog(),
+      loadAchievementCategories(),
+      loadAchievements(),
+    ]);
+    const keys = new Set(
+      payloadKeys([
+        characters.values,
+        lightCones.values,
+        relicSets.values,
+        relicPieces.values,
+        properties.properties,
+        progression,
+        mode,
+        categories.values,
+        achievements.values,
+      ])
+    );
+    for (const obsolete of [
+      "provenance",
+      "source_table",
+      "source_id",
+      "source_revision",
+      "source_path",
+      "source_key",
+      "source_reference",
+      "source_url",
+      "source_version",
+      "costs",
+      "promotions",
+      "experience_type",
+      "rank_up_material_ids",
+      "ability_name",
+    ])
+      expect(keys.has(obsolete), obsolete).toBe(false);
+    const arrows = lightCones.byId.get("20000");
+    expect(arrows?.stat_scaling).toHaveLength(7);
+    expect(arrows?.stat_scaling.at(-1)).toMatchObject({
+      ascension: 6,
+      max_level: 80,
+      stats: { hp: { base_value: 391.68, level_add: 5.76 } },
+    });
+    expect(characters.byId.get("1001")?.stat_scaling.at(-1)?.max_level).toBe(
+      80
+    );
+    expect(Object.keys(HSR_REFERENCE_MANIFEST).sort()).toEqual([
+      "bundle_id",
+      "counts",
+      "game_id",
+      "locales",
+      "schema_version",
+    ]);
   });
 });
 
-it("includes collaboration characters in the released catalog with progression", async () => {
+it("includes collaboration characters in the released catalog with stat scaling and complete combat descriptions", async () => {
   setBetaEnabled(false);
   const catalog = await loadCharacters();
   for (const id of ["1014", "1015", "1508", "1509"]) {
@@ -258,9 +302,8 @@ it("includes collaboration characters in the released catalog with progression",
       character,
       `missing released collaboration character ${id}`
     ).toBeDefined();
-    if (!character || !isCharacterDefinitionV1_1(character))
-      throw new Error(`Incomplete character ${id}`);
-    expect(character.promotions).toHaveLength(7);
+    if (!character) throw new Error(`Incomplete character ${id}`);
+    expect(character.stat_scaling).toHaveLength(7);
     expect(character.ranks).toHaveLength(6);
     expect(character.skills.length).toBeGreaterThan(0);
     expect(character.traces.length).toBeGreaterThan(0);

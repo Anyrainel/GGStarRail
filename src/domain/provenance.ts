@@ -22,6 +22,7 @@ export const BundleSchemaVersionSchema = z.enum([
   "1.1.0",
   "1.2.0",
   "1.3.0",
+  "2.0.0",
 ]);
 
 const CommonCountsShape = {
@@ -175,15 +176,21 @@ export const DataBundleManifestSchema = z.discriminatedUnion("schema_version", [
 export type DataBundleManifest = z.infer<typeof DataBundleManifestSchema>;
 // The website has its own hashed split files. Raw export file digests must not
 // be presented as descriptors for those different runtime assets.
-export const RuntimeReferenceManifestSchema = z.discriminatedUnion(
-  "schema_version",
-  [
-    DataBundleManifestSchema.options[0].omit({ files: true }),
-    DataBundleManifestSchema.options[1].omit({ files: true }),
-    DataBundleManifestSchema.options[2].omit({ files: true }),
-    DataBundleManifestSchema.options[3].omit({ files: true }),
-  ]
-);
+const V2CountsSchema = V1_3CountsSchema.omit({
+  progression_items: true,
+  character_experience_tables: true,
+  light_cone_experience_tables: true,
+  relic_experience_tables: true,
+});
+export const RuntimeReferenceManifestSchema = z
+  .object({
+    bundle_id: z.literal("ggstarrail-reference"),
+    game_id: z.literal("honkai_star_rail"),
+    schema_version: z.literal("2.0.0"),
+    locales: z.tuple([z.literal("en"), z.literal("zh-CN")]),
+    counts: V2CountsSchema,
+  })
+  .strict();
 export type RuntimeReferenceManifest = z.infer<
   typeof RuntimeReferenceManifestSchema
 >;

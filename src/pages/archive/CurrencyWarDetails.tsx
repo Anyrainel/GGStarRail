@@ -20,12 +20,7 @@ export function currencyWarSearchText(value: unknown): string {
       `${text.en.value} ${text["zh-CN"].value}`
     ).toLocaleLowerCase();
   }
-  return Object.entries(record)
-    .filter(([key]) => key !== "provenance")
-    .map(([key, child]) =>
-      key === "id" ? String(child) : currencyWarSearchText(child)
-    )
-    .join(" ");
+  return Object.values(record).map(currencyWarSearchText).join(" ");
 }
 
 export function CurrencyWarText({

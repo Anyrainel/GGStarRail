@@ -1,111 +1,51 @@
 import manifestJson from "@/data/game/manifest.json";
 import { loadGameMember } from "@/data/gameDataLoader";
+import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
 import { loadCatalogAssetLookup } from "./assets";
 import type {
-  AchievementCatalog,
-  AchievementCategoryCatalog,
   AchievementCategoryDefinition,
   AchievementDefinition,
-  BundleSchemaVersion,
-  CharacterCatalog,
   CharacterDefinition,
-  CharacterDefinitionV1,
-  CharacterDefinitionV1_1,
-  CharacterDefinitionV1_3,
-  CharacterSkill,
-  CharacterSkillV1_1,
-  CombatTypeDefinition,
   DefinitionCatalog,
-  LightConeCatalog,
   LightConeDefinition,
-  LightConeDefinitionV1,
-  LightConeDefinitionV1_1,
   LocalizedText,
   MemberDocument,
-  PathDefinition,
   ProgressionTables,
-  ProgressionTablesV1,
-  ProgressionTablesV1_1,
   PropertyCatalog,
-  PropertyCatalogV1,
-  PropertyCatalogV1_1,
-  PropertyDefinition,
-  PropertyDefinitionV1,
-  PropertyDefinitionV1_1,
-  PropertyTablesV1,
-  PropertyTablesV1_1,
-  ReferenceLocale,
+  PropertyTables,
   RelicPieceDefinition,
   RelicSetDefinition,
-  RelicSlotDefinition,
 } from "./types";
 
 export const HSR_REFERENCE_MANIFEST = RuntimeReferenceManifestSchema.parse(
   manifestJson.reference_manifest
 );
+export const HSR_REFERENCE_REVISION = manifestJson.source_revision;
 
-function createDefinitionCatalog<
-  T extends { id: string | number },
-  TSchemaVersion extends BundleSchemaVersion,
->(
-  values: readonly T[],
-  schemaVersion: TSchemaVersion
-): DefinitionCatalog<T, TSchemaVersion> {
-  const byId = new Map<T["id"], T>();
-  for (const entry of values) byId.set(entry.id, entry);
-  return {
-    schemaVersion,
-    values,
-    byId,
-  };
-}
-
-function assertMemberSchema(
-  document: { schema_version: unknown },
-  collection: string
-): void {
-  if (document.schema_version !== HSR_REFERENCE_MANIFEST.schema_version) {
-    throw new Error(
-      `${collection} schema ${String(document.schema_version)} does not match manifest schema ${HSR_REFERENCE_MANIFEST.schema_version}`
-    );
+async function loadMember<T>(collection: string): Promise<T> {
+  const [document] = await Promise.all([
+    loadGameMember(collection) as Promise<MemberDocument<T, "2.0.0">>,
+    loadCatalogAssetLookup(),
+  ]);
+  if (
+    document.schema_version !== HSR_REFERENCE_MANIFEST.schema_version ||
+    document.collection !== collection
+  ) {
+    throw new Error(`Invalid ${collection} catalog schema`);
   }
+  return document.value;
 }
 
-export function isCharacterDefinitionV1_1(
-  character: CharacterDefinition
-): character is CharacterDefinitionV1_1 {
-  return "servants" in character;
-}
-
-export function isCharacterDefinitionV1_3(
-  character: CharacterDefinition
-): character is CharacterDefinitionV1_3 {
-  return "currency_war" in character;
-}
-
-export function isCharacterSkillV1_1(
-  skill: CharacterSkill
-): skill is CharacterSkillV1_1 {
-  return "source_table" in skill;
-}
-
-export function isLightConeDefinitionV1_1(
-  lightCone: LightConeDefinition
-): lightCone is LightConeDefinitionV1_1 {
-  return "rank_up_material_ids" in lightCone;
-}
-
-export function isProgressionTablesV1_1(
-  progression: ProgressionTables
-): progression is ProgressionTablesV1_1 {
-  return "items" in progression;
-}
-
-export function isPropertyDefinitionV1_1(
-  property: PropertyDefinition
-): property is PropertyDefinitionV1_1 {
-  return "usable_icon_path" in property;
+async function loadDefinitions<T extends { id: string | number }>(
+  collection: string
+): Promise<DefinitionCatalog<T, "2.0.0">> {
+  const values = await loadMember<readonly T[]>(collection);
+  return {
+    schemaVersion: "2.0.0",
+    values,
+    byId: new Map(values.map((entry) => [entry.id, entry])),
+  };
 }
 
 export function getLocalizedValue(
@@ -123,165 +63,48 @@ export function getLocalizedValue(
   return text?.[locale].value ?? null;
 }
 
-export async function loadAchievementCategories(): Promise<AchievementCategoryCatalog> {
-  const [module] = await Promise.all([
-    loadGameMember("achievement_categories"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as MemberDocument<
-    readonly AchievementCategoryDefinition[],
-    "1.2.0" | "1.3.0"
-  >;
-  assertMemberSchema(document, "achievement_categories");
-  return createDefinitionCatalog(document.value, document.schema_version);
+export function loadAchievementCategories() {
+  return loadDefinitions<AchievementCategoryDefinition>(
+    "achievement_categories"
+  );
 }
-
-export async function loadAchievements(): Promise<AchievementCatalog> {
-  const [module] = await Promise.all([
-    loadGameMember("achievements"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as MemberDocument<
-    readonly AchievementDefinition[],
-    "1.2.0" | "1.3.0"
-  >;
-  assertMemberSchema(document, "achievements");
-  return createDefinitionCatalog(document.value, document.schema_version);
+export function loadAchievements() {
+  return loadDefinitions<AchievementDefinition>("achievements");
 }
-
 export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
   return new Set((await loadAchievements()).byId.keys());
 }
-
-export async function loadCharacters(): Promise<CharacterCatalog> {
-  const [module] = await Promise.all([
-    loadGameMember("characters"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as
-    | MemberDocument<readonly CharacterDefinitionV1[], "1.0.0">
-    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.1.0">
-    | MemberDocument<readonly CharacterDefinitionV1_1[], "1.2.0">
-    | MemberDocument<readonly CharacterDefinitionV1_3[], "1.3.0">;
-  assertMemberSchema(document, "characters");
-  if (document.schema_version === "1.3.0") {
-    return createDefinitionCatalog(document.value, document.schema_version);
-  }
-  return document.schema_version === "1.0.0"
-    ? createDefinitionCatalog(document.value, document.schema_version)
-    : createDefinitionCatalog(document.value, document.schema_version);
+export function loadCharacters() {
+  return loadDefinitions<CharacterDefinition>("characters");
 }
-
-export async function loadLightCones(): Promise<LightConeCatalog> {
-  const [module] = await Promise.all([
-    loadGameMember("light_cones"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as
-    | MemberDocument<readonly LightConeDefinitionV1[], "1.0.0">
-    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.1.0">
-    | MemberDocument<readonly LightConeDefinitionV1_1[], "1.2.0" | "1.3.0">;
-  assertMemberSchema(document, "light_cones");
-  return document.schema_version === "1.0.0"
-    ? createDefinitionCatalog(document.value, document.schema_version)
-    : createDefinitionCatalog(document.value, document.schema_version);
+export function loadLightCones() {
+  return loadDefinitions<LightConeDefinition>("light_cones");
 }
-
-export async function loadRelicSets(): Promise<
-  DefinitionCatalog<RelicSetDefinition>
-> {
-  const [module] = await Promise.all([
-    loadGameMember("relic_sets"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as MemberDocument<readonly RelicSetDefinition[]>;
-  assertMemberSchema(document, "relic_sets");
-  return createDefinitionCatalog(document.value, document.schema_version);
+export function loadRelicSets() {
+  return loadDefinitions<RelicSetDefinition>("relic_sets");
 }
-
-export async function loadRelicPieces(): Promise<
-  DefinitionCatalog<RelicPieceDefinition>
-> {
-  const [module] = await Promise.all([
-    loadGameMember("relic_pieces"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as MemberDocument<readonly RelicPieceDefinition[]>;
-  assertMemberSchema(document, "relic_pieces");
-  return createDefinitionCatalog(document.value, document.schema_version);
+export function loadRelicPieces() {
+  return loadDefinitions<RelicPieceDefinition>("relic_pieces");
 }
-
 export async function loadPropertyTables(): Promise<PropertyCatalog> {
-  const [module] = await Promise.all([
-    loadGameMember("property_tables"),
-    loadCatalogAssetLookup(),
-  ]);
-  const document = module as
-    | MemberDocument<PropertyTablesV1, "1.0.0">
-    | MemberDocument<PropertyTablesV1_1, "1.1.0">
-    | MemberDocument<PropertyTablesV1_1, "1.2.0" | "1.3.0">;
-  assertMemberSchema(document, "property_tables");
-  if (document.schema_version === "1.0.0") {
-    const {
-      properties,
-      paths,
-      combat_types: combatTypes,
-      relic_slots: relicSlots,
-    } = document.value;
-    const catalog: PropertyCatalogV1 = {
-      schemaVersion: document.schema_version,
-      properties,
-      paths,
-      combatTypes,
-      relicSlots,
-      propertyById: new Map<string, PropertyDefinitionV1>(
-        properties.map((entry) => [entry.id, entry])
-      ),
-      pathById: new Map<string, PathDefinition>(
-        paths.map((entry) => [entry.id, entry])
-      ),
-      combatTypeById: new Map<string, CombatTypeDefinition>(
-        combatTypes.map((entry) => [entry.id, entry])
-      ),
-      relicSlotById: new Map<string, RelicSlotDefinition>(
-        relicSlots.map((entry) => [entry.id, entry])
-      ),
-    };
-    return catalog;
-  }
   const {
     properties,
     paths,
     combat_types: combatTypes,
     relic_slots: relicSlots,
-  } = document.value;
-  const catalog: PropertyCatalogV1_1 = {
-    schemaVersion: document.schema_version,
+  } = await loadMember<PropertyTables>("property_tables");
+  return {
+    schemaVersion: "2.0.0",
     properties,
     paths,
     combatTypes,
     relicSlots,
-    propertyById: new Map<string, PropertyDefinitionV1_1>(
-      properties.map((entry) => [entry.id, entry])
-    ),
-    pathById: new Map<string, PathDefinition>(
-      paths.map((entry) => [entry.id, entry])
-    ),
-    combatTypeById: new Map<string, CombatTypeDefinition>(
-      combatTypes.map((entry) => [entry.id, entry])
-    ),
-    relicSlotById: new Map<string, RelicSlotDefinition>(
-      relicSlots.map((entry) => [entry.id, entry])
-    ),
+    propertyById: new Map(properties.map((entry) => [entry.id, entry])),
+    pathById: new Map(paths.map((entry) => [entry.id, entry])),
+    combatTypeById: new Map(combatTypes.map((entry) => [entry.id, entry])),
+    relicSlotById: new Map(relicSlots.map((entry) => [entry.id, entry])),
   };
-  return catalog;
 }
-
-export async function loadProgression(): Promise<ProgressionTables> {
-  const document = (await loadGameMember("progression")) as
-    | MemberDocument<ProgressionTablesV1, "1.0.0">
-    | MemberDocument<ProgressionTablesV1_1, "1.1.0">
-    | MemberDocument<ProgressionTablesV1_1, "1.2.0" | "1.3.0">;
-  assertMemberSchema(document, "progression");
-  return document.value;
+export function loadProgression(): Promise<ProgressionTables> {
+  return loadMember<ProgressionTables>("progression");
 }

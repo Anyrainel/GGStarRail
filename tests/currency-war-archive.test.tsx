@@ -20,23 +20,7 @@ import type {
 } from "@/providers/gilore/types";
 
 function localized(en: string, zh: string): LocalizedText {
-  const provenance = {
-    source_id: "fixture",
-    source_revision: "fixture",
-    source_path: "fixture",
-    source_key: en,
-    source_reference: en,
-  };
-  return {
-    en: {
-      value: en,
-      provenance: { ...provenance, locale: "en", source_locale: "EN" },
-    },
-    "zh-CN": {
-      value: zh,
-      provenance: { ...provenance, locale: "zh-CN", source_locale: "CHS" },
-    },
-  };
+  return { en: { value: en }, "zh-CN": { value: zh } };
 }
 
 function equipment(
@@ -148,7 +132,7 @@ const CATALOG: CurrencyWarCatalog = {
 };
 
 const PROPERTIES: PropertyCatalog = {
-  schemaVersion: "1.3.0",
+  schemaVersion: "2.0.0",
   properties: [],
   paths: [],
   combatTypes: [],
@@ -299,12 +283,14 @@ describe("Currency War archive", () => {
         },
       ],
     });
-    const category = screen.getByRole("combobox", { name: "Category" });
-    expect(within(category).getAllByRole("option")).toHaveLength(4);
-    await user.selectOptions(category, "Weapon Box");
+    expect(
+      screen.getByRole("button", { name: "Employment Contract" })
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Weapon Box" }));
     expect(screen.getByText("Showing 1 of 4 records")).toBeInTheDocument();
     expect(screen.getByTestId("currency-war-detail")).toHaveTextContent("Box");
-    await user.selectOptions(category, "Other");
+    await user.click(screen.getByRole("button", { name: "Weapon Box" }));
+    await user.click(screen.getByRole("button", { name: "Other" }));
     expect(screen.getByText("Showing 2 of 4 records")).toBeInTheDocument();
   });
 
@@ -342,10 +328,7 @@ describe("Currency War archive", () => {
   it("searches both languages, clears conflicting filters for recipes, and keeps selection across locale changes", async () => {
     const user = userEvent.setup();
     renderArchive();
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "Category" }),
-      "Advanced"
-    );
+    await user.click(screen.getByRole("button", { name: "Advanced" }));
     await user.type(screen.getByRole("searchbox"), "王冠");
     expect(screen.getByText("Showing 1 of 2 records")).toBeInTheDocument();
     const detail = screen.getByTestId("currency-war-detail");
@@ -355,9 +338,11 @@ describe("Currency War archive", () => {
     expect(detail).toHaveTextContent("Gain 20% ATK.");
     await user.click(within(detail).getByRole("button", { name: /Blade/ }));
     expect(screen.getByRole("searchbox")).toHaveValue("");
-    expect(screen.getByRole("combobox", { name: "Category" })).toHaveValue(
-      "all"
+    expect(screen.getByRole("button", { name: "Advanced" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
     );
+    expect(screen.getByText("Showing 2 of 2 records")).toBeInTheDocument();
     expect(
       within(screen.getByTestId("currency-war-detail")).getByRole("heading", {
         name: "Blade",
@@ -394,19 +379,14 @@ describe("Currency War archive", () => {
     expect(screen.queryByTestId("currency-war-detail")).not.toBeInTheDocument();
     screen.getByRole("tab", { name: /Bonds/ }).focus();
     await user.keyboard("{ArrowLeft}");
-    expect(
-      screen.getByRole("tab", { name: /Investment Strategies/ })
-    ).toHaveFocus();
+    expect(screen.getByRole("tab", { name: /Strategies/ })).toHaveFocus();
     expect(screen.getByRole("searchbox")).toHaveValue("");
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "Tier" }),
-      "Prismatic"
-    );
+    await user.click(screen.getByRole("button", { name: "Prismatic" }));
     expect(screen.getByTestId("currency-war-detail")).toHaveTextContent(
       "Windfall"
     );
     await user.click(screen.getByRole("button", { name: "中文" }));
-    expect(screen.getByRole("option", { name: "棱彩" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "棱彩" })).toBeInTheDocument();
   });
 
   it("opens selected records in the narrow-screen sheet and restores trigger focus", async () => {

@@ -66,10 +66,10 @@ export function CurrencyWarCharacterStats({
     (entry) => entry.value !== null && entry.value !== undefined
   );
   return (
-    <details className="rounded-lg border border-border bg-background/45 p-3">
-      <summary className="cursor-pointer text-sm font-medium">
+    <section className="rounded-lg border border-border bg-card/50 p-3">
+      <h4 className="text-sm font-medium">
         {t("archive.currencyWar.combatStats")}
-      </summary>
+      </h4>
       <div className="mt-3 space-y-3">
         {position === "Back" &&
           chargeTypes.some((type) => chargeLabels[type]) && (
@@ -101,6 +101,6 @@ export function CurrencyWarCharacterStats({
           ))}
         </dl>
       </div>
-    </details>
+    </section>
   );
 }

@@ -18,6 +18,7 @@ import {
 import { assertNoSensitiveFields } from "@/lib/security";
 import {
   HSR_REFERENCE_MANIFEST,
+  HSR_REFERENCE_REVISION,
   loadAchievementIds,
   loadCharacters,
   loadLightCones,
@@ -518,15 +519,9 @@ export function parseGoodScannerExperimentalExport(
   assertNoSensitiveFields(input);
   const parsed = GoodScannerHsrExportSchema.parse(input);
 
-  const schemaMajor = Number.parseInt(
-    catalog.manifest.schema_version.split(".")[0] ?? "",
-    10
-  );
-  if (parsed.reference.schemaVersion !== schemaMajor) {
-    throw new Error(
-      `Scanner reference schema ${parsed.reference.schemaVersion} is incompatible with catalog schema ${catalog.manifest.schema_version}`
-    );
-  }
+  // The scanner's capture schema is validated above and remains version 1.
+  // It is independent of the website's entity schema, which can remove fields
+  // without changing scanner IDs, stat scaling or account snapshot semantics.
 
   ensureUnique(
     parsed.characters.map((character) => character.localId),
@@ -738,7 +733,7 @@ export function parseGoodScannerExperimentalExport(
   if (parsed.source.kind === "sanitizedFixture") {
     warnings.push(SCANNER_WARNING_SANITIZED_FIXTURE);
   }
-  if (parsed.reference.revision !== catalog.manifest.source.revision) {
+  if (parsed.reference.revision !== HSR_REFERENCE_REVISION) {
     warnings.push(SCANNER_WARNING_REFERENCE_REVISION_MISMATCH);
   }
   if (

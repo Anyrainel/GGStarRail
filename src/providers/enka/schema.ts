@@ -369,7 +369,7 @@ export function normalizeEnkaHsrShowcase(
       provider: "uid-showcase",
       formatVersion: 1,
       sourceVersion: "enka-hsr-showcase-v1",
-      sourceRevision: `gilore-ref:${catalog.manifest.source.revision}`,
+      sourceRevision: `gilore-ref:${catalog.sourceRevision}`,
       importedAt: now.toISOString(),
       coverage: {
         characters: "showcase-only",

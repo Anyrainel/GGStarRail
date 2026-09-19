@@ -1,25 +1,10 @@
 import type {
   BundleSchemaVersion,
-  DataBundleManifest,
-  ReferenceLocale,
   RuntimeReferenceManifest,
 } from "@/domain/provenance";
 
-export type { BundleSchemaVersion, DataBundleManifest, ReferenceLocale };
-
-export interface TextProvenance {
-  locale: ReferenceLocale;
-  source_id: string;
-  source_locale: "EN" | "CHS";
-  source_revision: string;
-  source_path: string;
-  source_key: string;
-  source_reference: string;
-}
-
 export interface SourceText {
   value: string;
-  provenance: TextProvenance;
 }
 
 export interface LocalizedText {
@@ -105,23 +90,6 @@ export interface MemberDocument<
   value: T;
 }
 
-export interface CorroborationDocument<
-  T,
-  TSchemaVersion extends BundleSchemaVersion = BundleSchemaVersion,
-> {
-  bundle_id: "ggstarrail-reference";
-  game_id: "honkai_star_rail";
-  role: "validation_only_never_normalized_override";
-  schema_version: TSchemaVersion;
-  source_revision: string;
-  value: T;
-}
-
-export interface CostItem {
-  item_id: string;
-  count: number;
-}
-
 export interface LinearStat {
   base_value: number;
   level_add: number;
@@ -143,21 +111,15 @@ export interface LightConeStats {
   defence: LinearStat;
 }
 
-export interface CharacterPromotion {
-  promotion: number;
+export interface CharacterStatScaling {
+  ascension: number;
   max_level: number;
-  player_level_required: number | null;
-  world_level_required: number | null;
-  costs: readonly CostItem[];
   stats: CharacterStats;
 }
 
-export interface LightConePromotion {
-  promotion: number;
+export interface LightConeStatScaling {
+  ascension: number;
   max_level: number;
-  player_level_required: number | null;
-  world_level_required: number | null;
-  costs: readonly CostItem[];
   stats: LightConeStats;
 }
 
@@ -171,43 +133,23 @@ export interface PropertyValue {
   value: number;
 }
 
-export interface CharacterSkillLevelV1_1 extends EffectLevel {
+export interface CharacterSkillLevel extends EffectLevel {
   simple_parameters: readonly number[];
-  display_parameters: readonly number[];
-  level_up_costs: readonly CostItem[];
 }
 
-interface CharacterSkillCommon {
+export interface CharacterSkill {
   id: string;
   name: LocalizedText;
   description: LocalizedText;
   simple_description: LocalizedText | null;
-  trigger_key: string;
-  attack_type: string;
-  effect_type: string;
   max_level: number;
-  levels: readonly EffectLevel[];
-}
-
-export type CharacterSkillV1 = CharacterSkillCommon;
-
-export interface CharacterSkillV1_1 extends CharacterSkillCommon {
-  source_table: "AvatarSkillConfig" | "AvatarServantSkillConfig";
   tag: LocalizedText | null;
   type_description: LocalizedText | null;
-  display_description: LocalizedText;
-  display_description_source: "simple_description" | "description";
   hide_in_ui: boolean;
   icon_path: string;
   ultimate_icon_path: string | null;
-  rated_trace_ids: readonly string[];
-  rated_rank_ids: readonly string[];
-  extra_effect_ids: readonly string[];
-  simple_extra_effect_ids: readonly string[];
-  levels: readonly CharacterSkillLevelV1_1[];
+  levels: readonly CharacterSkillLevel[];
 }
-
-export type CharacterSkill = CharacterSkillV1 | CharacterSkillV1_1;
 
 export interface CharacterRank {
   id: string;
@@ -215,18 +157,11 @@ export interface CharacterRank {
   name: LocalizedText;
   description: LocalizedText;
   icon_path: string;
-  unlock_costs: readonly CostItem[];
   parameters: readonly number[];
-  skill_level_additions: Readonly<Record<string, number>>;
-  extra_effect_ids: readonly string[];
-  ability_names: readonly string[];
 }
 
 export interface CharacterTraceLevel {
   level: number;
-  promotion_required: number | null;
-  character_level_required: number | null;
-  costs: readonly CostItem[];
   parameters: readonly number[];
   properties: readonly PropertyValue[];
 }
@@ -234,18 +169,13 @@ export interface CharacterTraceLevel {
 export interface CharacterTrace {
   id: string;
   point_type: number;
-  anchor_type: string;
   max_level: number;
   default_unlock: boolean;
   prerequisite_ids: readonly string[];
   name: LocalizedText | null;
   description: LocalizedText | null;
   icon_path: string;
-  trigger_key: string;
   skill_ids: readonly string[];
-  extra_effect_ids: readonly string[];
-  simple_extra_effect_ids: readonly string[];
-  ability_name: string | null;
   levels: readonly CharacterTraceLevel[];
 }
 
@@ -274,7 +204,7 @@ export interface CharacterServant {
   id: string;
   name: LocalizedText;
   icon_path: string;
-  skills: readonly CharacterSkillV1_1[];
+  skills: readonly CharacterSkill[];
 }
 
 export interface CharacterEnhancementVariant {
@@ -283,7 +213,7 @@ export interface CharacterEnhancementVariant {
   activity_id: number;
   max_energy: number;
   summaries: readonly LocalizedText[];
-  skills: readonly CharacterSkillV1_1[];
+  skills: readonly CharacterSkill[];
   ranks: readonly CharacterRank[];
   traces: readonly CharacterTrace[];
   skill_changes: readonly CharacterSkillEnhancement[];
@@ -291,35 +221,28 @@ export interface CharacterEnhancementVariant {
   rank_changes: readonly CharacterRankEnhancement[];
 }
 
-interface CharacterDefinitionCommon {
+export interface CharacterDefinition {
   id: string;
   rarity: number;
   path_id: string;
   combat_type_id: string;
   name: LocalizedText;
   description: LocalizedText | null;
-  max_promotion: number;
+  max_ascension: number;
   max_rank: number;
   max_energy: number;
-  experience_type: number;
   icon_path: string;
-  promotions: readonly CharacterPromotion[];
-  skills: readonly CharacterSkillV1[];
-}
-
-export type CharacterDefinitionV1 = CharacterDefinitionCommon;
-
-export interface CharacterDefinitionV1_1 extends CharacterDefinitionCommon {
-  skills: readonly CharacterSkillV1_1[];
+  stat_scaling: readonly CharacterStatScaling[];
+  skills: readonly CharacterSkill[];
   servants: readonly CharacterServant[];
   ranks: readonly CharacterRank[];
   traces: readonly CharacterTrace[];
   enhancements: readonly CharacterEnhancementVariant[];
+  currency_war: readonly CurrencyWarCharacter[];
 }
 
 export interface CurrencyWarSkill {
   id: string;
-  source_table: string;
   name: LocalizedText;
   description: LocalizedText;
   simple_description: LocalizedText | null;
@@ -385,8 +308,8 @@ export interface CurrencyWarLightConeAdaptation {
 }
 
 export interface CurrencyWarSpecialEffect {
+  kind: "enhancement" | "shop";
   id: string;
-  source_table: string;
   group_id: number;
   name: LocalizedText;
   description: LocalizedText;
@@ -515,75 +438,31 @@ export interface CurrencyWarBond {
   }[];
 }
 
-export interface CharacterDefinitionV1_3 extends CharacterDefinitionV1_1 {
-  currency_war: readonly CurrencyWarCharacter[];
-}
-
-export type CharacterDefinition =
-  | CharacterDefinitionV1
-  | CharacterDefinitionV1_1
-  | CharacterDefinitionV1_3;
-
 export interface LightConeSuperimposition extends EffectLevel {
   name: LocalizedText;
   description: LocalizedText;
-  ability_name: string;
   properties: readonly PropertyValue[];
 }
 
-export interface LightConeEffectV1 {
+export interface LightConeEffect {
   id: string;
   name: LocalizedText;
   description: LocalizedText;
-  superimpositions: readonly EffectLevel[];
-}
-
-export interface LightConeEffectV1_1 extends LightConeEffectV1 {
   superimpositions: readonly LightConeSuperimposition[];
 }
 
-export type LightConeEffect = LightConeEffectV1 | LightConeEffectV1_1;
-
-interface LightConeDefinitionCommon {
+export interface LightConeDefinition {
   id: string;
   rarity: number;
   path_id: string;
   name: LocalizedText;
   description: LocalizedText;
   background_description: LocalizedText;
-  max_promotion: number;
+  max_ascension: number;
   max_superimposition: number;
-  experience_type: number;
   icon_path: string;
-  promotions: readonly LightConePromotion[];
-  effect: LightConeEffectV1;
-}
-
-export type LightConeDefinitionV1 = LightConeDefinitionCommon;
-
-export interface LightConeDefinitionV1_1 extends LightConeDefinitionCommon {
-  rank_up_material_ids: readonly string[];
-  effect: LightConeEffectV1_1;
-}
-
-export type LightConeDefinition =
-  | LightConeDefinitionV1
-  | LightConeDefinitionV1_1;
-
-export interface ProgressionItem {
-  id: string;
-  source_table: "ItemConfig" | "ItemConfigAvatarRank";
-  main_type: string;
-  sub_type: string;
-  rarity: string;
-  purpose_type: number | null;
-  name: LocalizedText;
-  description: LocalizedText;
-  background_description: LocalizedText | null;
-  icon_path: string;
-  character_experience: number | null;
-  light_cone_experience: number | null;
-  light_cone_feed_credit_cost: number | null;
+  stat_scaling: readonly LightConeStatScaling[];
+  effect: LightConeEffect;
 }
 
 export interface RelicSetBonus {
@@ -615,11 +494,11 @@ export interface RelicPieceDefinition {
   main_affix_group: number;
   sub_affix_group: number;
   max_level: number;
-  experience_type: number;
   icon_path: string;
 }
 
-interface PropertyDefinitionCommon {
+export interface PropertyDefinition {
+  usable_icon_path: string | null;
   id: string;
   name: LocalizedText | null;
   relic_name: LocalizedText | null;
@@ -629,14 +508,6 @@ interface PropertyDefinitionCommon {
   is_battle_displayed: boolean;
   icon_path: string;
 }
-
-export type PropertyDefinitionV1 = PropertyDefinitionCommon;
-
-export interface PropertyDefinitionV1_1 extends PropertyDefinitionCommon {
-  usable_icon_path: string | null;
-}
-
-export type PropertyDefinition = PropertyDefinitionV1 | PropertyDefinitionV1_1;
 
 export interface PathDefinition {
   id: string;
@@ -660,25 +531,11 @@ export interface RelicSlotDefinition {
   valid_main_properties: readonly string[];
 }
 
-interface PropertyTablesCommon<TProperty extends PropertyDefinition> {
-  properties: readonly TProperty[];
+export interface PropertyTables {
+  properties: readonly PropertyDefinition[];
   paths: readonly PathDefinition[];
   combat_types: readonly CombatTypeDefinition[];
   relic_slots: readonly RelicSlotDefinition[];
-}
-
-export type PropertyTablesV1 = PropertyTablesCommon<PropertyDefinitionV1>;
-export type PropertyTablesV1_1 = PropertyTablesCommon<PropertyDefinitionV1_1>;
-export type PropertyTables = PropertyTablesV1 | PropertyTablesV1_1;
-
-export interface ExperienceLevel {
-  level: number;
-  experience: number;
-}
-
-export interface ExperienceTable {
-  id: number;
-  levels: readonly ExperienceLevel[];
 }
 
 export interface MainAffixDefinition {
@@ -721,62 +578,10 @@ export interface RelicScoringTables {
   sub_affix_character_weights: readonly CharacterRelicScoreWeights[];
 }
 
-interface ProgressionTablesCommon {
-  character_experience: readonly ExperienceTable[];
-  light_cone_experience: readonly ExperienceTable[];
-  relic_experience: readonly ExperienceTable[];
+export interface ProgressionTables {
   relic_main_affixes: readonly MainAffixDefinition[];
   relic_sub_affixes: readonly SubAffixDefinition[];
   relic_scoring: RelicScoringTables;
-}
-
-export type ProgressionTablesV1 = ProgressionTablesCommon;
-
-export interface ProgressionTablesV1_1 extends ProgressionTablesCommon {
-  items: readonly ProgressionItem[];
-}
-
-export type ProgressionTables = ProgressionTablesV1 | ProgressionTablesV1_1;
-
-export interface SourceDisagreement {
-  evidence_id: string;
-  source_id: string;
-  entity_type: string;
-  entity_id: string;
-  field: string;
-  locale: ReferenceLocale | null;
-  expected: string | number | boolean | null;
-  datamine_value: string | number | boolean | null;
-  severity: "error" | "warning" | "info";
-}
-
-export interface UnresolvedMapping {
-  table: string;
-  logical_field: string;
-  candidates: readonly string[];
-  reason: string;
-}
-
-export interface SourceGap {
-  table: string;
-  record_id: string;
-  field: string;
-  reason: string;
-}
-
-export interface Diagnostics {
-  resolved_deobfuscation: Readonly<Record<string, string>>;
-  unresolved_deobfuscation: readonly UnresolvedMapping[];
-  source_disagreements: readonly SourceDisagreement[];
-  source_gaps: readonly SourceGap[];
-}
-
-export interface CorroborationEvidence {
-  schema_version: number;
-  snapshot_date: string;
-  sources: readonly Readonly<Record<string, unknown>>[];
-  checks: readonly Readonly<Record<string, unknown>>[];
-  known_presence_disagreements: readonly Readonly<Record<string, unknown>>[];
 }
 
 export interface DefinitionCatalog<
@@ -790,51 +595,26 @@ export interface DefinitionCatalog<
 
 export type AchievementCategoryCatalog = DefinitionCatalog<
   AchievementCategoryDefinition,
-  "1.2.0" | "1.3.0"
+  "2.0.0"
 >;
-
 export type AchievementCatalog = DefinitionCatalog<
   AchievementDefinition,
-  "1.2.0" | "1.3.0"
+  "2.0.0"
 >;
+export type CharacterCatalog = DefinitionCatalog<CharacterDefinition, "2.0.0">;
+export type LightConeCatalog = DefinitionCatalog<LightConeDefinition, "2.0.0">;
 
-export type CharacterCatalog =
-  | DefinitionCatalog<CharacterDefinitionV1, "1.0.0">
-  | DefinitionCatalog<CharacterDefinitionV1_1, "1.1.0">
-  | DefinitionCatalog<CharacterDefinitionV1_1, "1.2.0">
-  | DefinitionCatalog<CharacterDefinitionV1_3, "1.3.0">;
-
-export type LightConeCatalog =
-  | DefinitionCatalog<LightConeDefinitionV1, "1.0.0">
-  | DefinitionCatalog<LightConeDefinitionV1_1, "1.1.0">
-  | DefinitionCatalog<LightConeDefinitionV1_1, "1.2.0" | "1.3.0">;
-
-interface PropertyCatalogCommon<
-  TProperty extends PropertyDefinition,
-  TSchemaVersion extends BundleSchemaVersion,
-> {
-  schemaVersion: TSchemaVersion;
-  properties: readonly TProperty[];
+export interface PropertyCatalog {
+  schemaVersion: "2.0.0";
+  properties: readonly PropertyDefinition[];
   paths: readonly PathDefinition[];
   combatTypes: readonly CombatTypeDefinition[];
   relicSlots: readonly RelicSlotDefinition[];
-  propertyById: ReadonlyMap<string, TProperty>;
+  propertyById: ReadonlyMap<string, PropertyDefinition>;
   pathById: ReadonlyMap<string, PathDefinition>;
   combatTypeById: ReadonlyMap<string, CombatTypeDefinition>;
   relicSlotById: ReadonlyMap<string, RelicSlotDefinition>;
 }
-
-export type PropertyCatalogV1 = PropertyCatalogCommon<
-  PropertyDefinitionV1,
-  "1.0.0"
->;
-
-export type PropertyCatalogV1_1 = PropertyCatalogCommon<
-  PropertyDefinitionV1_1,
-  "1.1.0" | "1.2.0" | "1.3.0"
->;
-
-export type PropertyCatalog = PropertyCatalogV1 | PropertyCatalogV1_1;
 
 export interface HsrReferenceCatalog {
   manifest: RuntimeReferenceManifest;

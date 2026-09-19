@@ -60,7 +60,7 @@ if (args.has("--legacy-cache") || args.has("--package")) {
     path.join(producer, "data/reference/honkai_star_rail/assets/v1"),
   ]);
 }
-const referenceRoot = path.join(producer, "data/reference/honkai_star_rail/v1");
+const referenceRoot = path.join(producer, "data/reference/honkai_star_rail/v2");
 const evidencePath = path.join(
   producer,
   "data/raw/honkai_star_rail/hoyolab.json"

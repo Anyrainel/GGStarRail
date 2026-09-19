@@ -49,7 +49,7 @@ describe("GGArtifact family shell", () => {
       name: "Archive catalogs",
     });
     expect(
-      within(archiveTabs).getByRole("link", { name: "Achievement Archive" })
+      within(archiveTabs).getByRole("link", { name: "Achievements" })
     ).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "Archive" })).toHaveClass(
       "text-primary"

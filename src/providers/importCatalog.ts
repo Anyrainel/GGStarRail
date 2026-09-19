@@ -1,6 +1,7 @@
 import type { RuntimeReferenceManifest } from "@/domain/provenance";
 import {
   HSR_REFERENCE_MANIFEST,
+  HSR_REFERENCE_REVISION,
   loadCharacters,
   loadLightCones,
   loadProgression,
@@ -17,6 +18,7 @@ import type {
 
 export interface AccountImportCatalog {
   manifest: RuntimeReferenceManifest;
+  sourceRevision: string;
   characters: ReadonlyMap<string, CharacterDefinition>;
   lightCones: ReadonlyMap<string, LightConeDefinition>;
   relicPieces: ReadonlyMap<string, RelicPieceDefinition>;
@@ -36,6 +38,7 @@ export async function loadAccountImportCatalog(): Promise<AccountImportCatalog> 
 
   return {
     manifest: HSR_REFERENCE_MANIFEST,
+    sourceRevision: HSR_REFERENCE_REVISION,
     characters: characters.byId,
     lightCones: lightCones.byId,
     relicPieces: relicPieces.byId,

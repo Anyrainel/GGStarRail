@@ -196,6 +196,30 @@ describe("AchievementArchiveContent completion coverage", () => {
 });
 
 describe("AchievementArchiveContent visibility and filtering", () => {
+  it("omits unknown-version clutter and concealed internal IDs", async () => {
+    setDesktopLayout(true);
+    useWorkspaceStore.setState({ account: accountWithKnownCompletion([]) });
+    render(
+      <I18nProvider>
+        <AchievementArchiveContent
+          categories={CATEGORIES}
+          achievements={ACHIEVEMENTS.map((achievement) => ({
+            ...achievement,
+            releaseVersion: null,
+          }))}
+        />
+      </I18nProvider>
+    );
+    const concealed = await screen.findByRole("article", {
+      name: "Hidden achievement",
+    });
+    expect(concealed).not.toHaveTextContent("102");
+    expect(
+      screen.getByRole("button", { name: "Mark Hidden achievement finished" })
+    ).toHaveAttribute("title", "Mark Hidden achievement finished");
+    expect(screen.queryByText("Version unknown")).not.toBeInTheDocument();
+  });
+
   it("conceals ShowAfterFinish and shows only the alternate HiddenDesc text", async () => {
     const user = userEvent.setup();
     setDesktopLayout(true);
@@ -204,7 +228,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
 
     expect(await screen.findByText("Hidden achievement")).toBeVisible();
     expect(
-      screen.getByRole("article", { name: "Hidden achievement 102" })
+      screen.getByRole("article", { name: "Hidden achievement" })
     ).toBeVisible();
     expect(screen.queryByText("A Secret Terminus")).toBeNull();
     expect(screen.queryByText("Witness the final departure.")).toBeNull();
@@ -318,7 +342,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "Mark Hidden achievement 102 finished",
+        name: "Mark Hidden achievement finished",
       })
     );
     await waitFor(() => {

@@ -76,7 +76,7 @@ export async function currencyWarAssetRequests(referenceRoot) {
 export async function publishCurrencyWarAssets({
   referenceRoot = path.resolve(
     process.env.GILORE_ROOT ?? path.join(root, "../GIlore"),
-    "data/reference/honkai_star_rail/v1"
+    "data/reference/honkai_star_rail/v2"
   ),
   cached = false,
 } = {}) {

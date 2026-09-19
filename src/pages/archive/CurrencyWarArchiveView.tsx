@@ -1,22 +1,18 @@
-import {
-  ArrowRight,
-  Boxes,
-  ChevronRight,
-  Coins,
-  Network,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
+import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/config/navigation";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
+import { isArchiveSearchActive } from "@/lib/archiveFilters";
 import { characterCatalogName } from "@/lib/catalogPresentation";
 import { formatGameText } from "@/lib/gameText";
 import { cn } from "@/lib/utils";
@@ -38,16 +34,10 @@ import type {
   PropertyCatalog,
 } from "@/providers/gilore/types";
 import {
-  CatalogEmpty,
-  CatalogFailure,
-  CatalogLoading,
-  CatalogSearch,
-  CatalogSelect,
-} from "./CatalogControls";
-import {
   CatalogDetailSheet,
   useCatalogDetailSheet,
 } from "./CatalogDetailSheet";
+import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   CurrencyWarBondTiers,
   CurrencyWarProperties,
@@ -61,28 +51,24 @@ const tabs = [
   {
     id: "equipment",
     label: "archive.currencyWar.equipment",
-    icon: Boxes,
     asset: "currency-war-equipment",
     member: "currency_war_equipment",
   },
   {
     id: "environments",
     label: "archive.currencyWar.environments",
-    icon: TrendingUp,
     asset: "currency-war-environment",
     member: "currency_war_environments",
   },
   {
     id: "strategies",
     label: "archive.currencyWar.strategies",
-    icon: Sparkles,
     asset: "currency-war-strategy",
     member: "currency_war_strategies",
   },
   {
     id: "bonds",
     label: "archive.currencyWar.bonds",
-    icon: Network,
     asset: "currency-war-bond",
     member: "currency_war_bonds",
   },
@@ -136,8 +122,8 @@ export function CurrencyWarArchiveContent({
   const activeTab =
     tabs.find((tab) => tab.id === searchParams.get("tab")) ?? tabs[0];
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
-  const [quality, setQuality] = useState("all");
+  const [category, setCategory] = useState<Set<string>>(new Set());
+  const [quality, setQuality] = useState<Set<string>>(new Set());
   const selectedId = searchParams.get("id");
   const sheet = useCatalogDetailSheet();
   const records: readonly CurrencyWarRecord[] = catalog[activeTab.id];
@@ -160,15 +146,17 @@ export function CurrencyWarArchiveContent({
       records
         .filter((entry) => {
           if (
-            category !== "all" &&
+            !isArchiveSearchActive(query) &&
+            category.size > 0 &&
             "category" in entry &&
-            entry.category_name.en.value !== category
+            !category.has(entry.category_name.en.value)
           )
             return false;
           if (
-            quality !== "all" &&
+            !isArchiveSearchActive(query) &&
+            quality.size > 0 &&
             "quality" in entry &&
-            entry.quality !== quality
+            !quality.has(entry.quality)
           )
             return false;
           return (
@@ -200,19 +188,19 @@ export function CurrencyWarArchiveContent({
     ...new Set(catalog.strategies.map((entry) => entry.quality)),
   ];
   const qualityName = (value: string) =>
-    qualityLabels[value] ? t(qualityLabels[value]) : value;
+    qualityLabels[value] ? t(qualityLabels[value]) : t("common.unknown");
   const changeTab = (tab: CurrencyWarTab) => {
     setQuery("");
-    setCategory("all");
-    setQuality("all");
+    setCategory(new Set());
+    setQuality(new Set());
     sheet.setOpen(false);
     setSearchParams({ tab }, { replace: true });
   };
   const select = (id: string, trigger?: HTMLButtonElement) => {
     if (!trigger) {
       setQuery("");
-      setCategory("all");
-      setQuality("all");
+      setCategory(new Set());
+      setQuality(new Set());
     }
     setSearchParams({ tab: activeTab.id, id }, { replace: true });
     if (trigger) sheet.openOnNarrowScreen(trigger);
@@ -230,139 +218,63 @@ export function CurrencyWarArchiveContent({
 
   return (
     <div className="min-w-0 space-y-4">
-      <div className="rounded-2xl border border-border bg-card/70 p-3 sm:p-4">
-        <div className="mb-4 flex items-center gap-3">
-          <span className="rounded-xl bg-primary/15 p-2.5 text-primary">
-            <Coins className="h-6 w-6" aria-hidden="true" />
-          </span>
-          <h2 className="text-lg font-semibold">
-            {t("archive.currencyWar.title")}
-          </h2>
-        </div>
-        <div
-          role="tablist"
-          aria-label={t("archive.currencyWar.title")}
-          className="grid grid-cols-2 gap-1.5 rounded-xl border border-border bg-background/65 p-1.5 lg:grid-cols-4"
-        >
-          {tabs.map((tab, index) => (
-            <button
-              key={tab.id}
-              id={`currency-tab-${tab.id}`}
-              type="button"
-              role="tab"
-              aria-selected={activeTab.id === tab.id}
-              aria-controls="currency-war-panel"
-              tabIndex={activeTab.id === tab.id ? 0 : -1}
-              onClick={() => changeTab(tab.id)}
-              onKeyDown={(event) => {
-                const next =
-                  event.key === "ArrowRight"
-                    ? (index + 1) % tabs.length
-                    : event.key === "ArrowLeft"
-                      ? (index + tabs.length - 1) % tabs.length
-                      : event.key === "Home"
-                        ? 0
-                        : event.key === "End"
-                          ? tabs.length - 1
-                          : null;
-                if (next === null) return;
-                event.preventDefault();
-                changeTab(tabs[next].id);
-                document
-                  .getElementById(`currency-tab-${tabs[next].id}`)
-                  ?.focus();
-              }}
-              className={cn(
-                "flex min-h-14 min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2 text-left text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm",
-                activeTab.id === tab.id
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-card hover:bg-secondary"
-              )}
-            >
-              <tab.icon
-                className="hidden h-4 w-4 shrink-0 sm:block"
-                aria-hidden="true"
-              />
-              <span className="min-w-0">{t(tab.label)}</span>
-              <span
-                className={cn(
-                  "ml-1 rounded-md px-1.5 py-0.5 text-[10px] tabular-nums",
-                  activeTab.id === tab.id
-                    ? "bg-primary-foreground/15"
-                    : "bg-secondary"
-                )}
-              >
-                {catalog[tab.id].length}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <ArchiveTabs
+        panelId="currency-war-panel"
+        label={t("archive.currencyWar.title")}
+        value={activeTab.id}
+        options={tabs.map((tab) => ({
+          value: tab.id,
+          label: t(tab.label),
+          count: catalog[tab.id].length,
+        }))}
+        onValueChange={changeTab}
+      />
       <div
         id="currency-war-panel"
         role="tabpanel"
-        aria-labelledby={`currency-tab-${activeTab.id}`}
+        aria-labelledby={`currency-war-panel-tab-${activeTab.id}`}
         className="space-y-4"
       >
-        <div className="flex flex-col gap-3 rounded-xl border border-border bg-card/55 p-3 sm:flex-row sm:items-end">
-          <CatalogSearch
-            value={query}
-            onChange={setQuery}
-            placeholderKey="archive.currencyWar.search"
-          />
+        <ArchiveToolbar
+          searchQuery={query}
+          onSearchChange={setQuery}
+          searchLabel={t("common.search")}
+          searchPlaceholder={t("archive.currencyWar.search")}
+        >
           {activeTab.id === "equipment" && (
-            <CatalogSelect
-              labelKey="archive.currencyWar.category"
-              value={category}
-              onChange={setCategory}
-            >
-              <option value="all">
-                {t("archive.currencyWar.allCategories")}
-              </option>
-              {categories.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {getLocalizedValue(name, locale)}
-                </option>
-              ))}
-            </CatalogSelect>
+            <FilterChipGroup
+              options={categories.map(([id]) => id)}
+              selectedValues={category}
+              onSelectedValuesChange={setCategory}
+              getKey={(id) => id}
+              getLabel={(id) =>
+                getLocalizedValue(
+                  categories.find(([key]) => key === id)![1],
+                  locale
+                )
+              }
+            />
           )}
           {activeTab.id === "strategies" && (
-            <CatalogSelect
-              labelKey="archive.currencyWar.tier"
-              value={quality}
-              onChange={setQuality}
-            >
-              <option value="all">{t("archive.currencyWar.allTiers")}</option>
-              {qualities.map((value) => (
-                <option key={value} value={value}>
-                  {qualityName(value)}
-                </option>
-              ))}
-            </CatalogSelect>
+            <FilterChipGroup
+              options={qualities}
+              selectedValues={quality}
+              onSelectedValuesChange={setQuality}
+              getKey={(id) => id}
+              getLabel={qualityName}
+            />
           )}
-          {(query || category !== "all" || quality !== "all") && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setQuery("");
-                setCategory("all");
-                setQuality("all");
-              }}
-            >
-              {t("filter.reset")}
-            </Button>
-          )}
-        </div>
+        </ArchiveToolbar>
         <p className="text-sm text-muted-foreground" aria-live="polite">
           {t("archive.results", {
             shown: filtered.length,
             total: records.length,
           })}
         </p>
-        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)]">
+        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(230px,280px)_minmax(0,1fr)]">
           <section
             aria-label={t("archive.currencyWar.results")}
-            className="grid gap-2 sm:grid-cols-2 lg:max-h-[calc(100dvh-19rem)] lg:grid-cols-1 lg:overflow-y-auto lg:rounded-xl lg:border lg:border-border lg:bg-card/20 lg:p-2"
+            className="grid gap-2 sm:grid-cols-2 lg:max-h-[calc(100dvh-17rem)] lg:grid-cols-1 lg:overflow-y-auto lg:pr-2"
           >
             {filtered.length ? (
               filtered.map((entry) => (
@@ -373,10 +285,10 @@ export function CurrencyWarArchiveContent({
                   aria-pressed={selected?.id === entry.id}
                   onClick={(event) => select(entry.id, event.currentTarget)}
                   className={cn(
-                    "group flex min-w-0 items-center gap-3 rounded-xl border p-3 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                    "group flex min-w-0 items-center gap-3 rounded-lg border p-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                     selected?.id === entry.id
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-border bg-card/70 hover:border-primary/45 hover:bg-secondary/55"
+                      ? "border-primary/50 bg-accent shadow-sm"
+                      : "border-transparent bg-card/40 hover:border-border hover:bg-accent/50"
                   )}
                 >
                   <AssetImage
@@ -384,13 +296,13 @@ export function CurrencyWarArchiveContent({
                     id={entry.id}
                     sourcePath={entry.icon_path}
                     alt=""
-                    className="h-12 w-12 shrink-0 rounded-lg bg-secondary/60 object-contain p-1"
+                    className="h-10 w-10 shrink-0 rounded-md bg-secondary/40 object-contain p-0.5"
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block break-words text-sm font-semibold">
                       {formatGameText(getLocalizedValue(entry.name, locale))}
                     </span>
-                    <span className="mt-1 block line-clamp-2 text-xs leading-5 text-muted-foreground">
+                    <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
                       {"category_name" in entry
                         ? getLocalizedValue(entry.category_name, locale)
                         : "quality" in entry
@@ -531,7 +443,7 @@ function CurrencyWarDetail({
   return (
     <aside
       data-testid="currency-war-detail"
-      className="min-w-0 space-y-5 rounded-2xl border border-border bg-card/75 p-4 sm:p-5"
+      className="min-w-0 space-y-5 rounded-xl border border-border bg-gradient-to-br from-card via-card to-accent/20 p-4 sm:p-5"
     >
       <div className="flex items-start gap-4">
         <AssetImage
@@ -557,7 +469,7 @@ function CurrencyWarDetail({
             <Badge variant="secondary">
               {qualityLabels[record.quality]
                 ? t(qualityLabels[record.quality])
-                : record.quality}
+                : t("common.unknown")}
             </Badge>
           )}
           <BetaBadge member={config.member} id={record.id} />
@@ -577,7 +489,7 @@ function CurrencyWarDetail({
       {"tags" in record && record.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {record.tags.map((tag) => (
-            <Badge variant="outline" key={tag.en.provenance.source_reference}>
+            <Badge variant="outline" key={tag.en.value}>
               {getLocalizedValue(tag, locale)}
             </Badge>
           ))}
@@ -635,8 +547,7 @@ function CurrencyWarDetail({
           {record.remarks.map((remark) => (
             <CurrencyWarText
               key={
-                ("description" in remark ? remark.description : remark).en
-                  .provenance.source_reference
+                ("description" in remark ? remark.description : remark).en.value
               }
               text={"description" in remark ? remark.description : remark}
               parameters={

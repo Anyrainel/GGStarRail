@@ -1,4 +1,4 @@
-import { Database, ScanLine, ShieldCheck } from "lucide-react";
+import { ScanLine, ShieldCheck } from "lucide-react";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusCard } from "@/components/shared/StatusCard";
@@ -16,14 +16,7 @@ export default function DataSourcesPage() {
   return (
     <>
       <PageHeader titleKey="route.imports.title" />
-      <section className="grid gap-4 lg:grid-cols-3">
-        <StatusCard
-          titleKey="imports.gilore.title"
-          bodyKey="imports.gilore.body"
-          statusKey="imports.boundary.ready"
-          status="implemented"
-          icon={Database}
-        />
+      <section className="grid gap-4 lg:grid-cols-2">
         <StatusCard
           titleKey="imports.scanner.title"
           bodyKey="imports.scanner.body"

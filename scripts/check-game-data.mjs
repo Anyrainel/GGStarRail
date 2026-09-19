@@ -59,17 +59,11 @@ export function reconstruct(stats, en, zh, revision) {
           `Missing ${locale} text ${pointer}`
         );
         assert.equal(typeof map[pointer].value, "string");
-        assert.equal(map[pointer].provenance.locale, locale);
-        assert.ok(
-          map[pointer].provenance.source_revision,
-          "Missing source text revision"
+        assert.deepEqual(
+          Object.keys(map[pointer]),
+          ["value"],
+          "Public text must contain only its value"
         );
-        if (map[pointer].provenance.source_id === "turn_based_game_data")
-          assert.equal(
-            map[pointer].provenance.source_revision,
-            "$source_revision",
-            "Datamine text revision must use the manifest token"
-          );
       }
       return { en: hydrate(en[pointer]), "zh-CN": hydrate(zh[pointer]) };
     }
@@ -102,12 +96,14 @@ export async function checkGameData(repositoryRoot = root) {
   );
   assert.equal(manifest.schema_version, "1.0.0");
   assert.match(manifest.source_revision, /^[a-f0-9]{40}$/);
-  assert.equal(
-    manifest.reference_manifest.source.revision,
-    manifest.source_revision
-  );
-  assert.equal(manifest.reference_manifest.schema_version, "1.3.0");
-  assert.equal(Object.hasOwn(manifest.reference_manifest, "files"), false);
+  assert.equal(manifest.reference_manifest.schema_version, "2.0.0");
+  assert.deepEqual(Object.keys(manifest.reference_manifest).sort(), [
+    "bundle_id",
+    "counts",
+    "game_id",
+    "locales",
+    "schema_version",
+  ]);
   assert.deepEqual(
     Object.keys(manifest.members).sort(),
     [...baseMembers, ...previewMembers].sort()
@@ -172,7 +168,7 @@ export async function checkGameData(repositoryRoot = root) {
       assert.equal(values.stats.source_revision, "$source_revision");
       assert.equal(values.stats.collection, member);
       assert.equal(values.stats.game_id, "honkai_star_rail");
-      assert.equal(values.stats.schema_version, "1.3.0");
+      assert.equal(values.stats.schema_version, "2.0.0");
       const document = reconstruct(
         values.stats,
         values.en,
@@ -194,7 +190,8 @@ export async function checkGameData(repositoryRoot = root) {
               assetPaths.has(preview.image_path),
               `Preview image absent from tracked assets: ${member}:${preview.id}`
             );
-            assert.equal(preview.name.en.provenance.source_id, "nanoka");
+            assert.equal(Object.hasOwn(preview, "source_url"), false);
+            assert.equal(Object.hasOwn(preview, "source_version"), false);
             assert.ok(
               preview.sections.length > 0,
               `Empty source preview ${member}:${preview.id}`

@@ -25,7 +25,7 @@ import {
   serializeManagerInstructionEnvelope,
   summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
-import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
+import { HSR_REFERENCE_REVISION } from "@/providers/gilore/catalog";
 import { DEFAULT_WORKSPACE, PersistedWorkspaceSchema } from "@/stores/schemas";
 import { makeRelic } from "./fixtures";
 import { createDemoAccount } from "./fixtures/demoAccount";
@@ -299,13 +299,13 @@ describe("end-to-end build workspace domain", () => {
     const first = await createManagerInstructionEnvelope(
       account,
       evaluations,
-      HSR_REFERENCE_MANIFEST.source.revision,
+      HSR_REFERENCE_REVISION,
       "ggstarrail-review-2026-09-02-001"
     );
     const second = await createManagerInstructionEnvelope(
       account,
       evaluations,
-      HSR_REFERENCE_MANIFEST.source.revision,
+      HSR_REFERENCE_REVISION,
       "24094626-9096-441c-abf0-96734124bfa9"
     );
     expect(first.idempotencyKey).toBe(second.idempotencyKey);
@@ -365,7 +365,7 @@ describe("end-to-end build workspace domain", () => {
           result,
         },
       ],
-      HSR_REFERENCE_MANIFEST.source.revision,
+      HSR_REFERENCE_REVISION,
       "ggstarrail-locked-discard-guard"
     );
     const repeated = await createManagerInstructionPreview(
@@ -379,7 +379,7 @@ describe("end-to-end build workspace domain", () => {
           result,
         },
       ],
-      HSR_REFERENCE_MANIFEST.source.revision,
+      HSR_REFERENCE_REVISION,
       "ggstarrail-locked-discard-guard-repeat"
     );
     const publicEnvelope = await createManagerInstructionEnvelope(
@@ -393,7 +393,7 @@ describe("end-to-end build workspace domain", () => {
           result,
         },
       ],
-      HSR_REFERENCE_MANIFEST.source.revision,
+      HSR_REFERENCE_REVISION,
       "ggstarrail-locked-discard-guard"
     );
 

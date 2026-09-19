@@ -1,0 +1,3155 @@
+{
+  "$defs": {
+    "Achievement": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Id",
+          "type": "integer"
+        },
+        "category_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Category Id",
+          "type": "integer"
+        },
+        "quest_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Quest Id",
+          "type": "integer"
+        },
+        "linear_quest_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Linear Quest Id",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "hidden_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description_parameters": {
+          "items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "title": "Description Parameters",
+          "type": "array"
+        },
+        "order": {
+          "title": "Order",
+          "type": "integer"
+        },
+        "rarity": {
+          "enum": ["Low", "Mid", "High"],
+          "title": "Rarity",
+          "type": "string"
+        },
+        "visibility": {
+          "enum": ["visible", "show_after_finish", "hidden_description"],
+          "title": "Visibility",
+          "type": "string"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "reward": {
+          "$ref": "#/$defs/AchievementReward"
+        },
+        "chain_ids": {
+          "items": {
+            "exclusiveMinimum": 0,
+            "maximum": 4294967295,
+            "type": "integer"
+          },
+          "title": "Chain Ids",
+          "type": "array"
+        },
+        "chain_index": {
+          "minimum": 0,
+          "title": "Chain Index",
+          "type": "integer"
+        },
+        "previous_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 4294967295,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previous Id"
+        },
+        "next_ids": {
+          "items": {
+            "exclusiveMinimum": 0,
+            "maximum": 4294967295,
+            "type": "integer"
+          },
+          "title": "Next Ids",
+          "type": "array"
+        },
+        "completion_condition": {
+          "$ref": "#/$defs/AchievementCompletionCondition"
+        },
+        "ps_trophy_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ps Trophy Id"
+        },
+        "ps_name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ps_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "record_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Record Type"
+        },
+        "record_text": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "release_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Release Version"
+        }
+      },
+      "required": [
+        "id",
+        "category_id",
+        "quest_id",
+        "linear_quest_id",
+        "name",
+        "description",
+        "description_parameters",
+        "order",
+        "rarity",
+        "visibility",
+        "icon_path",
+        "reward",
+        "chain_ids",
+        "chain_index",
+        "next_ids",
+        "completion_condition"
+      ],
+      "title": "Achievement",
+      "type": "object"
+    },
+    "AchievementCategory": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Id",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "order": {
+          "title": "Order",
+          "type": "integer"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "main_icon_path": {
+          "title": "Main Icon Path",
+          "type": "string"
+        },
+        "gold_icon_path": {
+          "title": "Gold Icon Path",
+          "type": "string"
+        },
+        "silver_icon_path": {
+          "title": "Silver Icon Path",
+          "type": "string"
+        },
+        "copper_icon_path": {
+          "title": "Copper Icon Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "order",
+        "icon_path",
+        "main_icon_path",
+        "gold_icon_path",
+        "silver_icon_path",
+        "copper_icon_path"
+      ],
+      "title": "AchievementCategory",
+      "type": "object"
+    },
+    "AchievementCompletionCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Id",
+          "type": "integer"
+        },
+        "finish_type": {
+          "title": "Finish Type",
+          "type": "string"
+        },
+        "parameter_type": {
+          "title": "Parameter Type",
+          "type": "string"
+        },
+        "parameter_string": {
+          "title": "Parameter String",
+          "type": "string"
+        },
+        "parameter_integer_1": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Integer 1"
+        },
+        "parameter_integer_2": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Integer 2"
+        },
+        "parameter_integer_3": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Integer 3"
+        },
+        "parameter_integers": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Parameter Integers",
+          "type": "array"
+        },
+        "progress": {
+          "title": "Progress",
+          "type": "integer"
+        },
+        "is_backtrack": {
+          "title": "Is Backtrack",
+          "type": "boolean"
+        },
+        "maze_floor_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 4294967295,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maze Floor Id"
+        },
+        "maze_plane_id": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 4294967295,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maze Plane Id"
+        }
+      },
+      "required": [
+        "id",
+        "finish_type",
+        "parameter_type",
+        "parameter_string",
+        "parameter_integers",
+        "progress",
+        "is_backtrack"
+      ],
+      "title": "AchievementCompletionCondition",
+      "type": "object"
+    },
+    "AchievementReward": {
+      "additionalProperties": false,
+      "properties": {
+        "reward_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Reward Id",
+          "type": "integer"
+        },
+        "item_id": {
+          "const": 1,
+          "default": 1,
+          "title": "Item Id",
+          "type": "integer"
+        },
+        "count": {
+          "enum": [5, 10, 20],
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": ["reward_id", "count"],
+      "title": "AchievementReward",
+      "type": "object"
+    },
+    "Character": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rarity": {
+          "title": "Rarity",
+          "type": "integer"
+        },
+        "path_id": {
+          "title": "Path Id",
+          "type": "string"
+        },
+        "combat_type_id": {
+          "title": "Combat Type Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "max_ascension": {
+          "title": "Max Ascension",
+          "type": "integer"
+        },
+        "max_rank": {
+          "title": "Max Rank",
+          "type": "integer"
+        },
+        "max_energy": {
+          "title": "Max Energy",
+          "type": "number"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "stat_scaling": {
+          "items": {
+            "$ref": "#/$defs/CharacterStatScaling"
+          },
+          "title": "Stat Scaling",
+          "type": "array"
+        },
+        "skills": {
+          "items": {
+            "$ref": "#/$defs/CharacterSkill"
+          },
+          "title": "Skills",
+          "type": "array"
+        },
+        "servants": {
+          "items": {
+            "$ref": "#/$defs/CharacterServant"
+          },
+          "title": "Servants",
+          "type": "array"
+        },
+        "ranks": {
+          "items": {
+            "$ref": "#/$defs/CharacterRank"
+          },
+          "title": "Ranks",
+          "type": "array"
+        },
+        "traces": {
+          "items": {
+            "$ref": "#/$defs/CharacterTrace"
+          },
+          "title": "Traces",
+          "type": "array"
+        },
+        "enhancements": {
+          "items": {
+            "$ref": "#/$defs/CharacterEnhancementVariant"
+          },
+          "title": "Enhancements",
+          "type": "array"
+        },
+        "currency_war": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarCharacter"
+          },
+          "title": "Currency War",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "rarity",
+        "path_id",
+        "combat_type_id",
+        "name",
+        "max_ascension",
+        "max_rank",
+        "max_energy",
+        "icon_path",
+        "stat_scaling",
+        "skills",
+        "servants",
+        "ranks",
+        "traces",
+        "enhancements"
+      ],
+      "title": "Character",
+      "type": "object"
+    },
+    "CharacterEnhancementVariant": {
+      "additionalProperties": false,
+      "properties": {
+        "enhanced_id": {
+          "title": "Enhanced Id",
+          "type": "integer"
+        },
+        "season_id": {
+          "title": "Season Id",
+          "type": "integer"
+        },
+        "activity_id": {
+          "title": "Activity Id",
+          "type": "integer"
+        },
+        "max_energy": {
+          "title": "Max Energy",
+          "type": "number"
+        },
+        "summaries": {
+          "items": {
+            "$ref": "#/$defs/LocalizedText"
+          },
+          "title": "Summaries",
+          "type": "array"
+        },
+        "skills": {
+          "items": {
+            "$ref": "#/$defs/CharacterSkill"
+          },
+          "title": "Skills",
+          "type": "array"
+        },
+        "ranks": {
+          "items": {
+            "$ref": "#/$defs/CharacterRank"
+          },
+          "title": "Ranks",
+          "type": "array"
+        },
+        "traces": {
+          "items": {
+            "$ref": "#/$defs/CharacterTrace"
+          },
+          "title": "Traces",
+          "type": "array"
+        },
+        "skill_changes": {
+          "items": {
+            "$ref": "#/$defs/CharacterSkillEnhancement"
+          },
+          "title": "Skill Changes",
+          "type": "array"
+        },
+        "trace_changes": {
+          "items": {
+            "$ref": "#/$defs/CharacterTraceEnhancement"
+          },
+          "title": "Trace Changes",
+          "type": "array"
+        },
+        "rank_changes": {
+          "items": {
+            "$ref": "#/$defs/CharacterRankEnhancement"
+          },
+          "title": "Rank Changes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enhanced_id",
+        "season_id",
+        "activity_id",
+        "max_energy",
+        "summaries",
+        "skills",
+        "ranks",
+        "traces",
+        "skill_changes",
+        "trace_changes",
+        "rank_changes"
+      ],
+      "title": "CharacterEnhancementVariant",
+      "type": "object"
+    },
+    "CharacterRank": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "rank",
+        "name",
+        "description",
+        "icon_path",
+        "parameters"
+      ],
+      "title": "CharacterRank",
+      "type": "object"
+    },
+    "CharacterRankEnhancement": {
+      "additionalProperties": false,
+      "properties": {
+        "rank_id": {
+          "title": "Rank Id",
+          "type": "string"
+        },
+        "description_before": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description_after": {
+          "$ref": "#/$defs/LocalizedText"
+        }
+      },
+      "required": ["rank_id", "description_before", "description_after"],
+      "title": "CharacterRankEnhancement",
+      "type": "object"
+    },
+    "CharacterRelicScoreWeights": {
+      "additionalProperties": false,
+      "properties": {
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "character_exported": {
+          "title": "Character Exported",
+          "type": "boolean"
+        },
+        "weights": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Weights",
+          "type": "object"
+        }
+      },
+      "required": ["character_id", "character_exported", "weights"],
+      "title": "CharacterRelicScoreWeights",
+      "type": "object"
+    },
+    "CharacterServant": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "skills": {
+          "items": {
+            "$ref": "#/$defs/CharacterSkill"
+          },
+          "title": "Skills",
+          "type": "array"
+        }
+      },
+      "required": ["id", "name", "icon_path", "skills"],
+      "title": "CharacterServant",
+      "type": "object"
+    },
+    "CharacterSkill": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "hide_in_ui": {
+          "title": "Hide In Ui",
+          "type": "boolean"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "ultimate_icon_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ultimate Icon Path"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/CharacterSkillLevel"
+          },
+          "title": "Levels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "hide_in_ui",
+        "icon_path",
+        "max_level",
+        "levels"
+      ],
+      "title": "CharacterSkill",
+      "type": "object"
+    },
+    "CharacterSkillEnhancement": {
+      "additionalProperties": false,
+      "properties": {
+        "skill_id": {
+          "title": "Skill Id",
+          "type": "string"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        },
+        "simple_description_before": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description_after": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description_before": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description_after": {
+          "$ref": "#/$defs/LocalizedText"
+        }
+      },
+      "required": [
+        "skill_id",
+        "trace_id",
+        "simple_description_before",
+        "simple_description_after",
+        "description_before",
+        "description_after"
+      ],
+      "title": "CharacterSkillEnhancement",
+      "type": "object"
+    },
+    "CharacterSkillLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "simple_parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Simple Parameters",
+          "type": "array"
+        }
+      },
+      "required": ["level", "parameters", "simple_parameters"],
+      "title": "CharacterSkillLevel",
+      "type": "object"
+    },
+    "CharacterStatScaling": {
+      "additionalProperties": false,
+      "properties": {
+        "ascension": {
+          "title": "Ascension",
+          "type": "integer"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "stats": {
+          "$ref": "#/$defs/CharacterStats"
+        }
+      },
+      "required": ["ascension", "max_level", "stats"],
+      "title": "CharacterStatScaling",
+      "type": "object"
+    },
+    "CharacterStats": {
+      "additionalProperties": false,
+      "properties": {
+        "hp": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "attack": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "defence": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "speed": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "critical_chance": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "critical_damage": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "base_aggro": {
+          "$ref": "#/$defs/LinearStat"
+        }
+      },
+      "required": [
+        "hp",
+        "attack",
+        "defence",
+        "speed",
+        "critical_chance",
+        "critical_damage",
+        "base_aggro"
+      ],
+      "title": "CharacterStats",
+      "type": "object"
+    },
+    "CharacterTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "point_type": {
+          "title": "Point Type",
+          "type": "integer"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "default_unlock": {
+          "title": "Default Unlock",
+          "type": "boolean"
+        },
+        "prerequisite_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prerequisite Ids",
+          "type": "array"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "skill_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Skill Ids",
+          "type": "array"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/CharacterTraceLevel"
+          },
+          "title": "Levels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "point_type",
+        "max_level",
+        "default_unlock",
+        "prerequisite_ids",
+        "icon_path",
+        "skill_ids",
+        "levels"
+      ],
+      "title": "CharacterTrace",
+      "type": "object"
+    },
+    "CharacterTraceEnhancement": {
+      "additionalProperties": false,
+      "properties": {
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        },
+        "description_before": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description_after": {
+          "$ref": "#/$defs/LocalizedText"
+        }
+      },
+      "required": ["trace_id", "description_before", "description_after"],
+      "title": "CharacterTraceEnhancement",
+      "type": "object"
+    },
+    "CharacterTraceLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Properties"
+        }
+      },
+      "required": ["level", "parameters", "properties"],
+      "title": "CharacterTraceLevel",
+      "type": "object"
+    },
+    "CombatTypeDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "color": {
+          "title": "Color",
+          "type": "string"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "description", "color", "icon_path"],
+      "title": "CombatTypeDefinition",
+      "type": "object"
+    },
+    "CurrencyWarBond": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "activation_type": {
+          "title": "Activation Type",
+          "type": "string"
+        },
+        "in_handbook": {
+          "title": "In Handbook",
+          "type": "boolean"
+        },
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
+        },
+        "season_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Season Ids",
+          "type": "array"
+        },
+        "character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Character Ids",
+          "type": "array"
+        },
+        "tiers": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarBondTier"
+          },
+          "title": "Tiers",
+          "type": "array"
+        },
+        "remarks": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarBondRemark"
+          },
+          "title": "Remarks",
+          "type": "array"
+        },
+        "sub_bonds": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSubBond"
+          },
+          "title": "Sub Bonds",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "parameters",
+        "icon_path",
+        "activation_type",
+        "in_handbook",
+        "season_ids",
+        "character_ids",
+        "tiers",
+        "remarks",
+        "sub_bonds"
+      ],
+      "title": "CurrencyWarBond",
+      "type": "object"
+    },
+    "CurrencyWarBondRemark": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "position": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Position"
+        },
+        "condition_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition Type"
+        },
+        "condition_parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Condition Parameters",
+          "type": "array"
+        }
+      },
+      "required": ["description", "parameters", "condition_parameters"],
+      "title": "CurrencyWarBondRemark",
+      "type": "object"
+    },
+    "CurrencyWarBondTier": {
+      "additionalProperties": false,
+      "properties": {
+        "required_count": {
+          "title": "Required Count",
+          "type": "integer"
+        },
+        "quality": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quality"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "property_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "property_parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Property Parameters",
+          "type": "array"
+        },
+        "member_properties": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarPropertyValue"
+          },
+          "title": "Member Properties",
+          "type": "array"
+        },
+        "team_properties": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarPropertyValue"
+          },
+          "title": "Team Properties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required_count",
+        "parameters",
+        "property_parameters",
+        "member_properties",
+        "team_properties"
+      ],
+      "title": "CurrencyWarBondTier",
+      "type": "object"
+    },
+    "CurrencyWarCharacter": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "character_id": {
+          "title": "Character Id",
+          "type": "string"
+        },
+        "rarity": {
+          "title": "Rarity",
+          "type": "integer"
+        },
+        "preferred_position": {
+          "enum": ["Front", "Back", "Both"],
+          "title": "Preferred Position",
+          "type": "string"
+        },
+        "bond_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Bond Ids",
+          "type": "array"
+        },
+        "season_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Season Ids",
+          "type": "array"
+        },
+        "in_pool": {
+          "title": "In Pool",
+          "type": "boolean"
+        },
+        "in_handbook": {
+          "title": "In Handbook",
+          "type": "boolean"
+        },
+        "charge_types": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Charge Types",
+          "type": "array"
+        },
+        "remark": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "positions": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarPosition"
+          },
+          "title": "Positions",
+          "type": "array"
+        },
+        "star_levels": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarStarLevel"
+          },
+          "title": "Star Levels",
+          "type": "array"
+        },
+        "ranks": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarRank"
+          },
+          "title": "Ranks",
+          "type": "array"
+        },
+        "light_cone_adaptations": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarLightConeAdaptation"
+          },
+          "title": "Light Cone Adaptations",
+          "type": "array"
+        },
+        "special_effects": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSpecialEffect"
+          },
+          "title": "Special Effects",
+          "type": "array"
+        },
+        "is_expert": {
+          "title": "Is Expert",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "character_id",
+        "rarity",
+        "preferred_position",
+        "bond_ids",
+        "season_ids",
+        "in_pool",
+        "in_handbook",
+        "charge_types",
+        "positions",
+        "star_levels",
+        "ranks",
+        "light_cone_adaptations",
+        "special_effects",
+        "is_expert"
+      ],
+      "title": "CurrencyWarCharacter",
+      "type": "object"
+    },
+    "CurrencyWarEnvironment": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "season_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Season Ids",
+          "type": "array"
+        },
+        "in_handbook": {
+          "title": "In Handbook",
+          "type": "boolean"
+        },
+        "remarks": {
+          "items": {
+            "$ref": "#/$defs/LocalizedText"
+          },
+          "title": "Remarks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "parameters",
+        "icon_path",
+        "season_ids",
+        "in_handbook",
+        "remarks"
+      ],
+      "title": "CurrencyWarEnvironment",
+      "type": "object"
+    },
+    "CurrencyWarEquipment": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "category_name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "kind": {
+          "enum": ["equipment", "consumable", "forge"],
+          "title": "Kind",
+          "type": "string"
+        },
+        "in_handbook": {
+          "title": "In Handbook",
+          "type": "boolean"
+        },
+        "tags": {
+          "items": {
+            "$ref": "#/$defs/LocalizedText"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CurrencyWarPropertyValue"
+          },
+          "title": "Properties"
+        },
+        "recipes": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Recipes",
+          "type": "array"
+        },
+        "upgrade_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Upgrade Ids",
+          "type": "array"
+        },
+        "recommended_character_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Recommended Character Ids",
+          "type": "array"
+        },
+        "season_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Season Ids",
+          "type": "array"
+        },
+        "dress_rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dress Rule"
+        },
+        "dress_rule_parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Dress Rule Parameters",
+          "type": "array"
+        },
+        "equip_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Equip Type"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "function_parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Function Parameters",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "parameters",
+        "icon_path",
+        "category",
+        "category_name",
+        "kind",
+        "in_handbook",
+        "tags",
+        "properties",
+        "recipes",
+        "upgrade_ids",
+        "recommended_character_ids",
+        "season_ids"
+      ],
+      "title": "CurrencyWarEquipment",
+      "type": "object"
+    },
+    "CurrencyWarLightConeAdaptation": {
+      "additionalProperties": false,
+      "properties": {
+        "light_cone_id": {
+          "title": "Light Cone Id",
+          "type": "string"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "parameter_format": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parameter Format"
+        }
+      },
+      "required": ["light_cone_id", "level", "description", "parameters"],
+      "title": "CurrencyWarLightConeAdaptation",
+      "type": "object"
+    },
+    "CurrencyWarPosition": {
+      "additionalProperties": false,
+      "properties": {
+        "position": {
+          "enum": ["Front", "Back"],
+          "title": "Position",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "tag_names": {
+          "items": {
+            "$ref": "#/$defs/LocalizedText"
+          },
+          "title": "Tag Names",
+          "type": "array"
+        }
+      },
+      "required": ["position", "name", "icon_path", "tags", "tag_names"],
+      "title": "CurrencyWarPosition",
+      "type": "object"
+    },
+    "CurrencyWarPropertyValue": {
+      "additionalProperties": false,
+      "properties": {
+        "property_id": {
+          "title": "Property Id",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "value_kind": {
+          "enum": ["flat", "ratio", "unknown"],
+          "title": "Value Kind",
+          "type": "string"
+        }
+      },
+      "required": ["property_id", "value", "name", "value_kind"],
+      "title": "CurrencyWarPropertyValue",
+      "type": "object"
+    },
+    "CurrencyWarRank": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rank": {
+          "title": "Rank",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "rank",
+        "name",
+        "description",
+        "icon_path",
+        "parameters"
+      ],
+      "title": "CurrencyWarRank",
+      "type": "object"
+    },
+    "CurrencyWarSkill": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "condition_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "condition_parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Condition Parameters",
+          "type": "array"
+        },
+        "tag": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "simple_parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Simple Parameters",
+          "type": "array"
+        },
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSkillLevel"
+          },
+          "title": "Levels",
+          "type": "array"
+        },
+        "energy_regeneration": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Regeneration"
+        },
+        "skill_point_cost": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Skill Point Cost"
+        },
+        "skill_point_gain": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Skill Point Gain"
+        },
+        "toughness_reduction": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Toughness Reduction",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "icon_path",
+        "parameters",
+        "simple_parameters",
+        "level",
+        "max_level",
+        "levels",
+        "toughness_reduction"
+      ],
+      "title": "CurrencyWarSkill",
+      "type": "object"
+    },
+    "CurrencyWarSkillLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "simple_parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Simple Parameters",
+          "type": "array"
+        }
+      },
+      "required": ["level", "parameters", "simple_parameters"],
+      "title": "CurrencyWarSkillLevel",
+      "type": "object"
+    },
+    "CurrencyWarSpecialEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["enhancement", "shop"],
+          "title": "Kind",
+          "type": "string"
+        },
+        "group_id": {
+          "title": "Group Id",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "cost": {
+          "title": "Cost",
+          "type": "integer"
+        },
+        "quality": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quality"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "group_id",
+        "name",
+        "description",
+        "parameters",
+        "cost",
+        "icon_path"
+      ],
+      "title": "CurrencyWarSpecialEffect",
+      "type": "object"
+    },
+    "CurrencyWarStarLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "star": {
+          "title": "Star",
+          "type": "integer"
+        },
+        "front_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "back_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "front_skills": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSkill"
+          },
+          "title": "Front Skills",
+          "type": "array"
+        },
+        "back_skills": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSkill"
+          },
+          "title": "Back Skills",
+          "type": "array"
+        },
+        "servant_skills": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarSkill"
+          },
+          "title": "Servant Skills",
+          "type": "array"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CurrencyWarPropertyValue"
+          },
+          "title": "Properties"
+        },
+        "front_power": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Front Power"
+        },
+        "back_power": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Back Power"
+        },
+        "initial_energy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Initial Energy"
+        },
+        "max_energy": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Energy"
+        },
+        "energy_bar": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Bar"
+        },
+        "initial_energy_bar": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Initial Energy Bar"
+        },
+        "luck_chance": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Luck Chance"
+        },
+        "luck_damage": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Luck Damage"
+        },
+        "heal_base": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heal Base"
+        },
+        "shield_base": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shield Base"
+        }
+      },
+      "required": [
+        "star",
+        "front_skills",
+        "back_skills",
+        "servant_skills",
+        "properties"
+      ],
+      "title": "CurrencyWarStarLevel",
+      "type": "object"
+    },
+    "CurrencyWarStrategy": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "quality": {
+          "title": "Quality",
+          "type": "string"
+        },
+        "in_handbook": {
+          "title": "In Handbook",
+          "type": "boolean"
+        },
+        "category_id": {
+          "title": "Category Id",
+          "type": "integer"
+        },
+        "chapter_limits": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Chapter Limits",
+          "type": "array"
+        },
+        "season_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Season Ids",
+          "type": "array"
+        },
+        "remarks": {
+          "items": {
+            "$ref": "#/$defs/LocalizedText"
+          },
+          "title": "Remarks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "parameters",
+        "icon_path",
+        "quality",
+        "in_handbook",
+        "category_id",
+        "chapter_limits",
+        "season_ids",
+        "remarks"
+      ],
+      "title": "CurrencyWarStrategy",
+      "type": "object"
+    },
+    "CurrencyWarSubBond": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "simple_description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "tiers": {
+          "items": {
+            "$ref": "#/$defs/CurrencyWarBondTier"
+          },
+          "title": "Tiers",
+          "type": "array"
+        }
+      },
+      "required": ["id", "name", "description", "parameters", "tiers"],
+      "title": "CurrencyWarSubBond",
+      "type": "object"
+    },
+    "LightCone": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "rarity": {
+          "title": "Rarity",
+          "type": "integer"
+        },
+        "path_id": {
+          "title": "Path Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "background_description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "max_ascension": {
+          "title": "Max Ascension",
+          "type": "integer"
+        },
+        "max_superimposition": {
+          "title": "Max Superimposition",
+          "type": "integer"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "stat_scaling": {
+          "items": {
+            "$ref": "#/$defs/LightConeStatScaling"
+          },
+          "title": "Stat Scaling",
+          "type": "array"
+        },
+        "effect": {
+          "$ref": "#/$defs/LightConeEffect"
+        }
+      },
+      "required": [
+        "id",
+        "rarity",
+        "path_id",
+        "name",
+        "description",
+        "background_description",
+        "max_ascension",
+        "max_superimposition",
+        "icon_path",
+        "stat_scaling",
+        "effect"
+      ],
+      "title": "LightCone",
+      "type": "object"
+    },
+    "LightConeEffect": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "superimpositions": {
+          "items": {
+            "$ref": "#/$defs/LightConeSuperimposition"
+          },
+          "title": "Superimpositions",
+          "type": "array"
+        }
+      },
+      "required": ["id", "name", "description", "superimpositions"],
+      "title": "LightConeEffect",
+      "type": "object"
+    },
+    "LightConeStatScaling": {
+      "additionalProperties": false,
+      "properties": {
+        "ascension": {
+          "title": "Ascension",
+          "type": "integer"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "stats": {
+          "$ref": "#/$defs/LightConeStats"
+        }
+      },
+      "required": ["ascension", "max_level", "stats"],
+      "title": "LightConeStatScaling",
+      "type": "object"
+    },
+    "LightConeStats": {
+      "additionalProperties": false,
+      "properties": {
+        "hp": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "attack": {
+          "$ref": "#/$defs/LinearStat"
+        },
+        "defence": {
+          "$ref": "#/$defs/LinearStat"
+        }
+      },
+      "required": ["hp", "attack", "defence"],
+      "title": "LightConeStats",
+      "type": "object"
+    },
+    "LightConeSuperimposition": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "title": "Level",
+          "type": "integer"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Properties"
+        }
+      },
+      "required": ["level", "parameters", "name", "description", "properties"],
+      "title": "LightConeSuperimposition",
+      "type": "object"
+    },
+    "LinearStat": {
+      "additionalProperties": false,
+      "properties": {
+        "base_value": {
+          "title": "Base Value",
+          "type": "number"
+        },
+        "level_add": {
+          "default": 0.0,
+          "title": "Level Add",
+          "type": "number"
+        }
+      },
+      "required": ["base_value"],
+      "title": "LinearStat",
+      "type": "object"
+    },
+    "LocalizedText": {
+      "additionalProperties": false,
+      "properties": {
+        "en": {
+          "$ref": "#/$defs/TextValue"
+        },
+        "zh-CN": {
+          "$ref": "#/$defs/TextValue"
+        }
+      },
+      "required": ["en", "zh-CN"],
+      "title": "LocalizedText",
+      "type": "object"
+    },
+    "MainAffixDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "group_id": {
+          "title": "Group Id",
+          "type": "integer"
+        },
+        "affix_id": {
+          "title": "Affix Id",
+          "type": "integer"
+        },
+        "property_id": {
+          "title": "Property Id",
+          "type": "string"
+        },
+        "base_value": {
+          "title": "Base Value",
+          "type": "number"
+        },
+        "level_add": {
+          "title": "Level Add",
+          "type": "number"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "level_values": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Level Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "group_id",
+        "affix_id",
+        "property_id",
+        "base_value",
+        "level_add",
+        "max_level",
+        "level_values"
+      ],
+      "title": "MainAffixDefinition",
+      "type": "object"
+    },
+    "PathDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "description", "icon_path"],
+      "title": "PathDefinition",
+      "type": "object"
+    },
+    "ProgressionTables": {
+      "additionalProperties": false,
+      "properties": {
+        "relic_main_affixes": {
+          "items": {
+            "$ref": "#/$defs/MainAffixDefinition"
+          },
+          "title": "Relic Main Affixes",
+          "type": "array"
+        },
+        "relic_sub_affixes": {
+          "items": {
+            "$ref": "#/$defs/SubAffixDefinition"
+          },
+          "title": "Relic Sub Affixes",
+          "type": "array"
+        },
+        "relic_scoring": {
+          "$ref": "#/$defs/RelicScoringTables"
+        }
+      },
+      "required": ["relic_main_affixes", "relic_sub_affixes", "relic_scoring"],
+      "title": "ProgressionTables",
+      "type": "object"
+    },
+    "PropertyDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "relic_name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "value_kind": {
+          "enum": ["flat", "ratio", "unknown"],
+          "title": "Value Kind",
+          "type": "string"
+        },
+        "display_order": {
+          "title": "Display Order",
+          "type": "integer"
+        },
+        "is_displayed": {
+          "title": "Is Displayed",
+          "type": "boolean"
+        },
+        "is_battle_displayed": {
+          "title": "Is Battle Displayed",
+          "type": "boolean"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "usable_icon_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usable Icon Path"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "relic_name",
+        "value_kind",
+        "display_order",
+        "is_displayed",
+        "is_battle_displayed",
+        "icon_path"
+      ],
+      "title": "PropertyDefinition",
+      "type": "object"
+    },
+    "PropertyTables": {
+      "additionalProperties": false,
+      "properties": {
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PropertyDefinition"
+          },
+          "title": "Properties"
+        },
+        "paths": {
+          "items": {
+            "$ref": "#/$defs/PathDefinition"
+          },
+          "title": "Paths",
+          "type": "array"
+        },
+        "combat_types": {
+          "items": {
+            "$ref": "#/$defs/CombatTypeDefinition"
+          },
+          "title": "Combat Types",
+          "type": "array"
+        },
+        "relic_slots": {
+          "items": {
+            "$ref": "#/$defs/RelicSlotDefinition"
+          },
+          "title": "Relic Slots",
+          "type": "array"
+        }
+      },
+      "required": ["properties", "paths", "combat_types", "relic_slots"],
+      "title": "PropertyTables",
+      "type": "object"
+    },
+    "PropertyValue": {
+      "additionalProperties": false,
+      "properties": {
+        "property_id": {
+          "title": "Property Id",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": ["property_id", "value"],
+      "title": "PropertyValue",
+      "type": "object"
+    },
+    "RelicAffixScoreBase": {
+      "additionalProperties": false,
+      "properties": {
+        "property_id": {
+          "title": "Property Id",
+          "type": "string"
+        },
+        "score_type": {
+          "title": "Score Type",
+          "type": "string"
+        },
+        "base_value": {
+          "title": "Base Value",
+          "type": "number"
+        },
+        "value_per_level": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Per Level"
+        }
+      },
+      "required": ["property_id", "score_type", "base_value"],
+      "title": "RelicAffixScoreBase",
+      "type": "object"
+    },
+    "RelicPiece": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "set_id": {
+          "title": "Set Id",
+          "type": "string"
+        },
+        "set_kind": {
+          "enum": ["cavern_relic", "planar_ornament"],
+          "title": "Set Kind",
+          "type": "string"
+        },
+        "slot": {
+          "enum": ["HEAD", "HAND", "BODY", "FOOT", "NECK", "OBJECT"],
+          "title": "Slot",
+          "type": "string"
+        },
+        "rarity": {
+          "title": "Rarity",
+          "type": "integer"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "main_affix_group": {
+          "title": "Main Affix Group",
+          "type": "integer"
+        },
+        "sub_affix_group": {
+          "title": "Sub Affix Group",
+          "type": "integer"
+        },
+        "max_level": {
+          "title": "Max Level",
+          "type": "integer"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "set_id",
+        "set_kind",
+        "slot",
+        "rarity",
+        "name",
+        "description",
+        "main_affix_group",
+        "sub_affix_group",
+        "max_level",
+        "icon_path"
+      ],
+      "title": "RelicPiece",
+      "type": "object"
+    },
+    "RelicScoringTables": {
+      "additionalProperties": false,
+      "properties": {
+        "main_affix_base_values": {
+          "items": {
+            "$ref": "#/$defs/RelicAffixScoreBase"
+          },
+          "title": "Main Affix Base Values",
+          "type": "array"
+        },
+        "sub_affix_base_values": {
+          "items": {
+            "$ref": "#/$defs/RelicAffixScoreBase"
+          },
+          "title": "Sub Affix Base Values",
+          "type": "array"
+        },
+        "main_affix_character_weights": {
+          "items": {
+            "$ref": "#/$defs/CharacterRelicScoreWeights"
+          },
+          "title": "Main Affix Character Weights",
+          "type": "array"
+        },
+        "sub_affix_character_weights": {
+          "items": {
+            "$ref": "#/$defs/CharacterRelicScoreWeights"
+          },
+          "title": "Sub Affix Character Weights",
+          "type": "array"
+        }
+      },
+      "required": [
+        "main_affix_base_values",
+        "sub_affix_base_values",
+        "main_affix_character_weights",
+        "sub_affix_character_weights"
+      ],
+      "title": "RelicScoringTables",
+      "type": "object"
+    },
+    "RelicSet": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["cavern_relic", "planar_ornament"],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "release_version": {
+          "title": "Release Version",
+          "type": "string"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "bonuses": {
+          "items": {
+            "$ref": "#/$defs/RelicSetBonus"
+          },
+          "title": "Bonuses",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name",
+        "release_version",
+        "icon_path",
+        "bonuses"
+      ],
+      "title": "RelicSet",
+      "type": "object"
+    },
+    "RelicSetBonus": {
+      "additionalProperties": false,
+      "properties": {
+        "required_pieces": {
+          "title": "Required Pieces",
+          "type": "integer"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Properties"
+        },
+        "parameters": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Parameters",
+          "type": "array"
+        }
+      },
+      "required": [
+        "required_pieces",
+        "description",
+        "properties",
+        "parameters"
+      ],
+      "title": "RelicSetBonus",
+      "type": "object"
+    },
+    "RelicSlotDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "enum": ["HEAD", "HAND", "BODY", "FOOT", "NECK", "OBJECT"],
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "$ref": "#/$defs/LocalizedText"
+        },
+        "icon_path": {
+          "title": "Icon Path",
+          "type": "string"
+        },
+        "valid_main_properties": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Valid Main Properties",
+          "type": "array"
+        }
+      },
+      "required": ["id", "name", "icon_path", "valid_main_properties"],
+      "title": "RelicSlotDefinition",
+      "type": "object"
+    },
+    "SubAffixDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "group_id": {
+          "title": "Group Id",
+          "type": "integer"
+        },
+        "affix_id": {
+          "title": "Affix Id",
+          "type": "integer"
+        },
+        "property_id": {
+          "title": "Property Id",
+          "type": "string"
+        },
+        "base_value": {
+          "title": "Base Value",
+          "type": "number"
+        },
+        "step_value": {
+          "title": "Step Value",
+          "type": "number"
+        },
+        "step_count": {
+          "title": "Step Count",
+          "type": "integer"
+        },
+        "roll_values": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Roll Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "group_id",
+        "affix_id",
+        "property_id",
+        "base_value",
+        "step_value",
+        "step_count",
+        "roll_values"
+      ],
+      "title": "SubAffixDefinition",
+      "type": "object"
+    },
+    "TextValue": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": ["value"],
+      "title": "TextValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "achievement_categories": {
+      "items": {
+        "$ref": "#/$defs/AchievementCategory"
+      },
+      "title": "Achievement Categories",
+      "type": "array"
+    },
+    "achievements": {
+      "items": {
+        "$ref": "#/$defs/Achievement"
+      },
+      "title": "Achievements",
+      "type": "array"
+    },
+    "characters": {
+      "items": {
+        "$ref": "#/$defs/Character"
+      },
+      "title": "Characters",
+      "type": "array"
+    },
+    "light_cones": {
+      "items": {
+        "$ref": "#/$defs/LightCone"
+      },
+      "title": "Light Cones",
+      "type": "array"
+    },
+    "relic_sets": {
+      "items": {
+        "$ref": "#/$defs/RelicSet"
+      },
+      "title": "Relic Sets",
+      "type": "array"
+    },
+    "relic_pieces": {
+      "items": {
+        "$ref": "#/$defs/RelicPiece"
+      },
+      "title": "Relic Pieces",
+      "type": "array"
+    },
+    "property_tables": {
+      "$ref": "#/$defs/PropertyTables"
+    },
+    "progression": {
+      "$ref": "#/$defs/ProgressionTables"
+    },
+    "currency_war_equipment": {
+      "items": {
+        "$ref": "#/$defs/CurrencyWarEquipment"
+      },
+      "title": "Currency War Equipment",
+      "type": "array"
+    },
+    "currency_war_environments": {
+      "items": {
+        "$ref": "#/$defs/CurrencyWarEnvironment"
+      },
+      "title": "Currency War Environments",
+      "type": "array"
+    },
+    "currency_war_strategies": {
+      "items": {
+        "$ref": "#/$defs/CurrencyWarStrategy"
+      },
+      "title": "Currency War Strategies",
+      "type": "array"
+    },
+    "currency_war_bonds": {
+      "items": {
+        "$ref": "#/$defs/CurrencyWarBond"
+      },
+      "title": "Currency War Bonds",
+      "type": "array"
+    }
+  },
+  "required": [
+    "achievement_categories",
+    "achievements",
+    "characters",
+    "light_cones",
+    "relic_sets",
+    "relic_pieces",
+    "property_tables",
+    "progression",
+    "currency_war_equipment",
+    "currency_war_environments",
+    "currency_war_strategies",
+    "currency_war_bonds"
+  ],
+  "title": "ReferenceBundle",
+  "type": "object"
+}

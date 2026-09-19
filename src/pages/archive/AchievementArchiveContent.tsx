@@ -204,23 +204,29 @@ function AchievementFilterToolbar({
         disabled={!completionKnown}
         className="contents"
       />
-      <span
-        className="mx-1 hidden h-5 w-px bg-border sm:block"
-        aria-hidden="true"
-      />
-      <FilterChipGroup
-        options={versionOptions}
-        selectedValues={versionFilter}
-        onSelectedValuesChange={onVersionFilterChange}
-        getKey={(version) => version}
-        getLabel={(version) =>
-          version === UNKNOWN_ACHIEVEMENT_VERSION
-            ? t("archive.achievement.version.unknown")
-            : `v${version}.x`
-        }
-        emptyMeansAll
-        className="contents"
-      />
+      {versionOptions.some(
+        (version) => version !== UNKNOWN_ACHIEVEMENT_VERSION
+      ) && (
+        <>
+          <span
+            className="mx-1 hidden h-5 w-px bg-border sm:block"
+            aria-hidden="true"
+          />
+          <FilterChipGroup
+            options={versionOptions}
+            selectedValues={versionFilter}
+            onSelectedValuesChange={onVersionFilterChange}
+            getKey={(version) => version}
+            getLabel={(version) =>
+              version === UNKNOWN_ACHIEVEMENT_VERSION
+                ? t("archive.achievement.version.unknown")
+                : `v${version}.x`
+            }
+            emptyMeansAll
+            className="contents"
+          />
+        </>
+      )}
     </ArchiveToolbar>
   );
 }
@@ -336,11 +342,7 @@ function AchievementSeriesCard({
           const presented = achievementPresentedText(achievement, completed);
           const displayedName =
             presented.name ?? t("archive.achievement.concealedName");
-          const accessibleName =
-            presented.name ??
-            t("archive.achievement.concealedAccessibleName", {
-              id: achievement.id,
-            });
+          const accessibleName = displayedName;
           const displayedDescription =
             presented.description ??
             t("archive.achievement.concealedDescription");
@@ -379,13 +381,9 @@ function AchievementSeriesCard({
                   >
                     {displayedName}
                   </h3>
-                  {achievement.releaseVersion ? (
+                  {achievement.releaseVersion && (
                     <Badge variant="secondary" className="px-1.5 py-0">
                       v{achievement.releaseVersion}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="px-1.5 py-0">
-                      {t("archive.achievement.version.unknown")}
                     </Badge>
                   )}
                   {achievement.visibility === "show_after_finish" && (

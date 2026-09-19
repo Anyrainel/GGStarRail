@@ -28,6 +28,7 @@ export function useCatalogResource<T>(
           reason instanceof Error
             ? reason
             : new Error("Reference catalog could not be loaded");
+        console.error("Archive catalog loading failed", error);
         setResource({ data: null, error, loading: false });
       }
     );

@@ -55,7 +55,7 @@ import {
   type ManagerInstructionPreview,
   serializeManagerInstructionEnvelope,
 } from "@/lib/managerInstructions";
-import { HSR_REFERENCE_MANIFEST } from "@/providers/gilore/catalog";
+import { HSR_REFERENCE_REVISION } from "@/providers/gilore/catalog";
 import type { RelicSlotId } from "@/providers/gilore/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
@@ -147,7 +147,7 @@ export function TriageView() {
       const preview = await createManagerInstructionPreview(
         account,
         evaluations,
-        HSR_REFERENCE_MANIFEST.source.revision
+        HSR_REFERENCE_REVISION
       );
       setManagerPreview(preview);
     } catch {

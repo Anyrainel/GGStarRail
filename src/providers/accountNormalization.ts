@@ -1,7 +1,7 @@
 import type { RelicSlot } from "@/domain/account/schemas";
 import type {
-  CharacterPromotion,
-  LightConePromotion,
+  CharacterStatScaling,
+  LightConeStatScaling,
   PropertyDefinition,
   RelicSlotId,
 } from "@/providers/gilore/types";
@@ -30,14 +30,14 @@ export function accountStatValue(
 
 export function inferPromotion(
   level: number,
-  promotions: readonly (CharacterPromotion | LightConePromotion)[]
+  scaling: readonly (CharacterStatScaling | LightConeStatScaling)[]
 ): number {
-  const ordered = [...promotions].sort(
-    (left, right) => left.promotion - right.promotion
+  const ordered = [...scaling].sort(
+    (left, right) => left.ascension - right.ascension
   );
   return (
-    ordered.find((promotion) => level <= promotion.max_level)?.promotion ??
-    ordered.at(-1)?.promotion ??
+    ordered.find((promotion) => level <= promotion.max_level)?.ascension ??
+    ordered.at(-1)?.ascension ??
     0
   );
 }

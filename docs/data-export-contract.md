@@ -14,11 +14,25 @@ Any failed source request, checksum, schema, pagination, or coverage check fails
 command. No source failure becomes an empty successful catalog.
 
 `data:website:check` reconstructs the full released/beta catalog and validates
-localized text provenance, character skills/traces/progression, Light Cone
+strict schema 2.0 field shapes, bilingual text, character skills/traces/stat scaling, Light Cone
 superimpositions, Relic properties and affixes, and achievement categories/rewards/
 chains. It also compares GOODCapture's public JSON field values against that
 catalog, including bilingual names, equipment ownership keys, and numeric affix
 progression. Matching counts or IDs alone do not pass this check.
+
+`scripts/hsr-reference-v2.schema.json` is generated directly from GIlore's
+`ReferenceBundle.model_json_schema(by_alias=True)`. Regenerate it from the
+GIlore checkout with:
+
+```sh
+uv run python -c "from hsr_data.exporters.models import ReferenceBundle; from pathlib import Path; import json; Path('../GGStarRail/scripts/hsr-reference-v2.schema.json').write_text(json.dumps(ReferenceBundle.model_json_schema(by_alias=True), ensure_ascii=False, indent=2)+'\n', encoding='utf8')"
+```
+
+Then run the GGStarRail formatter and `npm run data:website:check`. The strict
+schema validates fields and types; `validate-reference-v2.mjs` additionally
+checks joins, trace cycles, level sequences, affix formulas, and the absence of
+removed public metadata. The independently pinned v1 fallback cache continues
+to use its own legacy verifier.
 
 Options:
 
@@ -53,9 +67,9 @@ are not removed. `--archive-root` overrides that archive location.
 
 Tracked `src/data/game/manifest.json` has transport `schema_version: "1.0.0"`,
 `source_revision`, `game_version`, `members`, `reference_manifest`, and
-`release_evidence`. `reference_manifest` preserves the original source metadata
-and exactly the source schema's count keys, recomputed for released records;
-it omits raw member `files`, and has empty `source_files`. Raw diagnostics and
+`release_evidence`. `reference_manifest` contains only `bundle_id`, `game_id`,
+`schema_version`, `locales`, and `counts`, recomputed for released records.
+It contains no source metadata, source files, or raw member descriptors. Raw diagnostics and
 corroboration are never runtime imports because they can contain hidden names.
 
 Members are `characters`, `light_cones`, `relic_sets`, `relic_pieces`,
@@ -63,7 +77,7 @@ Members are `characters`, `light_cones`, `relic_sets`, `relic_pieces`,
 partial preview members `nanoka_characters`, `nanoka_light_cones`,
 `nanoka_relic_sets`.
 
-Reference schema 1.3 adds `currency_war_equipment`, `currency_war_environments`,
+Reference schema 2.0 includes `currency_war_equipment`, `currency_war_environments`,
 `currency_war_strategies`, and `currency_war_bonds`. Every character contains a
 `currency_war` array: alternate mode identities remain attached to the same
 base character, with their original role IDs, positions, bonds, star levels,
@@ -79,7 +93,21 @@ also require that base character to pass the existing official release gate.
 This policy does not use Nanoka's version number to claim an item is released.
 The beta overlay can add hidden Currency War role variants without replacing
 any released base-character fields. The complete source catalog validator
-checks mode joins, numeric parameters, and bilingual provenance.
+checks mode joins, numeric parameters, and bilingual text.
+
+Schema 2.0 removes entity provenance, raw table names, trigger/ability names,
+effect reference IDs, material costs, Eidolon skill-level additions, and EXP
+tables/items. Character and Light Cone `stat_scaling` rows contain only
+`ascension`, `max_level`, and stat coefficients; `max_ascension` replaces
+`max_promotion`. Account/scanner validation uses these coefficients without
+exporting promotion gates or costs. `progression` now contains only Relic main
+affixes, sub-affixes, and scoring tables required by account tools.
+
+Skills retain localized names, type/tag chips, full and brief descriptions, and
+level parameter arrays. Duplicate display-description/parameter fields are
+removed. Currency War special effects use a semantic `kind` instead of a raw
+source table. Stable entity IDs and artwork paths remain functional join/asset
+references and are never rendered as archive labels.
 
 Each `members[name]` has `released` and `beta`, each containing `stats`, `en`,
 and `zh` descriptors. A descriptor is `{path, sha256, byte_count}`; its checksum
@@ -91,8 +119,8 @@ and byte count cover the actual file bytes, including gzip compression.
 
 Stats files retain the existing MemberDocument wrapper and numeric/structural
 value. Each bilingual `LocalizedText` node becomes `{"$text":"/value/..."}`.
-Locale files map that JSON pointer to the original `SourceText`, including
-provenance. Pointers are scoped to one member and one released/beta partition,
+Locale files map that JSON pointer to exactly `{value: string}`. Text hashes,
+source paths, and provenance are not part of public entity values. Pointers are scoped to one member and one released/beta partition,
 start at the document root, and use RFC 6901 escaping (`~0`, `~1`). Reconstruct
 each partition before merging: replace a marker with
 `{en: english[pointer], "zh-CN": chinese[pointer]}`.
@@ -102,7 +130,8 @@ as `"$source_revision"`. Hydrate that token from transport manifest
 `source_revision`. This replacement applies only to properties with that exact
 key/value; literal display text is unaffected. A revision-only update therefore
 changes the manifest while unchanged member transport hashes remain stable.
-Nanoka's own version provenance remains explicit.
+Source diagnostics remain private to the producer; transport revision/checksum
+metadata is used for cache integrity and never displayed in the archive.
 
 Beta files are deterministic gzip (`mtime=0`), compact sorted UTF-8 JSON. The
 producer verifies split/rejoin equality before writing. English and Chinese are
@@ -131,7 +160,7 @@ Released records win ID collisions. The deliberate exception is character
 enhancement seasons, so released `enhancements` is empty and the complete
 original character remains in beta. With opt-in only, the loader takes the beta
 enhancements while preserving every other released field. Shared progression
-mechanics remain available; item/path/property records are admitted through
+mechanics remain available; path/property records are admitted through
 verified entities' references. Character-specific scoring rows are partitioned
 by released character ID. Category visibility follows verified achievements.
 
@@ -142,14 +171,14 @@ it. Existing source IDs and persisted account identifiers do not change.
 
 ## Partial Nanoka previews
 
-Nanoka omits required fields from complete schema 1.2 combat records, such as
-experience types, some promotion gates, rank unlock costs and effect identities.
+Nanoka can omit required fields from complete schema 2.0 combat records, such as
+complete stat scaling, trace relationships, and effect identities.
 The exporter does not fabricate them. Only IDs absent from the normalized
 collection become previews. They are archive data, not build-engine inputs.
 
 Preview value records contain `id`, `name: LocalizedText`, nullable `rarity`,
-`path_id`, `combat_type_id`, `image_path`, `sections`, `stats`, `source_url`, and
-`source_version`. Their released partition is empty. `image_path` is an absolute
+`path_id`, `combat_type_id`, `image_path`, `sections`, and `stats`.
+Their released partition is empty. `image_path` is an absolute
 local `/assets/ggstarrail/webp/<sha256>.webp` URL when images were crawled.
 
 Sections contain `{id,title,description,parameters}`. Titles/descriptions are

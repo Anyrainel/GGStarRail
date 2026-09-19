@@ -1,9 +1,16 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { BetaPreviews } from "@/pages/archive/BetaPreviews";
+
+const previewFixture = vi.hoisted(() => ({
+  stats: {} as Record<string, number[]>,
+}));
+beforeEach(() => {
+  previewFixture.stats = {};
+});
 
 vi.mock("@/providers/gilore/catalog", () => ({
   getLocalizedValue: (
@@ -23,7 +30,7 @@ vi.mock("@/data/gameDataLoader", () => ({
         },
         rarity: 5,
         image_path: null,
-        stats: {},
+        stats: previewFixture.stats,
         source_url: "https://hsr.nanoka.cc/",
         source_version: "test",
         sections: [
@@ -42,7 +49,7 @@ vi.mock("@/data/gameDataLoader", () => ({
   }),
 }));
 
-it("renders partial source details and applies the selected skill level without inventing missing stats", async () => {
+it("opens preview effects and applies the selected skill level without technical source details", async () => {
   localStorage.setItem(STORAGE_KEYS.locale, "en");
   render(
     <I18nProvider>
@@ -56,5 +63,35 @@ it("renders partial source details and applies the selected skill level without 
   await user.selectOptions(screen.getByRole("combobox"), "1");
   expect(screen.getByText("Deals 80% damage.")).toBeVisible();
   expect(screen.queryByRole("table")).not.toBeInTheDocument();
-  expect(screen.getByText(/not yet available in build tools/)).toBeVisible();
+  expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(/not yet available in build tools/)
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByText(/Nanoka|source_version|skill:1/)
+  ).not.toBeInTheDocument();
+});
+
+it("shows named initial stats without exposing growth arrays or unknown engine fields", async () => {
+  previewFixture.stats = {
+    base_hp: [48, 105.6],
+    base_hp_add: [7.2, 7.2],
+    unknown_engine_stat: [3000],
+  };
+  const user = userEvent.setup();
+  render(
+    <I18nProvider>
+      <BetaPreviews kind="characters" />
+    </I18nProvider>
+  );
+  await user.click(
+    await screen.findByRole("button", { name: "Preview character" })
+  );
+  const dialog = screen.getByRole("dialog", { name: "Preview character" });
+  expect(within(dialog).getByText("HP", { exact: true })).toBeVisible();
+  expect(within(dialog).getByText("48", { exact: true })).toBeVisible();
+  expect(dialog).not.toHaveTextContent(
+    /105\.6|7\.2|3000|base_hp|unknown_engine_stat|Nanoka/
+  );
+  expect(within(dialog).queryByRole("table")).not.toBeInTheDocument();
 });

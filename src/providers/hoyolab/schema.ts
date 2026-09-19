@@ -323,7 +323,7 @@ export function normalizeHoYoLabAvatarInfo(
       pathId: definition.path_id,
       combatTypeId: definition.combat_type_id,
       level: avatar.level,
-      ascension: inferPromotion(avatar.level, definition.promotions),
+      ascension: inferPromotion(avatar.level, definition.stat_scaling),
       eidolon: avatar.rank,
       traces,
       relicKeys: [],
@@ -346,7 +346,7 @@ export function normalizeHoYoLabAvatarInfo(
           level: avatar.equip.level,
           ascension: inferPromotion(
             avatar.equip.level,
-            lightConeDefinition.promotions
+            lightConeDefinition.stat_scaling
           ),
           superimposition: avatar.equip.rank,
           locked: null,
@@ -399,7 +399,7 @@ export function normalizeHoYoLabAvatarInfo(
       sourceVersion: envelope.success
         ? `hoyolab-hkrpg-avatar-info-${envelope.data.source.transport}-v1`
         : `hoyolab-hkrpg-avatar-info-${request.region}-fixture-v1`,
-      sourceRevision: `gilore-ref:${catalog.manifest.source.revision}`,
+      sourceRevision: `gilore-ref:${catalog.sourceRevision}`,
       importedAt: now.toISOString(),
       coverage: {
         characters: "complete",

@@ -5,6 +5,7 @@ import {
 } from "@/domain/account/schemas";
 import {
   HSR_REFERENCE_MANIFEST,
+  HSR_REFERENCE_REVISION,
   loadCharacters,
   loadLightCones,
   loadProgression,
@@ -289,7 +290,7 @@ export async function createDemoAccount(
       `Character ${loadout.characterId}`
     );
     const finalPromotion = required(
-      definition.promotions.at(-1),
+      definition.stat_scaling.at(-1),
       `Light Cone promotion ${definition.id}`
     );
     return {
@@ -297,7 +298,7 @@ export async function createDemoAccount(
       definitionId: definition.id,
       pathId: definition.path_id,
       level: finalPromotion.max_level,
-      ascension: definition.max_promotion,
+      ascension: definition.max_ascension,
       superimposition: Math.min(index + 1, definition.max_superimposition),
       locked: index % 2 === 0,
       equippedCharacterKey,
@@ -310,7 +311,7 @@ export async function createDemoAccount(
       `Character ${definitionId}`
     );
     const finalPromotion = required(
-      definition.promotions.at(-1),
+      definition.stat_scaling.at(-1),
       `Character promotion ${definition.id}`
     );
     return {
@@ -319,7 +320,7 @@ export async function createDemoAccount(
       pathId: definition.path_id,
       combatTypeId: definition.combat_type_id,
       level: finalPromotion.max_level,
-      ascension: definition.max_promotion,
+      ascension: definition.max_ascension,
       eidolon: Math.min(index, definition.max_rank),
       traces: {},
       lightConeKey: required(lightConeKeys.get(definition.id), definition.id),
@@ -338,7 +339,7 @@ export async function createDemoAccount(
       provider: "demo-account",
       formatVersion: 1,
       sourceVersion: HSR_REFERENCE_MANIFEST.schema_version,
-      sourceRevision: HSR_REFERENCE_MANIFEST.source.revision,
+      sourceRevision: HSR_REFERENCE_REVISION,
       importedAt: now.toISOString(),
       coverage: {
         characters: "complete",

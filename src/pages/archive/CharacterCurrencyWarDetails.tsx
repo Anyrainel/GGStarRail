@@ -1,4 +1,3 @@
-import { Coins } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -6,15 +5,19 @@ import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/config/navigation";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
 import { getLocalizedValue, loadLightCones } from "@/providers/gilore/catalog";
 import { loadCurrencyWarCatalog } from "@/providers/gilore/currencyWar";
 import type {
   CurrencyWarCharacter,
-  CurrencyWarSkill,
   PropertyCatalog,
 } from "@/providers/gilore/types";
-import { CatalogFailure, CatalogLoading } from "./CatalogControls";
+import { CatalogFailure, CatalogLoading } from "./CatalogStatus";
+import {
+  type CharacterDescriptionMode,
+  CharacterEffectCard,
+  CharacterSection,
+  CharacterSkillCard,
+} from "./CharacterSkillCard";
 import { CurrencyWarCharacterStats } from "./CurrencyWarCharacterStats";
 import {
   CurrencyWarProperties,
@@ -30,61 +33,14 @@ async function loadCurrencyWarReferences() {
   return { bonds: catalog.bonds, lightCones };
 }
 
-function CurrencyWarSkillDetails({ skill }: { skill: CurrencyWarSkill }) {
-  const { locale, t } = useI18n();
-  const [level, setLevel] = useState(skill.levels[0]?.level ?? skill.level);
-  const skillLevel = skill.levels.find((entry) => entry.level === level);
-  return (
-    <details className="rounded-lg border border-border bg-background/45 p-3">
-      <summary className="cursor-pointer text-sm font-medium">
-        {formatGameText(
-          getLocalizedValue(skill.name, locale),
-          [],
-          t("terms.trailblazer")
-        )}
-        {skill.tag && (
-          <span className="ml-2 text-xs text-muted-foreground">
-            {getLocalizedValue(skill.tag, locale)}
-          </span>
-        )}
-      </summary>
-      <div className="mt-3 space-y-2">
-        {skill.levels.length > 1 && (
-          <label className="flex items-center gap-2 text-xs">
-            {t("archive.currencyWar.skillLevel")}
-            <select
-              className="h-8 rounded-md border border-border bg-background px-2"
-              value={level}
-              onChange={(event) => setLevel(Number(event.target.value))}
-            >
-              {skill.levels.map((entry) => (
-                <option key={entry.level} value={entry.level}>
-                  {t("archive.level", { value: entry.level })}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        <CurrencyWarText
-          text={skill.description}
-          parameters={skillLevel?.parameters ?? skill.parameters}
-        />
-        <CurrencyWarText
-          text={skill.condition_description}
-          parameters={skill.condition_parameters}
-          className="text-muted-foreground"
-        />
-      </div>
-    </details>
-  );
-}
-
 export function CharacterCurrencyWarDetails({
   variants,
   properties,
+  descriptionMode,
 }: {
   variants: readonly CurrencyWarCharacter[];
   properties: PropertyCatalog;
+  descriptionMode: CharacterDescriptionMode;
 }) {
   const { locale, t } = useI18n();
   const references = useCatalogResource(loadCurrencyWarReferences);
@@ -116,25 +72,19 @@ export function CharacterCurrencyWarDetails({
   const skills =
     position === "Front" ? starLevel?.front_skills : starLevel?.back_skills;
   return (
-    <section
-      data-testid="character-currency-war"
-      className="space-y-4 rounded-xl border border-primary/35 bg-primary/5 p-3 sm:p-4"
+    <CharacterSection
+      testId="character-currency-war"
+      title={t("archive.currencyWar.title")}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="flex items-center gap-2 font-semibold">
-          <Coins className="h-4 w-4 text-primary" aria-hidden="true" />
-          {t("archive.currencyWar.title")}
-        </h3>
+      <div className="flex flex-wrap items-center gap-2">
         <Badge variant="secondary">
           {t("archive.currencyWar.cost", { value: role.rarity })}
         </Badge>
         {role.is_expert && <Badge>{t("archive.currencyWar.expert")}</Badge>}
-      </div>
-      {variants.length > 1 && (
-        <label className="flex flex-wrap items-center gap-2 text-xs font-medium">
-          {t("archive.currencyWar.season")}
+        {variants.length > 1 && (
           <select
-            className="h-9 min-w-0 rounded-lg border border-border bg-background px-2 text-sm"
+            className="ml-auto h-9 min-w-0 rounded-md border border-border bg-background px-2 text-sm"
+            aria-label={t("archive.currencyWar.season")}
             value={variantIndex}
             onChange={(event) => {
               const index = Number(event.target.value);
@@ -155,14 +105,30 @@ export function CharacterCurrencyWarDetails({
                   : t("archive.currencyWar.standard")}
                 {" · "}
                 {t("archive.currencyWar.cost", { value: variant.rarity })}
+                {variant.bond_ids
+                  .flatMap((id) => {
+                    if (
+                      variants.every((candidate) =>
+                        candidate.bond_ids.includes(id)
+                      )
+                    )
+                      return [];
+                    const bond = references.data?.bonds.find(
+                      (candidate) => candidate.id === id
+                    );
+                    return bond
+                      ? [` · ${getLocalizedValue(bond.name, locale)}`]
+                      : [];
+                  })
+                  .join("")}
                 {variant.is_expert
                   ? ` · ${t("archive.currencyWar.expert")}`
                   : ""}
               </option>
             ))}
           </select>
-        </label>
-      )}
+        )}
+      </div>
       {references.error ? (
         <CatalogFailure error={references.error} />
       ) : !references.data ? (
@@ -177,7 +143,7 @@ export function CharacterCurrencyWarDetails({
               <Link
                 key={id}
                 to={`${APP_PATHS.archiveCurrencyWar}?tab=bonds&id=${id}`}
-                className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold hover:border-primary/60"
+                className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium transition-colors hover:bg-primary/20"
               >
                 {getLocalizedValue(bond.name, locale)}
               </Link>
@@ -188,7 +154,7 @@ export function CharacterCurrencyWarDetails({
       <CurrencyWarText text={role.remark} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <fieldset
-          className="flex rounded-lg border border-border bg-background/65 p-1"
+          className="flex rounded-lg border border-border bg-secondary/40 p-1"
           aria-label={t("archive.currencyWar.position")}
         >
           {availablePositions.map((value) => (
@@ -225,7 +191,7 @@ export function CharacterCurrencyWarDetails({
       {positionInfo && (
         <div className="flex flex-wrap gap-2">
           {positionInfo.tag_names.map((tag) => (
-            <Badge key={tag.en.provenance.source_reference} variant="outline">
+            <Badge key={tag.en.value} variant="outline">
               {getLocalizedValue(tag, locale)}
             </Badge>
           ))}
@@ -250,7 +216,11 @@ export function CharacterCurrencyWarDetails({
             chargeTypes={role.charge_types}
           />
           {skills?.map((skill) => (
-            <CurrencyWarSkillDetails key={skill.id} skill={skill} />
+            <CharacterSkillCard
+              key={`${role.id}-${position}-${starLevel.star}-${skill.id}`}
+              skill={skill}
+              descriptionMode={descriptionMode}
+            />
           ))}
           {position === "Front" && starLevel.servant_skills.length > 0 && (
             <CurrencyWarSection
@@ -259,71 +229,70 @@ export function CharacterCurrencyWarDetails({
               })}
             >
               {starLevel.servant_skills.map((skill) => (
-                <CurrencyWarSkillDetails key={skill.id} skill={skill} />
+                <CharacterSkillCard
+                  key={`${role.id}-${starLevel.star}-${skill.id}`}
+                  skill={skill}
+                  descriptionMode={descriptionMode}
+                />
               ))}
             </CurrencyWarSection>
           )}
         </div>
       )}
       {role.ranks.length > 0 && (
-        <details className="rounded-lg border border-border bg-background/45 p-3">
-          <summary className="cursor-pointer text-sm font-semibold">
-            {t("archive.currencyWar.eidolons")}
-          </summary>
-          <div className="mt-3 space-y-4">
+        <CurrencyWarSection title={t("archive.currencyWar.eidolons")}>
+          <div className="grid gap-3 xl:grid-cols-2">
             {role.ranks.map((rank) => (
-              <CurrencyWarSection
+              <CharacterEffectCard
                 key={rank.id}
-                title={`E${rank.rank} · ${getLocalizedValue(rank.name, locale)}`}
+                title={
+                  <>
+                    <span className="mr-2 text-primary">
+                      {t("archive.eidolon", { value: rank.rank })}
+                    </span>{" "}
+                    {getLocalizedValue(rank.name, locale)}
+                  </>
+                }
               >
                 <CurrencyWarText
                   text={rank.description}
                   parameters={rank.parameters}
                 />
-              </CurrencyWarSection>
+              </CharacterEffectCard>
             ))}
           </div>
-        </details>
+        </CurrencyWarSection>
       )}
-      {role.special_effects?.length > 0 && (
+      {role.special_effects.length > 0 && (
         <CurrencyWarSection title={t("archive.currencyWar.adaptations")}>
-          <div className="space-y-2">
+          <div className="grid gap-3 xl:grid-cols-2">
             {role.special_effects.map((effect) => (
-              <details
+              <CharacterEffectCard
                 key={effect.id}
-                className="rounded-lg border border-border bg-background/45 p-3"
+                title={getLocalizedValue(effect.name, locale)}
               >
-                <summary className="cursor-pointer text-sm font-medium">
-                  {getLocalizedValue(effect.name, locale)}
-                </summary>
-                <div className="mt-3 space-y-2">
-                  {effect.cost > 0 && (
-                    <Badge variant="secondary">
-                      {t("archive.currencyWar.cost", { value: effect.cost })}
-                    </Badge>
-                  )}
-                  <CurrencyWarText
-                    text={effect.description}
-                    parameters={effect.parameters}
-                  />
-                </div>
-              </details>
+                <CurrencyWarText
+                  text={
+                    descriptionMode === "short"
+                      ? (effect.simple_description ?? effect.description)
+                      : effect.description
+                  }
+                  parameters={effect.parameters}
+                />
+              </CharacterEffectCard>
             ))}
           </div>
         </CurrencyWarSection>
       )}
       {role.light_cone_adaptations.length > 0 && (
-        <details className="rounded-lg border border-border bg-background/45 p-3">
-          <summary className="cursor-pointer text-sm font-semibold">
-            {t("archive.currencyWar.lightCones")}
-          </summary>
-          <div className="mt-3 space-y-4">
+        <CurrencyWarSection title={t("archive.currencyWar.lightCones")}>
+          <div className="grid gap-3 xl:grid-cols-2">
             {role.light_cone_adaptations.map((adaptation) => {
               const lightCone = references.data?.lightCones.byId.get(
                 adaptation.light_cone_id
               );
               return (
-                <CurrencyWarSection
+                <CharacterEffectCard
                   key={`${adaptation.light_cone_id}-${adaptation.level}`}
                   title={`${lightCone ? getLocalizedValue(lightCone.name, locale) : t("nav.archiveLightCones")} · ${t("archive.superimposition", { value: adaptation.level })}`}
                 >
@@ -332,12 +301,12 @@ export function CharacterCurrencyWarDetails({
                     parameters={adaptation.parameters}
                     parameterFormat={adaptation.parameter_format}
                   />
-                </CurrencyWarSection>
+                </CharacterEffectCard>
               );
             })}
           </div>
-        </details>
+        </CurrencyWarSection>
       )}
-    </section>
+    </CharacterSection>
   );
 }

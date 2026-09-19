@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { validateReferenceCatalog } from "./sync-hsr-reference.mjs";
 import { validateCurrencyWarCatalog } from "./validate-currency-war.mjs";
+import { validateReferenceV2 } from "./validate-reference-v2.mjs";
 
 // Reassemble the complete source catalog before checking joins. Enhanced
 // characters occur in both channels; the beta copy retains their enhancements.
@@ -69,13 +69,7 @@ export function validateCurrentReference(documents, capture, manifest) {
       b.order - a.order ||
       Number(a.id) - Number(b.id)
   );
-  validateReferenceCatalog(
-    Object.fromEntries(
-      Object.entries(catalog).map(([key, value]) => [`${key}.json`, { value }])
-    ),
-    manifest.reference_manifest.schema_version,
-    manifest.source_revision
-  );
+  validateReferenceV2(catalog, manifest.reference_manifest.schema_version);
   validateCurrencyWarCatalog(catalog);
   const name = (text) => ({ en: text.en.value, zhCn: text["zh-CN"].value });
   const compare = (actual, expected, label) => {

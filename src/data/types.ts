@@ -17,6 +17,4 @@ export interface BetaPreview {
   image_path: string | null;
   sections: BetaPreviewSection[];
   stats: Record<string, number[]>;
-  source_url: string;
-  source_version: string;
 }

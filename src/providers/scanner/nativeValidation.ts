@@ -45,13 +45,13 @@ function validatePromotionLevel(
   ascension: number,
   level: number
 ): void {
-  if (ascension > definition.max_promotion) {
+  if (ascension > definition.max_ascension) {
     throw new Error(
-      `${label} ascension ${ascension} exceeds definition ${definition.id} maximum ${definition.max_promotion}`
+      `${label} ascension ${ascension} exceeds definition ${definition.id} maximum ${definition.max_ascension}`
     );
   }
-  const promotion = definition.promotions.find(
-    (candidate) => candidate.promotion === ascension
+  const promotion = definition.stat_scaling.find(
+    (candidate) => candidate.ascension === ascension
   );
   if (!promotion) {
     throw new Error(
@@ -64,8 +64,8 @@ function validatePromotionLevel(
     );
   }
   if (ascension === 0) return;
-  const previousPromotion = definition.promotions.find(
-    (candidate) => candidate.promotion === ascension - 1
+  const previousPromotion = definition.stat_scaling.find(
+    (candidate) => candidate.ascension === ascension - 1
   );
   if (!previousPromotion) {
     throw new Error(

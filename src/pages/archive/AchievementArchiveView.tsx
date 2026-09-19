@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { ReferenceLocale } from "@/domain/provenance";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
@@ -10,18 +11,13 @@ import {
 import type {
   AchievementCategoryDefinition,
   AchievementDefinition,
-  ReferenceLocale,
 } from "@/providers/gilore/types";
 import {
   type AchievementArchiveCategoryView,
   AchievementArchiveContent,
   type AchievementArchiveItemView,
 } from "./AchievementArchiveContent";
-import {
-  CatalogEmpty,
-  CatalogFailure,
-  CatalogLoading,
-} from "./CatalogControls";
+import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 
 const DYNAMIC_TEXT_TOKEN = /\{TEXTJOIN#\d+\}/g;
 

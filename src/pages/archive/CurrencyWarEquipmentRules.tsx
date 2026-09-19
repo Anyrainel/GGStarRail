@@ -2,10 +2,7 @@ import { Link } from "react-router-dom";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { characterCatalogName } from "@/lib/catalogPresentation";
-import {
-  getLocalizedValue,
-  isCharacterDefinitionV1_3,
-} from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/gilore/catalog";
 import type {
   CharacterDefinition,
   CurrencyWarBond,
@@ -28,8 +25,7 @@ export function CurrencyWarEquipmentRules({
       ? characters.filter(
           (character) =>
             roleIds.has(character.id) ||
-            (isCharacterDefinitionV1_3(character) &&
-              character.currency_war.some((role) => roleIds.has(role.id)))
+            character.currency_war.some((role) => roleIds.has(role.id))
         )
       : [];
   const bondIds =

@@ -19,10 +19,10 @@ export interface CurrencyWarCatalog {
 async function loadCurrencyWarMember<T>(member: string): Promise<readonly T[]> {
   const document = (await loadGameMember(member)) as MemberDocument<
     readonly T[],
-    "1.3.0"
+    "2.0.0"
   >;
   if (
-    document.schema_version !== "1.3.0" ||
+    document.schema_version !== "2.0.0" ||
     document.schema_version !== HSR_REFERENCE_MANIFEST.schema_version ||
     document.collection !== member ||
     !Array.isArray(document.value)
