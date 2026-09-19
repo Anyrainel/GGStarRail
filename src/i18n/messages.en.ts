@@ -1,4 +1,22 @@
 export const messagesEn = {
+  "tier.controls.filters": "Filters",
+  "tier.controls.customize": "Customize",
+  "tier.controls.manage": "Manage lists",
+  "tier.controls.import": "Import list",
+  "tier.controls.export": "Export list",
+  "tier.controls.image": "Download image",
+  "tier.controls.title": "Title",
+  "tier.controls.tierName": "{tier} label",
+  "tier.controls.visible": "Show",
+  "tier.controls.newList": "New tier list",
+  "tier.controls.deleteList": "Delete list",
+  "tier.controls.replaceTitle": "Open imported list?",
+  "tier.controls.invalidImport":
+    "Choose a valid Star Rail tier list for this category. Some entries may require enabling beta data.",
+  "tier.controls.exportError":
+    "The image could not be saved. Please try again.",
+  "tier.controls.showPaths": "Show Paths",
+  "tier.controls.ownedOnly": "Owned only",
   "archive.backToCharacters": "Characters",
   "archive.characterDetails": "Character details",
   "archive.traceStats": "Trace stat bonuses",

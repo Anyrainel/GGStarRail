@@ -1,6 +1,6 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import type { PriorityTier } from "@/domain/tier-list/types";
 import { cn } from "@/lib/utils";
@@ -31,33 +31,36 @@ export function TierItem<Group extends string>({
   };
 
   return (
-    <button
-      ref={sortable.setNodeRef}
-      type="button"
-      style={style}
-      {...sortable.attributes}
-      {...sortable.listeners}
-      onClick={() => onSelect(item.id)}
-      aria-label={item.name}
-      title={item.name}
-      data-priority-item-id={item.id}
-      className={cn(
-        "group/item relative h-16 w-16 shrink-0 touch-none rounded-[10px] bg-transparent shadow-sm outline-none",
-        "cursor-grab transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
-      )}
+    <CatalogHoverCard
+      kind={item.kind}
+      id={item.id}
+      disabled={sortable.isDragging}
     >
-      <ItemIcon
-        kind={item.kind}
-        id={item.id}
-        sourcePath={item.sourcePath}
-        alt={item.name}
-        rarity={item.rarity}
-        size="lg"
-      />
-      <span className="absolute left-0.5 top-0.5 z-10 rounded bg-background/80 p-0.5 text-muted-foreground">
-        <GripVertical className="h-3 w-3" aria-hidden="true" />
-      </span>
-    </button>
+      <button
+        ref={sortable.setNodeRef}
+        type="button"
+        style={style}
+        {...sortable.attributes}
+        {...sortable.listeners}
+        onClick={() => onSelect(item.id)}
+        aria-label={item.name}
+        data-priority-item-id={item.id}
+        className={cn(
+          "group/item relative w-16 shrink-0 touch-none rounded-[10px] bg-transparent shadow-sm outline-none",
+          "cursor-grab transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+        )}
+      >
+        <ItemIcon
+          cornerAsset={item.cornerAsset}
+          kind={item.kind}
+          id={item.id}
+          sourcePath={item.sourcePath}
+          alt={item.name}
+          rarity={item.rarity}
+          size="lg"
+        />
+      </button>
+    </CatalogHoverCard>
   );
 }
 
@@ -68,6 +71,7 @@ export function TierItemPreview<Group extends string>({
 }) {
   return (
     <ItemIcon
+      cornerAsset={item.cornerAsset}
       kind={item.kind}
       id={item.id}
       sourcePath={item.sourcePath}

@@ -8,6 +8,7 @@ export interface TierItemData<Group extends string> extends CatalogAssetRef {
   rarity: number | null;
   group: Group;
   detail?: string;
+  cornerAsset?: CatalogAssetRef & { alt: string };
 }
 
 export interface TierGroupConfig<Group extends string> {

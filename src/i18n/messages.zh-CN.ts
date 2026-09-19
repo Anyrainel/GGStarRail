@@ -1,6 +1,23 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "tier.controls.filters": "筛选",
+  "tier.controls.customize": "自定义",
+  "tier.controls.manage": "管理榜单",
+  "tier.controls.import": "导入榜单",
+  "tier.controls.export": "导出榜单",
+  "tier.controls.image": "下载图片",
+  "tier.controls.title": "标题",
+  "tier.controls.tierName": "{tier}档名称",
+  "tier.controls.visible": "显示",
+  "tier.controls.newList": "新建榜单",
+  "tier.controls.deleteList": "删除榜单",
+  "tier.controls.replaceTitle": "打开导入的榜单？",
+  "tier.controls.invalidImport":
+    "请选择对应分类的星穹铁道榜单文件。部分条目可能需要先开启测试服数据。",
+  "tier.controls.exportError": "图片保存失败，请重试。",
+  "tier.controls.showPaths": "显示命途",
+  "tier.controls.ownedOnly": "仅已拥有",
   "archive.backToCharacters": "角色",
   "archive.characterDetails": "角色详情",
   "archive.traceStats": "行迹属性加成",

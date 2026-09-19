@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import type { Relic, RelicSlot } from "@/domain/account/schemas";
@@ -62,16 +63,23 @@ export function RelicScoreCard({
       )}
     >
       <div className="flex min-w-0 items-start gap-3">
-        <ItemIcon
+        <CatalogHoverCard
           kind="relic-piece"
-          id={piece?.id ?? relic.definitionId}
-          sourcePath={piece?.icon_path ?? ""}
-          alt={`${pieceName}, +${relic.level}`}
-          rarity={relic.rarity}
-          level={`+${relic.level}`}
-          locked={relic.locked}
-          size="md"
-        />
+          id={relic.definitionId}
+          relic={relic}
+        >
+          <ItemIcon
+            kind="relic-piece"
+            id={piece?.id ?? relic.definitionId}
+            sourcePath={piece?.icon_path ?? ""}
+            alt={`${pieceName}, +${relic.level}`}
+            rarity={relic.rarity}
+            level={`+${relic.level}`}
+            locked={relic.locked}
+            size="md"
+            tabIndex={0}
+          />
+        </CatalogHoverCard>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex min-w-0 items-start justify-between gap-2">
             <div className="min-w-0">

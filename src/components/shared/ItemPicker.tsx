@@ -16,6 +16,7 @@ import {
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+import { CatalogHoverCard } from "./CatalogHoverCard";
 import { ItemIcon, type ItemIconProps, type ItemIconSize } from "./ItemIcon";
 
 export interface PickerItem {
@@ -112,17 +113,19 @@ export function ItemPicker({
       )}
     >
       {selected ? (
-        <ItemIcon
-          kind={kind}
-          id={selected.id}
-          sourcePath={selected.iconPath}
-          rarity={selected.rarity}
-          cornerAsset={selected.cornerAsset}
-          badge={badge}
-          size={triggerSize}
-          alt=""
-          aria-hidden="true"
-        />
+        <CatalogHoverCard kind={kind} id={selected.id} disabled={open}>
+          <ItemIcon
+            kind={kind}
+            id={selected.id}
+            sourcePath={selected.iconPath}
+            rarity={selected.rarity}
+            cornerAsset={selected.cornerAsset}
+            badge={badge}
+            size={triggerSize}
+            alt=""
+            aria-hidden="true"
+          />
+        </CatalogHoverCard>
       ) : (
         <span
           className={cn(
@@ -214,44 +217,44 @@ export function ItemPicker({
       >
         <div className="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] content-start gap-1">
           {visible.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-label={item.name}
-              aria-pressed={item.id === value}
-              title={item.name}
-              onMouseEnter={() => setPreview(item.name)}
-              onFocus={() => setPreview(item.name)}
-              onClick={() => {
-                onChange(item.id);
-                changeOpen(false);
-              }}
-              className={cn(
-                "relative flex min-w-0 flex-col items-center gap-1 rounded-lg p-1.5 text-center outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
-                item.id === value &&
-                  "bg-primary/20 ring-1 ring-inset ring-primary"
-              )}
-            >
-              <ItemIcon
-                kind={kind}
-                id={item.id}
-                sourcePath={item.iconPath}
-                rarity={item.rarity}
-                cornerAsset={item.cornerAsset}
-                size="md"
-                alt=""
-                aria-hidden="true"
-              />
-              {item.id === value && (
-                <Check
-                  className="absolute right-1 top-1 h-4 w-4 rounded-full bg-primary text-primary-foreground"
+            <CatalogHoverCard kind={kind} id={item.id} key={item.id}>
+              <button
+                type="button"
+                aria-label={item.name}
+                aria-pressed={item.id === value}
+                onMouseEnter={() => setPreview(item.name)}
+                onFocus={() => setPreview(item.name)}
+                onClick={() => {
+                  onChange(item.id);
+                  changeOpen(false);
+                }}
+                className={cn(
+                  "relative flex min-w-0 flex-col items-center gap-1 rounded-lg p-1.5 text-center outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+                  item.id === value &&
+                    "bg-primary/20 ring-1 ring-inset ring-primary"
+                )}
+              >
+                <ItemIcon
+                  kind={kind}
+                  id={item.id}
+                  sourcePath={item.iconPath}
+                  rarity={item.rarity}
+                  cornerAsset={item.cornerAsset}
+                  size="md"
+                  alt=""
                   aria-hidden="true"
                 />
-              )}
-              <span className="line-clamp-2 min-h-7 w-full text-[0.65rem] leading-tight">
-                {item.name}
-              </span>
-            </button>
+                {item.id === value && (
+                  <Check
+                    className="absolute right-1 top-1 h-4 w-4 rounded-full bg-primary text-primary-foreground"
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="line-clamp-2 min-h-7 w-full text-[0.65rem] leading-tight">
+                  {item.name}
+                </span>
+              </button>
+            </CatalogHoverCard>
           ))}
         </div>
         {!visible.length && (

@@ -13,6 +13,7 @@ interface FilterChipGroupProps<T> {
   getLabel: (option: T, active: boolean) => ReactNode;
   getIcon?: (option: T, active: boolean) => ReactNode;
   getValue?: (option: T) => T;
+  getColor?: (option: T) => "rarity-5" | "rarity-4" | "rarity-3" | undefined;
   label?: ReactNode;
   className?: string;
   emptyMeansAll?: boolean;
@@ -28,6 +29,7 @@ export function FilterChipGroup<T>({
   getLabel,
   getIcon,
   getValue = (option) => option,
+  getColor,
   label,
   className,
   emptyMeansAll = true,
@@ -85,6 +87,7 @@ export function FilterChipGroup<T>({
 
         return (
           <FilterChip
+            color={getColor?.(option)}
             key={getKey(option)}
             active={active}
             onClick={() => handleToggle(value)}

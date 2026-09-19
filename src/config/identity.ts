@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
   characterPriority: "ggstarrail:character-priority:v1",
   lightConePriority: "ggstarrail:light-cone-priority:v1",
   relicPriority: "ggstarrail:relic-priority:v1",
+  tierLibrary: "ggstarrail:tier-library:v1",
 } as const;
 
 export const BACKUP_IDENTITY = {

@@ -5,6 +5,7 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { FilterChip } from "@/components/shared/FilterChip";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PriorityWorkspaceHeader } from "@/components/tier-list/PriorityWorkspaceHeader";
 import { TierTable } from "@/components/tier-list/TierTable";
@@ -18,7 +19,6 @@ import { useI18n } from "@/i18n/I18nContext";
 import { localizedName } from "@/lib/catalogPresentation";
 import { formatGameText } from "@/lib/gameText";
 import { createRelicSetRarityMap } from "@/lib/relicRarity";
-import { cn } from "@/lib/utils";
 import { useRelicPriorityStore } from "@/stores/useRelicPriorityStore";
 
 type RelicKindFilter = "all" | "cavern_relic" | "planar_ornament";
@@ -89,31 +89,6 @@ export default function RelicTierListView() {
             assignedCount={Object.keys(assignments).length}
             totalCount={items.length}
             onReset={resetPriorities}
-            filters={
-              <fieldset className="min-w-0">
-                <legend className="mb-1 text-xs font-medium text-muted-foreground">
-                  {t("tier.priority.categoryLabel")}
-                </legend>
-                <div className="flex max-w-full flex-wrap gap-1.5">
-                  {filters.map(([value, label]) => (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={kind === value}
-                      onClick={() => setKind(value)}
-                      className={cn(
-                        "min-h-8 rounded-full border px-3 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        kind === value
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-border bg-background/60 hover:bg-accent"
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            }
           />
         </>
       }
@@ -124,6 +99,19 @@ export default function RelicTierListView() {
         <CatalogLoadError error={error} />
       ) : (
         <TierTable
+          extraFilters={
+            <div className="flex flex-wrap gap-1.5">
+              {filters.map(([value, label]) => (
+                <FilterChip
+                  key={value}
+                  active={kind === value}
+                  onClick={() => setKind(value)}
+                >
+                  {label}
+                </FilterChip>
+              ))}
+            </div>
+          }
           items={items}
           groups={groups}
           assignments={assignments}

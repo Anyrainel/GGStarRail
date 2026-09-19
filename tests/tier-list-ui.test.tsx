@@ -98,10 +98,6 @@ describe("HSR Tier List views", () => {
     expect(
       await screen.findByText("0 ranked · 58 in Pool", {}, catalogTimeout)
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: "Cavern Relic" })).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "Planar Ornament" })
-    ).toBeVisible();
     expect(screen.getByRole("tab", { name: "Other" })).toHaveAttribute(
       "aria-selected",
       "true"
@@ -139,20 +135,41 @@ describe("HSR Tier List views", () => {
     });
 
     await user.click(within(dialog).getByRole("button", { name: "Close" }));
-    await user.click(screen.getByRole("button", { name: "Planar Ornament" }));
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    expect(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Cavern Relic",
+      })
+    ).toBeVisible();
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Planar Ornament",
+      })
+    );
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", { name: "Close" })
+    );
     const planarItems = container.querySelectorAll("[data-priority-item-id]");
     expect(planarItems.length).toBeGreaterThan(0);
     expect(planarItems.length).toBeLessThan(58);
   });
 
   it("renders the priority controls and Relic categories in zh-CN", async () => {
+    const user = userEvent.setup();
     localStorage.setItem(STORAGE_KEYS.locale, "zh-CN");
     renderView(<RelicTierListView />);
 
     expect(
       await screen.findByRole("heading", { name: "遗器优先级" }, catalogTimeout)
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: "隧洞遗器" })).toBeVisible();
+    await user.click(
+      await screen.findByRole("button", { name: "筛选" }, catalogTimeout)
+    );
+    expect(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "隧洞遗器",
+      })
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: "位面饰品" })).toBeVisible();
   });
 });

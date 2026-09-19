@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
 import type { PriorityTier } from "@/domain/tier-list/types";
+import { tierColor } from "@/lib/gameColors";
 import { cn } from "@/lib/utils";
 import { TierItem } from "./TierItem";
 import type { TierItemData } from "./tierTableTypes";
@@ -30,9 +31,12 @@ export function TierCell<Group extends string>({
       ref={droppable.setNodeRef}
       data-priority-tier={tier}
       data-priority-group={group}
+      style={{ backgroundColor: tierColor(tier, "background") }}
       className={cn(
-        "flex min-h-[5rem] flex-wrap content-start gap-2 border-border bg-background/45 p-2 transition-colors",
-        compact ? "rounded-b-lg border border-t-0" : "border-b border-r",
+        "flex min-h-[5rem] flex-wrap content-start items-end justify-center gap-2 border-gray-600 bg-clip-padding p-2 transition-colors",
+        compact
+          ? "min-h-[4rem] rounded-b-md border border-t-0"
+          : "border-b border-r",
         droppable.isOver && "bg-primary/10 ring-2 ring-inset ring-primary/55"
       )}
     >

@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { Button } from "@/components/ui/button";
@@ -95,32 +96,34 @@ function CharacterBuildCardComponent({
           )}
           data-character-build-header
         >
-          <Link
-            to={`${APP_PATHS.archiveCharacters}?character=${encodeURIComponent(character.id)}`}
-            aria-label={t("characterLoadout.openArchive", {
-              name: presentation.name,
-            })}
-            className="shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <ItemIcon
-              kind="character"
-              id={character.id}
-              sourcePath={character.icon_path}
-              alt={characterIconLabel}
-              rarity={character.rarity}
-              cornerAsset={
-                combatType
-                  ? {
-                      kind: "combat-type",
-                      id: combatType.id,
-                      sourcePath: combatType.icon_path,
-                      alt: presentation.combatTypeName,
-                    }
-                  : undefined
-              }
-              size={iconSize}
-            />
-          </Link>
+          <CatalogHoverCard kind="character" id={character.id}>
+            <Link
+              to={`${APP_PATHS.archiveCharacters}?character=${encodeURIComponent(character.id)}`}
+              aria-label={t("characterLoadout.openArchive", {
+                name: presentation.name,
+              })}
+              className="shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ItemIcon
+                kind="character"
+                id={character.id}
+                sourcePath={character.icon_path}
+                alt={characterIconLabel}
+                rarity={character.rarity}
+                cornerAsset={
+                  combatType
+                    ? {
+                        kind: "combat-type",
+                        id: combatType.id,
+                        sourcePath: combatType.icon_path,
+                        alt: presentation.combatTypeName,
+                      }
+                    : undefined
+                }
+                size={iconSize}
+              />
+            </Link>
+          </CatalogHoverCard>
 
           <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2 md:gap-4">
             <div className="min-w-[9rem] flex-1">

@@ -10,7 +10,10 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useCallback, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { AssetImage } from "@/components/shared/AssetImage";
+import { FilterChip } from "@/components/shared/FilterChip";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
@@ -23,18 +26,29 @@ import {
   RELIC_PRIORITY_GROUPS,
 } from "@/domain/tier-list/constants";
 import type {
+  TierDocument,
+  TierPresentation,
+} from "@/domain/tier-list/document";
+import type {
   PriorityAssignments,
   PriorityPlacement,
   PriorityTier,
   RelicGroupAssignments,
   RelicPriorityGroup,
 } from "@/domain/tier-list/types";
+import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import { localizedName } from "@/lib/catalogPresentation";
+import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
+import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { TierFilterBar } from "./TierFilterBar";
 import { TierItemPreview } from "./TierItem";
 import { TierLayout } from "./TierLayout";
+import { TierToolbar } from "./TierToolbar";
 import type { TierGroupConfig, TierItemData } from "./tierTableTypes";
 
 interface TierTableProps<Group extends string> {
+  extraFilters?: ReactNode;
   items: readonly TierItemData<Group>[];
   groups: readonly TierGroupConfig<Group>[];
   assignments: PriorityAssignments;
@@ -58,6 +72,7 @@ function cellKey(group: string, tier: PriorityTier): string {
 }
 
 export function TierTable<Group extends string>({
+  extraFilters,
   items,
   groups,
   assignments,
@@ -66,7 +81,104 @@ export function TierTable<Group extends string>({
   filterItem,
   onChange,
 }: TierTableProps<Group>) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const { data: references } = useBuildReferences();
+  const account = useWorkspaceStore((state) => state.account);
+  const category =
+    items[0]?.kind === "light-cone"
+      ? "light-cone"
+      : items[0]?.kind === "relic-set"
+        ? "relic-set"
+        : "character";
+  const [presentation, setPresentation] = useState<TierPresentation>(() => {
+    const library = useTierLibraryStore.getState();
+    const active = library.active[category];
+    return (
+      (active && library.documents[active]?.presentation) || {
+        title: "",
+        labels: {},
+        hidden: [],
+      }
+    );
+  });
+  const [rarities, setRarities] = useState(
+    () =>
+      new Set(
+        items.flatMap((item) => (item.rarity === null ? [] : [item.rarity]))
+      )
+  );
+  const [paths, setPaths] = useState<Set<string>>(() => new Set());
+  const [ownedOnly, setOwnedOnly] = useState(false);
+  const [showPaths, setShowPaths] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const document = useMemo<TierDocument>(
+    () => ({
+      kind: "ggstarrail.tier-list",
+      schemaVersion: 1,
+      category,
+      assignments,
+      groupAssignments,
+      presentation,
+    }),
+    [category, assignments, groupAssignments, presentation]
+  );
+  const ownedIds = useMemo(
+    () =>
+      new Set(
+        category === "character"
+          ? account?.characters.map((item) => item.definitionId)
+          : category === "light-cone"
+            ? account?.lightCones.map((item) => item.definitionId)
+            : account?.relics.map((item) => item.setId)
+      ),
+    [account, category]
+  );
+  const visibleItems = useMemo(
+    () =>
+      items
+        .filter((item) => {
+          if (item.rarity !== null && !rarities.has(item.rarity)) return false;
+          if (ownedOnly && account && !ownedIds.has(item.id)) return false;
+          const path = references?.characters.byId.get(item.id)?.path_id;
+          return (
+            category !== "character" ||
+            !paths.size ||
+            (!!path && paths.has(path))
+          );
+        })
+        .map((item) => {
+          const pathId =
+            showPaths && category === "character"
+              ? references?.characters.byId.get(item.id)?.path_id
+              : undefined;
+          const path = pathId
+            ? references?.properties.pathById.get(pathId)
+            : undefined;
+          return path
+            ? {
+                ...item,
+                cornerAsset: {
+                  kind: "path" as const,
+                  id: path.id,
+                  sourcePath: path.icon_path,
+                  alt: localizedName(path.name, locale, path.id),
+                },
+              }
+            : item;
+        }),
+    [
+      items,
+      rarities,
+      ownedOnly,
+      account,
+      ownedIds,
+      references,
+      category,
+      paths,
+      showPaths,
+      locale,
+    ]
+  );
   const [activeItemId, setActiveItemId] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
@@ -94,7 +206,7 @@ export function TierTable<Group extends string>({
     for (const group of groups) {
       for (const tier of PRIORITY_ROWS) result.set(cellKey(group.id, tier), []);
     }
-    for (const item of items) {
+    for (const item of visibleItems) {
       if (filterItem && !filterItem(item)) continue;
       const group = effectiveGroup(item);
       const tier = assignments[item.id]?.tier ?? "Pool";
@@ -111,7 +223,7 @@ export function TierTable<Group extends string>({
       }
     }
     return result;
-  }, [assignments, effectiveGroup, filterItem, groups, items]);
+  }, [assignments, effectiveGroup, filterItem, groups, visibleItems]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -278,6 +390,93 @@ export function TierTable<Group extends string>({
 
   return (
     <>
+      <TierToolbar
+        document={document}
+        itemIds={new Set(itemsById.keys())}
+        onApply={(next) => {
+          onChange({
+            assignments: next.assignments,
+            groupAssignments: next.groupAssignments,
+          });
+          setPresentation(next.presentation);
+        }}
+        onPresentationChange={setPresentation}
+        tableRef={tableRef}
+      />
+      <TierFilterBar>
+        {extraFilters}
+        {category === "character" && (
+          <FilterChip
+            active={showPaths}
+            onClick={() => setShowPaths(!showPaths)}
+          >
+            {t("tier.controls.showPaths")}
+          </FilterChip>
+        )}
+        <FilterChipGroup
+          options={[
+            ...new Set(
+              items.flatMap((item) =>
+                item.rarity === null ? [] : [item.rarity]
+              )
+            ),
+          ].sort((a, b) => b - a)}
+          selectedValues={rarities}
+          onSelectedValuesChange={setRarities}
+          getKey={String}
+          getLabel={(rarity) => `${rarity}★`}
+          getColor={(rarity) =>
+            rarity === 5
+              ? "rarity-5"
+              : rarity === 4
+                ? "rarity-4"
+                : rarity === 3
+                  ? "rarity-3"
+                  : undefined
+          }
+          emptyMeansAll={false}
+        />
+        <FilterChip
+          active={ownedOnly && !!account}
+          disabled={!account}
+          onClick={() => setOwnedOnly(!ownedOnly)}
+        >
+          {t("tier.controls.ownedOnly")}
+        </FilterChip>
+        {category === "character" && references && (
+          <FilterChipGroup
+            options={references.properties.paths
+              .map((path) => path.id)
+              .filter((id) =>
+                items.some(
+                  (item) =>
+                    references.characters.byId.get(item.id)?.path_id === id
+                )
+              )}
+            selectedValues={paths}
+            onSelectedValuesChange={setPaths}
+            getKey={(id) => id}
+            getLabel={(id) =>
+              localizedName(
+                references.properties.pathById.get(id)?.name,
+                locale,
+                id
+              )
+            }
+            getIcon={(id) => (
+              <AssetImage
+                kind="path"
+                id={id}
+                sourcePath={
+                  references.properties.pathById.get(id)?.icon_path ?? ""
+                }
+                alt=""
+                className="h-4 w-4 object-contain"
+              />
+            )}
+          />
+        )}
+      </TierFilterBar>
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>
@@ -291,13 +490,16 @@ export function TierTable<Group extends string>({
         onDragCancel={() => setActiveItemId(null)}
         onDragEnd={handleDragEnd}
       >
-        <TierLayout
-          groups={groups}
-          itemsByCell={itemsByCell}
-          groupsLabel={t("tier.priority.groups")}
-          poolLabel={t("tier.priority.pool")}
-          onSelect={setSelectedItemId}
-        />
+        <div ref={tableRef}>
+          <TierLayout
+            presentation={presentation}
+            groups={groups}
+            itemsByCell={itemsByCell}
+            groupsLabel={t("tier.priority.groups")}
+            poolLabel={t("tier.priority.pool")}
+            onSelect={setSelectedItemId}
+          />
+        </div>
         <DragOverlay>
           {activeItem ? <TierItemPreview item={activeItem} /> : null}
         </DragOverlay>

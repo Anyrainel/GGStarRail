@@ -1,8 +1,7 @@
 import { RotateCcw } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
   ResponsiveDialog,
@@ -17,14 +16,12 @@ interface PriorityWorkspaceHeaderProps {
   assignedCount: number;
   totalCount: number;
   onReset: () => void;
-  filters?: ReactNode;
 }
 
 export function PriorityWorkspaceHeader({
   assignedCount,
   totalCount,
   onReset,
-  filters,
 }: PriorityWorkspaceHeaderProps) {
   const { t } = useI18n();
   const [resetOpen, setResetOpen] = useState(false);
@@ -55,21 +52,14 @@ export function PriorityWorkspaceHeader({
           </DropdownMenuItem>
         }
       />
-      <Card className="overflow-hidden">
-        <CardContent className="space-y-4 p-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium tabular-nums">
-                {t("tier.priority.summary", {
-                  assigned: assignedCount,
-                  pool: Math.max(0, totalCount - assignedCount),
-                })}
-              </p>
-            </div>
-            {filters}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="sr-only">
+          {t("tier.priority.summary", {
+            assigned: assignedCount,
+            pool: Math.max(0, totalCount - assignedCount),
+          })}
+        </p>
+      </div>
 
       <ResponsiveDialog open={resetOpen} onOpenChange={setResetOpen}>
         <ResponsiveDialogContent
