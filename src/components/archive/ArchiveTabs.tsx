@@ -53,7 +53,7 @@ export function ArchiveTabs<T extends string>({
               ?.focus();
           }}
           className={cn(
-            "flex shrink-0 items-center justify-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+            "flex shrink-0 items-center justify-center gap-1.5 border-b-2 px-2 py-2 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-3 sm:text-sm",
             value === option.value
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -61,7 +61,7 @@ export function ArchiveTabs<T extends string>({
         >
           {option.label}
           {option.count !== undefined && (
-            <span className="text-xs tabular-nums text-muted-foreground">
+            <span className="hidden text-xs tabular-nums text-muted-foreground sm:inline">
               {option.count}
             </span>
           )}

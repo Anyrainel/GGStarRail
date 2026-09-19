@@ -302,7 +302,7 @@ export function CurrencyWarArchiveContent({
                     <span className="block break-words text-sm font-semibold">
                       {formatGameText(getLocalizedValue(entry.name, locale))}
                     </span>
-                    <span className="mt-0.5 block line-clamp-1 text-xs leading-5 text-muted-foreground">
+                    <span className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">
                       {"category_name" in entry
                         ? getLocalizedValue(entry.category_name, locale)
                         : "quality" in entry
