@@ -1,4 +1,4 @@
-import { Check, Trophy } from "lucide-react";
+import { BookMarked, Check, Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
@@ -101,7 +101,7 @@ function CategoryList({
             )}
           >
             <span className="flex min-w-0 items-center gap-2.5">
-              <Trophy
+              <BookMarked
                 className="mx-1 h-5 w-5 shrink-0 text-primary"
                 aria-hidden="true"
               />
@@ -259,7 +259,7 @@ function GuideLink({
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="group flex h-10 w-16 shrink-0 items-center justify-center rounded-md px-1 outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group flex h-10 w-[4.5rem] shrink-0 items-center justify-center rounded-md px-1 outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <img
         src={getAssetUrl(`assets/brands/${site}.webp`)}
@@ -324,7 +324,10 @@ function AchievementSeriesCard({
                     {achievementVersionFilterValue(
                       achievement.releaseVersion
                     ) !== UNKNOWN_ACHIEVEMENT_VERSION && (
-                      <Badge variant="secondary" className="px-1.5 py-0">
+                      <Badge
+                        variant="secondary"
+                        className="px-1.5 py-0 text-[11px]"
+                      >
                         v{achievement.releaseVersion?.trim()}
                       </Badge>
                     )}
@@ -333,7 +336,7 @@ function AchievementSeriesCard({
                     {achievement.description}
                   </p>
                 </div>
-                <div className="flex w-64 max-w-full shrink-0 items-center justify-end gap-1 self-end xl:self-center">
+                <div className="flex w-[17rem] max-w-full shrink-0 items-center justify-end gap-1 self-end xl:self-center">
                   <GuideLink
                     site="youtube"
                     achievementName={achievement.name}
