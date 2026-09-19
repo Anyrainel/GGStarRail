@@ -79,35 +79,26 @@ export function RelicSetCatalog() {
   return (
     <ScrollLayout
       header={
-        <div className="space-y-3">
-          <ArchiveToolbar
-            searchQuery={query}
-            onSearchChange={setQuery}
-            searchLabel={t("common.search")}
-            searchPlaceholder={t("archive.search.relicSets")}
-          >
-            <FilterChipGroup
-              label={t("filter.kind")}
-              selectedValues={kinds}
-              onSelectedValuesChange={setKinds}
-              options={["cavern_relic", "planar_ornament"] as const}
-              getKey={(kind) => kind}
-              getLabel={(kind) =>
-                t(
-                  kind === "cavern_relic"
-                    ? "archive.kind.cavern"
-                    : "archive.kind.planar"
-                )
-              }
-            />
-          </ArchiveToolbar>
-          <p className="text-sm text-muted-foreground">
-            {t("archive.results", {
-              shown: filtered.length,
-              total: resource.data.relicSets.values.length,
-            })}
-          </p>
-        </div>
+        <ArchiveToolbar
+          searchQuery={query}
+          onSearchChange={setQuery}
+          searchLabel={t("common.search")}
+          searchPlaceholder={t("archive.search.relicSets")}
+        >
+          <FilterChipGroup
+            selectedValues={kinds}
+            onSelectedValuesChange={setKinds}
+            options={["cavern_relic", "planar_ornament"] as const}
+            getKey={(kind) => kind}
+            getLabel={(kind) =>
+              t(
+                kind === "cavern_relic"
+                  ? "archive.kind.cavern"
+                  : "archive.kind.planar"
+              )
+            }
+          />
+        </ArchiveToolbar>
       }
     >
       <section

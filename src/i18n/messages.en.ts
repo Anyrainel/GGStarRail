@@ -623,7 +623,6 @@ export const messagesEn = {
   "archive.achievement.markUnfinished": "Mark {name} unfinished",
   "archive.achievement.searchYouTube": "Search YouTube for {name}",
   "archive.achievement.searchBilibili": "Search Bilibili for {name}",
-  "archive.results": "Showing {shown} of {total} records",
   "archive.characterList": "Character catalog results",
   "archive.lightConeList": "Light Cone catalog results",
   "archive.relicSetList": "Relic and Planar set catalog results",

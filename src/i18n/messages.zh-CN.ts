@@ -597,7 +597,6 @@ export const messagesZhCn = {
   "archive.achievement.markUnfinished": "将“{name}”标记为未完成",
   "archive.achievement.searchYouTube": "在 YouTube 上搜索“{name}”",
   "archive.achievement.searchBilibili": "在哔哩哔哩上搜索“{name}”",
-  "archive.results": "显示 {shown} / {total} 条记录",
   "archive.characterList": "角色图鉴结果",
   "archive.lightConeList": "光锥图鉴结果",
   "archive.relicSetList": "遗器与位面饰品套装图鉴结果",

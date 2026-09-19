@@ -197,44 +197,36 @@ export function CurrencyWarArchiveContent({
     setSearchParams({ tab: activeTab.id, id }, { replace: true });
   };
   const header = (
-    <div className="space-y-3">
-      <ArchiveToolbar
-        searchQuery={query}
-        onSearchChange={setQuery}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("archive.currencyWar.search")}
-      >
-        {activeTab.id === "equipment" && (
-          <FilterChipGroup
-            options={categories.map(([id]) => id)}
-            selectedValues={category}
-            onSelectedValuesChange={setCategory}
-            getKey={(id) => id}
-            getLabel={(id) =>
-              getLocalizedValue(
-                categories.find(([key]) => key === id)![1],
-                locale
-              )
-            }
-          />
-        )}
-        {activeTab.id === "strategies" && (
-          <FilterChipGroup
-            options={qualities}
-            selectedValues={quality}
-            onSelectedValuesChange={setQuality}
-            getKey={(id) => id}
-            getLabel={qualityName}
-          />
-        )}
-      </ArchiveToolbar>
-      <p className="text-sm text-muted-foreground" aria-live="polite">
-        {t("archive.results", {
-          shown: filtered.length,
-          total: records.length,
-        })}
-      </p>
-    </div>
+    <ArchiveToolbar
+      searchQuery={query}
+      onSearchChange={setQuery}
+      searchLabel={t("common.search")}
+      searchPlaceholder={t("archive.currencyWar.search")}
+    >
+      {activeTab.id === "equipment" && (
+        <FilterChipGroup
+          options={categories.map(([id]) => id)}
+          selectedValues={category}
+          onSelectedValuesChange={setCategory}
+          getKey={(id) => id}
+          getLabel={(id) =>
+            getLocalizedValue(
+              categories.find(([key]) => key === id)![1],
+              locale
+            )
+          }
+        />
+      )}
+      {activeTab.id === "strategies" && (
+        <FilterChipGroup
+          options={qualities}
+          selectedValues={quality}
+          onSelectedValuesChange={setQuality}
+          getKey={(id) => id}
+          getLabel={qualityName}
+        />
+      )}
+    </ArchiveToolbar>
   );
   const renderCard = (record: CurrencyWarRecord) => (
     <CurrencyWarDetail
@@ -444,10 +436,10 @@ function CurrencyWarDetail({
         "min-w-0 space-y-4 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "quality" in record &&
           (record.quality === "Gold" || record.quality === "Orange") &&
-          "border-[hsl(var(--quality-gold)/0.5)] bg-[linear-gradient(135deg,hsl(var(--quality-gold)/0.16),hsl(var(--card))_70%)]",
+          "border-[hsl(var(--quality-gold)/0.65)] bg-[linear-gradient(135deg,color-mix(in_srgb,hsl(var(--quality-gold))_55%,hsl(var(--card))),color-mix(in_srgb,hsl(var(--quality-gold))_43%,hsl(var(--card))))]",
         "quality" in record &&
           record.quality === "Silver" &&
-          "border-[hsl(var(--quality-silver)/0.45)] bg-[linear-gradient(135deg,hsl(var(--quality-silver)/0.14),hsl(var(--card))_70%)]",
+          "border-[hsl(var(--quality-silver)/0.6)] bg-[linear-gradient(135deg,color-mix(in_srgb,hsl(var(--quality-silver))_50%,hsl(var(--card))),color-mix(in_srgb,hsl(var(--quality-silver))_38%,hsl(var(--card))))]",
         "quality" in record &&
           (record.quality === "Prismatic" || record.quality === "Rainbow") &&
           "border-[hsl(var(--quality-prismatic-purple)/0.6)] bg-[linear-gradient(125deg,hsl(var(--quality-prismatic-blue)/0.2),hsl(var(--quality-prismatic-purple)/0.2)_45%,hsl(var(--quality-gold)/0.1))]"

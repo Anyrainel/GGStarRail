@@ -295,11 +295,11 @@ describe("Currency War archive", () => {
       screen.getByRole("button", { name: "Employment Contract" })
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Weapon Box" }));
-    expect(screen.getByText("Showing 1 of 4 records")).toBeInTheDocument();
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(1);
     expect(screen.getByTestId("currency-war-detail")).toHaveTextContent("Box");
     await user.click(screen.getByRole("button", { name: "Weapon Box" }));
     await user.click(screen.getByRole("button", { name: "Other" }));
-    expect(screen.getByText("Showing 2 of 4 records")).toBeInTheDocument();
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(2);
   });
 
   it("formats mode properties and explicit adaptation percent conventions", () => {
@@ -338,7 +338,7 @@ describe("Currency War archive", () => {
     renderArchive();
     await user.click(screen.getByRole("button", { name: "Advanced" }));
     await user.type(screen.getByRole("searchbox"), "王冠");
-    expect(screen.getByText("Showing 1 of 2 records")).toBeInTheDocument();
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(1);
     const detail = card("Crown");
     expect(
       within(detail).getByRole("heading", { name: "Crown" })
@@ -350,7 +350,7 @@ describe("Currency War archive", () => {
       "aria-pressed",
       "true"
     );
-    expect(screen.getByText("Showing 2 of 2 records")).toBeInTheDocument();
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(2);
     expect(
       within(card("Blade")).getByRole("heading", {
         name: "Blade",
@@ -381,7 +381,7 @@ describe("Currency War archive", () => {
       "Deal 15% bonus damage."
     );
     await user.type(screen.getByRole("searchbox"), "隐藏的协同效果");
-    expect(screen.getByText("Showing 1 of 1 records")).toBeInTheDocument();
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(1);
     await user.clear(screen.getByRole("searchbox"));
     await user.type(screen.getByRole("searchbox"), "no-match");
     expect(screen.queryByTestId("currency-war-detail")).not.toBeInTheDocument();
