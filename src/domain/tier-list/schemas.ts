@@ -20,7 +20,7 @@ export const RelicGroupAssignmentsSchema = z.record(
 
 export const PersistedPriorityStoreSchema = z
   .object({
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     assignments: PriorityAssignmentsSchema,
     groupAssignments: RelicGroupAssignmentsSchema,
     updatedAt: z.number().int().nonnegative(),
@@ -32,7 +32,7 @@ export type PersistedPriorityStore = z.infer<
 >;
 
 export const DEFAULT_PRIORITY_STORE: PersistedPriorityStore = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   assignments: {},
   groupAssignments: {},
   updatedAt: 0,

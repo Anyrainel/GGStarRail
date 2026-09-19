@@ -801,16 +801,18 @@
       "source_sha256": "210630bbc3c4c0043ecdbcf695af2afd48b94770055ba9072c9fb67b3c897e39",
       "path": "webp/dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c.webp",
       "sha256": "dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c",
-      "byte_count": 9376
+      "byte_count": 9376,
+      "source_frame": 0
     },
     {
       "kind": "character",
       "id": "8002",
       "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/a9edba85fe403f0d2b7d69e48540634d_4987547298490400207.gif",
       "source_sha256": "210630bbc3c4c0043ecdbcf695af2afd48b94770055ba9072c9fb67b3c897e39",
-      "path": "webp/dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c.webp",
-      "sha256": "dc9d793bf8604c82e86ca6d1d7da87f27b6b8b268eed7a9c6d623bbd27f7111c",
-      "byte_count": 9376
+      "path": "webp/0e42cfdbd44867c807eb6da7ac8afe110bad1952c4a50fbf7037d0828b21643e.webp",
+      "sha256": "0e42cfdbd44867c807eb6da7ac8afe110bad1952c4a50fbf7037d0828b21643e",
+      "byte_count": 10894,
+      "source_frame": 1
     },
     {
       "kind": "character",
@@ -819,25 +821,28 @@
       "source_sha256": "af3815996c47b590ac8cd33558bd34803ffeb59a3bfea71076b43346172937d1",
       "path": "webp/48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d.webp",
       "sha256": "48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d",
-      "byte_count": 6998
+      "byte_count": 6998,
+      "source_frame": 0
     },
     {
       "kind": "character",
       "id": "8004",
       "source_url": "https://upload-static.hoyoverse.com/hoyowiki/2023/02/21/9d99c7926e8519f151abeac02a1f7210_8780278128209122769.gif",
       "source_sha256": "af3815996c47b590ac8cd33558bd34803ffeb59a3bfea71076b43346172937d1",
-      "path": "webp/48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d.webp",
-      "sha256": "48a16f031cd06f270b74cc998ae6807e50de119368202e588872161e5a30801d",
-      "byte_count": 6998
+      "path": "webp/c15a458bcffde75faa99bdaf7f8e062c86d5cbb75ce3fa1333bd723ec648d74b.webp",
+      "sha256": "c15a458bcffde75faa99bdaf7f8e062c86d5cbb75ce3fa1333bd723ec648d74b",
+      "byte_count": 10314,
+      "source_frame": 1
     },
     {
       "kind": "character",
       "id": "8005",
       "source_url": "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/05/07/9f98e014cdff0dc0e3993121fc0926db_5009274647413414611.gif",
       "source_sha256": "ad846039bef7853e5b5d2974dc3e0ab0b8adbab22f19d027a58b1dfedf39f23e",
-      "path": "webp/3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046.webp",
-      "sha256": "3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046",
-      "byte_count": 11476
+      "path": "webp/98a3068ec086855676e6ca23e28f0a70efb73f45f4635e4fac821b212fbb8270.webp",
+      "sha256": "98a3068ec086855676e6ca23e28f0a70efb73f45f4635e4fac821b212fbb8270",
+      "byte_count": 11124,
+      "source_frame": 1
     },
     {
       "kind": "character",
@@ -846,7 +851,8 @@
       "source_sha256": "ad846039bef7853e5b5d2974dc3e0ab0b8adbab22f19d027a58b1dfedf39f23e",
       "path": "webp/3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046.webp",
       "sha256": "3a4fe2f5aef236c450a06e265456b839db2829d0a1165a12f5075160c5f7c046",
-      "byte_count": 11476
+      "byte_count": 11476,
+      "source_frame": 0
     },
     {
       "kind": "character",
@@ -855,16 +861,18 @@
       "source_sha256": "f60d832d35223023daa34083f959cca9042aeced9be8b018e40c3a8597b99af0",
       "path": "webp/6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b.webp",
       "sha256": "6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b",
-      "byte_count": 12064
+      "byte_count": 12064,
+      "source_frame": 0
     },
     {
       "kind": "character",
       "id": "8008",
       "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/01/15/46746754/d27dcfb432f6d37bbaee53ad2fc10806_3954952725968266044.gif",
       "source_sha256": "f60d832d35223023daa34083f959cca9042aeced9be8b018e40c3a8597b99af0",
-      "path": "webp/6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b.webp",
-      "sha256": "6679b5aab4b0cadbbe1ae9a046b3000866d41ef88e6b44bfc22e340c95ecce9b",
-      "byte_count": 12064
+      "path": "webp/f2f7889c6f19a1e4fd20a292fbe1307fb6f0de08c10fb48cbd7ac48bcbe6380e.webp",
+      "sha256": "f2f7889c6f19a1e4fd20a292fbe1307fb6f0de08c10fb48cbd7ac48bcbe6380e",
+      "byte_count": 12616,
+      "source_frame": 1
     },
     {
       "kind": "character",
@@ -873,16 +881,18 @@
       "source_sha256": "97c66cefed2562c244db3ef197bdf3a44e25a5819de54c481d228b141ba41dad",
       "path": "webp/d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07.webp",
       "sha256": "d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07",
-      "byte_count": 10776
+      "byte_count": 10776,
+      "source_frame": 0
     },
     {
       "kind": "character",
       "id": "8010",
       "source_url": "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/04/23/5308864/3fbf433b9e673b329833104f7c3a978e_4042614445748365638.gif",
       "source_sha256": "97c66cefed2562c244db3ef197bdf3a44e25a5819de54c481d228b141ba41dad",
-      "path": "webp/d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07.webp",
-      "sha256": "d2f6b12381ca90dfebebd3fee05705792a9cd7dc2695308eaa9360667d02ad07",
-      "byte_count": 10776
+      "path": "webp/4af542a399d6fbcb0ec707a71f2b2a4633f10c703e48ffe11d470ce38c067c4a.webp",
+      "sha256": "4af542a399d6fbcb0ec707a71f2b2a4633f10c703e48ffe11d470ce38c067c4a",
+      "byte_count": 9792,
+      "source_frame": 1
     },
     {
       "kind": "currency-war-bond",

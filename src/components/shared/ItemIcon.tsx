@@ -137,6 +137,13 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
     ref
   ) => {
     const config = ICON_CONFIG[size];
+    const radius =
+      kind === "light-cone"
+        ? 0
+        : kind === "character"
+          ? config.radius / 3
+          : config.radius;
+    const cornerRadius = Math.min(config.cornerRadius, radius);
     const showLevel = level !== undefined;
     const showStatus = locked === true || locked === null;
     const artworkHeight =
@@ -146,18 +153,20 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
     const artwork = (
       <div
-        className="relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-white/15"
+        className={cn(
+          "relative shrink-0 select-none overflow-hidden",
+          kind !== "light-cone" && "ring-1 ring-inset ring-white/15"
+        )}
         data-item-artwork
         style={{
           backgroundImage: rarityBackground(rarity),
           width: config.icon,
           height: artworkHeight,
-          borderTopLeftRadius:
-            badge === undefined ? config.radius : config.cornerRadius,
+          borderTopLeftRadius: badge === undefined ? radius : cornerRadius,
           borderTopRightRadius:
-            showStatus || cornerAsset ? config.cornerRadius : config.radius,
-          borderBottomRightRadius: config.radius,
-          borderBottomLeftRadius: config.radius,
+            showStatus || cornerAsset ? cornerRadius : radius,
+          borderBottomRightRadius: radius,
+          borderBottomLeftRadius: radius,
         }}
       >
         <AssetImage
@@ -168,8 +177,14 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           aria-hidden="true"
           draggable={false}
           className={cn(
-            "h-full w-full object-contain drop-shadow-md",
-            imageClassName
+            "h-full w-full object-contain",
+            kind !== "light-cone" && "drop-shadow-md",
+            imageClassName,
+            kind === "character" && "object-cover object-bottom",
+            // Intrinsic width keeps Chromium's high-quality downsampling for
+            // large Light Cone art; object-cover aliases these tiny thumbnails.
+            kind === "light-cone" &&
+              "absolute left-1/2 -top-[0.5%] h-[101%] w-auto max-w-none -translate-x-1/2"
           )}
         />
 
@@ -280,8 +295,8 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
                 marginTop: -config.cornerFill,
                 paddingBottom: 1,
                 fontSize: config.levelFont,
-                borderBottomLeftRadius: config.radius,
-                borderBottomRightRadius: config.radius,
+                borderBottomLeftRadius: radius,
+                borderBottomRightRadius: radius,
               }}
             >
               {level}

@@ -50,14 +50,23 @@ export async function mapConcurrent(values, action, concurrency = 6) {
   return result;
 }
 
-export async function webpAsset(url) {
-  if (!assetPromises.has(url)) assetPromises.set(url, encodeAsset(url));
-  return assetPromises.get(url);
+export async function webpAsset(url, frame) {
+  const key = `${url}#${frame ?? "default"}`;
+  if (!assetPromises.has(key)) assetPromises.set(key, encodeAsset(url, frame));
+  return assetPromises.get(key);
 }
 
-async function encodeAsset(url) {
+async function encodeAsset(url, frame) {
   const bytes = await fetchBytes(url);
-  const output = await sharp(bytes)
+  if (frame !== undefined) {
+    const metadata = await sharp(bytes, { animated: true }).metadata();
+    if (metadata.pages !== 2)
+      throw new Error(`Expected two Trailblazer portrait frames: ${url}`);
+  }
+  const output = await sharp(
+    bytes,
+    frame === undefined ? {} : { page: frame, pages: 1 }
+  )
     .webp({ quality: 90, alphaQuality: 100, effort: 4 })
     .toBuffer();
   const hash = sha256(output);
@@ -71,6 +80,7 @@ async function encodeAsset(url) {
   return {
     source_url: url,
     source_sha256: sha256(bytes),
+    ...(frame === undefined ? {} : { source_frame: frame }),
     path: `webp/${hash}.webp`,
     sha256: hash,
     byte_count: output.length,

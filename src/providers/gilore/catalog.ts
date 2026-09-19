@@ -1,5 +1,6 @@
 import manifestJson from "@/data/game/manifest.json";
 import { loadGameMember } from "@/data/gameDataLoader";
+import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
 import { loadCatalogAssetLookup } from "./assets";
@@ -74,8 +75,16 @@ export function loadAchievements() {
 export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
   return new Set((await loadAchievements()).byId.keys());
 }
-export function loadCharacters() {
-  return loadDefinitions<CharacterDefinition>("characters");
+export async function loadCharacters() {
+  const catalog = await loadDefinitions<CharacterDefinition>("characters");
+  // Canonical identities enumerate each playable kit once. Provider variants
+  // retain exact game IDs and Trace metadata for imports and existing builds.
+  return {
+    ...catalog,
+    identities: catalog.values.filter(
+      (entry) => canonicalCharacterId(entry.id) === entry.id
+    ),
+  };
 }
 export function loadLightCones() {
   return loadDefinitions<LightConeDefinition>("light_cones");

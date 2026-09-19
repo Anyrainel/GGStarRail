@@ -12,6 +12,7 @@ import {
   sha256,
   webpAsset,
 } from "./crawl-common.mjs";
+import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
 
 const api = "https://sg-wiki-api.hoyolab.com/hoyowiki/hsr/wapi";
 const headers = {
@@ -251,7 +252,12 @@ export async function crawlHoyolab({
           response.data
         );
         if (images && releasedPage(page) && page.icon_url)
-          entry.asset = await webpAsset(page.icon_url);
+          entry.asset = await webpAsset(
+            page.icon_url,
+            collection === "characters"
+              ? trailblazerPortraitFrame(candidate.id)
+              : undefined
+          );
         return entry;
       }
     );

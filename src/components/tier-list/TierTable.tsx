@@ -21,6 +21,7 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
+import { canonicalCharacterId } from "@/domain/characterIdentity";
 import {
   PRIORITY_ROWS,
   RELIC_PRIORITY_GROUPS,
@@ -41,7 +42,6 @@ import { useI18n } from "@/i18n/I18nContext";
 import { localizedName } from "@/lib/catalogPresentation";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
-import { TierFilterBar } from "./TierFilterBar";
 import { TierItemPreview } from "./TierItem";
 import { TierLayout } from "./TierLayout";
 import { TierToolbar } from "./TierToolbar";
@@ -114,7 +114,7 @@ export function TierTable<Group extends string>({
   const document = useMemo<TierDocument>(
     () => ({
       kind: "ggstarrail.tier-list",
-      schemaVersion: 1,
+      schemaVersion: 2,
       category,
       assignments,
       groupAssignments,
@@ -126,7 +126,9 @@ export function TierTable<Group extends string>({
     () =>
       new Set(
         category === "character"
-          ? account?.characters.map((item) => item.definitionId)
+          ? account?.characters.map((item) =>
+              canonicalCharacterId(item.definitionId)
+            )
           : category === "light-cone"
             ? account?.lightCones.map((item) => item.definitionId)
             : account?.relics.map((item) => item.setId)
@@ -402,108 +404,111 @@ export function TierTable<Group extends string>({
         }}
         onPresentationChange={setPresentation}
         tableRef={tableRef}
-      />
-      <TierFilterBar>
-        {extraFilters}
-        {category === "character" && (
-          <FilterChip
-            active={showPaths}
-            onClick={() => setShowPaths(!showPaths)}
-          >
-            {t("tier.controls.showPaths")}
-          </FilterChip>
-        )}
-        <FilterChipGroup
-          options={[
-            ...new Set(
-              items.flatMap((item) =>
-                item.rarity === null ? [] : [item.rarity]
-              )
-            ),
-          ].sort((a, b) => b - a)}
-          selectedValues={rarities}
-          onSelectedValuesChange={setRarities}
-          getKey={String}
-          getLabel={(rarity) => `${rarity}★`}
-          getColor={(rarity) =>
-            rarity === 5
-              ? "rarity-5"
-              : rarity === 4
-                ? "rarity-4"
-                : rarity === 3
-                  ? "rarity-3"
-                  : undefined
-          }
-          emptyMeansAll={false}
-        />
-        <FilterChip
-          active={ownedOnly && !!account}
-          disabled={!account}
-          onClick={() => setOwnedOnly(!ownedOnly)}
-        >
-          {t("tier.controls.ownedOnly")}
-        </FilterChip>
-        {category === "character" && references && (
-          <FilterChipGroup
-            options={references.properties.paths
-              .map((path) => path.id)
-              .filter((id) =>
-                items.some(
-                  (item) =>
-                    references.characters.byId.get(item.id)?.path_id === id
-                )
-              )}
-            selectedValues={paths}
-            onSelectedValuesChange={setPaths}
-            getKey={(id) => id}
-            getLabel={(id) =>
-              localizedName(
-                references.properties.pathById.get(id)?.name,
-                locale,
-                id
-              )
-            }
-            getIcon={(id) => (
-              <AssetImage
-                kind="path"
-                id={id}
-                sourcePath={
-                  references.properties.pathById.get(id)?.icon_path ?? ""
+        filters={
+          <>
+            {extraFilters}
+            {category === "character" && (
+              <FilterChip
+                active={showPaths}
+                onClick={() => setShowPaths(!showPaths)}
+              >
+                {t("tier.controls.showPaths")}
+              </FilterChip>
+            )}
+            <FilterChipGroup
+              options={[
+                ...new Set(
+                  items.flatMap((item) =>
+                    item.rarity === null ? [] : [item.rarity]
+                  )
+                ),
+              ].sort((a, b) => b - a)}
+              selectedValues={rarities}
+              onSelectedValuesChange={setRarities}
+              getKey={String}
+              getLabel={(rarity) => `${rarity}★`}
+              getColor={(rarity) =>
+                rarity === 5
+                  ? "rarity-5"
+                  : rarity === 4
+                    ? "rarity-4"
+                    : rarity === 3
+                      ? "rarity-3"
+                      : undefined
+              }
+              emptyMeansAll={false}
+            />
+            <FilterChip
+              active={ownedOnly && !!account}
+              disabled={!account}
+              onClick={() => setOwnedOnly(!ownedOnly)}
+            >
+              {t("tier.controls.ownedOnly")}
+            </FilterChip>
+            {category === "character" && references && (
+              <FilterChipGroup
+                options={references.properties.paths
+                  .map((path) => path.id)
+                  .filter((id) =>
+                    items.some(
+                      (item) =>
+                        references.characters.byId.get(item.id)?.path_id === id
+                    )
+                  )}
+                selectedValues={paths}
+                onSelectedValuesChange={setPaths}
+                getKey={(id) => id}
+                getLabel={(id) =>
+                  localizedName(
+                    references.properties.pathById.get(id)?.name,
+                    locale,
+                    id
+                  )
                 }
-                alt=""
-                className="h-4 w-4 object-contain"
+                getIcon={(id) => (
+                  <AssetImage
+                    kind="path"
+                    id={id}
+                    sourcePath={
+                      references.properties.pathById.get(id)?.icon_path ?? ""
+                    }
+                    alt=""
+                    className="h-4 w-4 object-contain"
+                  />
+                )}
               />
             )}
-          />
-        )}
-      </TierFilterBar>
-      <p className="sr-only" aria-live="polite">
-        {announcement}
-      </p>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={(event) => {
-          const itemId = event.active.data.current?.itemId;
-          setActiveItemId(typeof itemId === "string" ? itemId : null);
-        }}
-        onDragCancel={() => setActiveItemId(null)}
-        onDragEnd={handleDragEnd}
+          </>
+        }
       >
-        <div ref={tableRef}>
-          <TierLayout
-            presentation={presentation}
-            groups={groups}
-            itemsByCell={itemsByCell}
-            groupsLabel={t("tier.priority.groups")}
-            poolLabel={t("tier.priority.pool")}
-            onSelect={setSelectedItemId}
-          />
-        </div>
-        <DragOverlay>
-          {activeItem ? <TierItemPreview item={activeItem} /> : null}
-        </DragOverlay>
-      </DndContext>
+        <p className="sr-only" aria-live="polite">
+          {announcement}
+        </p>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={(event) => {
+            const itemId = event.active.data.current?.itemId;
+            setActiveItemId(typeof itemId === "string" ? itemId : null);
+          }}
+          onDragCancel={() => setActiveItemId(null)}
+          onDragEnd={handleDragEnd}
+        >
+          <div ref={tableRef}>
+            <TierLayout
+              presentation={presentation}
+              groups={groups}
+              itemsByCell={itemsByCell}
+              groupsLabel={t("tier.priority.groups")}
+              poolLabel={t("tier.priority.pool")}
+              onSelect={setSelectedItemId}
+            />
+          </div>
+          <DragOverlay>
+            {activeItem ? <TierItemPreview item={activeItem} /> : null}
+          </DragOverlay>
+        </DndContext>
+      </TierToolbar>
 
       <ResponsiveDialog
         open={Boolean(selectedItem)}

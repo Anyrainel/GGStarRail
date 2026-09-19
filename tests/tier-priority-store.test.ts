@@ -54,7 +54,7 @@ describe("HSR priority persistence", () => {
         0
       )
     ).toEqual({
-      schemaVersion: 1,
+      schemaVersion: 2,
       assignments: {
         "light-cone:20001": { tier: "B", position: 2 },
       },
@@ -83,7 +83,7 @@ describe("HSR priority persistence", () => {
         1
       )
     ).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       assignments: {},
       groupAssignments: {},
     });

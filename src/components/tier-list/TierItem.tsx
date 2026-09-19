@@ -33,7 +33,7 @@ export function TierItem<Group extends string>({
   return (
     <CatalogHoverCard
       kind={item.kind}
-      id={item.id}
+      id={item.appearanceId ?? item.id}
       disabled={sortable.isDragging}
     >
       <button
@@ -46,14 +46,17 @@ export function TierItem<Group extends string>({
         aria-label={item.name}
         data-priority-item-id={item.id}
         className={cn(
-          "group/item relative w-16 shrink-0 touch-none rounded-[10px] bg-transparent shadow-sm outline-none",
+          "group/item relative w-16 shrink-0 touch-none bg-transparent shadow-sm outline-none",
+          item.kind === "character"
+            ? "rounded-[3px]"
+            : item.kind !== "light-cone" && "rounded-[10px]",
           "cursor-grab transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
         )}
       >
         <ItemIcon
           cornerAsset={item.cornerAsset}
           kind={item.kind}
-          id={item.id}
+          id={item.appearanceId ?? item.id}
           sourcePath={item.sourcePath}
           alt={item.name}
           rarity={item.rarity}
@@ -73,12 +76,17 @@ export function TierItemPreview<Group extends string>({
     <ItemIcon
       cornerAsset={item.cornerAsset}
       kind={item.kind}
-      id={item.id}
+      id={item.appearanceId ?? item.id}
       sourcePath={item.sourcePath}
       alt={item.name}
       rarity={item.rarity}
       size="lg"
-      className="rounded-[10px] ring-2 ring-primary shadow-2xl"
+      className={cn(
+        "ring-2 ring-primary shadow-2xl",
+        item.kind === "character"
+          ? "rounded-[3px]"
+          : item.kind !== "light-cone" && "rounded-[10px]"
+      )}
     />
   );
 }

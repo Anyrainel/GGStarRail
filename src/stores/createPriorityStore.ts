@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { canonicalCharacterAssignments } from "@/domain/tier-list/characterAssignments";
 import {
   DEFAULT_PRIORITY_STORE,
   type PersistedPriorityStore,
@@ -24,14 +25,16 @@ export interface PriorityStoreActions {
 
 export type PriorityStoreState = PersistedPriorityStore & PriorityStoreActions;
 
-export function createPriorityStore(storageKey: string) {
+export function createPriorityStore(storageKey: string, characters = false) {
   return create<PriorityStoreState>()(
     persist(
       (set) => ({
         ...structuredClone(DEFAULT_PRIORITY_STORE),
         setPriorityState: ({ assignments, groupAssignments }) =>
           set((state) => ({
-            assignments,
+            assignments: characters
+              ? canonicalCharacterAssignments(assignments)
+              : assignments,
             groupAssignments: groupAssignments ?? state.groupAssignments,
             updatedAt: Date.now(),
           })),
@@ -44,7 +47,8 @@ export function createPriorityStore(storageKey: string) {
       {
         name: storageKey,
         version: PRIORITY_STORE_VERSION,
-        migrate: migratePriorityStore,
+        migrate: (state, version) =>
+          migratePriorityStore(state, version, characters),
         partialize: (state) => ({
           schemaVersion: state.schemaVersion,
           assignments: state.assignments,
@@ -54,7 +58,13 @@ export function createPriorityStore(storageKey: string) {
         merge: (persistedState, currentState) => {
           const parsed = PersistedPriorityStoreSchema.safeParse(persistedState);
           return parsed.success
-            ? { ...currentState, ...parsed.data }
+            ? {
+                ...currentState,
+                ...parsed.data,
+                assignments: characters
+                  ? canonicalCharacterAssignments(parsed.data.assignments)
+                  : parsed.data.assignments,
+              }
             : currentState;
         },
       }

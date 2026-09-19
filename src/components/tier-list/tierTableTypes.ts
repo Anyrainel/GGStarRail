@@ -4,6 +4,8 @@ import type { CatalogAssetKind, CatalogAssetRef } from "@/domain/assets";
 export interface TierItemData<Group extends string> extends CatalogAssetRef {
   kind: CatalogAssetKind;
   id: string;
+  /** Portrait/source variant; ranking and drag identity remain the canonical id. */
+  appearanceId?: string;
   name: string;
   rarity: number | null;
   group: Group;

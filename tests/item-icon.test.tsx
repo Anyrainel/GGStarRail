@@ -4,6 +4,30 @@ import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 
 describe("ItemIcon", () => {
   it.each([
+    ["light-cone", 0],
+    ["character", 10 / 3],
+    ["relic-piece", 10],
+  ] as const)("uses the %s corner treatment on artwork and level strip", (kind, radius) => {
+    const { container } = render(
+      <ItemIcon kind={kind} id="test" alt="Item" rarity={5} level="Lv. 80" />
+    );
+    const art = container.querySelector<HTMLElement>("[data-item-artwork]")!;
+    expect(Number.parseFloat(art.style.borderBottomLeftRadius)).toBeCloseTo(
+      radius
+    );
+    expect(
+      Number.parseFloat(screen.getByText("Lv. 80").style.borderBottomLeftRadius)
+    ).toBeCloseTo(radius);
+    const img = art.querySelector("img");
+    expect(img).toHaveClass(
+      kind === "character" ? "object-cover" : "object-contain"
+    );
+    if (kind === "light-cone") {
+      expect(art).not.toHaveClass("ring-1");
+      expect(img).toHaveClass("h-[101%]", "w-auto");
+    }
+  });
+  it.each([
     ["character", 7 / 8],
     ["light-cone", 11 / 16],
     ["relic-piece", 1],

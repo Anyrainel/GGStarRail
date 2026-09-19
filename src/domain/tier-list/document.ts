@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { canonicalCharacterAssignments } from "./characterAssignments";
 import { PRIORITY_ROWS } from "./constants";
 import {
   PriorityAssignmentsSchema,
@@ -13,16 +14,28 @@ export const TierPresentationSchema = z
   })
   .strict();
 
-export const TierDocumentSchema = z
+const TierDocumentFieldsSchema = z
   .object({
     kind: z.literal("ggstarrail.tier-list"),
-    schemaVersion: z.literal(1),
+    schemaVersion: z.union([z.literal(1), z.literal(2)]),
     category: z.enum(["character", "light-cone", "relic-set"]),
     assignments: PriorityAssignmentsSchema,
     groupAssignments: RelicGroupAssignmentsSchema,
     presentation: TierPresentationSchema,
   })
   .strict();
+
+// JSON imports and library hydration share the same v1 -> v2 identity transform.
+export const TierDocumentSchema = TierDocumentFieldsSchema.transform(
+  (document) => ({
+    ...document,
+    schemaVersion: 2 as const,
+    assignments:
+      document.category === "character"
+        ? canonicalCharacterAssignments(document.assignments)
+        : document.assignments,
+  })
+);
 
 export type TierPresentation = z.infer<typeof TierPresentationSchema>;
 export type TierDocument = z.infer<typeof TierDocumentSchema>;

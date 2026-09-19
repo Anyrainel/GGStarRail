@@ -2,6 +2,7 @@ import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { crawlRoot, root, saveJson, sha256 } from "./crawl-common.mjs";
 import { currencyWarAssetKinds } from "./currency-war-assets.mjs";
+import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
 
 const directory = path.join(root, "data/source-assets");
 const manifestPath = path.join(directory, "manifest.json");
@@ -70,6 +71,15 @@ export async function restoreSourceAssets(lookup) {
     lookup.entries.map((entry) => [`${entry[0]}:${entry[1]}`, entry])
   );
   for (const entry of manifest.entries) {
+    const expectedFrame =
+      entry.kind === "character"
+        ? trailblazerPortraitFrame(entry.id)
+        : undefined;
+    if (expectedFrame !== undefined && entry.source_frame !== expectedFrame) {
+      throw new Error(
+        `Trailblazer gender frame missing or mismatched: ${entry.id}`
+      );
+    }
     if (
       !Object.values(kindByCollection).includes(entry.kind) ||
       !/^webp\/[a-f0-9]{64}\.webp$/.test(entry.path)
@@ -89,6 +99,17 @@ export async function restoreSourceAssets(lookup) {
       entry.id,
       entry.path,
     ]);
+  }
+  for (const id of ["8001", "8003", "8005", "8007", "8009"]) {
+    const male = manifest.entries.find(
+      (entry) => entry.kind === "character" && entry.id === id
+    );
+    const female = manifest.entries.find(
+      (entry) =>
+        entry.kind === "character" && entry.id === String(Number(id) + 1)
+    );
+    if (!male || !female || male.sha256 === female.sha256)
+      throw new Error(`Missing distinct Trailblazer portraits: ${id}`);
   }
   return {
     ...lookup,

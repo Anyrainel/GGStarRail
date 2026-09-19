@@ -164,7 +164,7 @@ it("rejects foreign, future, and invalid tier documents", () => {
       .success
   ).toBe(false);
   expect(
-    TierDocumentSchema.safeParse({ ...valid, schemaVersion: 2 }).success
+    TierDocumentSchema.safeParse({ ...valid, schemaVersion: 3 }).success
   ).toBe(false);
   expect(
     TierDocumentSchema.safeParse({

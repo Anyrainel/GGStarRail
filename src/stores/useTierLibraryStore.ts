@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/config/identity";
@@ -7,17 +7,9 @@ import {
   TierDocumentSchema,
 } from "@/domain/tier-list/document";
 
-const LibrarySchema = z
-  .object({
-    documents: z.record(z.string(), TierDocumentSchema),
-    active: z.partialRecord(
-      z.enum(["character", "light-cone", "relic-set"]),
-      z.string()
-    ),
-  })
-  .strict();
+import { migrateTierLibrary, TierLibrarySchema } from "./migration/tierLibrary";
 
-type Library = z.infer<typeof LibrarySchema>;
+type Library = z.infer<typeof TierLibrarySchema>;
 interface LibraryActions {
   save: (id: string, document: TierDocument) => void;
   activate: (category: TierDocument["category"], id: string) => void;
@@ -34,7 +26,12 @@ export const useTierLibraryStore = create<Library & LibraryActions>()(
         set((state) =>
           JSON.stringify(state.documents[id]) === JSON.stringify(document)
             ? state
-            : { documents: { ...state.documents, [id]: document } }
+            : {
+                documents: {
+                  ...state.documents,
+                  [id]: TierDocumentSchema.parse(document),
+                },
+              }
         ),
       activate: (category, id) =>
         set((state) => ({ active: { ...state.active, [category]: id } })),
@@ -55,10 +52,11 @@ export const useTierLibraryStore = create<Library & LibraryActions>()(
     }),
     {
       name: STORAGE_KEYS.tierLibrary,
-      version: 1,
+      version: 2,
+      migrate: migrateTierLibrary,
       partialize: ({ documents, active }) => ({ documents, active }),
       merge: (persisted, current) => {
-        const parsed = LibrarySchema.safeParse(persisted);
+        const parsed = TierLibrarySchema.safeParse(persisted);
         return parsed.success ? { ...current, ...parsed.data } : current;
       },
     }

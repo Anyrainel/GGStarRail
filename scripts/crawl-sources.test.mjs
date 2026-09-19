@@ -15,6 +15,16 @@ import {
   releasedPage,
 } from "./hoyolab.mjs";
 import { nanokaVersion } from "./nanoka.mjs";
+import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
+
+test("Trailblazer portraits select the audited gender frame including reversed Harmony order", () => {
+  assert.equal(trailblazerPortraitFrame("8001"), 0);
+  assert.equal(trailblazerPortraitFrame("8002"), 1);
+  assert.equal(trailblazerPortraitFrame("8005"), 1);
+  assert.equal(trailblazerPortraitFrame("8006"), 0);
+  assert.equal(trailblazerPortraitFrame("8010"), 1);
+  assert.equal(trailblazerPortraitFrame("1001"), undefined);
+});
 
 test("official page publication requires explicit non-beta status", () => {
   assert.equal(releasedPage({ status: "Online" }), false);

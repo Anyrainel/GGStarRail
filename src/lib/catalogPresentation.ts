@@ -1,3 +1,4 @@
+import { trailblazerAppearance } from "@/domain/characterIdentity";
 import { TRAILBLAZER_VARIANT_TERMS } from "@/i18n/gameTerms";
 import type { Locale } from "@/i18n/locales";
 import { formatGameText } from "@/lib/gameText";
@@ -8,8 +9,6 @@ import type {
   PropertyCatalog,
   PropertyDefinition,
 } from "@/providers/gilore/types";
-
-const TRAILBLAZER_CHARACTER_ID = /^80(?:0[1-9]|10)$/;
 
 export interface CharacterCatalogPresentation {
   name: string;
@@ -75,12 +74,10 @@ export function characterCatalogName(
   trailblazerFallback: string
 ): string {
   const sourceName = localizedName(character.name, locale, character.id);
-  return sourceName === "{NICKNAME}" &&
-    TRAILBLAZER_CHARACTER_ID.test(character.id)
+  const appearance = trailblazerAppearance(character.id);
+  return sourceName === "{NICKNAME}" && appearance
     ? `${trailblazerFallback} · ${
-        Number(character.id) % 2 === 1
-          ? TRAILBLAZER_VARIANT_TERMS[locale].caelus
-          : TRAILBLAZER_VARIANT_TERMS[locale].stelle
+        TRAILBLAZER_VARIANT_TERMS[locale][appearance]
       }`
     : formatGameText(sourceName);
 }
