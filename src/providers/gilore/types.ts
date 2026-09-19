@@ -142,6 +142,7 @@ export interface CharacterSkill {
   name: LocalizedText;
   description: LocalizedText;
   simple_description: LocalizedText | null;
+  normal_max_level: number;
   max_level: number;
   tag: LocalizedText | null;
   type_description: LocalizedText | null;
@@ -216,6 +217,7 @@ export interface CharacterEnhancementVariant {
   skills: readonly CharacterSkill[];
   ranks: readonly CharacterRank[];
   traces: readonly CharacterTrace[];
+  trace_stats: readonly PropertyValue[];
   skill_changes: readonly CharacterSkillEnhancement[];
   trace_changes: readonly CharacterTraceEnhancement[];
   rank_changes: readonly CharacterRankEnhancement[];
@@ -237,6 +239,7 @@ export interface CharacterDefinition {
   servants: readonly CharacterServant[];
   ranks: readonly CharacterRank[];
   traces: readonly CharacterTrace[];
+  trace_stats: readonly PropertyValue[];
   enhancements: readonly CharacterEnhancementVariant[];
   currency_war: readonly CurrencyWarCharacter[];
 }
@@ -439,8 +442,8 @@ export interface CurrencyWarBond {
 }
 
 export interface LightConeSuperimposition extends EffectLevel {
-  name: LocalizedText;
-  description: LocalizedText;
+  name: LocalizedText | null;
+  description: LocalizedText | null;
   properties: readonly PropertyValue[];
 }
 

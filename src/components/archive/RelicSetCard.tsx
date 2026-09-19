@@ -36,7 +36,7 @@ export function RelicSetCard({
     <article
       data-relic-set-id={relicSet.id}
       aria-label={name}
-      className="overflow-hidden rounded-xl border border-border bg-card/60"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card/60"
     >
       <div className="bg-gradient-to-b from-accent/40 to-transparent px-4 pb-3 pt-4">
         <div className="flex items-center gap-3">
@@ -45,10 +45,10 @@ export function RelicSetCard({
             id={relicSet.id}
             sourcePath={relicSet.icon_path}
             alt=""
-            className="h-11 w-11 shrink-0 object-contain"
+            className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16"
           />
           <div className="min-w-0">
-            <h2 className="text-base font-semibold leading-tight">{name}</h2>
+            <h2 className="text-lg font-semibold leading-tight">{name}</h2>
             <BetaBadge member="relic_sets" id={relicSet.id} />
           </div>
         </div>
@@ -67,7 +67,7 @@ export function RelicSetCard({
                 sourcePath={piece.icon_path}
                 alt={pieceName}
                 title={pieceName}
-                className="h-12 w-12 shrink-0 object-contain drop-shadow-sm sm:h-14 sm:w-14"
+                className="h-10 w-10 shrink-0 object-contain drop-shadow-sm sm:h-11 sm:w-11"
               />
             );
           })}

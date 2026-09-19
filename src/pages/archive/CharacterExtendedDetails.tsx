@@ -1,4 +1,11 @@
 import { useState } from "react";
+import {
+  LightweightSelect,
+  LightweightSelectContent,
+  LightweightSelectItem,
+  LightweightSelectTrigger,
+  LightweightSelectValue,
+} from "@/components/ui/lightweight-select";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 import { getLocalizedValue } from "@/providers/gilore/catalog";
@@ -8,6 +15,7 @@ import type {
   CharacterRank,
   CharacterTrace,
   PropertyCatalog,
+  PropertyValue,
 } from "@/providers/gilore/types";
 import {
   type CharacterDescriptionMode,
@@ -63,6 +71,47 @@ function visibleTraces(traces: readonly CharacterTrace[]) {
         trace.description?.["zh-CN"].value ||
         trace.levels.some((level) => level.properties.length)
     )
+  );
+}
+
+function TraceStatsTable({
+  values,
+  propertyTables,
+}: {
+  values: readonly PropertyValue[];
+  propertyTables: PropertyCatalog;
+}) {
+  const { locale, t } = useI18n();
+  if (!values.length) return null;
+  return (
+    <table
+      className="w-full max-w-md text-sm"
+      aria-label={t("archive.traceStats")}
+    >
+      <tbody>
+        {values.map((value) => {
+          const property = propertyTables.propertyById.get(value.property_id);
+          if (!property)
+            throw new Error(`Missing trace property ${value.property_id}`);
+          return (
+            <tr
+              key={value.property_id}
+              className="border-b border-border last:border-0"
+            >
+              <th className="px-2 py-2 text-left font-normal">
+                {getLocalizedValue(
+                  property.relic_name ?? property.name,
+                  locale
+                )}
+              </th>
+              <td className="px-2 py-2 text-right font-medium tabular-nums">
+                {formatCatalogValue(value.value, property.value_kind)}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 
@@ -148,22 +197,31 @@ function EnhancementDetails({
       title={t("archive.seasonalEnhancements", { value: variants.length })}
     >
       {variants.length > 1 && (
-        <select
-          className="h-9 rounded-md border border-border bg-background px-3 text-sm"
-          aria-label={t("archive.seasonalEnhancements", {
-            value: variants.length,
-          })}
-          value={selected}
-          onChange={(event) => setSelected(Number(event.target.value))}
+        <LightweightSelect
+          value={String(selected)}
+          onValueChange={(value) => setSelected(Number(value))}
         >
-          {variants.map((entry, index) => (
-            <option key={entry.enhanced_id} value={index}>
-              {t("archive.currencyWar.seasonNumber", {
-                value: entry.season_id,
-              })}
-            </option>
-          ))}
-        </select>
+          <LightweightSelectTrigger
+            className="h-8 w-auto bg-gradient-select"
+            aria-label={t("archive.seasonalEnhancements", {
+              value: variants.length,
+            })}
+          >
+            <LightweightSelectValue />
+          </LightweightSelectTrigger>
+          <LightweightSelectContent collisionPadding={8}>
+            {variants.map((entry, index) => (
+              <LightweightSelectItem
+                key={entry.enhanced_id}
+                value={String(index)}
+              >
+                {t("archive.currencyWar.seasonNumber", {
+                  value: entry.season_id,
+                })}
+              </LightweightSelectItem>
+            ))}
+          </LightweightSelectContent>
+        </LightweightSelect>
       )}
       <div
         data-testid={`enhancement-variant-${variant.enhanced_id}`}
@@ -191,7 +249,8 @@ function EnhancementDetails({
             <RankCards ranks={variant.ranks} />
           </section>
         )}
-        {visibleTraces(variant.traces).length > 0 && (
+        {(visibleTraces(variant.traces).length > 0 ||
+          variant.trace_stats.length > 0) && (
           <section className="space-y-2">
             <h4 className="font-semibold">
               {t("archive.traceTree", {
@@ -200,6 +259,10 @@ function EnhancementDetails({
             </h4>
             <TraceCards
               traces={variant.traces}
+              propertyTables={propertyTables}
+            />
+            <TraceStatsTable
+              values={variant.trace_stats}
               propertyTables={propertyTables}
             />
           </section>
@@ -268,12 +331,16 @@ export function CharacterExtendedDetails({
           ))}
         </CharacterSection>
       )}
-      {traces.length > 0 && (
+      {(traces.length > 0 || character.trace_stats.length > 0) && (
         <CharacterSection
           testId="character-traces"
           title={t("archive.traceTree", { nodes: traces.length })}
         >
           <TraceCards traces={traces} propertyTables={propertyTables} />
+          <TraceStatsTable
+            values={character.trace_stats}
+            propertyTables={propertyTables}
+          />
         </CharacterSection>
       )}
       {character.ranks.length > 0 && (

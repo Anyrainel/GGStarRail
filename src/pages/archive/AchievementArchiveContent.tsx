@@ -1,4 +1,4 @@
-import { Check, CircleHelp, ExternalLink, Trophy } from "lucide-react";
+import { Check, Trophy } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
@@ -12,15 +12,14 @@ import {
   type AchievementVersionFilter,
   achievementCompletionProgress,
   achievementMatchesFilters,
-  achievementPresentedText,
   buildAchievementVideoSearchUrl,
-  classifyAchievementCompletion,
   deriveAchievementVersionFilters,
   groupAchievementSeries,
   UNKNOWN_ACHIEVEMENT_VERSION,
 } from "@/domain/achievements";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
+import { getAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
@@ -42,7 +41,7 @@ export interface AchievementArchiveItemView extends AchievementArchiveItem {
 
 interface CompletionFilterSnapshot {
   accountIdentity: string | null;
-  completedIds: readonly number[] | null;
+  completedIds: readonly number[];
 }
 
 function completionAccountIdentity(
@@ -66,7 +65,7 @@ function CategoryList({
     number,
     readonly AchievementArchiveItemView[]
   >;
-  completedIds: ReadonlySet<number> | null;
+  completedIds: ReadonlySet<number>;
   selectedCategoryId: number | null;
   onSelect: (categoryId: number) => void;
 }) {
@@ -110,52 +109,13 @@ function CategoryList({
                   {category.name}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  {progress
-                    ? `${progress.completed} / ${progress.total}`
-                    : t(
-                        "archive.achievement.completion.progressUnavailableShort"
-                      )}
+                  {progress.completed} / {progress.total}
                 </span>
               </span>
             </span>
           </button>
         );
       })}
-    </div>
-  );
-}
-
-function CompletionCoverageNotice({
-  completionState,
-}: {
-  completionState: ReturnType<typeof classifyAchievementCompletion>;
-}) {
-  const { t } = useI18n();
-  const message = (() => {
-    switch (completionState) {
-      case "no-account":
-        return t("archive.achievement.completion.noAccount");
-      case "available-to-track":
-        return t("archive.achievement.completion.availableToTrack");
-      case "manual":
-        return t("archive.achievement.completion.manual");
-      case "captured":
-        return t("archive.achievement.completion.captured");
-      case "captured-edited":
-        return t("archive.achievement.completion.capturedEdited");
-    }
-  })();
-
-  return (
-    <div
-      className="mb-2 flex min-w-0 items-start gap-2 rounded-lg border border-border bg-card/50 px-3 py-2 text-xs leading-5 text-muted-foreground"
-      role="status"
-    >
-      <CircleHelp
-        className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-        aria-hidden="true"
-      />
-      <p className="min-w-0 break-words">{message}</p>
     </div>
   );
 }
@@ -168,7 +128,6 @@ function AchievementFilterToolbar({
   versionFilter,
   onVersionFilterChange,
   versionOptions,
-  completionKnown,
 }: {
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -177,7 +136,6 @@ function AchievementFilterToolbar({
   versionFilter: ReadonlySet<AchievementVersionFilter>;
   onVersionFilterChange: (values: Set<AchievementVersionFilter>) => void;
   versionOptions: readonly AchievementVersionFilter[];
-  completionKnown: boolean;
 }) {
   const { t } = useI18n();
   return (
@@ -201,7 +159,6 @@ function AchievementFilterToolbar({
           )
         }
         emptyMeansAll={false}
-        disabled={!completionKnown}
         className="contents"
       />
       {versionOptions.some(
@@ -238,7 +195,7 @@ function CategoryProgressBanner({
 }: {
   category: AchievementArchiveCategoryView;
   achievements: readonly AchievementArchiveItemView[];
-  completedIds: ReadonlySet<number> | null;
+  completedIds: ReadonlySet<number>;
 }) {
   const { t } = useI18n();
   const progress = achievementCompletionProgress(achievements, completedIds);
@@ -248,39 +205,33 @@ function CategoryProgressBanner({
         <h2 className="min-w-0 shrink break-words text-base font-semibold leading-tight sm:text-lg">
           {category.name}
         </h2>
-        {progress ? (
-          <div className="flex min-w-[12rem] basis-72 flex-1 items-start gap-3">
-            <div className="min-w-0 flex-1">
+        <div className="flex min-w-[12rem] basis-72 flex-1 items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={progress.total}
+              aria-valuenow={progress.completed}
+              aria-label={t("archive.achievement.progressLabel", {
+                category: category.name,
+                completed: progress.completed,
+                total: progress.total,
+              })}
+              className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary"
+            >
               <div
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={progress.total}
-                aria-valuenow={progress.completed}
-                aria-label={t("archive.achievement.progressLabel", {
-                  category: category.name,
-                  completed: progress.completed,
-                  total: progress.total,
-                })}
-                className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary"
-              >
-                <div
-                  className="h-full bg-primary transition-[width] duration-300"
-                  style={{ width: `${progress.percentage}%` }}
-                />
-              </div>
-              <div className="mt-1 text-center text-xs text-muted-foreground">
-                {progress.completed} / {progress.total}
-              </div>
+                className="h-full bg-primary transition-[width] duration-300"
+                style={{ width: `${progress.percentage}%` }}
+              />
             </div>
-            <div className="w-14 shrink-0 text-right text-base font-semibold tabular-nums sm:text-lg">
-              {progress.percentage}%
+            <div className="mt-1 text-center text-xs text-muted-foreground">
+              {progress.completed} / {progress.total}
             </div>
           </div>
-        ) : (
-          <p className="min-w-0 flex-1 text-sm text-muted-foreground">
-            {t("archive.achievement.completion.progressUnavailable")}
-          </p>
-        )}
+          <div className="w-14 shrink-0 text-right text-base font-semibold tabular-nums sm:text-lg">
+            {progress.percentage}%
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -307,10 +258,13 @@ function GuideLink({
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="flex h-9 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-secondary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-10 w-16 shrink-0 items-center justify-center rounded-md px-1 outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      {site === "youtube" ? "YouTube" : "Bilibili"}
-      <ExternalLink className="h-3 w-3" aria-hidden="true" />
+      <img
+        src={getAssetUrl(`assets/brands/${site}.webp`)}
+        alt=""
+        className="max-h-5 max-w-full object-contain opacity-80 transition-opacity group-hover:opacity-100"
+      />
     </a>
   );
 }
@@ -319,13 +273,11 @@ function AchievementSeriesCard({
   series,
   seriesIds,
   completedIds,
-  hasAccount,
   onStatusChange,
 }: {
   series: readonly AchievementArchiveItemView[];
   seriesIds: readonly number[];
-  completedIds: ReadonlySet<number> | null;
-  hasAccount: boolean;
+  completedIds: ReadonlySet<number>;
   onStatusChange: (
     seriesIds: readonly number[],
     achievementId: number,
@@ -337,27 +289,13 @@ function AchievementSeriesCard({
     <Card className="min-w-0 overflow-hidden border-border bg-card/60">
       <div className="min-w-0 divide-y divide-border">
         {series.map((achievement) => {
-          const completionKnown = completedIds !== null;
-          const completed = completionKnown && completedIds.has(achievement.id);
-          const presented = achievementPresentedText(achievement, completed);
-          const displayedName =
-            presented.name ?? t("archive.achievement.concealedName");
-          const accessibleName = displayedName;
-          const displayedDescription =
-            presented.description ??
-            t("archive.achievement.concealedDescription");
-          const toggleLabel = !hasAccount
-            ? t("archive.achievement.trackingUnavailable")
-            : !completionKnown
-              ? t("archive.achievement.startTrackingAndMarkFinished", {
-                  name: accessibleName,
-                })
-              : t(
-                  completed
-                    ? "archive.achievement.markUnfinished"
-                    : "archive.achievement.markFinished",
-                  { name: accessibleName }
-                );
+          const completed = completedIds.has(achievement.id);
+          const toggleLabel = t(
+            completed
+              ? "archive.achievement.markUnfinished"
+              : "archive.achievement.markFinished",
+            { name: achievement.name }
+          );
 
           return (
             <article
@@ -366,59 +304,49 @@ function AchievementSeriesCard({
                 "relative flex min-w-0 items-stretch overflow-hidden bg-card/40 px-2 py-2 before:absolute before:inset-0 before:origin-left before:bg-primary/15 before:transition-transform before:duration-700 sm:px-3",
                 completed ? "before:scale-x-100" : "before:scale-x-0"
               )}
-              {...(presented.concealed ? { "aria-label": accessibleName } : {})}
+              aria-label={achievement.name}
             >
               <div className="relative z-10 flex w-10 shrink-0 items-center justify-center sm:w-12">
                 <Trophy className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
-              <div className="relative z-10 min-w-0 flex-1">
-                <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-                  <h3
-                    className={cn(
-                      "min-w-0 break-words font-medium leading-tight",
-                      completed ? "text-foreground" : "text-foreground/85"
+              <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-2 xl:flex-row xl:items-center xl:gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    <h3
+                      className={cn(
+                        "min-w-0 break-words font-medium leading-tight",
+                        completed ? "text-foreground" : "text-foreground/85"
+                      )}
+                    >
+                      {achievement.name}
+                    </h3>
+                    {achievement.releaseVersion && (
+                      <Badge variant="secondary" className="px-1.5 py-0">
+                        v{achievement.releaseVersion}
+                      </Badge>
                     )}
-                  >
-                    {displayedName}
-                  </h3>
-                  {achievement.releaseVersion && (
-                    <Badge variant="secondary" className="px-1.5 py-0">
-                      v{achievement.releaseVersion}
-                    </Badge>
-                  )}
-                  {achievement.visibility === "show_after_finish" && (
-                    <Badge variant="outline" className="px-1.5 py-0">
-                      {t("archive.achievement.visibility.showAfterFinish")}
-                    </Badge>
-                  )}
-                  {achievement.visibility === "hidden_description" && (
-                    <Badge variant="outline" className="px-1.5 py-0">
-                      {t("archive.achievement.visibility.hiddenDescription")}
-                    </Badge>
-                  )}
+                  </div>
+                  <p className="mt-1 break-words whitespace-pre-line text-sm leading-5 text-muted-foreground">
+                    {achievement.description}
+                  </p>
                 </div>
-                <p className="mt-1 break-words whitespace-pre-line text-sm leading-5 text-muted-foreground">
-                  {displayedDescription}
-                </p>
-                <div className="mt-2 flex min-w-0 flex-wrap items-center justify-end gap-1">
-                  {!presented.concealed && (
-                    <>
-                      <GuideLink
-                        site="youtube"
-                        achievementName={displayedName}
-                      />
-                      <GuideLink
-                        site="bilibili"
-                        achievementName={displayedName}
-                      />
-                    </>
-                  )}
+                <div className="flex w-64 max-w-full shrink-0 items-center justify-end gap-1 self-end xl:self-center">
+                  <GuideLink
+                    site="youtube"
+                    achievementName={achievement.name}
+                  />
+                  <GuideLink
+                    site="bilibili"
+                    achievementName={achievement.name}
+                  />
                   <span
                     className="mx-1 h-6 w-px shrink-0 bg-border"
                     aria-hidden="true"
                   />
-                  <span className="flex h-9 shrink-0 items-center gap-1 px-1 text-sm font-medium tabular-nums">
-                    {achievement.rewardCount}
+                  <span className="flex h-9 w-12 shrink-0 items-center justify-end gap-1 text-sm font-medium tabular-nums">
+                    <span className="w-5 text-right">
+                      {achievement.rewardCount}
+                    </span>
                     <AssetImage
                       kind="achievement-reward"
                       id={String(achievement.rewardItemId)}
@@ -428,18 +356,13 @@ function AchievementSeriesCard({
                   </span>
                   <button
                     type="button"
-                    {...(completionKnown ? { "aria-pressed": completed } : {})}
+                    aria-pressed={completed}
                     aria-label={toggleLabel}
                     title={toggleLabel}
-                    disabled={!hasAccount}
                     onClick={() =>
-                      onStatusChange(
-                        seriesIds,
-                        achievement.id,
-                        completionKnown ? !completed : true
-                      )
+                      onStatusChange(seriesIds, achievement.id, !completed)
                     }
-                    className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <span
                       className={cn(
@@ -474,24 +397,24 @@ export function AchievementArchiveContent({
   const { t } = useI18n();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const account = useWorkspaceStore((state) => state.account);
+  const localAchievementCompletion = useWorkspaceStore(
+    (state) => state.localAchievementCompletion
+  );
   const setSeriesAchievementStatus = useWorkspaceStore(
     (state) => state.setSeriesAchievementStatus
   );
-  const achievementCompletion = account?.achievementCompletion;
+  const achievementCompletion = account
+    ? account.achievementCompletion
+    : localAchievementCompletion;
   const liveCompletedIds = useMemo(
-    () =>
-      achievementCompletion
-        ? new Set(achievementCompletion.completedIds)
-        : null,
+    () => new Set(achievementCompletion?.completedIds ?? []),
     [achievementCompletion]
   );
   const accountIdentity = completionAccountIdentity(account);
   const [filterSnapshot, setFilterSnapshot] =
     useState<CompletionFilterSnapshot>(() => ({
       accountIdentity,
-      completedIds: achievementCompletion
-        ? [...achievementCompletion.completedIds]
-        : null,
+      completedIds: [...(achievementCompletion?.completedIds ?? [])],
     }));
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
     null
@@ -507,9 +430,7 @@ export function AchievementArchiveContent({
   const refreshFilterSnapshot = useCallback(() => {
     setFilterSnapshot({
       accountIdentity,
-      completedIds: achievementCompletion
-        ? [...achievementCompletion.completedIds]
-        : null,
+      completedIds: [...(achievementCompletion?.completedIds ?? [])],
     });
   }, [accountIdentity, achievementCompletion]);
 
@@ -523,9 +444,7 @@ export function AchievementArchiveContent({
     if (filterSnapshot.accountIdentity !== accountIdentity) {
       return liveCompletedIds;
     }
-    return filterSnapshot.completedIds === null
-      ? null
-      : new Set(filterSnapshot.completedIds);
+    return new Set(filterSnapshot.completedIds);
   }, [accountIdentity, filterSnapshot, liveCompletedIds]);
 
   const categories = useMemo(
@@ -656,10 +575,6 @@ export function AchievementArchiveContent({
     [setSeriesAchievementStatus]
   );
 
-  const completionState = classifyAchievementCompletion(
-    account !== null,
-    achievementCompletion
-  );
   const categoryList = (
     <CategoryList
       categories={visibleCategories}
@@ -678,13 +593,13 @@ export function AchievementArchiveContent({
       versionFilter={versionFilter}
       onVersionFilterChange={handleVersionFilterChange}
       versionOptions={versionOptions}
-      completionKnown={achievementCompletion !== undefined}
     />
   );
 
   return (
     <SidebarDetailLayout
       header={toolbar}
+      mobileDetailHeader={toolbar}
       sidebar={categoryList}
       mobileGrid={categoryList}
       hasSelection={selectedCategoryId !== null}
@@ -693,11 +608,9 @@ export function AchievementArchiveContent({
       sidebarLabel={t("archive.achievement.categoryList")}
       detailLabel={t("archive.achievement.detail")}
       sidebarWidth="w-1/3 max-w-[18rem]"
-      banner={<CompletionCoverageNotice completionState={completionState} />}
     >
       {selectedCategory ? (
         <div className="min-w-0 pb-4">
-          {!isDesktop && <div className="pb-1">{toolbar}</div>}
           <CategoryProgressBanner
             category={selectedCategory}
             achievements={achievementsByCategory.get(selectedCategory.id) ?? []}
@@ -715,7 +628,6 @@ export function AchievementArchiveContent({
                   series={series}
                   seriesIds={seriesIds}
                   completedIds={liveCompletedIds}
-                  hasAccount={account !== null}
                   onStatusChange={handleStatusChange}
                 />
               ))}

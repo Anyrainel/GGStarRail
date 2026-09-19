@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { AccountSnapshotSchema } from "@/domain/account/schemas";
+import {
+  AccountSnapshotSchema,
+  AchievementCompletionSchema,
+} from "@/domain/account/schemas";
 import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
 import {
   BuildConfigurationSchema,
@@ -12,6 +15,9 @@ export const PersistedWorkspaceSchema = z
     schemaVersion: z.literal(4),
     characterLightConeIds: CharacterLightConeChoicesSchema,
     account: AccountSnapshotSchema.nullable(),
+    localAchievementCompletion: AchievementCompletionSchema.default({
+      completedIds: [],
+    }),
     builds: z.array(BuildConfigurationSchema),
     scoreProfiles: z.array(ScoreProfileSchema),
     triageRules: TriageRulesSchema,
@@ -56,6 +62,7 @@ export const DEFAULT_WORKSPACE: PersistedWorkspace = {
   schemaVersion: 4,
   characterLightConeIds: {},
   account: null,
+  localAchievementCompletion: { completedIds: [] },
   builds: [],
   scoreProfiles: [],
   triageRules: {

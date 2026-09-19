@@ -156,10 +156,11 @@ describe("GGArtifact family shell", () => {
     ).toBeNull();
   });
 
-  it("uses the GGArtifact adaptive content container on tool pages", () => {
+  it("keeps the app shell bounded so page layouts own content scrolling", () => {
     const { unmount } = renderApp(APP_PATHS.characters);
 
-    expect(screen.getByTestId("app-content")).toHaveClass("wide-container");
+    expect(screen.getByRole("main")).toHaveClass("overflow-hidden", "min-h-0");
+    expect(screen.getByTestId("app-content")).toHaveClass("flex-1", "min-h-0");
 
     unmount();
     render(
@@ -171,12 +172,8 @@ describe("GGArtifact family shell", () => {
         </I18nProvider>
       </ThemeProvider>
     );
-    expect(screen.getByTestId("app-content")).toHaveClass(
-      "container",
-      "mx-auto",
-      "px-4"
-    );
-    expect(screen.getByTestId("app-content")).not.toHaveClass("wide-container");
+    expect(screen.getByRole("main")).toHaveClass("overflow-hidden", "min-h-0");
+    expect(screen.getByTestId("app-content")).toHaveClass("flex-1", "min-h-0");
   });
 
   it("switches locale through the GGArtifact-style utility menu", async () => {

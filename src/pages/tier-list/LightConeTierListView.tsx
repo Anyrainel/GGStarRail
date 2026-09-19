@@ -3,6 +3,7 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { PriorityWorkspaceHeader } from "@/components/tier-list/PriorityWorkspaceHeader";
 import { TierTable } from "@/components/tier-list/TierTable";
@@ -62,13 +63,18 @@ export default function LightConeTierListView() {
   );
 
   return (
-    <div className="space-y-4">
-      <PageHeader titleKey="route.tierLightCones.title" visuallyHidden />
-      <PriorityWorkspaceHeader
-        assignedCount={Object.keys(assignments).length}
-        totalCount={items.length}
-        onReset={resetPriorities}
-      />
+    <ScrollLayout
+      header={
+        <>
+          <PageHeader titleKey="route.tierLightCones.title" visuallyHidden />
+          <PriorityWorkspaceHeader
+            assignedCount={Object.keys(assignments).length}
+            totalCount={items.length}
+            onReset={resetPriorities}
+          />
+        </>
+      }
+    >
       {loading ? (
         <CatalogLoading />
       ) : error || !data ? (
@@ -81,6 +87,6 @@ export default function LightConeTierListView() {
           onChange={setPriorityState}
         />
       )}
-    </div>
+    </ScrollLayout>
   );
 }

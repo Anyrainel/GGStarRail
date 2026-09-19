@@ -114,6 +114,7 @@ describe("Character build choices", () => {
       ...old,
       schemaVersion: 4,
       characterLightConeIds: {},
+      localAchievementCompletion: { completedIds: [] },
     });
     const bundle = parseBuildWorkspaceBundle(
       JSON.stringify({

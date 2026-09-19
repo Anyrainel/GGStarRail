@@ -17,6 +17,8 @@ import {
   characterFilterCount,
   defaultCharacterFilters,
 } from "@/components/account-data/CharacterFilterPanel";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -199,29 +201,38 @@ export default function CharacterView() {
   );
 
   return (
-    <>
+    <PageLayout>
       <PageHeader titleKey="route.characters.title" visuallyHidden />
-      <AccountCoverageNotice account={account} />
       {characters.length === 0 ? (
-        account ? (
-          <EmptyState messageKey="empty.characters" icon={UsersRound} />
-        ) : (
-          <WorkspaceStartState
-            messageKey="empty.characters"
-            icon={UsersRound}
-          />
-        )
+        <ScrollLayout bodyClassName="space-y-4">
+          <AccountCoverageNotice account={account} />
+          {account ? (
+            <EmptyState messageKey="empty.characters" icon={UsersRound} />
+          ) : (
+            <WorkspaceStartState
+              messageKey="empty.characters"
+              icon={UsersRound}
+            />
+          )}
+        </ScrollLayout>
       ) : buildReferences.loading ? (
-        <CatalogLoading />
+        <ScrollLayout bodyClassName="space-y-4">
+          <AccountCoverageNotice account={account} />
+          <CatalogLoading />
+        </ScrollLayout>
       ) : buildReferences.error || !references ? (
-        <CatalogLoadError error={buildReferences.error} />
+        <ScrollLayout bodyClassName="space-y-4">
+          <AccountCoverageNotice account={account} />
+          <CatalogLoadError error={buildReferences.error} />
+        </ScrollLayout>
       ) : (
         <SidebarLayout
           sidebar={renderFilterPanel()}
           triggerLabel={t("characterLoadout.filters")}
           activeFilterCount={activeFilterCount}
         >
-          <div className="min-w-0">
+          <div className="min-w-0 space-y-4">
+            <AccountCoverageNotice account={account} />
             {visibleCharacters.length === 0 ? (
               <EmptyState messageKey="empty.filtered" icon={UsersRound} />
             ) : (
@@ -261,6 +272,6 @@ export default function CharacterView() {
           </div>
         </SidebarLayout>
       )}
-    </>
+    </PageLayout>
   );
 }

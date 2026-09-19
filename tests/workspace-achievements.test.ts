@@ -1,4 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { STORAGE_KEYS } from "@/config/identity";
+import { parseBackup, serializeBackup } from "@/lib/backup";
+import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "./fixtures";
 
@@ -7,6 +10,106 @@ afterEach(() => {
 });
 
 describe("workspace achievement completion", () => {
+  it("persists anonymous chain tracking through hydration and backup", async () => {
+    useWorkspaceStore
+      .getState()
+      .setSeriesAchievementStatus(
+        [301, 302, 303],
+        302,
+        true,
+        new Date("2026-09-18T00:00:00.000Z")
+      );
+    const persisted = localStorage.getItem(STORAGE_KEYS.workspace)!;
+    expect(useWorkspaceStore.getState().account).toBeNull();
+    useWorkspaceStore.getState().clearWorkspace();
+    localStorage.setItem(STORAGE_KEYS.workspace, persisted);
+    await useWorkspaceStore.persist.rehydrate();
+    expect(useWorkspaceStore.getState().localAchievementCompletion).toEqual({
+      completedIds: [301, 302],
+      locallyModifiedAt: "2026-09-18T00:00:00.000Z",
+    });
+    const backup = parseBackup(
+      serializeBackup({
+        ...structuredClone(DEFAULT_WORKSPACE),
+        localAchievementCompletion:
+          useWorkspaceStore.getState().localAchievementCompletion,
+      })
+    );
+    useWorkspaceStore.getState().clearWorkspace();
+    useWorkspaceStore.getState().replaceWorkspace(backup.payload);
+    useWorkspaceStore
+      .getState()
+      .setSeriesAchievementStatus([301, 302, 303], 301, false);
+    expect(
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([]);
+  });
+
+  it("migrates a released v3 account workspace without moving account progress into anonymous tracking", async () => {
+    const account = makeAccountSnapshot();
+    account.achievementCompletion = {
+      completedIds: [101, 102],
+      locallyModifiedAt: "2026-09-04T00:00:00.000Z",
+    };
+    const old = {
+      schemaVersion: 3,
+      account,
+      builds: [],
+      scoreProfiles: [],
+      triageRules: structuredClone(DEFAULT_WORKSPACE.triageRules),
+    };
+    localStorage.setItem(
+      STORAGE_KEYS.workspace,
+      JSON.stringify({ version: 3, state: old })
+    );
+    await useWorkspaceStore.persist.rehydrate();
+    expect(useWorkspaceStore.getState().account).toEqual(account);
+    expect(useWorkspaceStore.getState().localAchievementCompletion).toEqual({
+      completedIds: [],
+    });
+    const parsed = parseBackup(
+      JSON.stringify({
+        product: "GGStarRail",
+        kind: "ggstarrail.backup",
+        schemaVersion: 1,
+        createdAt: "2026-09-18T00:00:00.000Z",
+        payload: old,
+      })
+    );
+    expect(parsed.payload.account).toEqual(account);
+    expect(parsed.payload.localAchievementCompletion).toEqual({
+      completedIds: [],
+    });
+  });
+
+  it("keeps anonymous progress separate from imported accounts and build imports", () => {
+    useWorkspaceStore.getState().setSeriesAchievementStatus([301], 301, true);
+    const account = makeAccountSnapshot();
+    account.achievementCompletion = { completedIds: [101] };
+    useWorkspaceStore.getState().applyAccountImport(account, "replace");
+    useWorkspaceStore
+      .getState()
+      .setSeriesAchievementStatus([101, 102], 102, true);
+    expect(
+      useWorkspaceStore.getState().account?.achievementCompletion?.completedIds
+    ).toEqual([101, 102]);
+    expect(
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([301]);
+    useWorkspaceStore.getState().replaceBuildWorkspace({
+      builds: [],
+      scoreProfiles: [],
+      triageRules: DEFAULT_WORKSPACE.triageRules,
+    });
+    expect(
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([301]);
+    useWorkspaceStore.getState().clearWorkspace();
+    expect(
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([]);
+  });
+
   it("applies series dependencies and retains capture provenance after local edits", () => {
     const account = makeAccountSnapshot();
     account.achievementCompletion = {

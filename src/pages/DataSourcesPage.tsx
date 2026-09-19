@@ -1,5 +1,6 @@
 import { ScanLine, ShieldCheck } from "lucide-react";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatusCard } from "@/components/shared/StatusCard";
 import {
@@ -14,8 +15,10 @@ import { useI18n } from "@/i18n/I18nContext";
 export default function DataSourcesPage() {
   const { t } = useI18n();
   return (
-    <>
-      <PageHeader titleKey="route.imports.title" />
+    <ScrollLayout
+      header={<PageHeader titleKey="route.imports.title" />}
+      bodyClassName="space-y-4"
+    >
       <section className="grid gap-4 lg:grid-cols-2">
         <StatusCard
           titleKey="imports.scanner.title"
@@ -46,6 +49,6 @@ export default function DataSourcesPage() {
           <CardDescription>{t("imports.security.body")}</CardDescription>
         </CardHeader>
       </Card>
-    </>
+    </ScrollLayout>
   );
 }

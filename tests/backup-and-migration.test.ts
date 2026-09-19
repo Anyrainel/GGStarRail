@@ -111,6 +111,9 @@ describe("independent persistence and backup identity", () => {
 
     const parsed = parseBackup(serialized);
     expect(parsed.payload.schemaVersion).toBe(4);
+    expect(parsed.payload.localAchievementCompletion).toEqual({
+      completedIds: [],
+    });
     expect(parsed.payload.account?.schemaVersion).toBe(3);
     expect(parsed.payload.account?.relics[0]?.discarded).toBeNull();
     expect(parsed.payload.account?.source.coverage.relics).toBe("unknown");
@@ -157,6 +160,9 @@ describe("independent persistence and backup identity", () => {
     expect(parsed.payload.schemaVersion).toBe(4);
     expect(parsed.payload.account?.schemaVersion).toBe(3);
     expect(parsed.payload.account?.achievementCompletion).toBeUndefined();
+    expect(parsed.payload.localAchievementCompletion).toEqual({
+      completedIds: [],
+    });
   });
 
   it("drops incomplete v1 builds and preserves an explicit three-set split", () => {

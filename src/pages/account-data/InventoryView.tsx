@@ -5,6 +5,7 @@ import { InventoryCharacterSection } from "@/components/account-data/InventoryCh
 import { InventoryLightConeSection } from "@/components/account-data/InventoryLightConeSection";
 import { InventoryRelicSection } from "@/components/account-data/InventoryRelicSection";
 import { InventorySection } from "@/components/account-data/InventorySection";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { useI18n } from "@/i18n/I18nContext";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
@@ -14,7 +15,7 @@ export function InventoryView() {
   const account = useWorkspaceStore((state) => state.account);
 
   return (
-    <>
+    <ScrollLayout bodyClassName="space-y-4">
       <PageHeader titleKey="route.inventory.title" visuallyHidden />
       <AccountCoverageNotice account={account} />
       {!account ? (
@@ -48,7 +49,7 @@ export function InventoryView() {
           </InventorySection>
         </div>
       )}
-    </>
+    </ScrollLayout>
   );
 }
 

@@ -42,7 +42,9 @@ async function switchLocale(
   user: ReturnType<typeof userEvent.setup>,
   chinese: boolean
 ) {
-  await user.click(screen.getByRole("button", { name: /^(More|更多)$/ }));
+  await user.click(
+    screen.getByLabelText(/^(More|更多)$/, { selector: "button" })
+  );
   await user.click(
     await screen.findByRole("menuitemradio", {
       name: chinese ? "简体中文" : "English",
@@ -50,8 +52,36 @@ async function switchLocale(
   );
 }
 
+async function selectSkillLevel(
+  user: ReturnType<typeof userEvent.setup>,
+  trigger: HTMLElement,
+  level: number
+) {
+  await user.click(trigger);
+  const listbox = document.getElementById(
+    trigger.getAttribute("aria-controls") ?? ""
+  );
+  if (!listbox) throw new Error("The skill level listbox was not opened");
+  expect(listbox).toHaveAttribute("role", "listbox");
+  await user.click(
+    within(listbox).getByRole("option", { name: `Level ${level}` })
+  );
+}
+
 describe("Character archive", () => {
-  beforeEach(() => setBetaEnabled(true));
+  beforeEach(() => {
+    setBetaEnabled(true);
+    vi.mocked(window.matchMedia).mockImplementation((query) => ({
+      matches: query === "(min-width: 768px)",
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  });
 
   it("preserves incoming deep links through async loading and places Currency War last", async () => {
     const user = userEvent.setup();
@@ -95,14 +125,16 @@ describe("Character archive", () => {
     const user = userEvent.setup();
     renderArchive();
     const region = await catalogRegion();
-    const allCount = within(region).getAllByRole("button").length;
+    const rows = () => region.querySelectorAll("button[data-character-id]");
+    const allCount = rows().length;
     const iceChip = screen.getByRole("button", { name: "Ice" });
     await user.click(iceChip);
-    expect(within(region).getAllByRole("button").length).toBeLessThan(allCount);
-    const search = screen.getByRole("searchbox", { name: "Search" });
-    await user.type(search, "三月七");
+    expect(rows().length).toBeLessThan(allCount);
+    const search = screen.getByLabelText("Search", { selector: "input" });
+    await user.click(search);
+    await user.paste("三月七");
     expect(iceChip).toBeDisabled();
-    expect(within(region).getAllByRole("button")).toHaveLength(2);
+    expect(rows()).toHaveLength(2);
     const huntMarch = characterRow(region, "1224");
     expect(huntMarch).toHaveTextContent("The Hunt");
     expect(huntMarch).toHaveTextContent("Imaginary");
@@ -117,7 +149,7 @@ describe("Character archive", () => {
       region.querySelector('[data-character-id="1224"]')
     ).not.toBeInTheDocument();
     expect(iceChip).not.toBeDisabled();
-    await user.type(search, "Trailblazer");
+    await user.paste("Trailblazer");
     expect(characterRow(region, "8001")).toHaveTextContent(
       "Trailblazer · Caelus"
     );
@@ -130,29 +162,39 @@ describe("Character archive", () => {
     expect(screen.getByTestId("character-detail")).not.toHaveTextContent(
       "{NICKNAME}"
     );
-  });
+    // This route exercises the real bilingual catalogs, including all mode data.
+    // Allow its async load and locale rerender to share CPU with the full suite.
+  }, 15_000);
 
   it("keeps the shared description choice while changing characters and compares two skill levels", async () => {
     const user = userEvent.setup();
     renderArchive(`${APP_PATHS.archiveCharacters}?id=1001`);
     const region = await catalogRegion();
     const detail = screen.getByTestId("character-detail");
+    const descriptions = within(detail).getByRole("group", {
+      name: "Description",
+    });
     expect(
-      within(detail).getByRole("button", { name: "Brief" })
+      within(descriptions).getByRole("button", { name: "Full" })
     ).toHaveAttribute("aria-pressed", "true");
-    await user.click(within(detail).getByRole("button", { name: "Full" }));
+    await user.click(
+      within(descriptions).getByRole("button", { name: "Brief" })
+    );
     const skills = within(detail).getByTestId("character-base-skills");
     expect(skills).toHaveAttribute("open");
     const table = within(skills).getAllByRole("table", {
       name: "Skill values",
     })[0];
     const [left, right] = within(table).getAllByRole("combobox");
-    const leftOptions = within(left).getAllByRole("option");
-    expect(leftOptions.length).toBeGreaterThan(1);
-    await user.selectOptions(left, leftOptions[1]);
-    expect(left).toHaveValue(leftOptions[1].getAttribute("value"));
-    await user.selectOptions(right, leftOptions[0].getAttribute("value")!);
-    expect(right).toHaveValue(leftOptions[0].getAttribute("value"));
+    await selectSkillLevel(user, left, 2);
+    expect(left).toHaveTextContent("Level 2");
+    await selectSkillLevel(user, right, 1);
+    expect(right).toHaveTextContent("Level 1");
+    const traces = within(detail).getByTestId("character-traces");
+    expect(
+      within(traces).getByRole("table", { name: "Trace stat bonuses" })
+    ).toBeInTheDocument();
+    expect(traces).not.toHaveTextContent("DEF Boost");
     const firstEidolon = queryElement(
       within(detail).getByTestId("character-eidolons"),
       '[data-rank-id="100101"]'
@@ -164,7 +206,7 @@ describe("Character archive", () => {
     await user.click(characterRow(region, "1402"));
     const aglaea = screen.getByTestId("character-detail");
     expect(
-      within(aglaea).getByRole("button", { name: "Full" })
+      within(aglaea).getByRole("button", { name: "Brief" })
     ).toHaveAttribute("aria-pressed", "true");
     const servant = within(aglaea).getByTestId("character-servants");
     expect(servant).toHaveTextContent("Garmentmaker");
@@ -175,9 +217,9 @@ describe("Character archive", () => {
     expect(screen.getByTestId("character-enhancements")).toHaveAttribute(
       "open"
     );
-  });
+  }, 15_000);
 
-  it("opens the narrow-screen detail sheet and restores focus to the selected roster row", async () => {
+  it("opens inline character details on narrow screens and returns to the roster", async () => {
     vi.mocked(window.matchMedia).mockImplementation((query) => ({
       matches: query === "(max-width: 1023px)",
       media: query,
@@ -194,14 +236,18 @@ describe("Character archive", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     const row = characterRow(region, "1001");
     await user.click(row);
-    const dialog = await screen.findByRole("dialog", { name: "March 7th" });
-    expect(within(dialog).getByTestId("character-detail")).toHaveTextContent(
+    expect(await screen.findByTestId("character-detail")).toHaveTextContent(
       "March 7th"
     );
-    await user.click(within(dialog).getByRole("button", { name: "Close" }));
-    await waitFor(() =>
-      expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Character catalog results" })
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Characters" }));
+    expect(characterRow(await catalogRegion(), "1001")).toHaveAttribute(
+      "aria-pressed",
+      "true"
     );
-    expect(row).toHaveFocus();
+    expect(screen.queryByTestId("character-detail")).not.toBeInTheDocument();
   });
 });

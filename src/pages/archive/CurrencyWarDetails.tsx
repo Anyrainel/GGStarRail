@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import { useI18n } from "@/i18n/I18nContext";
+import { formatStarValues } from "@/lib/currencyWarPresentation";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
+import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { cn } from "@/lib/utils";
 import { getLocalizedValue } from "@/providers/gilore/catalog";
 import type {
   CurrencyWarBondTier,
   CurrencyWarPropertyValue,
+  CurrencyWarStarLevel,
   LocalizedText,
   PropertyCatalog,
 } from "@/providers/gilore/types";
@@ -28,14 +31,22 @@ export function CurrencyWarText({
   parameters = [],
   className,
   parameterFormat,
+  parameterVariants,
 }: {
   text: LocalizedText | null | undefined;
   parameters?: readonly number[];
   className?: string;
   parameterFormat?: string | null;
+  parameterVariants?: readonly { parameters: readonly number[] }[];
 }) {
   const { locale, t } = useI18n();
   if (!text) return null;
+  const template = parameterFormat
+    ? getLocalizedValue(text, locale).replace(
+        /#(\d+)(?![\da-zA-Z[])(%?)/g,
+        (_token, index: string) => `#${index}${parameterFormat}`
+      )
+    : getLocalizedValue(text, locale);
   return (
     <p
       className={cn(
@@ -43,17 +54,65 @@ export function CurrencyWarText({
         className
       )}
     >
-      {formatGameText(
-        parameterFormat
-          ? getLocalizedValue(text, locale).replace(
-              /#(\d+)(?![\da-zA-Z[])(%?)/g,
-              (_token, index: string) => `#${index}${parameterFormat}`
-            )
-          : getLocalizedValue(text, locale),
-        parameters,
-        t("terms.trailblazer")
-      )}
+      {parameterVariants
+        ? formatGameTextVariants(
+            template,
+            parameterVariants,
+            t("terms.trailblazer")
+          )
+        : formatGameText(template, parameters, t("terms.trailblazer"))}
     </p>
+  );
+}
+
+export function CurrencyWarStarProperties({
+  stars,
+  properties,
+}: {
+  stars: readonly CurrencyWarStarLevel[];
+  properties: PropertyCatalog;
+}) {
+  const { locale, t } = useI18n();
+  const definitions = [
+    ...new Map(
+      stars.flatMap((star) =>
+        star.properties.map((value) => [value.property_id, value] as const)
+      )
+    ).values(),
+  ];
+  if (!definitions.length) return null;
+  return (
+    <dl className="grid gap-2 sm:grid-cols-2">
+      {definitions.map((value) => {
+        const property = properties.propertyById.get(value.property_id);
+        return (
+          <div
+            key={value.property_id}
+            className="flex items-center justify-between gap-3 rounded-lg bg-secondary/60 px-3 py-2 text-sm"
+          >
+            <dt>
+              {formatGameText(
+                getLocalizedValue(
+                  value.name ?? property?.relic_name ?? property?.name,
+                  locale
+                ) ?? t("archive.sourceValueMissing")
+              )}
+            </dt>
+            <dd className="font-semibold tabular-nums">
+              {formatStarValues(
+                stars.map(
+                  (star) =>
+                    star.properties.find(
+                      (entry) => entry.property_id === value.property_id
+                    )?.value
+                ),
+                value.value_kind ?? property?.value_kind ?? "unknown"
+              )}
+            </dd>
+          </div>
+        );
+      })}
+    </dl>
   );
 }
 

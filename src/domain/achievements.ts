@@ -29,26 +29,6 @@ export interface AchievementSeries<T extends AchievementArchiveItem> {
   seriesIds: readonly number[];
 }
 
-export interface AchievementCompletionLike {
-  completedIds: readonly number[];
-  capture?: unknown;
-  locallyModifiedAt?: string;
-}
-
-export type AchievementCompletionState =
-  | "no-account"
-  | "available-to-track"
-  | "manual"
-  | "captured"
-  | "captured-edited";
-
-export interface AchievementPresentedText {
-  name: string | null;
-  description: string | null;
-  concealed: boolean;
-  descriptionSource: "normal" | "hidden" | "concealed";
-}
-
 function searchTerms(query: string): string[] {
   return query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
 }
@@ -94,24 +74,18 @@ export function achievementMatchesFilters(
   query: string,
   statuses: ReadonlySet<AchievementStatusFilter>,
   versions: ReadonlySet<AchievementVersionFilter>,
-  completedIds: ReadonlySet<number> | null
+  completedIds: ReadonlySet<number>
 ): boolean {
   return itemMatchesArchiveFilterScope(
     achievement,
     query,
     (item, normalizedSearch) => {
       const terms = searchTerms(normalizedSearch);
-      const presented = achievementPresentedText(
-        item,
-        completedIds?.has(item.id) ?? false
-      );
-      const text = [presented.name ?? "", presented.description ?? ""]
-        .join("\n")
-        .toLocaleLowerCase();
+      const text = [item.name, item.description].join("\n").toLocaleLowerCase();
       return terms.every((term) => text.includes(term));
     },
     (item) => {
-      if (completedIds !== null && statuses.size > 0) {
+      if (statuses.size > 0) {
         const status = completedIds.has(item.id) ? "finished" : "unfinished";
         if (!statuses.has(status)) return false;
       }
@@ -122,37 +96,6 @@ export function achievementMatchesFilters(
       );
     }
   );
-}
-
-export function achievementPresentedText(
-  achievement: Pick<
-    AchievementArchiveItem,
-    "name" | "description" | "hiddenDescription" | "visibility"
-  >,
-  completed: boolean
-): AchievementPresentedText {
-  if (completed || achievement.visibility === "visible") {
-    return {
-      name: achievement.name,
-      description: achievement.description,
-      concealed: false,
-      descriptionSource: "normal",
-    };
-  }
-  if (achievement.visibility === "show_after_finish") {
-    return {
-      name: null,
-      description: null,
-      concealed: true,
-      descriptionSource: "concealed",
-    };
-  }
-  return {
-    name: achievement.name,
-    description: achievement.hiddenDescription,
-    concealed: false,
-    descriptionSource: "hidden",
-  };
 }
 
 export function groupAchievementSeries<T extends AchievementArchiveItem>(
@@ -182,24 +125,10 @@ export function groupAchievementSeries<T extends AchievementArchiveItem>(
   }));
 }
 
-export function classifyAchievementCompletion(
-  hasAccount: boolean,
-  completion: AchievementCompletionLike | undefined
-): AchievementCompletionState {
-  if (!hasAccount) return "no-account";
-  if (!completion) return "available-to-track";
-  if (completion.capture && completion.locallyModifiedAt) {
-    return "captured-edited";
-  }
-  if (completion.capture) return "captured";
-  return "manual";
-}
-
 export function achievementCompletionProgress(
   achievements: readonly Pick<AchievementArchiveItem, "id">[],
-  completedIds: ReadonlySet<number> | null
-): { completed: number; total: number; percentage: number } | null {
-  if (completedIds === null) return null;
+  completedIds: ReadonlySet<number>
+): { completed: number; total: number; percentage: number } {
   const completed = achievements.reduce(
     (count, achievement) => count + Number(completedIds.has(achievement.id)),
     0

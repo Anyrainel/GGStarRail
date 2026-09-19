@@ -482,6 +482,13 @@
           "title": "Traces",
           "type": "array"
         },
+        "trace_stats": {
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Trace Stats",
+          "type": "array"
+        },
         "enhancements": {
           "items": {
             "$ref": "#/$defs/CharacterEnhancementVariant"
@@ -512,6 +519,7 @@
         "servants",
         "ranks",
         "traces",
+        "trace_stats",
         "enhancements"
       ],
       "title": "Character",
@@ -564,6 +572,13 @@
           "title": "Traces",
           "type": "array"
         },
+        "trace_stats": {
+          "items": {
+            "$ref": "#/$defs/PropertyValue"
+          },
+          "title": "Trace Stats",
+          "type": "array"
+        },
         "skill_changes": {
           "items": {
             "$ref": "#/$defs/CharacterSkillEnhancement"
@@ -595,6 +610,7 @@
         "skills",
         "ranks",
         "traces",
+        "trace_stats",
         "skill_changes",
         "trace_changes",
         "rank_changes"
@@ -775,6 +791,10 @@
           "default": null,
           "title": "Ultimate Icon Path"
         },
+        "normal_max_level": {
+          "title": "Normal Max Level",
+          "type": "integer"
+        },
         "max_level": {
           "title": "Max Level",
           "type": "integer"
@@ -793,6 +813,7 @@
         "description",
         "hide_in_ui",
         "icon_path",
+        "normal_max_level",
         "max_level",
         "levels"
       ],
@@ -2489,10 +2510,26 @@
           "type": "array"
         },
         "name": {
-          "$ref": "#/$defs/LocalizedText"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "description": {
-          "$ref": "#/$defs/LocalizedText"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "properties": {
           "type": "array",
@@ -2502,7 +2539,7 @@
           "title": "Properties"
         }
       },
-      "required": ["level", "parameters", "name", "description", "properties"],
+      "required": ["level", "parameters", "properties"],
       "title": "LightConeSuperimposition",
       "type": "object"
     },

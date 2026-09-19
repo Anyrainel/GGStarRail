@@ -25,6 +25,10 @@
     --input: 229 20% 10%;
     --ring: 223 62% 52%;
     --radius: 0.75rem;
+    --quality-silver: 215 16% 72%;
+    --quality-gold: 42 72% 58%;
+    --quality-prismatic-blue: 195 78% 64%;
+    --quality-prismatic-purple: 275 72% 73%;
     --gradient-page:
       radial-gradient(
         ellipse 85% 75% at 50% 50%,

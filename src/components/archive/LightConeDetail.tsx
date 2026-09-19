@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
-import { cn } from "@/lib/utils";
+import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { getLocalizedValue } from "@/providers/gilore/catalog";
 import type {
   LightConeDefinition,
+  LightConeSuperimposition,
   PathDefinition,
 } from "@/providers/gilore/types";
 
@@ -19,11 +19,6 @@ export function LightConeDetail({
   path: PathDefinition;
 }) {
   const { locale, t } = useI18n();
-  const [superimposition, setSuperimposition] = useState(1);
-  const selected =
-    lightCone.effect.superimpositions.find(
-      (row) => row.level === superimposition
-    ) ?? lightCone.effect.superimpositions[0];
   const name = formatGameText(getLocalizedValue(lightCone.name, locale));
   const pathName = formatGameText(getLocalizedValue(path.name, locale));
   const scaling = lightCone.stat_scaling.at(-1);
@@ -34,8 +29,21 @@ export function LightConeDetail({
         { name: t("stat.short.def"), value: scaling.stats.defence },
       ]
     : [];
-  const effectName = selected?.name ?? lightCone.effect.name;
-  const description = selected?.description ?? lightCone.effect.description;
+  const groups = new Map<
+    string,
+    { name: string; description: string; levels: LightConeSuperimposition[] }
+  >();
+  for (const level of lightCone.effect.superimpositions) {
+    const name = getLocalizedValue(level.name ?? lightCone.effect.name, locale);
+    const description = getLocalizedValue(
+      level.description ?? lightCone.effect.description,
+      locale
+    );
+    const key = JSON.stringify([name, description]);
+    const group = groups.get(key);
+    if (group) group.levels.push(level);
+    else groups.set(key, { name, description, levels: [level] });
+  }
   return (
     <article data-testid="light-cone-detail" className="space-y-5 select-text">
       <div className="flex items-center gap-3 pr-8">
@@ -85,46 +93,32 @@ export function LightConeDetail({
           </dl>
         </section>
       )}
-      <section className="space-y-3 rounded-xl border border-border bg-card/60 p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-semibold">
-            {formatGameText(
-              getLocalizedValue(effectName, locale),
-              [],
+      {[...groups.entries()].map(([key, group]) => (
+        <section
+          key={key}
+          className="space-y-3 rounded-xl border border-border bg-card/60 p-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-semibold">
+              {formatGameText(group.name, [], t("terms.trailblazer"))}
+            </h3>
+            {groups.size > 1 && (
+              <span className="text-xs text-muted-foreground">
+                {t("archive.superimposition", {
+                  value: group.levels.map((level) => level.level).join("/"),
+                })}
+              </span>
+            )}
+          </div>
+          <p className="whitespace-pre-line text-sm leading-6">
+            {formatGameTextVariants(
+              group.description,
+              group.levels,
               t("terms.trailblazer")
             )}
-          </h3>
-          <fieldset
-            aria-label={t("archive.superimpositionLabel")}
-            className="m-0 flex gap-1 rounded-lg border border-border bg-background/70 p-1"
-          >
-            {lightCone.effect.superimpositions.map((row) => (
-              <button
-                key={row.level}
-                type="button"
-                aria-label={t("archive.superimposition", { value: row.level })}
-                aria-pressed={superimposition === row.level}
-                onClick={() => setSuperimposition(row.level)}
-                className={cn(
-                  "h-7 min-w-8 rounded-md px-1.5 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                  superimposition === row.level
-                    ? "bg-primary text-primary-foreground"
-                    : "hover:bg-accent"
-                )}
-              >
-                S{row.level}
-              </button>
-            ))}
-          </fieldset>
-        </div>
-        <p className="whitespace-pre-line text-sm leading-6">
-          {formatGameText(
-            getLocalizedValue(description, locale),
-            selected?.parameters,
-            t("terms.trailblazer")
-          )}
-        </p>
-      </section>
+          </p>
+        </section>
+      ))}
       <details className="rounded-xl border border-border p-3">
         <summary className="cursor-pointer text-sm font-medium">
           {t("archive.story")}

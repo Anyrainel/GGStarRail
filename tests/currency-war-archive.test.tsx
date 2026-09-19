@@ -167,6 +167,10 @@ function renderArchive(path = "/archive/currency-war", catalog = CATALOG) {
   );
 }
 
+function card(name: string) {
+  return screen.getByRole("heading", { name, level: 2 }).closest("article")!;
+}
+
 describe("Currency War archive", () => {
   it("shows localized equipment eligibility and Bond links without exposing source enums", async () => {
     const characters = await loadCharacters();
@@ -234,7 +238,10 @@ describe("Currency War archive", () => {
     const { rerender } = render(
       <I18nProvider>
         <CurrencyWarCharacterStats
-          starLevel={starLevel}
+          starLevels={[
+            starLevel,
+            { ...starLevel, star: 2, initial_energy: 20, luck_chance: 0.1 },
+          ]}
           position="Back"
           chargeTypes={["EnergyBar", "Speed"]}
         />
@@ -243,12 +250,13 @@ describe("Currency War archive", () => {
     expect(screen.getByText("Initial Charge")).toBeInTheDocument();
     expect(screen.getByText("Max Charge")).toBeInTheDocument();
     expect(screen.getByText("Charge · SPD")).toBeInTheDocument();
-    expect(screen.getByText("5%")).toBeInTheDocument();
+    expect(screen.getByText("5/10%")).toBeInTheDocument();
+    expect(screen.getByText("0/20")).toBeInTheDocument();
     expect(screen.getByText("100%")).toBeInTheDocument();
     rerender(
       <I18nProvider>
         <CurrencyWarCharacterStats
-          starLevel={starLevel}
+          starLevels={[starLevel]}
           position="Front"
           chargeTypes={["EnergyBar", "Speed"]}
         />
@@ -331,7 +339,7 @@ describe("Currency War archive", () => {
     await user.click(screen.getByRole("button", { name: "Advanced" }));
     await user.type(screen.getByRole("searchbox"), "王冠");
     expect(screen.getByText("Showing 1 of 2 records")).toBeInTheDocument();
-    const detail = screen.getByTestId("currency-war-detail");
+    const detail = card("Crown");
     expect(
       within(detail).getByRole("heading", { name: "Crown" })
     ).toBeInTheDocument();
@@ -344,19 +352,19 @@ describe("Currency War archive", () => {
     );
     expect(screen.getByText("Showing 2 of 2 records")).toBeInTheDocument();
     expect(
-      within(screen.getByTestId("currency-war-detail")).getByRole("heading", {
+      within(card("Blade")).getByRole("heading", {
         name: "Blade",
       })
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "中文" }));
     expect(
-      within(screen.getByTestId("currency-war-detail")).getByRole("heading", {
+      within(card("利刃")).getByRole("heading", {
         name: "利刃",
       })
     ).toBeInTheDocument();
     await user.type(screen.getByRole("searchbox"), "Crown");
     expect(
-      within(screen.getByTestId("currency-war-detail")).getByRole("heading", {
+      within(card("王冠")).getByRole("heading", {
         name: "王冠",
       })
     ).toBeInTheDocument();
@@ -389,7 +397,7 @@ describe("Currency War archive", () => {
     expect(screen.getByRole("button", { name: "棱彩" })).toBeInTheDocument();
   });
 
-  it("opens selected records in the narrow-screen sheet and restores trigger focus", async () => {
+  it("shows full equipment cards on narrow screens and follows recipes in the same grid", async () => {
     vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
       matches: query === "(max-width: 1023px)",
       media: query,
@@ -402,18 +410,13 @@ describe("Currency War archive", () => {
     }));
     const user = userEvent.setup();
     renderArchive();
-    const trigger = within(
-      screen.getByRole("region", { name: "Currency War catalog results" })
-    ).getByRole("button", { name: /Crown/ });
+    expect(screen.getAllByTestId("currency-war-detail")).toHaveLength(2);
+    expect(card("Blade")).toHaveTextContent("Gain 20% ATK.");
+    const trigger = within(card("Crown")).getByRole("button", {
+      name: /Blade/,
+    });
     await user.click(trigger);
-    const dialog = screen.getByRole("dialog", { name: "Crown" });
-    expect(
-      within(within(dialog).getByTestId("currency-war-detail")).getByRole(
-        "heading",
-        { name: "Crown", level: 2 }
-      )
-    ).toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: "Close" }));
-    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(card("Blade")).toHaveFocus();
   });
 });

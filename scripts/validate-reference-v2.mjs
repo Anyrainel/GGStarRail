@@ -124,8 +124,19 @@ function statScaling(entity, label) {
 
 function skills(rows, label) {
   unique(rows, "id", label);
-  for (const row of rows)
+  for (const row of rows) {
+    assert.ok(
+      row.normal_max_level >= 1 && row.normal_max_level <= row.max_level,
+      `${label} skill ${row.id} has invalid normal level cap`
+    );
     sequence(row.levels, "level", 1, row.max_level, `${label} skill ${row.id}`);
+  }
+}
+
+function traceStats(rows, propertyIds, label) {
+  unique(rows, "property_id", `${label} trace stats`);
+  for (const row of rows)
+    reference(row.property_id, propertyIds, `${label} trace stat property`);
 }
 
 function ranks(rows, maxRank, label) {
@@ -293,6 +304,7 @@ export function validateReferenceV2(catalog, schemaVersion) {
     skills(character.skills, label);
     ranks(character.ranks, character.max_rank, label);
     traces(character.traces, propertyIds, label);
+    traceStats(character.trace_stats, propertyIds, label);
     allSkills.push(...character.skills);
     allRanks.push(...character.ranks);
     allTraces.push(...character.traces);
@@ -313,6 +325,7 @@ export function validateReferenceV2(catalog, schemaVersion) {
       skills(variant.skills, variantLabel);
       ranks(variant.ranks, character.max_rank, variantLabel);
       traces(variant.traces, propertyIds, variantLabel);
+      traceStats(variant.trace_stats, propertyIds, variantLabel);
       allSkills.push(...variant.skills);
       allRanks.push(...variant.ranks);
       allTraces.push(...variant.traces);

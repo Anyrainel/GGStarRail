@@ -1,9 +1,11 @@
 import { useMemo, useState } from "react";
-import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { RelicSetCard } from "@/components/archive/RelicSetCard";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
+import { filterArchiveItems } from "@/lib/archiveFilters";
 import { formatGameText } from "@/lib/gameText";
 import {
   getLocalizedValue,
@@ -25,17 +27,20 @@ async function loadRelicArchiveData() {
 }
 
 export function RelicSetCatalog() {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const resource = useCatalogResource(loadRelicArchiveData);
   const [query, setQuery] = useState("");
-  const [kind, setKind] = useState<RelicSetDefinition["kind"]>("cavern_relic");
-  const matchingSets = useMemo(() => {
+  const [kinds, setKinds] = useState<Set<RelicSetDefinition["kind"]>>(
+    () => new Set()
+  );
+  const filtered = useMemo(() => {
     if (!resource.data) return [];
     const needle = query.trim().toLocaleLowerCase();
-    return resource.data.relicSets.values
-      .filter(
+    return (
+      filterArchiveItems(
+        resource.data.relicSets.values,
+        query,
         (set) =>
-          !needle ||
           (["en", "zh-CN"] as const).some((searchLocale) =>
             [set.name, ...set.bonuses.map((bonus) => bonus.description)].some(
               (text) =>
@@ -43,15 +48,19 @@ export function RelicSetCatalog() {
                   .toLocaleLowerCase()
                   .includes(needle)
             )
-          )
+          ),
+        (set) => kinds.size === 0 || kinds.has(set.kind)
       )
-      .sort((left, right) =>
-        formatGameText(getLocalizedValue(left.name, locale)).localeCompare(
-          formatGameText(getLocalizedValue(right.name, locale)),
-          locale
+        // ReleaseVersion is the source patch, not an invented calendar date.
+        // IDs only break ties within the same patch, keeping bilingual order equal.
+        .sort(
+          (left, right) =>
+            right.release_version.localeCompare(left.release_version, "en", {
+              numeric: true,
+            }) || Number(right.id) - Number(left.id)
         )
-      );
-  }, [locale, query, resource.data]);
+    );
+  }, [kinds, query, resource.data]);
   const piecesBySet = useMemo(() => {
     const groups = new Map<string, RelicPieceDefinition[]>();
     for (const piece of resource.data?.relicPieces.values ?? []) {
@@ -65,59 +74,58 @@ export function RelicSetCatalog() {
   if (resource.loading) return <CatalogLoading />;
   if (resource.error) return <CatalogFailure error={resource.error} />;
   if (!resource.data) return null;
-  const filtered = matchingSets.filter((set) => set.kind === kind);
   return (
-    <div className="space-y-4">
-      <ArchiveToolbar
-        searchQuery={query}
-        onSearchChange={setQuery}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("archive.search.relicSets")}
-      />
-      <ArchiveTabs
-        panelId="relic-set-panel"
-        label={t("filter.kind")}
-        value={kind}
-        onValueChange={setKind}
-        options={[
-          {
-            value: "cavern_relic",
-            label: t("archive.kind.cavern"),
-            count: matchingSets.filter((set) => set.kind === "cavern_relic")
-              .length,
-          },
-          {
-            value: "planar_ornament",
-            label: t("archive.kind.planar"),
-            count: matchingSets.filter((set) => set.kind === "planar_ornament")
-              .length,
-          },
-        ]}
-      />
-      <div
-        id="relic-set-panel"
-        role="tabpanel"
-        aria-labelledby={`relic-set-panel-tab-${kind}`}
+    <ScrollLayout
+      header={
+        <div className="space-y-3">
+          <ArchiveToolbar
+            searchQuery={query}
+            onSearchChange={setQuery}
+            searchLabel={t("common.search")}
+            searchPlaceholder={t("archive.search.relicSets")}
+          >
+            <FilterChipGroup
+              label={t("filter.kind")}
+              selectedValues={kinds}
+              onSelectedValuesChange={setKinds}
+              options={["cavern_relic", "planar_ornament"] as const}
+              getKey={(kind) => kind}
+              getLabel={(kind) =>
+                t(
+                  kind === "cavern_relic"
+                    ? "archive.kind.cavern"
+                    : "archive.kind.planar"
+                )
+              }
+            />
+          </ArchiveToolbar>
+          <p className="text-sm text-muted-foreground">
+            {t("archive.results", {
+              shown: filtered.length,
+              total: resource.data.relicSets.values.length,
+            })}
+          </p>
+        </div>
+      }
+    >
+      <section
+        aria-label={t("archive.relicSetList")}
+        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
       >
-        <section
-          aria-label={t("archive.relicSetList")}
-          className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3"
-        >
-          {filtered.length === 0 ? (
-            <div className="col-span-full">
-              <CatalogEmpty />
-            </div>
-          ) : (
-            filtered.map((set) => (
-              <RelicSetCard
-                key={set.id}
-                relicSet={set}
-                pieces={piecesBySet.get(set.id) ?? []}
-              />
-            ))
-          )}
-        </section>
-      </div>
-    </div>
+        {filtered.length === 0 ? (
+          <div className="col-span-full">
+            <CatalogEmpty />
+          </div>
+        ) : (
+          filtered.map((set) => (
+            <RelicSetCard
+              key={set.id}
+              relicSet={set}
+              pieces={piecesBySet.get(set.id) ?? []}
+            />
+          ))
+        )}
+      </section>
+    </ScrollLayout>
   );
 }

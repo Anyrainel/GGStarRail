@@ -147,8 +147,16 @@ describe("lazy GIlore catalog provider", () => {
     );
     expect(skills).toHaveLength(639);
     expect(ranks).toHaveLength(582);
-    expect(traces).toHaveLength(1_771);
-    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(5_018);
+    expect(traces).toHaveLength(801);
+    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(4_048);
+    expect(
+      expandedCharacters.flatMap((character) => character.trace_stats)
+    ).toHaveLength(291);
+    expect(march?.trace_stats).toEqual([
+      { property_id: "DefenceAddedRatio", value: 0.225 },
+      { property_id: "IceAddedRatio", value: 0.224 },
+      { property_id: "StatusResistanceBase", value: 0.1 },
+    ]);
     expect(servants).toHaveLength(8);
     expect(new Set(servants.map((servant) => servant.id)).size).toBe(7);
     expect(
@@ -159,12 +167,43 @@ describe("lazy GIlore catalog provider", () => {
     expect(enhancements).toHaveLength(10);
     expect(enhancements.flatMap((entry) => entry.skills)).toHaveLength(64);
     expect(enhancements.flatMap((entry) => entry.ranks)).toHaveLength(60);
-    expect(enhancements.flatMap((entry) => entry.traces)).toHaveLength(180);
+    expect(enhancements.flatMap((entry) => entry.traces)).toHaveLength(80);
+    expect(enhancements.flatMap((entry) => entry.trace_stats)).toHaveLength(30);
     expect(
       enhancements.flatMap((entry) =>
         entry.traces.flatMap((trace) => trace.levels)
       )
-    ).toHaveLength(500);
+    ).toHaveLength(400);
+    for (const owner of [...expandedCharacters, ...enhancements]) {
+      expect(
+        new Set(owner.trace_stats.map((stat) => stat.property_id)).size
+      ).toBe(owner.trace_stats.length);
+      for (const stat of owner.trace_stats) {
+        expect(propertyTables.propertyById.has(stat.property_id)).toBe(true);
+        expect(Object.keys(stat).sort()).toEqual(["property_id", "value"]);
+        expect(Number.isFinite(stat.value)).toBe(true);
+      }
+      const traceIds = new Set(owner.traces.map((trace) => trace.id));
+      for (const trace of owner.traces)
+        for (const prerequisite of trace.prerequisite_ids)
+          expect(traceIds.has(prerequisite)).toBe(true);
+    }
+    for (const owner of [...expandedCharacters, ...enhancements, ...servants])
+      for (const skill of owner.skills) {
+        expect(skill.normal_max_level).toBeGreaterThanOrEqual(1);
+        expect(skill.max_level).toBeGreaterThanOrEqual(skill.normal_max_level);
+        expect(skill.levels.map((level) => level.level)).toEqual(
+          Array.from({ length: skill.max_level }, (_, index) => index + 1)
+        );
+      }
+    expect(march?.skills.find((skill) => skill.id === "100101")).toMatchObject({
+      normal_max_level: 6,
+      max_level: 7,
+    });
+    expect(march?.skills.find((skill) => skill.id === "100102")).toMatchObject({
+      normal_max_level: 10,
+      max_level: 12,
+    });
 
     const weltEnhancement = expandedCharacters.find(
       (character) => character.id === "1004"
@@ -200,6 +239,26 @@ describe("lazy GIlore catalog provider", () => {
           lightCone.max_superimposition
       )
     ).toBe(true);
+    const arrowsEffect = lightCones.byId.get("20000")?.effect;
+    expect(arrowsEffect?.description.en.value).toContain("#1[i]%");
+    expect(arrowsEffect?.description["zh-CN"].value).toContain("#1[i]%");
+    expect(
+      arrowsEffect?.superimpositions.map((level) => level.parameters)
+    ).toEqual([
+      [0.12, 3],
+      [0.15, 3],
+      [0.18, 3],
+      [0.21, 3],
+      [0.24, 3],
+    ]);
+    for (const cone of lightCones.values)
+      for (const level of cone.effect.superimpositions) {
+        // This source revision shares both language templates across every S level.
+        expect(level.name).toBeNull();
+        expect(level.description).toBeNull();
+        expect(cone.effect.name.en.value).not.toBe("");
+        expect(cone.effect.description["zh-CN"].value).not.toBe("");
+      }
   });
 
   it("exposes calculator affixes and scoring without archive EXP or cost tables", async () => {

@@ -127,13 +127,13 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         now = new Date()
       ) =>
         set((state) => {
-          if (!state.account) return state;
           const achievementIndex = seriesIds.indexOf(achievementId);
           if (achievementIndex < 0) return state;
 
-          const completedIds = new Set(
-            state.account.achievementCompletion?.completedIds ?? []
-          );
+          const currentCompletion = state.account
+            ? state.account.achievementCompletion
+            : state.localAchievementCompletion;
+          const completedIds = new Set(currentCompletion?.completedIds ?? []);
           const affectedIds = completed
             ? seriesIds.slice(0, achievementIndex + 1)
             : seriesIds.slice(achievementIndex);
@@ -145,18 +145,14 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             else completedIds.delete(id);
           }
 
-          return {
-            account: {
-              ...state.account,
-              achievementCompletion: AchievementCompletionSchema.parse({
-                ...state.account.achievementCompletion,
-                completedIds: [...completedIds].sort(
-                  (left, right) => left - right
-                ),
-                locallyModifiedAt: now.toISOString(),
-              }),
-            },
-          };
+          const achievementCompletion = AchievementCompletionSchema.parse({
+            ...currentCompletion,
+            completedIds: [...completedIds].sort((left, right) => left - right),
+            locallyModifiedAt: now.toISOString(),
+          });
+          return state.account
+            ? { account: { ...state.account, achievementCompletion } }
+            : { localAchievementCompletion: achievementCompletion };
         }),
       upsertBuild: (build) =>
         set((state) => ({
@@ -206,6 +202,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         schemaVersion: state.schemaVersion,
         characterLightConeIds: state.characterLightConeIds,
         account: state.account,
+        localAchievementCompletion: state.localAchievementCompletion,
         builds: state.builds,
         scoreProfiles: state.scoreProfiles,
         triageRules: state.triageRules,

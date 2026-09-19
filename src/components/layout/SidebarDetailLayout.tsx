@@ -1,11 +1,13 @@
 import { ArrowLeft } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { useGlobalScroll } from "@/hooks/useGlobalScroll";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 
 interface SidebarDetailLayoutProps {
   header?: ReactNode;
+  mobileDetailHeader?: ReactNode;
   sidebar: ReactNode;
   mobileGrid?: ReactNode;
   children: ReactNode;
@@ -22,6 +24,7 @@ interface SidebarDetailLayoutProps {
 
 export function SidebarDetailLayout({
   header,
+  mobileDetailHeader,
   sidebar,
   mobileGrid,
   children,
@@ -36,12 +39,18 @@ export function SidebarDetailLayout({
   banner,
 }: SidebarDetailLayoutProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  useGlobalScroll(containerRef, mainRef);
 
   if (!isDesktop) {
     if (hasSelection) {
       return (
         <div
-          className={cn("flex min-w-0 flex-col", className)}
+          className={cn(
+            "container flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-2",
+            className
+          )}
           data-sidebar-detail-layout="mobile-detail"
         >
           {banner}
@@ -57,9 +66,12 @@ export function SidebarDetailLayout({
               {backLabel}
             </Button>
           </div>
+          {mobileDetailHeader && (
+            <div className="shrink-0 pb-2">{mobileDetailHeader}</div>
+          )}
           <section
             aria-label={detailLabel}
-            className="min-w-0 flex-1 pt-px pb-4"
+            className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pt-px pb-4"
           >
             {children}
           </section>
@@ -69,35 +81,48 @@ export function SidebarDetailLayout({
 
     return (
       <div
-        className={cn("min-w-0", className)}
+        className={cn(
+          "container flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-2",
+          className
+        )}
         data-sidebar-detail-layout="mobile-browse"
       >
         {banner}
         {header && <div className="shrink-0 pt-px pb-2">{header}</div>}
-        {mobileGrid ?? sidebar}
+        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">
+          {mobileGrid ?? sidebar}
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      className={cn("flex min-w-0 flex-col", className)}
+      ref={containerRef}
+      className={cn(
+        "container flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-2 md:px-4",
+        className
+      )}
       data-sidebar-detail-layout="desktop"
     >
       {banner}
       {header && <div className="shrink-0 pt-px pb-2">{header}</div>}
-      <div className="flex min-w-0 flex-1 items-start gap-2 lg:gap-3">
+      <div className="flex min-h-0 min-w-0 flex-1 gap-2 pb-2 lg:gap-3 lg:pb-3">
         <aside
           aria-label={sidebarLabel}
           className={cn(
-            "sticky top-0 max-h-[calc(100dvh-14rem)] shrink-0 overflow-y-auto rounded-lg border border-border bg-card/50 p-2 pr-1",
+            "relative shrink-0 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card/50 p-2 pr-1",
             sidebarWidth,
             sidebarClassName
           )}
         >
           {sidebar}
         </aside>
-        <section aria-label={detailLabel} className="min-w-0 flex-1">
+        <section
+          ref={mainRef}
+          aria-label={detailLabel}
+          className="relative min-w-0 flex-1 overflow-y-auto overscroll-contain"
+        >
           {children}
         </section>
       </div>

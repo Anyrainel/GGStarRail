@@ -1,6 +1,6 @@
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { formatCatalogValue } from "@/lib/gameText";
+import { formatStarValues } from "@/lib/currencyWarPresentation";
 import type { CurrencyWarStarLevel } from "@/providers/gilore/types";
 
 const chargeLabels: Readonly<Record<string, MessageKey>> = {
@@ -11,59 +11,62 @@ const chargeLabels: Readonly<Record<string, MessageKey>> = {
 };
 
 export function CurrencyWarCharacterStats({
-  starLevel,
+  starLevels,
   position,
   chargeTypes,
 }: {
-  starLevel: CurrencyWarStarLevel;
+  starLevels: readonly CurrencyWarStarLevel[];
   position: "Front" | "Back";
   chargeTypes: readonly string[];
 }) {
   const { t } = useI18n();
-  const values: { key: MessageKey; value: number | null; ratio?: boolean }[] = [
+  const values: {
+    key: MessageKey;
+    field: keyof CurrencyWarStarLevel;
+    ratio?: boolean;
+  }[] = [
     {
       key:
         position === "Front"
           ? "archive.currencyWar.onFieldStrength"
           : "archive.currencyWar.offFieldStrength",
-      value:
-        position === "Front" ? starLevel.front_power : starLevel.back_power,
+      field: position === "Front" ? "front_power" : "back_power",
     },
     ...(position === "Back"
       ? [
           {
             key: "archive.currencyWar.initialEnergy" as const,
-            value: starLevel.initial_energy,
+            field: "initial_energy" as const,
           },
           {
             key: "archive.currencyWar.maxEnergy" as const,
-            value: starLevel.max_energy,
+            field: "max_energy" as const,
           },
           {
             key: "archive.currencyWar.initialCharge" as const,
-            value: starLevel.initial_energy_bar,
+            field: "initial_energy_bar" as const,
           },
           {
             key: "archive.currencyWar.maxCharge" as const,
-            value: starLevel.energy_bar,
+            field: "energy_bar" as const,
           },
         ]
       : []),
     {
       key: "archive.currencyWar.luckyStrikeRate",
-      value: starLevel.luck_chance,
+      field: "luck_chance",
       ratio: true,
     },
     {
       key: "archive.currencyWar.luckyStrikeDamage",
-      value: starLevel.luck_damage,
+      field: "luck_damage",
       ratio: true,
     },
-    { key: "archive.currencyWar.healingStrength", value: starLevel.heal_base },
-    { key: "archive.currencyWar.shieldStrength", value: starLevel.shield_base },
+    { key: "archive.currencyWar.healingStrength", field: "heal_base" },
+    { key: "archive.currencyWar.shieldStrength", field: "shield_base" },
   ];
-  const visibleValues = values.filter(
-    (entry) => entry.value !== null && entry.value !== undefined
+  const visibleValues = values.filter((entry) =>
+    starLevels.some((star) => typeof star[entry.field] === "number")
   );
   return (
     <section className="rounded-lg border border-border bg-card/50 p-3">
@@ -92,8 +95,12 @@ export function CurrencyWarCharacterStats({
             >
               <dt>{t(entry.key)}</dt>
               <dd className="font-semibold tabular-nums">
-                {formatCatalogValue(
-                  entry.value!,
+                {formatStarValues(
+                  starLevels.map((star) =>
+                    typeof star[entry.field] === "number"
+                      ? (star[entry.field] as number)
+                      : null
+                  ),
                   entry.ratio ? "ratio" : "flat"
                 )}
               </dd>

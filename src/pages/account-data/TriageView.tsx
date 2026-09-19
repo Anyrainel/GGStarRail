@@ -21,6 +21,7 @@ import {
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { StatusBanner } from "@/components/builds/StatusBanner";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -171,7 +172,7 @@ export function TriageView() {
   }
 
   return (
-    <>
+    <ScrollLayout bodyClassName="space-y-4">
       <PageHeader titleKey="route.triage.title" visuallyHidden />
       <SourceCoverageNotice account={account} />
       {!account ? (
@@ -471,7 +472,7 @@ export function TriageView() {
           </Card>
         </div>
       )}
-    </>
+    </ScrollLayout>
   );
 }
 

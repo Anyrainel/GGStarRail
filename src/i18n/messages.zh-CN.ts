@@ -1,6 +1,10 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "archive.backToCharacters": "角色",
+  "archive.characterDetails": "角色详情",
+  "archive.traceStats": "行迹属性加成",
+  "archive.skillValueNumber": "数值{value}",
   "archive.descriptionMode": "描述",
   "archive.descriptionShort": "简略",
   "archive.descriptionFull": "详细",
@@ -566,30 +570,12 @@ export const messagesZhCn = {
   "archive.achievement.status.unfinished": "未完成",
   "archive.achievement.status.finished": "已完成",
   "archive.achievement.version.unknown": "版本未知",
-  "archive.achievement.completion.noAccount": "记录成就需要先导入账号。",
-  "archive.achievement.completion.availableToTrack":
-    "此账号来源未提供成就进度。",
-  "archive.achievement.completion.manual": "正在本地记录",
-  "archive.achievement.completion.captured": "已导入完整成就捕获",
-  "archive.achievement.completion.capturedEdited":
-    "已导入成就捕获，之后在本地修改",
-  "archive.achievement.completion.progressUnavailable":
-    "此账号来源未提供成就完成情况",
-  "archive.achievement.completion.progressUnavailableShort": "暂无完成进度",
   "archive.achievement.progressLabel":
     "{category}：已完成 {completed} / {total}",
-  "archive.achievement.visibility.showAfterFinish": "完成前隐藏",
-  "archive.achievement.visibility.hiddenDescription": "隐藏描述",
-  "archive.achievement.concealedName": "隐藏成就",
-  "archive.achievement.concealedDescription":
-    "完成该成就后即可揭晓名称与描述。",
   "archive.achievement.dynamicTextFallback": "【游戏内动态文本】",
   "archive.achievement.stellarJade": "星琼",
   "archive.achievement.markFinished": "将“{name}”标记为已完成",
   "archive.achievement.markUnfinished": "将“{name}”标记为未完成",
-  "archive.achievement.startTrackingAndMarkFinished":
-    "开始本地记录并将“{name}”标记为已完成",
-  "archive.achievement.trackingUnavailable": "导入账号后才能记录成就完成情况。",
   "archive.achievement.searchYouTube": "在 YouTube 上搜索“{name}”",
   "archive.achievement.searchBilibili": "在哔哩哔哩上搜索“{name}”",
   "archive.results": "显示 {shown} / {total} 条记录",

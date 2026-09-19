@@ -1,6 +1,7 @@
 import { Award, Database, Filter, Library } from "lucide-react";
 import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
@@ -8,7 +9,7 @@ import { getAssetUrl } from "@/lib/assets";
 export default function HomePage() {
   const { t } = useI18n();
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 px-1 pb-6 sm:px-4">
+    <ScrollLayout bodyClassName="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 px-3 pb-6 sm:px-4">
       <section className="space-y-3 pb-2 pt-5 text-center sm:pt-7">
         <div className="mx-auto flex w-full flex-col items-center">
           <h1 className="w-full max-w-[30rem]">
@@ -61,6 +62,6 @@ export default function HomePage() {
         />
       </section>
       <FeatureMatrix />
-    </div>
+    </ScrollLayout>
   );
 }

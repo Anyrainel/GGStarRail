@@ -1,3 +1,4 @@
+import { PageLayout } from "@/components/layout/PageLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,10 +29,10 @@ export default function ArchivePage({ kind, titleKey }: ArchivePageProps) {
   const { t } = useI18n();
   const { changeSearch, error } = useBetaSearch(() => {});
   return (
-    <>
+    <PageLayout>
       <PageHeader titleKey={titleKey} visuallyHidden />
       {betaEnabled() && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
+        <div className="container mb-2 flex shrink-0 flex-wrap items-center gap-3 rounded-xl border border-border p-3 text-sm">
           <Badge>{t("beta.enabled")}</Badge>
           <Button
             variant="outline"
@@ -43,13 +44,15 @@ export default function ArchivePage({ kind, titleKey }: ArchivePageProps) {
         </div>
       )}
       {betaEnabled() && kind !== "achievements" && kind !== "currencyWar" && (
-        <BetaPreviews kind={kind} />
+        <div className="container mb-2 max-h-[25dvh] shrink-0 overflow-y-auto">
+          <BetaPreviews kind={kind} />
+        </div>
       )}
       {kind === "characters" && <CharacterCatalog />}
       {kind === "lightCones" && <LightConeCatalog />}
       {kind === "relicSets" && <RelicSetCatalog />}
       {kind === "achievements" && <AchievementArchiveView />}
       {kind === "currencyWar" && <CurrencyWarArchiveView />}
-    </>
+    </PageLayout>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
@@ -27,10 +28,6 @@ import type {
   CharacterDefinition,
   PropertyCatalog,
 } from "@/providers/gilore/types";
-import {
-  CatalogDetailSheet,
-  useCatalogDetailSheet,
-} from "./CatalogDetailSheet";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import { CharacterBaseStats } from "./CharacterBaseStats";
 import { CharacterCurrencyWarDetails } from "./CharacterCurrencyWarDetails";
@@ -57,25 +54,22 @@ export function CharacterCatalog() {
   const [combatTypes, setCombatTypes] = useState<Set<string>>(new Set());
   const [rarities, setRarities] = useState<Set<number>>(new Set());
   const [descriptionMode, setDescriptionMode] =
-    useState<CharacterDescriptionMode>("short");
+    useState<CharacterDescriptionMode>("full");
   const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(
     searchParams.get("id")
   );
-  const {
-    open: detailOpen,
-    setOpen: setDetailOpen,
-    openOnNarrowScreen,
-    restoreTriggerFocus,
-  } = useCatalogDetailSheet();
+  const [mobileDetailOpen, setMobileDetailOpen] = useState(
+    Boolean(searchParams.get("id"))
+  );
   const searching = isArchiveSearchActive(query);
 
   useEffect(() => {
     const linkedId = searchParams.get("id");
     if (!linkedId || !resource.data?.characters.byId.has(linkedId)) return;
     setSelectedId(linkedId);
-    if (window.matchMedia("(max-width: 1023px)").matches) setDetailOpen(true);
-  }, [searchParams, resource.data, setDetailOpen]);
+    setMobileDetailOpen(true);
+  }, [searchParams, resource.data]);
 
   const searchIndex = useMemo(
     () =>
@@ -152,120 +146,117 @@ export function CharacterCatalog() {
       onDescriptionModeChange={setDescriptionMode}
     />
   ) : null;
-  return (
-    <div className="space-y-4">
-      <ArchiveToolbar
-        searchQuery={query}
-        onSearchChange={setQuery}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("archive.search.characters")}
-      >
-        <FilterChipGroup
-          options={propertyTables.combatTypes.map((entry) => entry.id)}
-          selectedValues={combatTypes}
-          onSelectedValuesChange={setCombatTypes}
-          getKey={(id) => id}
-          getLabel={(id) =>
-            getLocalizedValue(
-              propertyTables.combatTypeById.get(id)?.name,
-              locale
-            )
-          }
-          getIcon={(id) => (
-            <AssetImage
-              kind="combat-type"
-              id={id}
-              sourcePath={propertyTables.combatTypeById.get(id)?.icon_path}
-              alt=""
-              className="h-4 w-4"
-            />
-          )}
-          label={t("filter.combatType")}
-          disabled={searching}
-        />
-        <FilterChipGroup
-          options={[5, 4]}
-          selectedValues={rarities}
-          onSelectedValuesChange={setRarities}
-          getKey={String}
-          getLabel={(value) => `${value} ★`}
-          label={t("filter.rarity")}
-          disabled={searching}
-        />
-        <FilterChipGroup
-          options={propertyTables.paths.map((entry) => entry.id)}
-          selectedValues={paths}
-          onSelectedValuesChange={setPaths}
-          getKey={(id) => id}
-          getLabel={(id) =>
-            getLocalizedValue(propertyTables.pathById.get(id)?.name, locale)
-          }
-          getIcon={(id) => (
-            <AssetImage
-              kind="path"
-              id={id}
-              sourcePath={propertyTables.pathById.get(id)?.icon_path}
-              alt=""
-              className="h-4 w-4"
-            />
-          )}
-          label={t("filter.path")}
-          disabled={searching}
-        />
-      </ArchiveToolbar>
-      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[240px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)]">
-        <div className="min-w-0 space-y-2 lg:sticky lg:top-4">
-          <p className="px-2 text-xs text-muted-foreground" aria-live="polite">
-            {t("archive.results", {
-              shown: filtered.length,
-              total: characters.values.length,
-            })}
-          </p>
-          <section
-            className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-1 lg:max-h-[calc(100dvh-18rem)] lg:grid-cols-1 lg:gap-0.5 lg:overflow-y-auto lg:p-1"
-            aria-label={t("archive.characterList")}
-          >
-            {filtered.length === 0 ? (
-              <CatalogEmpty />
-            ) : (
-              filtered.map((character) => (
-                <CharacterListRow
-                  key={character.id}
-                  character={character}
-                  selected={character.id === selectedId}
-                  propertyTables={propertyTables}
-                  onSelect={(trigger) => {
-                    setSelectedId(character.id);
-                    openOnNarrowScreen(trigger);
-                  }}
-                />
-              ))
-            )}
-          </section>
-        </div>
-        {detail && (
-          <>
-            <div className="hidden min-w-0 lg:block">{detail}</div>
-            <CatalogDetailSheet
-              open={detailOpen}
-              onOpenChange={setDetailOpen}
-              onCloseAutoFocus={restoreTriggerFocus}
-              title={
-                selected
-                  ? characterCatalogName(
-                      selected,
-                      locale,
-                      t("terms.trailblazer")
-                    )
-                  : ""
-              }
-            >
-              {detail}
-            </CatalogDetailSheet>
-          </>
+  const header = (
+    <ArchiveToolbar
+      searchQuery={query}
+      onSearchChange={setQuery}
+      searchLabel={t("common.search")}
+      searchPlaceholder={t("archive.search.characters")}
+    >
+      <FilterChipGroup
+        options={propertyTables.combatTypes.map((entry) => entry.id)}
+        selectedValues={combatTypes}
+        onSelectedValuesChange={setCombatTypes}
+        getKey={(id) => id}
+        getLabel={(id) =>
+          getLocalizedValue(propertyTables.combatTypeById.get(id)?.name, locale)
+        }
+        getIcon={(id) => (
+          <AssetImage
+            kind="combat-type"
+            id={id}
+            sourcePath={propertyTables.combatTypeById.get(id)?.icon_path}
+            alt=""
+            className="h-4 w-4"
+          />
         )}
-      </div>
+        className="contents"
+        disabled={searching}
+      />
+      <span
+        aria-hidden="true"
+        className="mx-1 hidden h-5 w-px bg-border sm:block"
+      />
+      <FilterChipGroup
+        options={[5, 4]}
+        selectedValues={rarities}
+        onSelectedValuesChange={setRarities}
+        getKey={String}
+        getLabel={(value) => `${value} ★`}
+        className="contents"
+        disabled={searching}
+      />
+      <span
+        aria-hidden="true"
+        className="mx-1 hidden h-5 w-px bg-border sm:block"
+      />
+      <FilterChipGroup
+        options={propertyTables.paths.map((entry) => entry.id)}
+        selectedValues={paths}
+        onSelectedValuesChange={setPaths}
+        getKey={(id) => id}
+        getLabel={(id) =>
+          getLocalizedValue(propertyTables.pathById.get(id)?.name, locale)
+        }
+        getIcon={(id) => (
+          <AssetImage
+            kind="path"
+            id={id}
+            sourcePath={propertyTables.pathById.get(id)?.icon_path}
+            alt=""
+            className="h-4 w-4"
+          />
+        )}
+        className="contents"
+        disabled={searching}
+      />
+    </ArchiveToolbar>
+  );
+  const roster = (
+    <div className="min-w-0 space-y-2">
+      <p className="px-2 text-xs text-muted-foreground" aria-live="polite">
+        {t("archive.results", {
+          shown: filtered.length,
+          total: characters.values.length,
+        })}
+      </p>
+      <section
+        className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-1 md:grid-cols-1 md:gap-0.5 md:p-1"
+        aria-label={t("archive.characterList")}
+      >
+        {filtered.length === 0 ? (
+          <CatalogEmpty />
+        ) : (
+          filtered.map((character) => (
+            <CharacterListRow
+              key={character.id}
+              character={character}
+              selected={character.id === selectedId}
+              propertyTables={propertyTables}
+              onSelect={() => {
+                setSelectedId(character.id);
+                setMobileDetailOpen(true);
+              }}
+            />
+          ))
+        )}
+      </section>
     </div>
+  );
+  return (
+    <SidebarDetailLayout
+      className="h-full min-h-0"
+      header={header}
+      sidebar={roster}
+      mobileGrid={roster}
+      hasSelection={mobileDetailOpen && Boolean(selected)}
+      onBack={() => setMobileDetailOpen(false)}
+      backLabel={t("archive.backToCharacters")}
+      detailLabel={t("archive.characterDetails")}
+      sidebarWidth="w-[240px] xl:w-[280px]"
+    >
+      {detail}
+    </SidebarDetailLayout>
   );
 }
 
@@ -291,7 +282,7 @@ function CharacterListRow({
       aria-pressed={selected}
       onClick={(event) => onSelect(event.currentTarget)}
       className={cn(
-        "flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring lg:w-full lg:flex-row lg:gap-2",
+        "flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:w-full md:flex-row md:gap-2",
         selected ? "bg-primary/15 ring-1 ring-primary/30" : "hover:bg-accent/60"
       )}
     >
@@ -314,11 +305,11 @@ function CharacterListRow({
             : undefined
         }
       />
-      <span className="min-w-0 text-center lg:flex-1 lg:text-left">
-        <span className="block w-full truncate text-xs font-medium lg:text-sm">
+      <span className="min-w-0 text-center md:flex-1 md:text-left">
+        <span className="block w-full truncate text-xs font-medium md:text-sm">
           {name}
         </span>
-        <span className="hidden truncate text-xs text-muted-foreground lg:block">
+        <span className="hidden truncate text-xs text-muted-foreground md:block">
           {getLocalizedValue(path?.name, locale)} ·{" "}
           {getLocalizedValue(combat?.name, locale)}
         </span>
@@ -391,7 +382,7 @@ function CharacterDetail({
             <div className="flex rounded-lg border border-border bg-secondary/40 p-0.5">
               <Button
                 size="sm"
-                variant={descriptionMode === "short" ? "secondary" : "ghost"}
+                variant={descriptionMode === "short" ? "default" : "ghost"}
                 aria-pressed={descriptionMode === "short"}
                 onClick={() => onDescriptionModeChange("short")}
               >
@@ -399,7 +390,7 @@ function CharacterDetail({
               </Button>
               <Button
                 size="sm"
-                variant={descriptionMode === "full" ? "secondary" : "ghost"}
+                variant={descriptionMode === "full" ? "default" : "ghost"}
                 aria-pressed={descriptionMode === "full"}
                 onClick={() => onDescriptionModeChange("full")}
               >
@@ -415,6 +406,10 @@ function CharacterDetail({
           {character.currency_war.length > 0 && (
             <CharacterCurrencyWarDetails
               variants={character.currency_war}
+              characterSkills={[
+                ...character.skills,
+                ...character.servants.flatMap((servant) => servant.skills),
+              ]}
               properties={propertyTables}
               descriptionMode={descriptionMode}
             />

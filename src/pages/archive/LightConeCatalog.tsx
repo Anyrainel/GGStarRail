@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { LightConeCard } from "@/components/archive/LightConeCard";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
@@ -79,51 +80,51 @@ export function LightConeCatalog() {
     resource.data?.lightCones.values.some((cone) => cone.path_id === path.id)
   );
 
+  const header = (
+    <ArchiveToolbar
+      searchQuery={query}
+      onSearchChange={setQuery}
+      searchLabel={t("common.search")}
+      searchPlaceholder={t("archive.search.lightCones")}
+    >
+      <FilterChipGroup
+        options={availablePaths.map((path) => path.id)}
+        selectedValues={paths}
+        onSelectedValuesChange={setPaths}
+        getKey={(id) => id}
+        getIcon={(id) => (
+          <AssetImage
+            kind="path"
+            id={id}
+            sourcePath={propertyTables.pathById.get(id)?.icon_path}
+            alt=""
+            className="h-4 w-4 object-contain"
+          />
+        )}
+        getLabel={(id) =>
+          formatGameText(
+            getLocalizedValue(propertyTables.pathById.get(id)?.name, locale) ??
+              ""
+          )
+        }
+        className="contents"
+      />
+      <span
+        aria-hidden="true"
+        className="mx-1 hidden h-5 w-px bg-border sm:block"
+      />
+      <FilterChipGroup
+        options={[5, 4, 3]}
+        selectedValues={rarities}
+        onSelectedValuesChange={setRarities}
+        getKey={String}
+        getLabel={(rarity) => `★${rarity}`}
+        className="contents"
+      />
+    </ArchiveToolbar>
+  );
   return (
-    <div className="space-y-4">
-      <ArchiveToolbar
-        searchQuery={query}
-        onSearchChange={setQuery}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("archive.search.lightCones")}
-      >
-        <FilterChipGroup
-          options={availablePaths.map((path) => path.id)}
-          selectedValues={paths}
-          onSelectedValuesChange={setPaths}
-          getKey={(id) => id}
-          getIcon={(id) => (
-            <AssetImage
-              kind="path"
-              id={id}
-              sourcePath={propertyTables.pathById.get(id)?.icon_path}
-              alt=""
-              className="h-4 w-4 object-contain"
-            />
-          )}
-          getLabel={(id) =>
-            formatGameText(
-              getLocalizedValue(
-                propertyTables.pathById.get(id)?.name,
-                locale
-              ) ?? ""
-            )
-          }
-          className="contents"
-        />
-        <span
-          aria-hidden="true"
-          className="mx-1 hidden h-5 w-px bg-border sm:block"
-        />
-        <FilterChipGroup
-          options={[5, 4, 3]}
-          selectedValues={rarities}
-          onSelectedValuesChange={setRarities}
-          getKey={String}
-          getLabel={(rarity) => `★${rarity}`}
-          className="contents"
-        />
-      </ArchiveToolbar>
+    <ScrollLayout header={header} bodyClassName="space-y-4">
       <section aria-label={t("archive.lightConeList")} className="space-y-4">
         {filtered.length === 0 ? (
           <CatalogEmpty />
@@ -188,6 +189,6 @@ export function LightConeCatalog() {
           })
         )}
       </section>
-    </div>
+    </ScrollLayout>
   );
 }

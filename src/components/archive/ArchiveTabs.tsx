@@ -20,7 +20,7 @@ export function ArchiveTabs<T extends string>({
       role="tablist"
       aria-label={label}
       className={cn(
-        "flex min-w-0 gap-1 overflow-x-auto border-b border-border",
+        "flex min-w-0 justify-center gap-0 overflow-x-auto border-b border-border sm:gap-2",
         className
       )}
     >
@@ -53,7 +53,7 @@ export function ArchiveTabs<T extends string>({
               ?.focus();
           }}
           className={cn(
-            "flex shrink-0 items-center justify-center gap-1.5 border-b-2 px-2 py-2 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-3 sm:text-sm",
+            "flex min-w-0 items-center justify-center gap-1.5 border-b-2 px-2 py-2.5 text-sm font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:px-5 sm:text-base",
             value === option.value
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"

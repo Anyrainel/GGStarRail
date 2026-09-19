@@ -13,6 +13,8 @@ import { CharacterBuildCard } from "@/components/artifact-builds/CharacterBuildC
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { ConfirmDialog } from "@/components/builds/ConfirmDialog";
 import { StatusBanner } from "@/components/builds/StatusBanner";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ItemPicker } from "@/components/shared/ItemPicker";
@@ -240,14 +242,19 @@ export default function CharacterBuildView() {
   );
 
   return (
-    <>
+    <PageLayout>
       <PageHeader titleKey="route.builds.title" visuallyHidden />
-      <BuildWorkspaceActions references={data} />
-      {createError && <StatusBanner message={createError} tone="error" />}
+      <div className="container max-h-[30%] shrink-0 overflow-y-auto">
+        <BuildWorkspaceActions references={data} />
+      </div>
       {loading ? (
-        <CatalogLoading />
+        <ScrollLayout>
+          <CatalogLoading />
+        </ScrollLayout>
       ) : error || !data ? (
-        <CatalogLoadError error={error} />
+        <ScrollLayout>
+          <CatalogLoadError error={error} />
+        </ScrollLayout>
       ) : (
         <SidebarLayout
           sidebar={renderFilterPanel(data)}
@@ -255,6 +262,7 @@ export default function CharacterBuildView() {
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0 space-y-4">
+            {createError && <StatusBanner message={createError} tone="error" />}
             <div className="flex items-center gap-2">
               <ItemPicker
                 kind="character"
@@ -337,6 +345,6 @@ export default function CharacterBuildView() {
           setPendingDelete(null);
         }}
       />
-    </>
+    </PageLayout>
   );
 }

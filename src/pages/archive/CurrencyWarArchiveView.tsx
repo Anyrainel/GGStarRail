@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
@@ -33,10 +35,6 @@ import type {
   CurrencyWarStrategy,
   PropertyCatalog,
 } from "@/providers/gilore/types";
-import {
-  CatalogDetailSheet,
-  useCatalogDetailSheet,
-} from "./CatalogDetailSheet";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   CurrencyWarBondTiers,
@@ -125,17 +123,13 @@ export function CurrencyWarArchiveContent({
   const [category, setCategory] = useState<Set<string>>(new Set());
   const [quality, setQuality] = useState<Set<string>>(new Set());
   const selectedId = searchParams.get("id");
-  const sheet = useCatalogDetailSheet();
   const records: readonly CurrencyWarRecord[] = catalog[activeTab.id];
-  const setDetailOpen = sheet.setOpen;
   useEffect(() => {
-    if (
-      selectedId &&
-      records.some((entry) => entry.id === selectedId) &&
-      window.matchMedia("(max-width: 1023px)").matches
-    )
-      setDetailOpen(true);
-  }, [selectedId, records, setDetailOpen]);
+    if (!selectedId || activeTab.id === "bonds") return;
+    const card = document.getElementById(`currency-war-card-${selectedId}`);
+    card?.scrollIntoView?.({ block: "nearest" });
+    card?.focus({ preventScroll: true });
+  }, [selectedId, activeTab.id]);
   const searchIndex = useMemo(
     () =>
       new Map(records.map((entry) => [entry.id, currencyWarSearchText(entry)])),
@@ -145,20 +139,20 @@ export function CurrencyWarArchiveContent({
     () =>
       records
         .filter((entry) => {
-          if (
-            !isArchiveSearchActive(query) &&
-            category.size > 0 &&
-            "category" in entry &&
-            !category.has(entry.category_name.en.value)
-          )
-            return false;
-          if (
-            !isArchiveSearchActive(query) &&
-            quality.size > 0 &&
-            "quality" in entry &&
-            !quality.has(entry.quality)
-          )
-            return false;
+          if (!isArchiveSearchActive(query)) {
+            if (
+              category.size &&
+              "category" in entry &&
+              !category.has(entry.category_name.en.value)
+            )
+              return false;
+            if (
+              quality.size &&
+              "quality" in entry &&
+              !quality.has(entry.quality)
+            )
+              return false;
+          }
           return (
             !query.trim() ||
             searchIndex
@@ -193,153 +187,151 @@ export function CurrencyWarArchiveContent({
     setQuery("");
     setCategory(new Set());
     setQuality(new Set());
-    sheet.setOpen(false);
     setSearchParams({ tab }, { replace: true });
   };
-  const select = (id: string, trigger?: HTMLButtonElement) => {
-    if (!trigger) {
-      setQuery("");
-      setCategory(new Set());
-      setQuality(new Set());
-    }
+  const select = (id: string) => {
+    setQuery("");
+    setCategory(new Set());
+    setQuality(new Set());
     setSearchParams({ tab: activeTab.id, id }, { replace: true });
-    if (trigger) sheet.openOnNarrowScreen(trigger);
   };
-  const detail = selected ? (
+  const header = (
+    <div className="space-y-3">
+      <ArchiveToolbar
+        searchQuery={query}
+        onSearchChange={setQuery}
+        searchLabel={t("common.search")}
+        searchPlaceholder={t("archive.currencyWar.search")}
+      >
+        {activeTab.id === "equipment" && (
+          <FilterChipGroup
+            options={categories.map(([id]) => id)}
+            selectedValues={category}
+            onSelectedValuesChange={setCategory}
+            getKey={(id) => id}
+            getLabel={(id) =>
+              getLocalizedValue(
+                categories.find(([key]) => key === id)![1],
+                locale
+              )
+            }
+          />
+        )}
+        {activeTab.id === "strategies" && (
+          <FilterChipGroup
+            options={qualities}
+            selectedValues={quality}
+            onSelectedValuesChange={setQuality}
+            getKey={(id) => id}
+            getLabel={qualityName}
+          />
+        )}
+      </ArchiveToolbar>
+      <p className="text-sm text-muted-foreground" aria-live="polite">
+        {t("archive.results", {
+          shown: filtered.length,
+          total: records.length,
+        })}
+      </p>
+    </div>
+  );
+  const renderCard = (record: CurrencyWarRecord) => (
     <CurrencyWarDetail
-      record={selected}
+      key={record.id}
+      record={record}
       tab={activeTab.id}
       catalog={catalog}
       characters={characters}
       properties={properties}
       onSelect={select}
     />
-  ) : null;
+  );
 
   return (
-    <div className="min-w-0 space-y-4">
-      <ArchiveTabs
-        panelId="currency-war-panel"
-        label={t("archive.currencyWar.title")}
-        value={activeTab.id}
-        options={tabs.map((tab) => ({
-          value: tab.id,
-          label: t(tab.label),
-          count: catalog[tab.id].length,
-        }))}
-        onValueChange={changeTab}
-      />
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="container shrink-0 pb-3">
+        <ArchiveTabs
+          panelId="currency-war-panel"
+          label={t("archive.currencyWar.title")}
+          value={activeTab.id}
+          options={tabs.map((tab) => ({
+            value: tab.id,
+            label: t(tab.label),
+            count: catalog[tab.id].length,
+          }))}
+          onValueChange={changeTab}
+        />
+      </div>
       <div
         id="currency-war-panel"
         role="tabpanel"
         aria-labelledby={`currency-war-panel-tab-${activeTab.id}`}
-        className="space-y-4"
+        className="min-h-0 flex-1"
       >
-        <ArchiveToolbar
-          searchQuery={query}
-          onSearchChange={setQuery}
-          searchLabel={t("common.search")}
-          searchPlaceholder={t("archive.currencyWar.search")}
-        >
-          {activeTab.id === "equipment" && (
-            <FilterChipGroup
-              options={categories.map(([id]) => id)}
-              selectedValues={category}
-              onSelectedValuesChange={setCategory}
-              getKey={(id) => id}
-              getLabel={(id) =>
-                getLocalizedValue(
-                  categories.find(([key]) => key === id)![1],
-                  locale
-                )
-              }
-            />
-          )}
-          {activeTab.id === "strategies" && (
-            <FilterChipGroup
-              options={qualities}
-              selectedValues={quality}
-              onSelectedValuesChange={setQuality}
-              getKey={(id) => id}
-              getLabel={qualityName}
-            />
-          )}
-        </ArchiveToolbar>
-        <p className="text-sm text-muted-foreground" aria-live="polite">
-          {t("archive.results", {
-            shown: filtered.length,
-            total: records.length,
-          })}
-        </p>
-        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(230px,280px)_minmax(0,1fr)]">
-          <section
-            aria-label={t("archive.currencyWar.results")}
-            className="grid gap-2 sm:grid-cols-2 lg:max-h-[calc(100dvh-17rem)] lg:grid-cols-1 lg:overflow-y-auto lg:pr-2"
+        {activeTab.id === "bonds" ? (
+          <SidebarDetailLayout
+            header={header}
+            mobileDetailHeader={header}
+            hasSelection={Boolean(
+              selectedId && filtered.some((entry) => entry.id === selectedId)
+            )}
+            onBack={() => setSearchParams({ tab: "bonds" }, { replace: true })}
+            backLabel={t("archive.currencyWar.bonds")}
+            sidebarLabel={t("archive.currencyWar.results")}
+            sidebar={
+              <div className="space-y-1">
+                {filtered.length ? (
+                  filtered.map((entry) => (
+                    <button
+                      key={entry.id}
+                      type="button"
+                      aria-pressed={selected?.id === entry.id}
+                      onClick={() => select(entry.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-lg p-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        selected?.id === entry.id
+                          ? "bg-primary/15 ring-1 ring-primary/30"
+                          : "hover:bg-accent"
+                      )}
+                    >
+                      <AssetImage
+                        kind={activeTab.asset}
+                        id={entry.id}
+                        sourcePath={entry.icon_path}
+                        alt=""
+                        className="h-10 w-10 shrink-0 object-contain"
+                      />
+                      <span className="min-w-0 flex-1 font-semibold">
+                        {formatGameText(getLocalizedValue(entry.name, locale))}
+                      </span>
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 text-muted-foreground"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  ))
+                ) : (
+                  <CatalogEmpty />
+                )}
+              </div>
+            }
           >
+            {selected ? renderCard(selected) : <CatalogEmpty />}
+          </SidebarDetailLayout>
+        ) : (
+          <ScrollLayout header={header}>
             {filtered.length ? (
-              filtered.map((entry) => (
-                <button
-                  key={entry.id}
-                  type="button"
-                  data-currency-id={entry.id}
-                  aria-pressed={selected?.id === entry.id}
-                  onClick={(event) => select(entry.id, event.currentTarget)}
-                  className={cn(
-                    "group flex min-w-0 items-center gap-3 rounded-lg border p-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                    selected?.id === entry.id
-                      ? "border-primary/50 bg-accent shadow-sm"
-                      : "border-transparent bg-card/40 hover:border-border hover:bg-accent/50"
-                  )}
-                >
-                  <AssetImage
-                    kind={activeTab.asset}
-                    id={entry.id}
-                    sourcePath={entry.icon_path}
-                    alt=""
-                    className="h-10 w-10 shrink-0 rounded-md bg-secondary/40 object-contain p-0.5"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block break-words text-sm font-semibold">
-                      {formatGameText(getLocalizedValue(entry.name, locale))}
-                    </span>
-                    <span className="mt-0.5 line-clamp-1 text-xs leading-5 text-muted-foreground">
-                      {"category_name" in entry
-                        ? getLocalizedValue(entry.category_name, locale)
-                        : "quality" in entry
-                          ? qualityName(entry.quality)
-                          : formatGameText(
-                              getLocalizedValue(entry.description, locale) ??
-                                "",
-                              entry.parameters,
-                              t("terms.trailblazer")
-                            )}
-                    </span>
-                    <BetaBadge member={activeTab.member} id={entry.id} />
-                  </span>
-                  <ChevronRight
-                    className="h-4 w-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                </button>
-              ))
+              <section
+                aria-label={t("archive.currencyWar.results")}
+                className="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3"
+              >
+                {filtered.map(renderCard)}
+              </section>
             ) : (
               <CatalogEmpty />
             )}
-          </section>
-          {detail && (
-            <>
-              <div className="hidden min-w-0 lg:block">{detail}</div>
-              <CatalogDetailSheet
-                open={sheet.open}
-                onOpenChange={sheet.setOpen}
-                onCloseAutoFocus={sheet.restoreTriggerFocus}
-                title={selected ? getLocalizedValue(selected.name, locale) : ""}
-              >
-                {detail}
-              </CatalogDetailSheet>
-            </>
-          )}
-        </div>
+          </ScrollLayout>
+        )}
       </div>
     </div>
   );
@@ -441,9 +433,23 @@ function CurrencyWarDetail({
   const { locale, t } = useI18n();
   const config = tabs.find((entry) => entry.id === tab)!;
   return (
-    <aside
+    <article
+      id={`currency-war-card-${record.id}`}
+      tabIndex={-1}
       data-testid="currency-war-detail"
-      className="min-w-0 space-y-5 rounded-xl border border-border bg-gradient-to-br from-card via-card to-accent/20 p-4 sm:p-5"
+      data-strategy-quality={"quality" in record ? record.quality : undefined}
+      className={cn(
+        "min-w-0 space-y-4 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "quality" in record &&
+          (record.quality === "Gold" || record.quality === "Orange") &&
+          "border-[hsl(var(--quality-gold)/0.5)] bg-[linear-gradient(135deg,hsl(var(--quality-gold)/0.16),hsl(var(--card))_70%)]",
+        "quality" in record &&
+          record.quality === "Silver" &&
+          "border-[hsl(var(--quality-silver)/0.45)] bg-[linear-gradient(135deg,hsl(var(--quality-silver)/0.14),hsl(var(--card))_70%)]",
+        "quality" in record &&
+          (record.quality === "Prismatic" || record.quality === "Rainbow") &&
+          "border-[hsl(var(--quality-prismatic-purple)/0.6)] bg-[linear-gradient(125deg,hsl(var(--quality-prismatic-blue)/0.2),hsl(var(--quality-prismatic-purple)/0.2)_45%,hsl(var(--quality-gold)/0.1))]"
+      )}
     >
       <div className="flex items-start gap-4">
         <AssetImage
@@ -454,10 +460,7 @@ function CurrencyWarDetail({
           className="h-16 w-16 shrink-0 rounded-xl bg-secondary/60 object-contain p-1.5"
         />
         <div className="min-w-0 space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">
-            {t(config.label)}
-          </p>
-          <h2 className="break-words text-xl font-semibold">
+          <h2 className="break-words text-lg font-semibold">
             {formatGameText(getLocalizedValue(record.name, locale))}
           </h2>
           {"category_name" in record && (
@@ -569,6 +572,6 @@ function CurrencyWarDetail({
           characters={characters}
         />
       )}
-    </aside>
+    </article>
   );
 }

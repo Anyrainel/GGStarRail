@@ -104,8 +104,14 @@ exporting promotion gates or costs. `progression` now contains only Relic main
 affixes, sub-affixes, and scoring tables required by account tools.
 
 Skills retain localized names, type/tag chips, full and brief descriptions, and
-level parameter arrays. Duplicate display-description/parameter fields are
-removed. Currency War special effects use a semantic `kind` instead of a raw
+level parameter arrays. `normal_max_level` is the trace-upgrade cap; `max_level`
+adds that variant's own Eidolon increases, and level rows stop at that attainable
+cap. Pure stat-only trace nodes become aggregated `trace_stats` property/value
+rows on characters and enhanced variants; narrative trace dependencies bypass
+the removed stat nodes. Light Cone `effect.name`/`effect.description` hold shared
+templates, with per-superimposition parameters/properties and nullable text
+overrides when either locale differs. Duplicate display-description/parameter
+fields are removed. Currency War special effects use a semantic `kind` instead of a raw
 source table. Stable entity IDs and artwork paths remain functional join/asset
 references and are never rendered as archive labels.
 

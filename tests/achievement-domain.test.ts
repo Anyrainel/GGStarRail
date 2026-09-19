@@ -3,9 +3,7 @@ import {
   type AchievementArchiveItem,
   achievementCompletionProgress,
   achievementMatchesFilters,
-  achievementPresentedText,
   buildAchievementVideoSearchUrl,
-  classifyAchievementCompletion,
   deriveAchievementVersionFilters,
   groupAchievementSeries,
   UNKNOWN_ACHIEVEMENT_VERSION,
@@ -42,7 +40,7 @@ describe("achievement archive filtering", () => {
     expect(
       achievementMatchesFilters(
         hidden,
-        "  SCARLET   clockwork ",
+        "  FINAL   clockwork ",
         new Set(),
         new Set(),
         new Set()
@@ -59,7 +57,7 @@ describe("achievement archive filtering", () => {
     ).toBe(false);
   });
 
-  it("does not let search reveal show-after-finish reference text", () => {
+  it("searches the real text of hidden achievements before and after completion", () => {
     const concealed = achievement(9, {
       name: "Secret Finale",
       description: "Witness the last scene.",
@@ -75,7 +73,7 @@ describe("achievement archive filtering", () => {
         new Set(),
         new Set()
       )
-    ).toBe(false);
+    ).toBe(true);
     expect(
       achievementMatchesFilters(
         concealed,
@@ -120,16 +118,16 @@ describe("achievement archive filtering", () => {
     ).toBe(false);
   });
 
-  it("does not infer unfinished state when completion coverage is unknown", () => {
+  it("filters an empty manual checklist as unfinished", () => {
     expect(
       achievementMatchesFilters(
         hidden,
         "",
         new Set(["finished"]),
         new Set(),
-        null
+        new Set()
       )
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("derives major versions and preserves an explicit unknown bucket", () => {
@@ -172,77 +170,17 @@ describe("achievement series and completion", () => {
     expect(grouped[0]?.seriesIds).toEqual(chain);
   });
 
-  it("keeps unknown completion distinct from a captured known-zero result", () => {
+  it("counts completion from an empty or partly completed checklist", () => {
     const items = [achievement(1), achievement(2)];
-    expect(achievementCompletionProgress(items, null)).toBeNull();
     expect(achievementCompletionProgress(items, new Set())).toEqual({
       completed: 0,
       total: 2,
       percentage: 0,
     });
-  });
-
-  it("distinguishes capture, capture plus edits, and manual provenance", () => {
-    expect(classifyAchievementCompletion(false, undefined)).toBe("no-account");
-    expect(classifyAchievementCompletion(true, undefined)).toBe(
-      "available-to-track"
-    );
-    expect(classifyAchievementCompletion(true, { completedIds: [] })).toBe(
-      "manual"
-    );
-    expect(
-      classifyAchievementCompletion(true, {
-        completedIds: [],
-        capture: {},
-      })
-    ).toBe("captured");
-    expect(
-      classifyAchievementCompletion(true, {
-        completedIds: [],
-        capture: {},
-        locallyModifiedAt: "2026-09-04T00:00:00.000Z",
-      })
-    ).toBe("captured-edited");
-  });
-
-  it("applies the three producer visibility modes exactly", () => {
-    const visible = achievement(1);
-    const showAfterFinish = achievement(2, {
-      name: "True title",
-      description: "True description",
-      hiddenDescription: "Must not leak either",
-      visibility: "show_after_finish",
-    });
-    const hiddenDescription = achievement(3, {
-      description: "Finished description",
-      hiddenDescription: "Unfinished hint",
-      visibility: "hidden_description",
-    });
-
-    expect(achievementPresentedText(visible, false)).toMatchObject({
-      name: visible.name,
-      description: visible.description,
-      descriptionSource: "normal",
-    });
-    expect(achievementPresentedText(showAfterFinish, false)).toEqual({
-      name: null,
-      description: null,
-      concealed: true,
-      descriptionSource: "concealed",
-    });
-    expect(achievementPresentedText(showAfterFinish, true)).toMatchObject({
-      name: "True title",
-      description: "True description",
-      descriptionSource: "normal",
-    });
-    expect(achievementPresentedText(hiddenDescription, false)).toMatchObject({
-      name: hiddenDescription.name,
-      description: "Unfinished hint",
-      descriptionSource: "hidden",
-    });
-    expect(achievementPresentedText(hiddenDescription, true)).toMatchObject({
-      description: "Finished description",
-      descriptionSource: "normal",
+    expect(achievementCompletionProgress(items, new Set([2]))).toEqual({
+      completed: 1,
+      total: 2,
+      percentage: 50,
     });
   });
 });

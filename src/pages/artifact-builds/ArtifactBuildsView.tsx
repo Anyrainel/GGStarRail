@@ -10,6 +10,7 @@ import { SelectField, ToggleField } from "@/components/builds/BuildControls";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -123,7 +124,7 @@ export default function ArtifactBuildsView() {
   }, [account, build, profile, scoringContext]);
 
   return (
-    <>
+    <ScrollLayout bodyClassName="space-y-4">
       <PageHeader titleKey="route.filters.title" visuallyHidden />
       <BuildWorkspaceActions references={data} />
       <SourceCoverageNotice account={account} />
@@ -321,7 +322,7 @@ export default function ArtifactBuildsView() {
           ) : null}
         </>
       )}
-    </>
+    </ScrollLayout>
   );
 }
 

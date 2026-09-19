@@ -1,5 +1,13 @@
 # Account imports
 
+Achievement tracking also works before any account import. Workspace v4 stores
+that manual progress in `localAchievementCompletion`; account imports and merges
+continue to use the selected account's own achievement completion. Anonymous
+progress is preserved separately rather than assigned to an unverified account.
+Workspace backups include both, build-only imports leave both untouched, and
+clearing the workspace clears both. The v3 migration initializes empty anonymous
+tracking without changing existing account completion or capture evidence.
+
 The account-import contracts in this repository were checked against current
 upstream implementations and deployed HSR web clients on 2026-09-02. Every
 source is normalized into `AccountSnapshot` v2 before the review screen and

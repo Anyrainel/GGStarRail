@@ -206,6 +206,28 @@ for (const [label, mutate, expected] of [
     /skill.*sequential/,
   ],
   [
+    "invalid normal skill cap",
+    (data) => {
+      const skill = data.characters[0].skills[0];
+      skill.normal_max_level = skill.max_level + 1;
+    },
+    /invalid normal level cap/,
+  ],
+  [
+    "unknown aggregated trace stat",
+    (data) => {
+      data.characters[0].trace_stats[0].property_id = "missing";
+    },
+    /trace stat property.*unknown reference/,
+  ],
+  [
+    "duplicate aggregated trace stat",
+    (data) => {
+      data.characters[0].trace_stats.push(data.characters[0].trace_stats[0]);
+    },
+    /trace stats.*duplicate/,
+  ],
+  [
     "trace prerequisite cycle",
     (data) => {
       const trace = data.characters[0].traces[0];

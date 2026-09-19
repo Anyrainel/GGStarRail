@@ -1,4 +1,8 @@
 export const messagesEn = {
+  "archive.backToCharacters": "Characters",
+  "archive.characterDetails": "Character details",
+  "archive.traceStats": "Trace stat bonuses",
+  "archive.skillValueNumber": "Value {value}",
   "archive.descriptionMode": "Description",
   "archive.descriptionShort": "Brief",
   "archive.descriptionFull": "Full",
@@ -591,33 +595,12 @@ export const messagesEn = {
   "archive.achievement.status.unfinished": "Unfinished",
   "archive.achievement.status.finished": "Finished",
   "archive.achievement.version.unknown": "Version unknown",
-  "archive.achievement.completion.noAccount":
-    "Account import required to track achievements.",
-  "archive.achievement.completion.availableToTrack":
-    "No achievement progress from this account source.",
-  "archive.achievement.completion.manual": "Tracked locally",
-  "archive.achievement.completion.captured": "Complete achievement capture",
-  "archive.achievement.completion.capturedEdited":
-    "Captured completion, edited locally",
-  "archive.achievement.completion.progressUnavailable":
-    "Completion is unavailable for this account source",
-  "archive.achievement.completion.progressUnavailableShort":
-    "Progress unavailable",
   "archive.achievement.progressLabel":
     "{category}: {completed} of {total} completed",
-  "archive.achievement.visibility.showAfterFinish": "Hidden until completed",
-  "archive.achievement.visibility.hiddenDescription": "Hidden description",
-  "archive.achievement.concealedName": "Hidden achievement",
-  "archive.achievement.concealedDescription":
-    "Complete this achievement to reveal its name and description.",
   "archive.achievement.dynamicTextFallback": "[dynamic in-game text]",
   "archive.achievement.stellarJade": "Stellar Jade",
   "archive.achievement.markFinished": "Mark {name} finished",
   "archive.achievement.markUnfinished": "Mark {name} unfinished",
-  "archive.achievement.startTrackingAndMarkFinished":
-    "Start local tracking and mark {name} finished",
-  "archive.achievement.trackingUnavailable":
-    "Import an account before tracking achievement completion.",
   "archive.achievement.searchYouTube": "Search YouTube for {name}",
   "archive.achievement.searchBilibili": "Search Bilibili for {name}",
   "archive.results": "Showing {shown} of {total} records",

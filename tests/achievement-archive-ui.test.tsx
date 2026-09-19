@@ -106,7 +106,7 @@ function accountWithKnownCompletion(completedIds: readonly number[]) {
 }
 
 afterEach(() => {
-  useWorkspaceStore.setState({ account: null });
+  useWorkspaceStore.getState().clearWorkspace();
 });
 
 describe("AchievementArchiveContent completion coverage", () => {
@@ -122,28 +122,34 @@ describe("AchievementArchiveContent completion coverage", () => {
       })
     ).toHaveAttribute("aria-valuenow", "0");
     expect(screen.getByText("0%")).toBeVisible();
-    expect(screen.getByText("Complete achievement capture")).toBeVisible();
+    expect(screen.queryByText("Complete achievement capture")).toBeNull();
   });
 
-  it("never claims zero or unfinished when completion is unavailable", async () => {
+  it("tracks completion without an imported account or account banner", async () => {
+    const user = userEvent.setup();
     setDesktopLayout(true);
     useWorkspaceStore.setState({ account: null });
     renderArchive();
 
     expect(await screen.findByText("First Footstep")).toBeVisible();
-    expect(screen.queryByRole("progressbar")).toBeNull();
-    expect(screen.queryByText("0%")).toBeNull();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "0"
+    );
+    expect(screen.getByRole("button", { name: "Unfinished" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Finished" })).toBeEnabled();
+    expect(screen.queryByText(/Import an account/)).toBeNull();
+    await user.click(
+      screen.getByRole("button", { name: "Mark First Footstep finished" })
+    );
+    expect(useWorkspaceStore.getState().account).toBeNull();
     expect(
-      screen.getAllByText("Completion is unavailable for this account source")
-        .length
-    ).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Unfinished" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Finished" })).toBeDisabled();
-    for (const button of screen.getAllByRole("button", {
-      name: "Import an account before tracking achievement completion.",
-    })) {
-      expect(button).toBeDisabled();
-    }
+      useWorkspaceStore.getState().localAchievementCompletion.completedIds
+    ).toEqual([101]);
+    expect(screen.getByText("50%")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Mark First Footstep unfinished" })
+    ).toHaveAttribute("aria-pressed", "true");
   });
 
   it("offers explicit local tracking for an account without coverage", async () => {
@@ -153,11 +159,11 @@ describe("AchievementArchiveContent completion coverage", () => {
     renderArchive();
 
     const startButton = await screen.findByRole("button", {
-      name: "Start local tracking and mark First Footstep finished",
+      name: "Mark First Footstep finished",
     });
     expect(startButton).toBeEnabled();
-    expect(startButton).not.toHaveAttribute("aria-pressed");
-    expect(screen.getByRole("button", { name: "Unfinished" })).toBeDisabled();
+    expect(startButton).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Unfinished" })).toBeEnabled();
 
     await user.click(startButton);
 
@@ -167,7 +173,6 @@ describe("AchievementArchiveContent completion coverage", () => {
           ?.completedIds
       ).toEqual([101]);
     });
-    expect(screen.getByText("Tracked locally")).toBeVisible();
     expect(screen.getByRole("button", { name: "Unfinished" })).toBeEnabled();
     expect(
       screen.getByRole("button", { name: "Mark First Footstep unfinished" })
@@ -175,7 +180,7 @@ describe("AchievementArchiveContent completion coverage", () => {
     expect(screen.getByText("50%")).toBeVisible();
   });
 
-  it("distinguishes a captured set that was edited locally", async () => {
+  it("preserves captured progress without showing a coverage banner", async () => {
     setDesktopLayout(true);
     const account = accountWithKnownCompletion([101]);
     useWorkspaceStore.setState({
@@ -189,14 +194,15 @@ describe("AchievementArchiveContent completion coverage", () => {
     });
     renderArchive();
 
+    expect(await screen.findByText("50%")).toBeVisible();
     expect(
-      await screen.findByText("Captured completion, edited locally")
-    ).toBeVisible();
+      screen.queryByText("Captured completion, edited locally")
+    ).toBeNull();
   });
 });
 
 describe("AchievementArchiveContent visibility and filtering", () => {
-  it("omits unknown-version clutter and concealed internal IDs", async () => {
+  it("omits unknown-version clutter and internal IDs", async () => {
     setDesktopLayout(true);
     useWorkspaceStore.setState({ account: accountWithKnownCompletion([]) });
     render(
@@ -211,27 +217,44 @@ describe("AchievementArchiveContent visibility and filtering", () => {
       </I18nProvider>
     );
     const concealed = await screen.findByRole("article", {
-      name: "Hidden achievement",
+      name: "A Secret Terminus",
     });
     expect(concealed).not.toHaveTextContent("102");
     expect(
-      screen.getByRole("button", { name: "Mark Hidden achievement finished" })
-    ).toHaveAttribute("title", "Mark Hidden achievement finished");
+      screen.getByRole("button", { name: "Mark A Secret Terminus finished" })
+    ).toHaveAttribute("title", "Mark A Secret Terminus finished");
     expect(screen.queryByText("Version unknown")).not.toBeInTheDocument();
   });
 
-  it("conceals ShowAfterFinish and shows only the alternate HiddenDesc text", async () => {
+  it("shows real names, descriptions, and video image links for every hidden mode", async () => {
     const user = userEvent.setup();
     setDesktopLayout(true);
     useWorkspaceStore.setState({ account: accountWithKnownCompletion([]) });
     renderArchive();
 
-    expect(await screen.findByText("Hidden achievement")).toBeVisible();
+    expect(await screen.findByText("A Secret Terminus")).toBeVisible();
     expect(
-      screen.getByRole("article", { name: "Hidden achievement" })
+      screen.getByRole("article", { name: "A Secret Terminus" })
     ).toBeVisible();
-    expect(screen.queryByText("A Secret Terminus")).toBeNull();
-    expect(screen.queryByText("Witness the final departure.")).toBeNull();
+    expect(screen.getByText("Witness the final departure.")).toBeVisible();
+    const youtube = screen.getByRole("link", {
+      name: /YouTube.*A Secret Terminus|A Secret Terminus.*YouTube/,
+    });
+    expect(youtube.querySelector("img")).toHaveAttribute(
+      "src",
+      "/assets/brands/youtube.webp"
+    );
+    expect(youtube).toHaveAttribute(
+      "href",
+      expect.stringContaining("A%20Secret%20Terminus%20Honkai")
+    );
+    const bilibili = screen.getByRole("link", {
+      name: /Bilibili.*A Secret Terminus|A Secret Terminus.*Bilibili/,
+    });
+    expect(bilibili.querySelector("img")).toHaveAttribute(
+      "src",
+      "/assets/brands/bilibili.webp"
+    );
     expect(
       screen.queryByText("This must never be shown before completion.")
     ).toBeNull();
@@ -240,11 +263,11 @@ describe("AchievementArchiveContent visibility and filtering", () => {
       screen.getByRole("button", { name: /Fathom the Unfathomable/ })
     );
     expect(await screen.findByText("Clockwork Dream")).toBeVisible();
-    expect(screen.getByText("Follow the silver clock's hint.")).toBeVisible();
-    expect(screen.queryByText("Find the real scarlet answer.")).toBeNull();
+    expect(screen.queryByText("Follow the silver clock's hint.")).toBeNull();
+    expect(screen.getByText("Find the real scarlet answer.")).toBeVisible();
   });
 
-  it("searches only displayed item text and never category or concealed text", async () => {
+  it("searches real hidden achievement text and excludes category names", async () => {
     const user = userEvent.setup();
     setDesktopLayout(true);
     useWorkspaceStore.setState({ account: accountWithKnownCompletion([]) });
@@ -254,12 +277,10 @@ describe("AchievementArchiveContent visibility and filtering", () => {
     });
 
     await user.type(search, "secret terminus");
-    expect(
-      await screen.findByText("No achievements match these filters.")
-    ).toBeVisible();
+    expect(await screen.findByText("A Secret Terminus")).toBeVisible();
 
     await user.clear(search);
-    await user.type(search, "silver clock");
+    await user.type(search, "scarlet clock");
     expect(
       await screen.findByRole("button", { name: /Fathom the Unfathomable/ })
     ).toBeVisible();
@@ -287,7 +308,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
     const search = screen.getByRole("searchbox", {
       name: "Search achievements",
     });
-    await user.type(search, "  SILVER   clock ");
+    await user.type(search, "  SCARLET   clock ");
     expect(screen.getByRole("button", { name: "v3.x" })).toBeDisabled();
     expect(
       await screen.findByRole("button", { name: /Fathom the Unfathomable/ })
@@ -312,7 +333,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
     await screen.findByText("First Footstep");
     await user.click(screen.getByRole("button", { name: "Version unknown" }));
 
-    expect(await screen.findByText("Hidden achievement")).toBeVisible();
+    expect(await screen.findByText("A Secret Terminus")).toBeVisible();
     expect(screen.queryByText("First Footstep")).toBeNull();
   });
 
@@ -331,7 +352,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
     await user.click(screen.getByRole("button", { name: "Finished" }));
     await user.click(screen.getByRole("button", { name: "Unfinished" }));
     expect(screen.getByText("First Footstep")).toBeVisible();
-    expect(screen.queryByText("Hidden achievement")).toBeNull();
+    expect(screen.queryByText("A Secret Terminus")).toBeNull();
   });
 
   it("passes the full hidden chain to the completion cascade", async () => {
@@ -342,7 +363,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
 
     await user.click(
       await screen.findByRole("button", {
-        name: "Mark Hidden achievement finished",
+        name: "Mark A Secret Terminus finished",
       })
     );
     await waitFor(() => {

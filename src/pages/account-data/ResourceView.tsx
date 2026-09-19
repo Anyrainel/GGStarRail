@@ -22,6 +22,7 @@ import {
   ToggleField,
 } from "@/components/builds/BuildControls";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ItemIcon } from "@/components/shared/ItemIcon";
@@ -172,7 +173,7 @@ export function ResourceView() {
   ) as Record<ResourceActionKind, number>;
 
   return (
-    <>
+    <ScrollLayout bodyClassName="space-y-4">
       <PageHeader titleKey="route.resources.title" visuallyHidden />
       <SourceCoverageNotice account={account} />
       {!account ? (
@@ -411,7 +412,7 @@ export function ResourceView() {
           )}
         </div>
       )}
-    </>
+    </ScrollLayout>
   );
 }
 

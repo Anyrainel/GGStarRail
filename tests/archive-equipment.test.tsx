@@ -3,12 +3,14 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { LightConeDetail } from "@/components/archive/LightConeDetail";
 import { STORAGE_KEYS } from "@/config/identity";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { LightConeCatalog } from "@/pages/archive/LightConeCatalog";
 import { RelicSetCatalog } from "@/pages/archive/RelicSetCatalog";
+import { loadLightCones, loadPropertyTables } from "@/providers/gilore/catalog";
 
 function renderCatalog(children: ReactNode) {
   return render(
@@ -25,7 +27,49 @@ const catalogWait = { timeout: 15_000 };
 describe("Light Cone archive cards", () => {
   beforeEach(() => setBetaEnabled(false));
 
-  it("groups cards by Path and opens focused details with selectable Superimposition", async () => {
+  it("preserves authored effect changes at an individual Superimposition", async () => {
+    const [catalog, properties] = await Promise.all([
+      loadLightCones(),
+      loadPropertyTables(),
+    ]);
+    const original = catalog.byId.get("20000")!;
+    const lightCone = {
+      ...original,
+      effect: {
+        ...original.effect,
+        superimpositions: original.effect.superimpositions.map((level) =>
+          level.level === 5
+            ? {
+                ...level,
+                description: {
+                  en: { value: "After attacking, restores #1[i] Energy." },
+                  "zh-CN": { value: "攻击后恢复#1[i]点能量。" },
+                },
+                parameters: [4],
+              }
+            : level
+        ),
+      },
+    };
+    renderCatalog(
+      <LightConeDetail
+        lightCone={lightCone}
+        path={properties.pathById.get(lightCone.path_id)!}
+      />
+    );
+    expect(
+      screen.getByText(/CRIT Rate increases by 12\/15\/18\/21%/)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("After attacking, restores 4 Energy.")
+    ).toBeInTheDocument();
+    expect(screen.getByText("Superimposition 5")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Superimposition/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("groups cards by Path and displays all Superimposition values inline", async () => {
     const user = userEvent.setup();
     renderCatalog(<LightConeCatalog />);
     const card = await screen.findByRole(
@@ -45,17 +89,11 @@ describe("Light Cone archive cards", () => {
         within(dialog).getByText(stat, { exact: true })
       ).toBeInTheDocument();
     expect(
-      within(dialog).getByText(/CRIT Rate increases by 12%/)
-    ).toBeInTheDocument();
-    await user.click(
-      within(dialog).getByRole("button", { name: "Superimposition 5" })
-    );
-    expect(
-      within(dialog).getByText(/CRIT Rate increases by 24%/)
+      within(dialog).getByText(/CRIT Rate increases by 12\/15\/18\/21\/24%/)
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByRole("button", { name: "Superimposition 5" })
-    ).toHaveAttribute("aria-pressed", "true");
+      within(dialog).queryByRole("button", { name: /Superimposition/ })
+    ).not.toBeInTheDocument();
     expect(dialog).not.toHaveTextContent(
       /Ability20000|Source details|EXP items|Promotion|TextMap|20000/
     );
@@ -102,9 +140,12 @@ describe("Light Cone archive cards", () => {
       await screen.findByRole("button", { name: "锋镝" }, catalogWait)
     );
     const dialog = await screen.findByRole("dialog", { name: "锋镝" });
-    expect(within(dialog).getByText(/暴击率提高12%/)).toBeInTheDocument();
-    await user.click(within(dialog).getByRole("button", { name: /叠影.*5/ }));
-    expect(within(dialog).getByText(/暴击率提高24%/)).toBeInTheDocument();
+    expect(
+      within(dialog).getByText(/暴击率提高12\/15\/18\/21\/24%/)
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).queryByRole("button", { name: /叠影/ })
+    ).not.toBeInTheDocument();
     expect(
       within(dialog).getByRole("button", { name: "关闭" })
     ).toBeInTheDocument();
@@ -129,18 +170,55 @@ describe("Relic archive cards", () => {
     expect(
       screen.queryByText(/Logical pieces|Set bonuses|rarity variants/)
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole("tab", { name: /^Planar/ }));
+    expect(
+      screen.getByRole("article", { name: "Space Sealing Station" })
+    ).toBeVisible();
+    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Planar/ }));
+    expect(
+      screen.queryByRole("article", { name: "Passerby of Wandering Cloud" })
+    ).not.toBeInTheDocument();
     const planar = screen.getByRole("article", {
       name: "Space Sealing Station",
     });
     expect(planar.querySelectorAll("img")).toHaveLength(3);
     expect(within(planar).getByText("2-Piece")).toBeInTheDocument();
     expect(within(planar).queryByText("4-Piece")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /^Planar/ }));
+    await user.click(screen.getByRole("button", { name: /^Cavern/ }));
     await user.type(screen.getByRole("searchbox"), "太空封印站");
+    expect(screen.getByRole("button", { name: /^Cavern/ })).toBeDisabled();
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(
       screen.getByRole("article", { name: "Space Sealing Station" })
     ).toBeInTheDocument();
+  });
+
+  it("orders both set kinds by newest source release patch", async () => {
+    renderCatalog(<RelicSetCatalog />);
+    await screen.findByRole(
+      "article",
+      { name: "Passerby of Wandering Cloud" },
+      catalogWait
+    );
+    const cards = screen.getAllByRole("article");
+    const { loadRelicSets } = await import("@/providers/gilore/catalog");
+    const sets = (await loadRelicSets()).values;
+    expect(cards).toHaveLength(sets.length);
+    const displayed = cards.map(
+      (card) =>
+        sets.find((set) => set.id === card.getAttribute("data-relic-set-id"))!
+    );
+    expect(new Set(displayed.map((set) => set.kind)).size).toBe(2);
+    for (let index = 1; index < displayed.length; index += 1) {
+      expect(
+        displayed[index - 1]!.release_version.localeCompare(
+          displayed[index]!.release_version,
+          "en",
+          { numeric: true }
+        )
+      ).toBeGreaterThanOrEqual(0);
+    }
   });
 
   it("localizes concise set labels and retains English-name search", async () => {

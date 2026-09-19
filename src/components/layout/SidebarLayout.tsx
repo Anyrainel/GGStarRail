@@ -1,5 +1,5 @@
 import { type LucideIcon, SlidersHorizontal } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -7,6 +7,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useGlobalScroll } from "@/hooks/useGlobalScroll";
 import { useI18n } from "@/i18n/I18nContext";
 
 interface SidebarLayoutProps {
@@ -27,9 +28,15 @@ export function SidebarLayout({
 }: SidebarLayoutProps) {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+  useGlobalScroll(containerRef, mainRef);
   return (
-    <div className="min-w-0 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start lg:gap-2 xl:grid-cols-[17.5rem_minmax(0,1fr)] 2xl:grid-cols-[15rem_minmax(0,1fr)] 3xl:grid-cols-[17.5rem_minmax(0,1fr)] 3xl:gap-3">
-      <div className="mb-3 lg:hidden">
+    <div
+      ref={containerRef}
+      className="wide-container flex h-full min-h-0 min-w-0 flex-col gap-2 overflow-hidden pb-3 lg:flex-row lg:gap-3"
+    >
+      <div className="shrink-0 lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button type="button" variant="outline" size="sm">
@@ -55,8 +62,15 @@ export function SidebarLayout({
           </SheetContent>
         </Sheet>
       </div>
-      <div className="hidden min-w-0 lg:block">{sidebar}</div>
-      <div className="min-w-0">{children}</div>
+      <aside className="relative hidden min-w-0 shrink-0 overflow-y-auto overscroll-contain lg:block lg:w-60 xl:w-[17.5rem] 2xl:w-60 3xl:w-[17.5rem]">
+        {sidebar}
+      </aside>
+      <div
+        ref={mainRef}
+        className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"
+      >
+        {children}
+      </div>
     </div>
   );
 }

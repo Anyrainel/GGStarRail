@@ -22,8 +22,9 @@ import {
 
 export const WORKSPACE_STORE_VERSION = 4;
 
-// Store v3 had no Character-level Light Cone choices. Keep every existing
-// build, profile, account, and its order; initialize only the new empty choices.
+// Store v3 had neither Character-level Light Cone choices nor achievement
+// tracking without an account. Preserve every account's completion separately;
+// the current schema initializes empty local tracking and Light Cone choices.
 const PersistedWorkspaceV3Schema = z
   .object({
     schemaVersion: z.literal(3),
