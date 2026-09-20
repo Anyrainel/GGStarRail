@@ -52,6 +52,7 @@ export default defineConfig({
         await mkdir(path.resolve(__dirname, "dist/assets/ggstarrail/webp"), {
           recursive: true,
         });
+        await mkdir(path.resolve(__dirname, "dist/good"), { recursive: true });
         await copyFile(
           path.resolve(__dirname, "public/_headers"),
           path.resolve(__dirname, "dist/_headers")
@@ -63,6 +64,7 @@ export default defineConfig({
           "favicon-48.png",
           "apple-touch-icon.png",
           "assets/ggstarrail/wordmark.svg",
+          "good/mapping_achievements.json",
         ]) {
           await copyFile(
             path.resolve(__dirname, "public", asset),

@@ -52,6 +52,7 @@
       "!**/.wrangler",
       "!src/data/game",
       "!public/good/hsr_data_cache.json",
+      "!public/good/mapping_achievements.json",
       "!data/source-assets",
       "!**/*.d.ts"
     ]
