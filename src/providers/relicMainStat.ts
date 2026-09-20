@@ -2,7 +2,7 @@ import type {
   MainAffixDefinition,
   PropertyDefinition,
   RelicPieceDefinition,
-} from "./gilore/types";
+} from "./reference/types";
 
 function requiredProperty(
   properties: readonly PropertyDefinition[],

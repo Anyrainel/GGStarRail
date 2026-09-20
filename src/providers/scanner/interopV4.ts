@@ -14,7 +14,7 @@ import type {
   ProgressionTables,
   PropertyDefinition,
   RelicPieceDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { accountStatValue } from "../accountNormalization";
 import type { AccountImportDraft } from "../types";
 import { canonicalVisibleRelicPiece } from "./visibleRelicIdentity";

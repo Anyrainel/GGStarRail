@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/lightweight-select";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   CharacterEnhancementVariant,
@@ -16,7 +16,7 @@ import type {
   CharacterTrace,
   PropertyCatalog,
   PropertyValue,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import {
   type CharacterDescriptionMode,
   CharacterEffectCard,

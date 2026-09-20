@@ -129,15 +129,6 @@ const EXPECTED_DIAGNOSTICS_BY_SCHEMA = Object.freeze({
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
-const defaultSourceDirectory = path.resolve(
-  repositoryRoot,
-  "..",
-  "GIlore",
-  "data",
-  "reference",
-  "honkai_star_rail",
-  "v1"
-);
 const defaultOutputDirectory = path.resolve(
   repositoryRoot,
   "src",
@@ -2252,11 +2243,11 @@ export async function validateBundleDirectory(directory) {
 
 const notice = `# Generated HSR reference data
 
-Do not edit these files by hand. Run \`npm run data:sync\` from GGStarRail to
-verify and copy the normalized GIlore bundle.
+Do not edit these files by hand. Run \`npm run data:sync -- --source DIR\` from GGStarRail to
+verify and copy the normalized reference bundle.
 
 Primary reference values come from DimbreathBot/TurnBasedGameData at
-\`${AUDITED_SOURCE_REVISION}\`, normalized by GIlore. The upstream repository
+\`${AUDITED_SOURCE_REVISION}\`, normalized by the data producer. The upstream repository
 had no formal license declared at the audited revision; preserve attribution
 and do not claim ownership. \`corroboration.json\` is validation-only evidence
 and must never override a normalized value.
@@ -2341,7 +2332,7 @@ function parseArguments(argv) {
   const options = {
     checkGenerated: false,
     output: defaultOutputDirectory,
-    source: defaultSourceDirectory,
+    source: undefined,
     verifyOnly: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -2363,6 +2354,7 @@ function parseArguments(argv) {
     !(options.verifyOnly && options.checkGenerated),
     "--verify-only and --check-generated cannot be combined"
   );
+  assert(options.checkGenerated || options.source, "--source is required");
   return options;
 }
 

@@ -3,6 +3,6 @@ import {
   DataBundleManifestSchema,
 } from "@/domain/provenance";
 
-export function parseGIloreManifest(input: unknown): DataBundleManifest {
+export function parseReferenceManifest(input: unknown): DataBundleManifest {
   return DataBundleManifestSchema.parse(input);
 }

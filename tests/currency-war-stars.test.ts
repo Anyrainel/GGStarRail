@@ -5,7 +5,7 @@ import {
   formatStarValues,
 } from "@/lib/currencyWarPresentation";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
-import { loadCharacters } from "@/providers/gilore/catalog";
+import { loadCharacters } from "@/providers/reference/catalog";
 
 describe("Currency War star comparisons", () => {
   it("preserves every star, combat level, and condition parameter when skill IDs change", async () => {

@@ -4,7 +4,7 @@ import websiteManifest from "@/data/game/manifest.json";
 const mockedModuleIds = [
   "@/data/game/manifest.json",
   "@/data/gameDataLoader",
-  "@/providers/gilore/assets",
+  "@/providers/reference/assets",
 ] as const;
 
 afterEach(() => {
@@ -21,12 +21,12 @@ function mockMember(schemaVersion: string, collection?: string) {
       value: [],
     }),
   }));
-  vi.doMock("@/providers/gilore/assets", () => ({
+  vi.doMock("@/providers/reference/assets", () => ({
     loadCatalogAssetLookup: vi.fn(async () => new Map()),
   }));
 }
 
-describe("current GIlore runtime schema boundary", () => {
+describe("current reference producer runtime schema boundary", () => {
   it.each([
     "1.0.0",
     "1.1.0",
@@ -42,7 +42,7 @@ describe("current GIlore runtime schema boundary", () => {
         },
       },
     }));
-    await expect(import("@/providers/gilore/catalog")).rejects.toThrow();
+    await expect(import("@/providers/reference/catalog")).rejects.toThrow();
   });
 
   it.each([
@@ -52,13 +52,13 @@ describe("current GIlore runtime schema boundary", () => {
     "loadPropertyTables",
   ] as const)("rejects obsolete members at %s", async (load) => {
     mockMember("1.3.0");
-    const catalog = await import("@/providers/gilore/catalog");
+    const catalog = await import("@/providers/reference/catalog");
     await expect(catalog[load]()).rejects.toThrow(/Invalid .* catalog schema/);
   });
 
   it("rejects mismatched member identities even with the current schema", async () => {
     mockMember("2.0.0", "light_cones");
-    const catalog = await import("@/providers/gilore/catalog");
+    const catalog = await import("@/providers/reference/catalog");
     await expect(catalog.loadCharacters()).rejects.toThrow(
       "Invalid characters catalog schema"
     );
@@ -67,7 +67,7 @@ describe("current GIlore runtime schema boundary", () => {
   it("rejects obsolete Currency War members", async () => {
     mockMember("1.3.0");
     const { loadCurrencyWarCatalog } = await import(
-      "@/providers/gilore/currencyWar"
+      "@/providers/reference/currencyWar"
     );
     await expect(loadCurrencyWarCatalog()).rejects.toThrow(
       "Invalid Currency War catalog"
@@ -76,7 +76,7 @@ describe("current GIlore runtime schema boundary", () => {
 
   it("accepts the current schema with one clean catalog shape", async () => {
     mockMember("2.0.0");
-    const catalog = await import("@/providers/gilore/catalog");
+    const catalog = await import("@/providers/reference/catalog");
     const characters = await catalog.loadCharacters();
     expect(characters.schemaVersion).toBe("2.0.0");
     expect(characters.values).toEqual([]);

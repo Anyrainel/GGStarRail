@@ -12,8 +12,8 @@ import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { cn } from "@/lib/utils";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
-import type { LocalizedText } from "@/providers/gilore/types";
+import { getLocalizedValue } from "@/providers/reference/catalog";
+import type { LocalizedText } from "@/providers/reference/types";
 
 export type CharacterDescriptionMode = "short" | "full";
 

@@ -35,20 +35,16 @@ does not change the upstream license status or imply ownership of game art.
 
 ## Update game data
 
-With `uv` and the sibling GIlore producer available:
+Run updates from the data producer, which writes the website JSON and scanner
+cache into this checkout. GGStarRail does not need Python, a sibling producer
+checkout, or a producer-root setting. See [the export contract](data-export-contract.md).
+After receiving exports, run `npm run assets:webp` and `npm run check`.
 
-```sh
-npm run data:update
-```
-
-Set `GILORE_ROOT` to use a different producer checkout. This fetches the latest
-TurnBasedGameData source, runs the producer's coverage checks, refreshes its
-pinned StarRailRes image bundle, validates both consumer bundles, converts
-every mapped PNG to WebP, and packages the new build inputs. A new source
-revision/schema or changed coverage currently requires updating the audited
-consumer contracts in `sync-hsr-reference.mjs` and `sync-hsr-assets.mjs`.
-The script fails rather than accepting incompatible data or missing images.
-It does not silently advance the producer's independently pinned image source.
+To update the independently pinned legacy reference/PNG fallback, provide
+reviewed bundles explicitly with `npm run data:sync -- --source DIR` and
+`npm run assets:sync -- --source DIR`. A changed revision/schema or coverage
+requires updating their audited consumer contracts. Then run
+`npm run data:package` to create a new release archive and lockfile.
 
 After validation, upload `test-results/hsr-data.tar.gz` to the release tag
 printed by `npm run data:package` (do not replace an existing archive). Then

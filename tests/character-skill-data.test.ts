@@ -6,7 +6,7 @@ import {
   getLocalizedValue,
   loadCharacters,
   loadLightCones,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 
 describe("Published character and Light Cone text", () => {
   it("resolves comparison references and numeric templates across every visible skill, locale and combat level", async () => {

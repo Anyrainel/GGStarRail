@@ -18,7 +18,6 @@
     "assets:webp": "node scripts/prepare-web-assets.mjs",
     "data:restore": "node scripts/data-bundle.mjs restore",
     "data:package": "node scripts/data-bundle.mjs package",
-    "data:update": "node scripts/update-data.mjs",
     "build:cloudflare": "npm run data:restore && npm run assets:webp && npm run check",
     "deploy": "wrangler deploy",
     "build": "npm run assets:webp && tsc -b && vite build && node scripts/check-home-assets.mjs",

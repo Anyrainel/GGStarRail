@@ -58,7 +58,7 @@ function pngHeader(width: number, height: number): Buffer {
   return bytes;
 }
 
-describe("GIlore asset sync regressions", () => {
+describe("reference producer asset sync regressions", () => {
   it("accepts the complete audited manifest and deterministic runtime lookup", () => {
     const validated = assetSync.validateAssetManifestDocument(readManifest());
     const validatedWithDigest = {

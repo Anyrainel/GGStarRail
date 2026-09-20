@@ -154,16 +154,6 @@ const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(scriptDirectory, "..");
-export const DEFAULT_ASSET_SOURCE_DIRECTORY = path.resolve(
-  repositoryRoot,
-  "..",
-  "GIlore",
-  "data",
-  "reference",
-  "honkai_star_rail",
-  "assets",
-  "v1"
-);
 export const DEFAULT_ASSET_CACHE_DIRECTORY = path.resolve(
   repositoryRoot,
   "public",
@@ -1212,7 +1202,7 @@ function parseArguments(argv) {
     checkGenerated: false,
     lookupOutput: DEFAULT_ASSET_LOOKUP_DIRECTORY,
     reference: DEFAULT_REFERENCE_MANIFEST_PATH,
-    source: DEFAULT_ASSET_SOURCE_DIRECTORY,
+    source: undefined,
     verifyOnly: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -1242,6 +1232,7 @@ function parseArguments(argv) {
     !(options.verifyOnly && options.checkGenerated),
     "--verify-only and --check-generated cannot be combined"
   );
+  assert(options.checkGenerated || options.source, "--source is required");
   return options;
 }
 

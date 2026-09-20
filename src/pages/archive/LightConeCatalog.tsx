@@ -16,7 +16,7 @@ import {
   getLocalizedValue,
   loadLightCones,
   loadPropertyTables,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 
 async function loadLightConeArchiveData() {

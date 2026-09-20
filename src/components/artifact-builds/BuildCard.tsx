@@ -45,7 +45,7 @@ import {
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/gilore/types";
+import type { RelicSlotId } from "@/providers/reference/types";
 
 const BUILD_SLOTS = [
   ["body", "BODY"],

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -16,6 +17,34 @@ import {
 } from "./hoyolab.mjs";
 import { nanokaVersion } from "./nanoka.mjs";
 import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
+
+for (const script of ["sync-hsr-reference.mjs", "sync-hsr-assets.mjs"])
+  test(`${script} requires an explicit bundle instead of finding a producer`, () => {
+    const result = spawnSync(
+      process.execPath,
+      [path.join(import.meta.dirname, script)],
+      {
+        cwd: os.tmpdir(),
+        encoding: "utf8",
+      }
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /--source is required/);
+  });
+
+for (const script of ["source-evidence.mjs", "publish-source-assets.mjs"])
+  test(`${script} rejects missing input paths before acquisition`, () => {
+    const result = spawnSync(
+      process.execPath,
+      [path.join(import.meta.dirname, script)],
+      {
+        cwd: os.tmpdir(),
+        encoding: "utf8",
+      }
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /--reference-root is required/);
+  });
 
 test("Trailblazer portraits select the audited gender frame including reversed Harmony order", () => {
   assert.equal(trailblazerPortraitFrame("8001"), 0);

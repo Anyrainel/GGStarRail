@@ -13,7 +13,7 @@ import { useI18n } from "@/i18n/I18nContext";
 import type { BuildReferences } from "@/lib/buildReferences";
 import { characterCatalogPresentation } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
-import type { CharacterDefinition } from "@/providers/gilore/types";
+import type { CharacterDefinition } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { BuildCard } from "./BuildCard";
 import { CharacterLightCones } from "./CharacterLightCones";

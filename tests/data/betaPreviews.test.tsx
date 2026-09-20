@@ -12,7 +12,7 @@ beforeEach(() => {
   previewFixture.stats = {};
 });
 
-vi.mock("@/providers/gilore/catalog", () => ({
+vi.mock("@/providers/reference/catalog", () => ({
   getLocalizedValue: (
     value: Record<string, { value: string }>,
     locale: string

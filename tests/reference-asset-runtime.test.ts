@@ -3,13 +3,13 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import runtimeLookupUrl from "@/generated/hsr-assets/runtime-lookup.json?url";
 import { resolveCatalogAsset } from "@/lib/assets";
-import { loadCatalogAssetLookup } from "@/providers/gilore/assets";
+import { loadCatalogAssetLookup } from "@/providers/reference/assets";
 
 const runtimeLookupPath = path.resolve(
   "src/generated/hsr-assets/runtime-lookup.json"
 );
 
-describe("lazy GIlore asset runtime adapter", () => {
+describe("lazy reference producer asset runtime adapter", () => {
   it("does not fetch until requested and resolves stable IDs from local cache", async () => {
     const lookup = JSON.parse(fs.readFileSync(runtimeLookupPath, "utf8"));
     const fetchMock = vi.fn(async () => ({

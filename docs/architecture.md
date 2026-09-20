@@ -81,7 +81,7 @@ Provider DTOs stay outside the canonical domain:
 
 The current provider boundary includes:
 
-- verified GIlore reference-bundle sync and lazy catalog loaders;
+- verified reference-bundle sync and lazy catalog loaders;
 - native GGStarRail, GOODScanner experimental v1/v2 and production v3, and
   interoperable HSR scanner-file adapters, with review-before-apply local file
   import and optional authoritative achievement completion;

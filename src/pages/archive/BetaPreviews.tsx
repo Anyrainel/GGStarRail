@@ -15,7 +15,7 @@ import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 import { cn } from "@/lib/utils";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import { CatalogFailure, CatalogLoading } from "./CatalogStatus";
 
 const previewKinds = {

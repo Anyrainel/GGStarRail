@@ -24,11 +24,11 @@ import {
   getLocalizedValue,
   loadCharacters,
   loadPropertyTables,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import { CharacterBaseStats } from "./CharacterBaseStats";
 import { CharacterCurrencyWarDetails } from "./CharacterCurrencyWarDetails";

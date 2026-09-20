@@ -87,7 +87,7 @@ npm run assets:webp
 npm run dev
 ```
 
-`data:restore` downloads and verifies the data and assets pinned to this checkout. A fresh clone does not need a local GIlore repository.
+`data:restore` downloads and verifies the data and assets pinned to this checkout. A fresh clone does not need a local reference producer repository.
 
 Useful commands:
 

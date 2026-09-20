@@ -7,7 +7,6 @@ import {
   mapConcurrent,
   plainName,
   referenceDocuments,
-  root,
   saveJson,
   sha256,
   webpAsset,
@@ -285,15 +284,11 @@ if (
 ) {
   const args = process.argv.slice(2);
   const sourceIndex = args.indexOf("--reference-root");
-  const referenceRoot =
-    sourceIndex < 0
-      ? path.resolve(root, "../GIlore/data/reference/honkai_star_rail/v1")
-      : args[sourceIndex + 1];
+  const referenceRoot = sourceIndex < 0 ? undefined : args[sourceIndex + 1];
   if (args.includes("--help")) {
-    console.log(
-      "node scripts/hoyolab.mjs [--reference-root DIR] [--no-images]"
-    );
+    console.log("node scripts/hoyolab.mjs --reference-root DIR [--no-images]");
   } else {
+    if (!referenceRoot) throw new Error("--reference-root is required");
     await crawlHoyolab({
       referenceRoot,
       images: !args.includes("--no-images"),

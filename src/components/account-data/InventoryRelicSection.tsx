@@ -30,7 +30,7 @@ import type {
   PropertyCatalog,
   RelicPieceDefinition,
   RelicSlotId,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 type EquipmentGroup = "equipped" | "unequipped";
 type RelicLevelGroup = "max" | "enhanced" | "zero";

@@ -10,7 +10,10 @@ import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { LightConeCatalog } from "@/pages/archive/LightConeCatalog";
 import { RelicSetCatalog } from "@/pages/archive/RelicSetCatalog";
-import { loadLightCones, loadPropertyTables } from "@/providers/gilore/catalog";
+import {
+  loadLightCones,
+  loadPropertyTables,
+} from "@/providers/reference/catalog";
 
 function renderCatalog(children: ReactNode) {
   return render(
@@ -227,7 +230,7 @@ describe("Relic archive cards", () => {
       catalogWait
     );
     const cards = screen.getAllByRole("article");
-    const { loadRelicSets } = await import("@/providers/gilore/catalog");
+    const { loadRelicSets } = await import("@/providers/reference/catalog");
     const sets = (await loadRelicSets()).values;
     expect(cards).toHaveLength(sets.length);
     const displayed = cards.map(

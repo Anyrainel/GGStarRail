@@ -2,7 +2,7 @@
 
 ## Completed: provenanced static data
 
-- Define the GIlore HSR extraction package and its upstream license review.
+- Define the reference producer HSR extraction package and its upstream license review.
 - Generate matched `en` and `zh-CN` text bundles keyed by stable IDs.
 - Add Character, Light Cone, Relic set, Path, Combat Type, and stat archives.
 - Verify entity-ID parity, checksums, and exact upstream revisions in CI.

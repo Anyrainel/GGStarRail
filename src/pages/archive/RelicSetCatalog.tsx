@@ -12,11 +12,11 @@ import {
   getLocalizedValue,
   loadRelicPieces,
   loadRelicSets,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import type {
   RelicPieceDefinition,
   RelicSetDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 
 async function loadRelicArchiveData() {

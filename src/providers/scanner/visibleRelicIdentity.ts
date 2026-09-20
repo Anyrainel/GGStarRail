@@ -2,7 +2,7 @@ import type {
   ProgressionTables,
   RelicPieceDefinition,
   RelicSlotId,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export interface VisibleRelicIdentityCatalog {
   relicPieces: readonly RelicPieceDefinition[];

@@ -2,11 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import manifest from "@/generated/hsr-reference/manifest.json";
-import { parseGIloreManifest } from "@/providers/gilore/manifest";
 import {
   EphemeralAuthMaterial,
   importFromHoYoLab,
 } from "@/providers/hoyolab/ephemeralAuth";
+import { parseReferenceManifest } from "@/providers/reference/manifest";
 import { parseScannerExport } from "@/providers/scanner/schema";
 import { PROVIDER_REGISTRY } from "@/providers/types";
 import { makeAccountSnapshot } from "./fixtures";
@@ -36,8 +36,8 @@ const V1_COUNT_KEYS = [
 ] as const;
 
 describe("provider and credential boundaries", () => {
-  it("accepts only the exact audited GIlore manifest shapes", () => {
-    expect(parseGIloreManifest(manifest).locales).toEqual(["en", "zh-CN"]);
+  it("accepts only the exact audited reference producer manifest shapes", () => {
+    expect(parseReferenceManifest(manifest).locales).toEqual(["en", "zh-CN"]);
     const legacyFiles = Object.fromEntries(
       Object.entries(manifest.files).filter(
         ([fileName]) =>
@@ -49,7 +49,7 @@ describe("provider and credential boundaries", () => {
       V1_COUNT_KEYS.map((key) => [key, manifest.counts[key]])
     );
     expect(
-      parseGIloreManifest({
+      parseReferenceManifest({
         ...manifest,
         counts: v1Counts,
         files: legacyFiles,
@@ -62,7 +62,7 @@ describe("provider and credential boundaries", () => {
       )
     );
     expect(
-      parseGIloreManifest({
+      parseReferenceManifest({
         ...manifest,
         counts: v1_1Counts,
         files: legacyFiles,
@@ -70,19 +70,19 @@ describe("provider and credential boundaries", () => {
       }).schema_version
     ).toBe("1.1.0");
     expect(() =>
-      parseGIloreManifest({ ...manifest, schema_version: "1.4.0" })
+      parseReferenceManifest({ ...manifest, schema_version: "1.4.0" })
     ).toThrow(/schema_version/);
     expect(() =>
-      parseGIloreManifest({ ...manifest, schema_version: "1.3.0" })
+      parseReferenceManifest({ ...manifest, schema_version: "1.3.0" })
     ).toThrow(/currency_war/);
     expect(() =>
-      parseGIloreManifest({
+      parseReferenceManifest({
         ...manifest,
         source: { ...manifest.source, source_id: "other_source" },
       })
     ).toThrow(/source_id/);
     expect(() =>
-      parseGIloreManifest({ ...manifest, game_id: "genshin" })
+      parseReferenceManifest({ ...manifest, game_id: "genshin" })
     ).toThrow(/game_id/);
   });
 

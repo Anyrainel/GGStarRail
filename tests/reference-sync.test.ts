@@ -71,7 +71,7 @@ function runAgainstCopy(mutate: (directory: string) => void): {
   }
 }
 
-describe("GIlore reference sync regressions", () => {
+describe("reference producer reference sync regressions", () => {
   it("accepts the generated audited bundle", () => {
     const result = runAgainstCopy(() => undefined);
     expect(result.status).toBe(0);

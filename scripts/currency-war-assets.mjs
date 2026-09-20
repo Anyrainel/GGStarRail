@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { parseArgs } from "node:util";
 import {
   mapConcurrent,
   root,
@@ -74,12 +75,10 @@ export async function currencyWarAssetRequests(referenceRoot) {
 // Only artwork comes from Nanoka. IDs, inclusion, names and mechanics continue
 // to come from the checksummed TurnBasedGameData reference export.
 export async function publishCurrencyWarAssets({
-  referenceRoot = path.resolve(
-    process.env.GILORE_ROOT ?? path.join(root, "../GIlore"),
-    "data/reference/honkai_star_rail/v2"
-  ),
+  referenceRoot,
   cached = false,
 } = {}) {
+  if (!referenceRoot) throw new Error("An explicit referenceRoot is required");
   const directory = path.join(root, "data/source-assets");
   const manifestPath = path.join(directory, "manifest.json");
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
@@ -144,12 +143,20 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  const args = process.argv.slice(2);
-  if (args.some((arg) => !["--cached", "--help"].includes(arg)))
-    throw new Error(
-      "Unknown option; run node scripts/currency-war-assets.mjs --help"
+  const { values } = parseArgs({
+    options: {
+      "reference-root": { type: "string" },
+      cached: { type: "boolean", default: false },
+      help: { type: "boolean", default: false },
+    },
+  });
+  if (values.help)
+    console.log(
+      "node scripts/currency-war-assets.mjs --reference-root DIR [--cached]"
     );
-  if (args.includes("--help"))
-    console.log("node scripts/currency-war-assets.mjs [--cached]");
-  else await publishCurrencyWarAssets({ cached: args.includes("--cached") });
+  else
+    await publishCurrencyWarAssets({
+      referenceRoot: values["reference-root"],
+      cached: values.cached,
+    });
 }

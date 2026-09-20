@@ -7,7 +7,7 @@ import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { loadCharacters } from "@/providers/gilore/catalog";
+import { loadCharacters } from "@/providers/reference/catalog";
 
 function renderArchive(path: string = APP_PATHS.archiveCharacters) {
   return render(
@@ -133,7 +133,7 @@ describe("Character archive", () => {
     for (const section of detail.querySelectorAll("details"))
       expect(section).toHaveAttribute("open");
     expect(detail).not.toHaveTextContent(
-      /AvatarSkillConfig|AvatarServantSkillConfig|BPSkill|Item-name provenance|Progression|Character EXP|Enhanced ID|TextMap\/|GIlore/
+      /AvatarSkillConfig|AvatarServantSkillConfig|BPSkill|Item-name provenance|Progression|Character EXP|Enhanced ID|TextMap\/|reference producer/
     );
     await user.click(characterRow(region, "1409"));
     const hyacineMode = screen.getByTestId("character-currency-war");

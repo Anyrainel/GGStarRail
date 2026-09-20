@@ -10,7 +10,7 @@ import {
 import { TierDocumentSchema } from "@/domain/tier-list/document";
 import { I18nProvider } from "@/i18n/I18nContext";
 import CharacterTierListView from "@/pages/tier-list/CharacterTierListView";
-import { loadCharacters } from "@/providers/gilore/catalog";
+import { loadCharacters } from "@/providers/reference/catalog";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 import { useTrailblazerAppearanceStore } from "@/stores/useTrailblazerAppearanceStore";

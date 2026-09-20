@@ -87,7 +87,7 @@ npm run assets:webp
 npm run dev
 ```
 
-`data:restore` 会下载并校验当前提交指定的数据与图片资源，全新检出无需本地 GIlore 仓库。
+`data:restore` 会下载并校验当前提交指定的数据与图片资源，全新检出无需本地数据生成仓库。
 
 常用命令：
 

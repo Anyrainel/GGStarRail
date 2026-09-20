@@ -10,14 +10,14 @@ import {
   CurrencyWarText,
 } from "@/pages/archive/CurrencyWarDetails";
 import { CurrencyWarEquipmentRules } from "@/pages/archive/CurrencyWarEquipmentRules";
-import { loadCharacters } from "@/providers/gilore/catalog";
-import type { CurrencyWarCatalog } from "@/providers/gilore/currencyWar";
+import { loadCharacters } from "@/providers/reference/catalog";
+import type { CurrencyWarCatalog } from "@/providers/reference/currencyWar";
 import type {
   CurrencyWarEquipment,
   CurrencyWarStarLevel,
   LocalizedText,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 function localized(en: string, zh: string): LocalizedText {
   return { en: { value: en }, "zh-CN": { value: zh } };

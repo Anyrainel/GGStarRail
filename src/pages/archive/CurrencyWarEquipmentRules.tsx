@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { characterCatalogName } from "@/lib/catalogPresentation";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   CurrencyWarBond,
   CurrencyWarEquipment,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export function CurrencyWarEquipmentRules({
   equipment,

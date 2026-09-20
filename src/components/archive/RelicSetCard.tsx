@@ -2,12 +2,12 @@ import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   RelicPieceDefinition,
   RelicSetDefinition,
   RelicSlotId,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 const SLOT_ORDER: readonly RelicSlotId[] = [
   "HEAD",

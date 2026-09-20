@@ -13,7 +13,7 @@ import {
 import {
   loadAchievementCategories,
   loadAchievements,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "./fixtures";
 
@@ -62,7 +62,7 @@ afterEach(() => {
   useWorkspaceStore.setState({ account: null });
 });
 
-describe("achievement archive GIlore adapter", () => {
+describe("achievement archive reference producer adapter", () => {
   beforeEach(() => setBetaEnabled(true));
   it("maps the complete real bilingual catalogs with release versions and visibility", async () => {
     const [english, chinese] = await Promise.all([

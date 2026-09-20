@@ -1,6 +1,9 @@
 import { useI18n } from "@/i18n/I18nContext";
 import { formatCatalogValue } from "@/lib/gameText";
-import type { CharacterDefinition, LinearStat } from "@/providers/gilore/types";
+import type {
+  CharacterDefinition,
+  LinearStat,
+} from "@/providers/reference/types";
 
 export function CharacterBaseStats({
   character,

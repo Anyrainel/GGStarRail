@@ -4,14 +4,14 @@ import { afterEach, describe, expect, it } from "vitest";
 import { AccountImportPanel } from "@/components/account/AccountImportPanel";
 import { AccountSnapshotSchema } from "@/domain/account/schemas";
 import { I18nProvider } from "@/i18n/I18nContext";
+import type { HoYoLabImportInput } from "@/providers/hoyolab/ephemeralAuth";
 import {
   loadCharacters,
   loadLightCones,
   loadPropertyTables,
   loadRelicPieces,
   loadRelicSets,
-} from "@/providers/gilore/catalog";
-import type { HoYoLabImportInput } from "@/providers/hoyolab/ephemeralAuth";
+} from "@/providers/reference/catalog";
 import {
   parseVersionedScannerExport,
   SCANNER_WARNING_REFERENCE_REVISION_MISMATCH,

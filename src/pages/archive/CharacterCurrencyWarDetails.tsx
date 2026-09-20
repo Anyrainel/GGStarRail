@@ -17,14 +17,17 @@ import {
   currencyWarSkillLevelCaps,
   currencyWarTextGroups,
 } from "@/lib/currencyWarPresentation";
-import { getLocalizedValue, loadLightCones } from "@/providers/gilore/catalog";
-import { loadCurrencyWarCatalog } from "@/providers/gilore/currencyWar";
+import {
+  getLocalizedValue,
+  loadLightCones,
+} from "@/providers/reference/catalog";
+import { loadCurrencyWarCatalog } from "@/providers/reference/currencyWar";
 import type {
   CharacterSkill,
   CurrencyWarCharacter,
   CurrencyWarLightConeAdaptation,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   type CharacterDescriptionMode,

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 
-// Generated from GIlore ReferenceBundle.model_json_schema(by_alias=True).
+// Generated from the producer's ReferenceBundle.model_json_schema(by_alias=True).
 // This strict schema owns field/type validation; the checks below own relations.
 const shape = z.fromJSONSchema(
   JSON.parse(

@@ -4,7 +4,7 @@ import type {
   CurrencyWarSkill,
   CurrencyWarStarLevel,
   LocalizedText,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export function currencyWarSkillLevelCaps(
   skill: CurrencyWarSkill,

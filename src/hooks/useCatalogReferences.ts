@@ -6,7 +6,7 @@ import {
   loadPropertyTables,
   loadRelicPieces,
   loadRelicSets,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 
 async function loadCharacterReferences() {
   const [characters, properties] = await Promise.all([

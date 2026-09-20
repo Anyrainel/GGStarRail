@@ -25,7 +25,7 @@ import {
   serializeManagerInstructionEnvelope,
   summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
-import { HSR_REFERENCE_REVISION } from "@/providers/gilore/catalog";
+import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
 import { DEFAULT_WORKSPACE, PersistedWorkspaceSchema } from "@/stores/schemas";
 import { makeRelic } from "./fixtures";
 import { createDemoAccount } from "./fixtures/demoAccount";

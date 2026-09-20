@@ -41,7 +41,7 @@ import {
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/gilore/types";
+import type { RelicSlotId } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 const DOMAIN_SLOT_TO_CATALOG = {

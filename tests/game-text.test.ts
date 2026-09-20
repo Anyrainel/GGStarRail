@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 
-describe("GIlore display text", () => {
+describe("reference producer display text", () => {
   it("renders parameters while removing game markup and preserving lines", () => {
     expect(
       formatGameText(

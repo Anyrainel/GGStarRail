@@ -2,13 +2,13 @@ import { trailblazerAppearance } from "@/domain/characterIdentity";
 import { TRAILBLAZER_VARIANT_TERMS } from "@/i18n/gameTerms";
 import type { Locale } from "@/i18n/locales";
 import { formatGameText } from "@/lib/gameText";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   LocalizedText,
   PropertyCatalog,
   PropertyDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export interface CharacterCatalogPresentation {
   name: string;

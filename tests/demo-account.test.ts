@@ -10,7 +10,7 @@ import type {
   PropertyDefinition,
   RelicPieceDefinition,
   SubAffixDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { parseVersionedScannerExport } from "@/providers/scanner/schema";
 import { createDemoAccount } from "./fixtures/demoAccount";
 

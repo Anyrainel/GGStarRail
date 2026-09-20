@@ -1,7 +1,7 @@
 # Runtime game data
 
 `src/data/game/` mirrors GenshinTools' per-entity numeric, English, Chinese and
-beta file boundaries. GIlore produces these files; the application does not
+beta file boundaries. The data producer generates these files; the application does not
 import its raw bilingual reference members.
 
 `gameDataLoader.ts` loads a member only when a consumer requests it. Numeric and
@@ -33,7 +33,7 @@ preserved beta enhancement array. No other released character fields are
 replaced by that overlay.
 
 HoYoWiki release evidence controls the released partition. A record's presence
-in a datamine does not establish that it is released. GIlore's raw diagnostics
+in a datamine does not establish that it is released. The producer's raw diagnostics
 are kept out of the runtime so their unreleased identifiers and text cannot
 bypass this boundary.
 
@@ -57,14 +57,13 @@ network requests remain blocked.
 
 `/good/hsr_data_cache.json` is a stable public endpoint for the Windows companion.
 It contains the full normalized public catalog and packet affix/form mappings from
-one GIlore revision. It carries no account data. GOODCapture checks it every two
+one source revision. It carries no account data. GOODCapture checks it every two
 hours and exposes Refresh game data for an immediate update; an offline client
 can continue using its last validated local cache.
 
-The default GIlore command, `uv run python -m hsr_data reference`, writes both
-`src/data/game/` and `public/good/hsr_data_cache.json` in the sibling GGStarRail
-checkout, using cached source evidence. Add `--pull` to refresh the datamine, or
-`--no-website` for a GIlore-only build. `npm run data:update` additionally refreshes
-HoYoWiki/Nanoka evidence before calling the same website export function. `data:website:check` rejects revision or catalog coverage drift.
+The data producer writes both `src/data/game/` and `public/good/hsr_data_cache.json`
+into its selected website checkout and retains identical local exports. The website
+does not locate or invoke the producer. `data:website:check` rejects revision or
+catalog coverage drift.
 Publish the generated JSON with normal website changes; data updates require no
 new executable. `_headers` requires revalidation instead of immutable caching.

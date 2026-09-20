@@ -11,7 +11,7 @@ import {
   ManagerInstructionEnvelopeSchema,
   summarizeManagerInstructionActionability,
 } from "@/lib/managerInstructions";
-import { loadAchievementIds } from "@/providers/gilore/catalog";
+import { loadAchievementIds } from "@/providers/reference/catalog";
 import {
   SCANNER_WARNING_V4_COVERAGE_UNKNOWN,
   SCANNER_WARNING_V4_EQUIPPED_CHARACTER_MISSING,

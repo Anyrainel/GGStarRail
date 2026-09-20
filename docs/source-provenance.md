@@ -1,8 +1,8 @@
 # Source provenance
 
-GGStarRail consumes GIlore's normalized `ggstarrail-reference` bundle without
+GGStarRail consumes the normalized `ggstarrail-reference` bundle without
 renaming fields or replacing primary values. The audited local integration is
-pinned to GIlore producer commit
+pinned to producer commit
 `7ef3650a63622c204b89234406c99dc221e01d85` and TurnBasedGameData source
 revision `8cdb905dc2f8e6fffa9be4eb07af3e34435d6091`. The current application
 consumes schema `1.2.0`; the validator also keeps explicit support for the
@@ -21,28 +21,15 @@ evidence remains validation-only and never replaces a normalized value.
 `src/generated/hsr-reference/` is ignored local output. A fresh GGStarRail
 checkout runs `npm run data:restore` to obtain the checksummed release pinned
 in `data-bundle.lock.json`, followed by `npm run assets:webp`. Maintainers may
-instead generate from GIlore; its commit alone does not imply that its
-gitignored `data/` output exists. See [Hosting and data updates](deployment.md).
-
-From a sibling GIlore checkout, generate the pinned source bundle before
-syncing:
-
-```powershell
-Set-Location ../GIlore
-uv run python -m hsr_data reference --expected-revision 8cdb905dc2f8e6fffa9be4eb07af3e34435d6091
-Set-Location ../GGStarRail
-npm run data:sync
-```
-
-The default sync input is
-`../GIlore/data/reference/honkai_star_rail/v1`. A separately supplied bundle
-can be used explicitly:
+instead receive a verified bundle from the producer. See
+[Hosting and data updates](deployment.md). Sync always requires an explicit
+source directory; no sibling repository is discovered:
 
 ```powershell
 npm run data:sync -- --source D:/verified/hsr-reference/v1
 ```
 
-`npm run data:verify` verifies the source without publishing it.
+`npm run data:verify -- --source DIR` verifies the source without publishing it.
 `npm run data:check` verifies the ignored generated output used by the current
 build. The full `npm run check` stack includes `data:check`.
 
@@ -68,7 +55,7 @@ evidence.
 
 ## Accepted manifest and members
 
-The consumer keeps GIlore's actual snake_case manifest contract:
+The consumer keeps the producer's actual snake_case manifest contract:
 
 - `bundle_id: ggstarrail-reference`;
 - `game_id: honkai_star_rail`;
@@ -138,25 +125,20 @@ generated bundle is a setup/build failure, never a silent fallback.
 
 ## Local asset snapshot
 
-GIlore owns acquisition and normalization of the pinned StarRailRes snapshot.
-GGStarRail does not contain another downloader. Generate the source asset
-bundle after GIlore's reference bundle, then run both consumer sync commands:
+The producer owns acquisition and normalization of the pinned StarRailRes snapshot.
+GGStarRail does not contain another downloader. Receive the corresponding
+reference and asset bundles, then run both consumer sync commands:
 
 ```powershell
-Set-Location ../GIlore
-uv run python -m hsr_data assets --pull
-Set-Location ../GGStarRail
-npm run data:sync
-npm run assets:sync
+npm run data:sync -- --source D:/verified/hsr-reference/v1
+npm run assets:sync -- --source D:/verified/hsr-assets/v1
 ```
 
-The default asset input is
-`../GIlore/data/reference/honkai_star_rail/assets/v1`. `assets:sync` accepts an
-explicit `--source` path, and `--reference` can point to the corresponding
+`assets:sync` requires an explicit `--source` path, and `--reference` can point to the corresponding
 reference manifest when verifying a separately staged pair. The companion
 commands are:
 
-- `npm run assets:verify` validates source bytes without publishing them;
+- `npm run assets:verify -- --source DIR` validates source bytes without publishing them;
 - `npm run assets:check` validates the ignored cache and compact runtime
   lookup used by the app.
 
@@ -200,7 +182,7 @@ claimed as GGStarRail-owned content without a separate rights review.
 ## Currency War catalog artwork
 
 Currency War IDs, localized text, mechanics, and archive membership come from
-GIlore's checksummed TurnBasedGameData reference members. Nanoka's Currency War
+the producer's checksummed TurnBasedGameData reference members. Nanoka's Currency War
 JSON is used to investigate source relationships, not as a replacement for those
 primary values. The website obtains catalog artwork separately from Nanoka's
 `assets/hsr/gridfight/` image endpoints using each normalized record's datamine
@@ -212,7 +194,7 @@ content-hashed WebPs to `data/source-assets/`. Each manifest entry preserves the
 source URL, source image checksum, WebP checksum, and encoded byte count. The
 tracked source-asset restore step adds these four asset kinds to the runtime
 lookup, so archive pages serve local artwork through the usual asset helpers.
-`npm run data:update` includes acquisition; `--cached` only verifies existing
+The producer's source refresh includes acquisition; cached preparation only verifies existing
 artwork and fails if an image is missing. A previously unknown icon namespace
 also fails for explicit review instead of generating an unverified URL.
 

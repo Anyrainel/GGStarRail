@@ -74,7 +74,7 @@ export async function crawlNanoka({
         details: {},
       };
       // Relic set indexes themselves contain bilingual bonuses; character/light-cone
-      // detail tables are language-specific and retained intact for GIlore normalization.
+      // detail tables are language-specific and retained intact for reference producer normalization.
       if (collection !== "relic_sets") {
         for (const locale of ["en", "zh"]) {
           const detailUrl = `${host}/hsr/${version}/${locale}/${resource}/${id}.json`;

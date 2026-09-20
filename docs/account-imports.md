@@ -155,7 +155,7 @@ explicit per-section coverage, and requires reference provider
 implementation/version identifier, never an account, session, or device
 identifier. Its account-identifier, raw-packet, and server-item-identifier
 privacy flags must all be literal `false`. Character, Light Cone, and Relic
-identities use public GIlore string keys plus their actual public numeric game
+identities use public reference string keys plus their actual public numeric game
 IDs. Stat records contain only canonical property key, bilingual display name,
 and display-unit value; ratio values are percentage points. V1 remains accepted
 with unknown coverage. Arbitrary Kel/HSR-Scanner scan-order `_uid` values are

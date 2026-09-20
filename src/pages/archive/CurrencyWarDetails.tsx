@@ -4,14 +4,14 @@ import { formatStarValues } from "@/lib/currencyWarPresentation";
 import { formatCatalogValue, formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { cn } from "@/lib/utils";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CurrencyWarBondTier,
   CurrencyWarPropertyValue,
   CurrencyWarStarLevel,
   LocalizedText,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export function currencyWarSearchText(value: unknown): string {
   if (value === null || typeof value !== "object") return "";

@@ -1,4 +1,4 @@
-import type { LocalizedText } from "@/providers/gilore/types";
+import type { LocalizedText } from "@/providers/reference/types";
 
 export interface BetaPreviewSection {
   id: string;

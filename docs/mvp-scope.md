@@ -50,7 +50,7 @@ and error recovery are localized in English and Simplified Chinese.
 
 ## Local data boundary
 
-The application imports the complete normalized GIlore reference bundle
+The application imports the complete normalized reference bundle
 through an explicit verified sync. Generated data is local and ignored rather
 than committed. Catalog members load lazily and retain stable IDs, bilingual
 values, and provenance.

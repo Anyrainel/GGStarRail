@@ -56,8 +56,8 @@ import {
   type ManagerInstructionPreview,
   serializeManagerInstructionEnvelope,
 } from "@/lib/managerInstructions";
-import { HSR_REFERENCE_REVISION } from "@/providers/gilore/catalog";
-import type { RelicSlotId } from "@/providers/gilore/types";
+import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
+import type { RelicSlotId } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 type DecisionFilter = "all" | TriageDecision;

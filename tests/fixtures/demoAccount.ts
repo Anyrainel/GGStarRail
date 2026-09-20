@@ -11,12 +11,12 @@ import {
   loadProgression,
   loadPropertyTables,
   loadRelicPieces,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import type {
   PropertyDefinition,
   RelicPieceDefinition,
   SubAffixDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { generatedRelicMainStatDisplayValues } from "@/providers/relicMainStat";
 
 const DEMO_CHARACTER_IDS = ["1001", "1002", "1003", "1004", "1005", "1006"];

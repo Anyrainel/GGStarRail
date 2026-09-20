@@ -1,4 +1,4 @@
-import type { RelicPieceDefinition } from "@/providers/gilore/types";
+import type { RelicPieceDefinition } from "@/providers/reference/types";
 
 /** Resolve each set's display rarity from the highest-rarity piece it contains. */
 export function createRelicSetRarityMap(

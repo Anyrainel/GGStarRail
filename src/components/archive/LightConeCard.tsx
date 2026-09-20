@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   LightConeDefinition,
   PathDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { LightConeDetail } from "./LightConeDetail";
 
 export function LightConeCard({

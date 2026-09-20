@@ -10,9 +10,9 @@ import {
   skillComparisonPlan,
   skillComparisonRows,
 } from "@/pages/archive/CharacterSkillCard";
-import type { LocalizedText } from "@/providers/gilore/types";
+import type { LocalizedText } from "@/providers/reference/types";
 
-vi.mock("@/providers/gilore/catalog", () => ({
+vi.mock("@/providers/reference/catalog", () => ({
   getLocalizedValue: (
     text: LocalizedText | null | undefined,
     locale: "en" | "zh-CN"

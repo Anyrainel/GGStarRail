@@ -6,11 +6,11 @@ import {
   characterCatalogPresentation,
   localizedName,
 } from "@/lib/catalogPresentation";
-import { characterAffiliationIds } from "@/providers/gilore/characterAffiliations";
+import { characterAffiliationIds } from "@/providers/reference/characterAffiliations";
 import type {
   CharacterDefinition,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { AssetImage } from "./AssetImage";
 
 const AFFILIATION_KEYS: Readonly<Record<string, MessageKey>> = {

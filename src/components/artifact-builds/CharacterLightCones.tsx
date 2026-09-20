@@ -7,7 +7,7 @@ import {
   catalogPickerItems,
   rarityPickerFilter,
 } from "@/lib/catalogPickerItems";
-import type { CharacterDefinition } from "@/providers/gilore/types";
+import type { CharacterDefinition } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 const EMPTY_CHOICES: string[] = [];

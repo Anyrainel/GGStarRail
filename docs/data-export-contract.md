@@ -1,17 +1,16 @@
-# GIlore website export contract
+# Website export contract
 
-GIlore owns normalized numeric/string exports. GGStarRail owns the public-source
-crawlers and consumes generated files. GenshinTools retains its existing separate
-GIlore `anime_game_data reference` exporter and application contract.
+The data producer owns normalized exports, update orchestration, and destination
+paths. GGStarRail consumes generated files and provides public-source image and
+evidence helpers. It does not locate a producer checkout or launch Python.
 
 ## Update and reproduce
 
-From GGStarRail run `node scripts/update-data.mjs` (also `npm run data:update`).
-The command updates the existing GIlore datamine cache, runs its schema/source
-coverage gates, crawls HoYoWiki and
-Nanoka, publishes split files directly into this checkout, and prepares WebP assets.
-Any failed source request, checksum, schema, pagination, or coverage check fails the
-command. No source failure becomes an empty successful catalog.
+Run the export command in the producer repository and select this checkout as its
+destination. The producer writes `src/data/game/` and
+`public/good/hsr_data_cache.json`, retaining the same JSON in its own output tree.
+This repository requires no producer-root environment variable. For a fresh clone,
+run `npm run data:restore`, `npm run assets:webp`, and `npm run check`.
 
 `data:website:check` reconstructs the full released/beta catalog and validates
 strict schema 2.0 field shapes, bilingual text, character skills/traces/stat scaling, Light Cone
@@ -20,48 +19,33 @@ chains. It also compares GOODCapture's public JSON field values against that
 catalog, including bilingual names, equipment ownership keys, and numeric affix
 progression. Matching counts or IDs alone do not pass this check.
 
-`scripts/hsr-reference-v2.schema.json` is generated directly from GIlore's
-`ReferenceBundle.model_json_schema(by_alias=True)`. Regenerate it from the
-GIlore checkout with:
-
-```sh
-uv run python -c "from hsr_data.exporters.models import ReferenceBundle; from pathlib import Path; import json; Path('../GGStarRail/scripts/hsr-reference-v2.schema.json').write_text(json.dumps(ReferenceBundle.model_json_schema(by_alias=True), ensure_ascii=False, indent=2)+'\n', encoding='utf8')"
-```
-
-Then run the GGStarRail formatter and `npm run data:website:check`. The strict
+`scripts/hsr-reference-v2.schema.json` is the exported reference schema. After a
+reviewed contract update, receive its regenerated version from the producer and
+run the formatter and `npm run data:website:check`. The strict
 schema validates fields and types; `validate-reference-v2.mjs` additionally
 checks joins, trace cycles, level sequences, affix formulas, and the absence of
 removed public metadata. The independently pinned v1 fallback cache continues
 to use its own legacy verifier.
 
-Options:
+The producer can invoke these helpers with explicit paths; neither discovers a
+producer repository or interprets its directory layout:
 
-- `--cached`: regenerate from existing GIlore source snapshots without crawling or
-  pulling. It still validates reference checksums and prepares assets.
-- `--genshin`: also run GIlore's existing direct GenshinTools reference exporter.
-  It does not modify GenshinTools application code, commit, push, or deploy.
-- `--legacy-cache`: update the separately audited legacy reference/PNG fallback
-  cache. Its fixed revision/count checks remain mandatory for that cache.
-- `--package`: include that legacy audit, create its reference/PNG release archive and
-  update its lockfile. Publish that release before pushing its lockfile. Ordinary
-  updates do not replace a working lock with an unpublished release URL.
+- `node scripts/source-evidence.mjs --reference-root DIR --evidence FILE --nanoka-root DIR`
+  refreshes official release evidence and Nanoka snapshots.
+- `node scripts/publish-source-assets.mjs --reference-root DIR --evidence FILE --nanoka-root DIR [--cached]`
+  publishes verified source artwork. `--cached` refuses missing Currency War artwork.
 
-`GILORE_ROOT` selects a producer checkout; otherwise the sibling `../GIlore` is
-used. Raw HoYo evidence lives in GIlore `data/raw/honkai_star_rail/hoyolab.json`;
-Nanoka snapshots live under `data/raw/honkai_star_rail/nanoka/<version>/`.
-The standalone crawlers are `node scripts/hoyolab.mjs` and
-`node scripts/nanoka.mjs`; their default scratch is ignored `.cache/data-sources/`.
+The standalone crawlers use ignored `.cache/data-sources/` scratch by default.
+HoYoWiki requires `--reference-root`; Nanoka consumes the local evidence file.
 Their `--no-images` option is for source inspection, not a complete publication.
+Legacy bundle sync tools require `--source DIR` explicitly. Their fixed
+revision/count checks remain mandatory. `npm run data:package` packages verified
+local inputs; publish the release before pushing its updated lockfile.
 
-The producer command is:
-
-```sh
-uv run python -m hsr_data.exporters.website --evidence data/raw/honkai_star_rail/hoyolab.json --nanoka-root data/raw/honkai_star_rail/nanoka --website-root ../GGStarRail
-```
-
-It also retains split snapshots in GIlore
-`data/reference/honkai_star_rail/website/<source_version>/`. Prior game versions
-are not removed. `--archive-root` overrides that archive location.
+Historical scanner wire IDs (`gilore.ggstarrail-reference`), source revision labels
+(`gilore-ref:`), and published `cache/gilore/` asset URLs remain compatibility
+contracts. They do not identify or locate a checkout. Internal catalog code lives
+under `src/providers/reference/`.
 
 ## Files and reconstruction
 
@@ -116,7 +100,7 @@ source table. Stable entity IDs and artwork paths remain functional join/asset
 references and are never rendered as archive labels.
 
 Characters, Light Cones, and achievements carry a nullable `release_version`.
-GIlore derives it from the first matching production datamine snapshot in its
+The producer derives it from the first matching production datamine snapshot in its
 checked-in release history, with reviewed availability corrections for preloaded
 characters. Historical snapshot revisions, checksums, and correction evidence
 remain producer-only. Unknown or unobserved records remain null. This patch
@@ -220,7 +204,7 @@ are tracked. `prepare-web-assets.mjs` verifies these checksums, restores them in
 ignored `public/assets/ggstarrail/webp/`, and merges them into the generated
 runtime lookup. The existing Vite asset emitter then includes the same URLs in
 production. Official images win same-ID collisions. There is no clean-build
-dependency on crawler scratch or GIlore's raw cache.
+dependency on crawler scratch or the producer's raw cache.
 
 A fresh clone retains the existing `npm run data:restore` then
 `npm run assets:webp` workflow for the audited reference/PNG release. Split game
@@ -229,7 +213,7 @@ tracked outputs. The legacy cache supplies fallback art (including Paths and
 properties) and regression fixtures; application numeric/text data comes solely
 from the current split export. The latest updater never requires its new source
 SHA to equal the legacy fallback SHA. Source image overlays validate against the
-current game manifest. New source schemas or genuine GIlore coverage failures
+current game manifest. New source schemas or producer coverage failures
 still block; a pure datamine revision change does not hit the legacy fixed-SHA
 gate. `node scripts/check-game-data.mjs` validates the current split output,
 locale pointers, checksums, revision hydration and preview image assets.

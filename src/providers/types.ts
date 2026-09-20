@@ -1,7 +1,7 @@
 import type { AccountSnapshot } from "@/domain/account/schemas";
 
 export type ImportProviderId =
-  | "gilore-bundle"
+  | "reference-bundle"
   | "scanner-export"
   | "uid-showcase"
   | "hoyolab-account";
@@ -19,7 +19,7 @@ export interface ProviderDescriptor {
 
 export const PROVIDER_REGISTRY: readonly ProviderDescriptor[] = [
   {
-    id: "gilore-bundle",
+    id: "reference-bundle",
     status: "contract-ready",
     acceptsCredentials: false,
   },

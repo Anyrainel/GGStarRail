@@ -4,7 +4,7 @@ import type {
   LightConeStatScaling,
   PropertyDefinition,
   RelicSlotId,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 const CATALOG_SLOT_TO_ACCOUNT = {
   HEAD: "head",

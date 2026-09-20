@@ -7,14 +7,14 @@ import {
   loadProgression,
   loadPropertyTables,
   loadRelicPieces,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   LightConeDefinition,
   ProgressionTables,
   PropertyDefinition,
   RelicPieceDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export interface AccountImportCatalog {
   manifest: RuntimeReferenceManifest;

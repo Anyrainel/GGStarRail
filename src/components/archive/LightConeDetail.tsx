@@ -5,12 +5,12 @@ import { RarityStars } from "@/components/shared/RarityStars";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
-import { getLocalizedValue } from "@/providers/gilore/catalog";
+import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   LightConeDefinition,
   LightConeSuperimposition,
   PathDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 
 export function LightConeDetail({
   lightCone,

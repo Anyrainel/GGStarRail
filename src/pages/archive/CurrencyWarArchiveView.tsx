@@ -23,11 +23,11 @@ import {
   getLocalizedValue,
   loadCharacters,
   loadPropertyTables,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import {
   type CurrencyWarCatalog,
   loadCurrencyWarCatalog,
-} from "@/providers/gilore/currencyWar";
+} from "@/providers/reference/currencyWar";
 import type {
   CharacterDefinition,
   CurrencyWarBond,
@@ -35,7 +35,7 @@ import type {
   CurrencyWarEquipment,
   CurrencyWarStrategy,
   PropertyCatalog,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   CurrencyWarBondTiers,

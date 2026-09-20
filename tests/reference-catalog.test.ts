@@ -13,8 +13,8 @@ import {
   loadPropertyTables,
   loadRelicPieces,
   loadRelicSets,
-} from "@/providers/gilore/catalog";
-import { loadCurrencyWarCatalog } from "@/providers/gilore/currencyWar";
+} from "@/providers/reference/catalog";
+import { loadCurrencyWarCatalog } from "@/providers/reference/currencyWar";
 
 function payloadKeys(value: unknown): string[] {
   if (value === null || typeof value !== "object") return [];
@@ -25,7 +25,7 @@ function payloadKeys(value: unknown): string[] {
   ]);
 }
 
-describe("lazy GIlore catalog provider", () => {
+describe("lazy reference producer catalog provider", () => {
   // Coverage of the complete normalized snapshot, including opt-in records.
   // The released-only transport and network gate are tested separately.
   beforeEach(() => setBetaEnabled(true));

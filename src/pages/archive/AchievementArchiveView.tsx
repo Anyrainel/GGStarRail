@@ -7,11 +7,11 @@ import {
   getLocalizedValue,
   loadAchievementCategories,
   loadAchievements,
-} from "@/providers/gilore/catalog";
+} from "@/providers/reference/catalog";
 import type {
   AchievementCategoryDefinition,
   AchievementDefinition,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import {
   type AchievementArchiveCategoryView,
   AchievementArchiveContent,

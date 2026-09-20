@@ -25,7 +25,7 @@ import {
 import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
 import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/gilore/types";
+import type { RelicSlotId } from "@/providers/reference/types";
 
 const DOMAIN_SLOT_TO_CATALOG = {
   head: "HEAD",

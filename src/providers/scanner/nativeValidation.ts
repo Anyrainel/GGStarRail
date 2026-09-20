@@ -4,7 +4,7 @@ import type {
   HsrReferenceCatalog,
   LightConeDefinition,
   ProgressionTables,
-} from "@/providers/gilore/types";
+} from "@/providers/reference/types";
 import { validateRelicMainStatDisplayValue } from "@/providers/relicMainStat";
 
 type NativeScannerCatalog = Pick<
