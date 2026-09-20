@@ -29,7 +29,7 @@ unverified without a user-authorized live credential test.
 
 Scanner imports validate the versioned outer format and canonical account
 snapshot with Zod. GOODScanner experimental v1/v2, production v3, and
-third-party v4 files use explicit adapters instead of weakening the canonical
+GOODScanner/third-party v4 files use explicit adapters instead of weakening the canonical
 schema. Production v3 achievement evidence additionally requires the exact
 packet-capture source, a safe revision, complete coverage, normalized status,
 sorted unique public IDs, and a match in the generated reference. A recursive

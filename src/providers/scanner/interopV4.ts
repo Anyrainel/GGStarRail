@@ -3,6 +3,7 @@ import {
   type AccountSnapshot,
   AccountSnapshotSchema,
   type Character,
+  CompletedAchievementIdsSchema,
   ImportCoverageSchema,
   type Relic,
   type RelicSlot,
@@ -24,7 +25,7 @@ const V4CoverageSchema = z
     lightCones: ImportCoverageSchema,
     relics: ImportCoverageSchema,
   })
-  .strict();
+  .strip();
 
 const V4SubstatSchema = z
   .object({
@@ -101,6 +102,16 @@ export const InteroperableScannerV4Schema = z
       })
       .passthrough(),
     coverage: V4CoverageSchema.optional(),
+    generator: z
+      .object({
+        name: z.string().min(1).max(128),
+        version: z.string().min(1).max(128),
+        captureRevision: z.string().min(1).max(128).optional(),
+        compatibility: z.string().optional(),
+      })
+      .strip()
+      .optional(),
+    achievements: CompletedAchievementIdsSchema.optional(),
     light_cones: z.array(V4LightConeSchema),
     relics: z.array(V4RelicSchema),
     characters: z.array(V4CharacterSchema),
@@ -115,6 +126,7 @@ type V4SourceKind = "fribbels" | "hsr-scanner" | "kel" | "reliquary";
 
 export interface InteroperableScannerCatalog extends HsrReferenceCatalog {
   progression: ProgressionTables;
+  achievementIds?: ReadonlySet<number>;
 }
 
 export const SCANNER_WARNING_V4_COVERAGE_UNKNOWN =
@@ -629,6 +641,23 @@ export async function parseInteroperableScannerV4Export(
   }
 
   const uid = parsed.metadata.uid ? String(parsed.metadata.uid) : undefined;
+  if (parsed.achievements !== undefined) {
+    if (!catalog.achievementIds) {
+      throw new Error("Scanner achievement reference is unavailable");
+    }
+    for (const id of parsed.achievements) {
+      if (!catalog.achievementIds.has(id)) {
+        throw new Error(`Unknown HSR achievement: ${id}`);
+      }
+    }
+  }
+  // v4 supplies completed IDs, not the v3 packet-capture evidence object.
+  // Preserve presence (including []) without inventing capture provenance.
+  const achievementCompletion =
+    parsed.achievements === undefined
+      ? undefined
+      : { completedIds: parsed.achievements };
+  const isGoodScanner = parsed.generator?.name === "GOODScanner";
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
     schemaVersion: 3,
     profileId: `scanner:v4:${sourceKind}`,
@@ -636,11 +665,14 @@ export async function parseInteroperableScannerV4Export(
     characters,
     lightCones,
     relics,
+    ...(achievementCompletion ? { achievementCompletion } : {}),
     source: {
       provider: "scanner-export",
       formatVersion: 4,
-      sourceVersion: `${sourceKind}-v4`,
-      sourceRevision: parsed.build,
+      sourceVersion: isGoodScanner ? "goodscanner-hsr-v4" : `${sourceKind}-v4`,
+      sourceRevision: isGoodScanner
+        ? (parsed.generator?.captureRevision ?? parsed.generator?.version)
+        : parsed.build,
       importedAt: now.toISOString(),
       coverage,
       warnings: [...new Set(warnings)],

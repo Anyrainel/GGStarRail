@@ -957,6 +957,121 @@ describe("GOODScanner HSR import compatibility", () => {
 });
 
 describe("interoperable HSR scanner v4 imports", () => {
+  function goodScannerV4(achievements?: number[]) {
+    return {
+      source: "HSR-Scanner",
+      build: "v1.2.0",
+      version: 4,
+      generator: {
+        name: "GOODScanner",
+        version: "0.0.0",
+        captureRevision: "reliquary-shape-4.5-v1",
+        compatibility: "HSR-Scanner v1.2.0 / format v4",
+        futureField: true,
+      },
+      metadata: {
+        uid: null,
+        trailblazer: "Stelle",
+        current_trailblazer_path: "Remembrance",
+      },
+      coverage: {
+        characters: "unknown",
+        lightCones: "unknown",
+        relics: "unknown",
+        futureSection: "complete",
+      },
+      characters: [],
+      light_cones: [],
+      relics: [],
+      ...(achievements === undefined ? {} : { achievements }),
+      futureExtension: { observed: true },
+    };
+  }
+
+  it("imports the documented GOODScanner v4 envelope and generator", async () => {
+    const ids = await knownAchievementIds(2);
+    const draft = await parseVersionedScannerExport(goodScannerV4(ids));
+    expect(draft.account.uid).toBeUndefined();
+    expect(draft.account.achievementCompletion).toEqual({ completedIds: ids });
+    expect(draft.account.source).toMatchObject({
+      formatVersion: 4,
+      sourceVersion: "goodscanner-hsr-v4",
+      sourceRevision: "reliquary-shape-4.5-v1",
+      coverage: {
+        characters: "unknown",
+        lightCones: "unknown",
+        relics: "unknown",
+      },
+    });
+  });
+
+  it("preserves omitted achievements and replaces present arrays through account merge", async () => {
+    const ids = await knownAchievementIds(2);
+    const current = makeAccountSnapshot();
+    current.achievementCompletion = { completedIds: ids };
+    for (const achievements of [undefined, [], ids.slice(0, 1)]) {
+      const draft = await parseVersionedScannerExport(
+        goodScannerV4(achievements)
+      );
+      const merged = applyAccountImport(current, draft.account, "merge");
+      expect(merged.achievementCompletion).toEqual({
+        completedIds: achievements ?? ids,
+      });
+      expect(merged.characters).toEqual(current.characters);
+      expect(merged.lightCones).toEqual(current.lightCones);
+      expect(merged.relics).toEqual(current.relics);
+    }
+  });
+
+  it("rejects malformed, duplicate, unsorted, and unknown achievement IDs", async () => {
+    const [first, second] = await knownAchievementIds(2);
+    for (const achievements of [
+      [first, first],
+      [second, first],
+      [0],
+      [-1],
+      [1.5],
+      [4294967295],
+      null,
+      {},
+    ]) {
+      await expect(
+        parseVersionedScannerExport({ ...goodScannerV4(), achievements })
+      ).rejects.toThrow();
+    }
+  });
+
+  it("imports GOODScanner inventory and OCR traces without requiring packet-only fields", async () => {
+    const input = {
+      ...structuredClone(hsrScannerV4Fixture),
+      ...goodScannerV4(),
+      characters: structuredClone(hsrScannerV4Fixture.characters).map(
+        ({ ability_version: _version, ...character }) => character
+      ),
+      light_cones: hsrScannerV4Fixture.light_cones,
+      relics: hsrScannerV4Fixture.relics,
+      coverage: {
+        characters: "complete",
+        lightCones: "complete",
+        relics: "complete",
+      },
+    };
+    const draft = await parseVersionedScannerExport(input);
+    expect(draft.account.characters[0]?.traces["skill:skill"]).toBe(10);
+    expect(
+      draft.account.characters[0]?.traces["source:abilityVersion"]
+    ).toBeUndefined();
+    expect(draft.account.relics[0]?.substats).toContainEqual({
+      statId: "CriticalChanceBase",
+      value: 5.1,
+    });
+    expect(draft.account.lightCones[0]?.equippedCharacterKey).toBe(
+      draft.account.characters[0]?.key
+    );
+    expect(draft.account.source.coverage.relics).toBe("complete");
+    expect(draft.account.achievementCompletion).toBeUndefined();
+  });
+
   it("canonicalizes the known Passerby Body visible-equivalence pair", async () => {
     const capture = structuredClone(hsrScannerV4Fixture);
     capture.characters = [];

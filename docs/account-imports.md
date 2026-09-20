@@ -129,6 +129,23 @@ Contract evidence:
 
 ## Scanner files and manager instructions
 
+Current GOODScanner capture and screenshot exports follow `docs/HSR_EXPORT.md`
+at GOODScanner revision `4e4bc88`: HSR-Scanner format v4, `source: "HSR-Scanner"`,
+`build: "v1.2.0"`, and a `generator` object identifying GOODScanner. Both use
+the same adapter as third-party v4 imports. The import receipt records the
+actual generator and capture revision. Synthetic `_uid` values are not stable
+item identities. Explicit section coverage is retained; absent coverage remains
+unknown. Unknown extension fields are ignored after the credential guard.
+
+The optional `achievements` array contains sorted unique public completed IDs,
+validated against the reference catalog. Omission preserves completion during
+merge; a present array, including `[]`, replaces completion. V4 does not supply
+the older v3 capture-evidence object, so the importer does not invent it.
+Optional OCR skills, traces, and memosprite levels are imported when present;
+`ability_version` is not required. Trailblazer metadata is accepted, while
+Character identity and Path continue to come from each public Character ID.
+No persisted schema change is needed for these mappings.
+
 The file importer accepts the native GGStarRail envelope,
 `goodscanner.hsr.experimental` v1 and v2, and interoperable Reliquary,
 HSR-Scanner, Kel, and Fribbels v4 JSON. Experimental v2 distinguishes the exact
