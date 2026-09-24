@@ -22,12 +22,9 @@ const ACHIEVEMENTS: readonly AchievementArchiveItemView[] = [
     categoryId: 1,
     name: "First Footstep",
     description: "Board the Astral Express.",
-    hiddenDescription: null,
     order: 100,
     releaseVersion: "3.4",
-    visibility: "visible",
-    chainIds: [101, 102],
-    chainIndex: 0,
+    groupIds: [101, 102],
     rewardCount: 5,
     rewardItemId: 1,
   },
@@ -36,12 +33,9 @@ const ACHIEVEMENTS: readonly AchievementArchiveItemView[] = [
     categoryId: 1,
     name: "A Secret Terminus",
     description: "Witness the final departure.",
-    hiddenDescription: "This must never be shown before completion.",
     order: 110,
     releaseVersion: null,
-    visibility: "show_after_finish",
-    chainIds: [101, 102],
-    chainIndex: 1,
+    groupIds: [101, 102],
     rewardCount: 10,
     rewardItemId: 1,
   },
@@ -50,12 +44,9 @@ const ACHIEVEMENTS: readonly AchievementArchiveItemView[] = [
     categoryId: 2,
     name: "Clockwork Dream",
     description: "Find the real scarlet answer.",
-    hiddenDescription: "Follow the silver clock's hint.",
     order: 90,
     releaseVersion: "4.1",
-    visibility: "hidden_description",
-    chainIds: [201],
-    chainIndex: 0,
+    groupIds: [201],
     rewardCount: 20,
     rewardItemId: 1,
   },
@@ -216,8 +207,7 @@ describe("AchievementArchiveContent visibility and filtering", () => {
       name,
       releaseVersion,
       order,
-      chainIds: [id],
-      chainIndex: 0,
+      groupIds: [id],
     });
     render(
       <I18nProvider>
@@ -226,13 +216,12 @@ describe("AchievementArchiveContent visibility and filtering", () => {
           achievements={[
             {
               ...item(301, "Older chain member", "1.0", 999),
-              chainIds: [301, 303],
+              groupIds: [301, 303],
             },
             item(302, "Middle patch", "4.2", 500),
             {
               ...item(303, "Newest chain member", "4.10.1", 1),
-              chainIds: [301, 303],
-              chainIndex: 1,
+              groupIds: [301, 303],
             },
             item(304, "High-priority same patch", "4.10.1", 8),
             item(305, "Unknown release", null, 9999),
@@ -255,8 +244,8 @@ describe("AchievementArchiveContent visibility and filtering", () => {
     ).toEqual([
       "High-priority same patch",
       "Newest chain member",
-      "Middle patch",
       "Older chain member",
+      "Middle patch",
       "Unknown release",
     ]);
     expect(

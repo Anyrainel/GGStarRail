@@ -1,17 +1,9 @@
-import { useMemo } from "react";
-import type { ReferenceLocale } from "@/domain/provenance";
+import { useCallback, useMemo } from "react";
+import { loadAchievementDisplay } from "@/data/achievementLoader";
+import type { AchievementDisplayData } from "@/data/achievementTypes";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
-import {
-  getLocalizedValue,
-  loadAchievementCategories,
-  loadAchievements,
-} from "@/providers/reference/catalog";
-import type {
-  AchievementCategoryDefinition,
-  AchievementDefinition,
-} from "@/providers/reference/types";
 import {
   type AchievementArchiveCategoryView,
   AchievementArchiveContent,
@@ -29,14 +21,6 @@ interface FormattedAchievementText {
 export interface AchievementArchiveViewData {
   categories: readonly AchievementArchiveCategoryView[];
   achievements: readonly AchievementArchiveItemView[];
-}
-
-async function loadAchievementArchiveData() {
-  const [categories, achievements] = await Promise.all([
-    loadAchievementCategories(),
-    loadAchievements(),
-  ]);
-  return { categories, achievements };
 }
 
 export function formatAchievementArchiveText(
@@ -57,96 +41,51 @@ export function formatAchievementArchiveText(
   return { value: formatted, hasDynamicText };
 }
 
-function formatLocalizedText(
-  source: AchievementDefinition["name"],
-  locale: ReferenceLocale,
-  parameters: readonly number[],
-  dynamicTextFallback: string,
-  trailblazerFallback: string
-): FormattedAchievementText {
-  return formatAchievementArchiveText(
-    getLocalizedValue(source, locale),
-    parameters,
-    dynamicTextFallback,
-    trailblazerFallback
-  );
-}
-
 export function createAchievementArchiveViewData(
-  categories: readonly AchievementCategoryDefinition[],
-  achievements: readonly AchievementDefinition[],
-  locale: ReferenceLocale,
+  data: AchievementDisplayData,
   dynamicTextFallback: string,
   trailblazerFallback: string
 ): AchievementArchiveViewData {
+  const format = (text: string) =>
+    formatAchievementArchiveText(
+      text,
+      [],
+      dynamicTextFallback,
+      trailblazerFallback
+    ).value;
   return {
-    categories: categories.map((category) => ({
-      id: category.id,
-      name: formatAchievementArchiveText(
-        getLocalizedValue(category.name, locale),
-        [],
-        dynamicTextFallback,
-        trailblazerFallback
-      ).value,
-      order: category.order,
+    categories: data.categories.map((category) => ({
+      ...category,
+      name: format(category.name),
     })),
-    achievements: achievements.map((achievement) => {
-      const name = formatLocalizedText(
-        achievement.name,
-        locale,
-        [],
-        dynamicTextFallback,
-        trailblazerFallback
-      );
-      const description = formatLocalizedText(
-        achievement.description,
-        locale,
-        achievement.description_parameters,
-        dynamicTextFallback,
-        trailblazerFallback
-      );
-      const hiddenDescription = achievement.hidden_description
-        ? formatLocalizedText(
-            achievement.hidden_description,
-            locale,
-            achievement.description_parameters,
-            dynamicTextFallback,
-            trailblazerFallback
-          )
-        : null;
-      return {
-        id: achievement.id,
-        categoryId: achievement.category_id,
-        name: name.value,
-        description: description.value,
-        hiddenDescription: hiddenDescription?.value ?? null,
-        order: achievement.order,
-        releaseVersion: achievement.release_version,
-        visibility: achievement.visibility,
-        chainIds: achievement.chain_ids,
-        chainIndex: achievement.chain_index,
-        rewardCount: achievement.reward.count,
-        rewardItemId: achievement.reward.item_id,
-      };
-    }),
+    achievements: data.achievements.map((entry) => ({
+      id: entry.id,
+      categoryId: entry.categoryId,
+      order: entry.order,
+      name: format(entry.name),
+      description: format(entry.description),
+      releaseVersion: entry.version ?? null,
+      groupIds: entry.groupIds,
+      rewardCount: entry.reward,
+      rewardItemId: 1,
+    })),
   };
 }
 
 export function AchievementArchiveView() {
   const { locale, t } = useI18n();
-  const resource = useCatalogResource(loadAchievementArchiveData);
+  const loader = useCallback(() => loadAchievementDisplay(locale), [locale]);
+  const resource = useCatalogResource(loader);
   const viewData = useMemo(
     () =>
       resource.data
         ? createAchievementArchiveViewData(
-            resource.data.categories.values,
-            resource.data.achievements.values,
-            locale,
+            resource.data,
             t("archive.achievement.dynamicTextFallback"),
             t("terms.trailblazer")
           )
         : null,
-    [locale, resource.data, t]
+    [resource.data, t]
   );
 
   if (resource.loading) return <CatalogLoading />;

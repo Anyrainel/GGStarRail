@@ -7,22 +7,15 @@ export type AchievementStatusFilter = "unfinished" | "finished";
 export type AchievementVersionFilter =
   | typeof UNKNOWN_ACHIEVEMENT_VERSION
   | `${number}`;
-export type AchievementVisibility =
-  | "visible"
-  | "show_after_finish"
-  | "hidden_description";
 
 export interface AchievementArchiveItem {
   id: number;
   categoryId: number;
   name: string;
   description: string;
-  hiddenDescription: string | null;
   order: number;
   releaseVersion: string | null;
-  visibility: AchievementVisibility;
-  chainIds: readonly number[];
-  chainIndex: number;
+  groupIds: readonly number[];
 }
 
 export interface AchievementSeries<T extends AchievementArchiveItem> {
@@ -111,21 +104,21 @@ export function groupAchievementSeries<T extends AchievementArchiveItem>(
       right.order - left.order ||
       left.id - right.id
   );
-  const groups: { items: T[]; seriesIds: readonly number[] }[] = [];
-  let previousKey: string | undefined;
+  const groups = new Map<
+    string,
+    { items: T[]; seriesIds: readonly number[] }
+  >();
 
-  // A chain can span patches or be interrupted by another achievement's
-  // priority. Only join adjacent rows, preserving the displayed release order
-  // while retaining the full authoritative chain for completion updates.
+  // Keep an exported display block together even when its members have
+  // different priorities or release versions.
   for (const achievement of sorted) {
-    const seriesIds = achievement.chainIds;
-    const key = seriesIds.join(":");
-    const group = groups.at(-1);
-    if (group && key === previousKey) group.items.push(achievement);
-    else groups.push({ items: [achievement], seriesIds: [...seriesIds] });
-    previousKey = key;
+    const seriesIds = achievement.groupIds;
+    const key = `${achievement.categoryId}:${seriesIds.join(":")}`;
+    const group = groups.get(key);
+    if (group) group.items.push(achievement);
+    else groups.set(key, { items: [achievement], seriesIds: [...seriesIds] });
   }
-  return groups;
+  return [...groups.values()];
 }
 
 export function achievementCompletionProgress(

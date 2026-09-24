@@ -1,21 +1,21 @@
 # Scanner achievement mappings
 
-`/good/mapping_achievements.json` contains released HSR achievements nested under
-their categories, with numeric IDs and Chinese names:
+`/good/mapping_achievements.json` uses schemaVersion 2, with native category
+IDs, Chinese `name.zh` values and nested achievement groups. Each category's
+`achievements` is an array of arrays, including singleton groups.
 
-```json
-{"categories":[{"id":1,"n":{"zh":"我，开拓者"},"achievements":[{"id":4010101,"n":{"zh":"炽燃不灭的琥珀"}}]}]}
-```
+Entries contain `id`, `name`, optional `hidden: true` (whole row hidden until
+completed), and optional `requires` (all-of completed achievement IDs).
+False hidden and empty requirements are omitted. Description-only concealment
+does not set hidden. Grouping alone does not imply completion or exclusive
+visibility. Titles can repeat; preserve every matching ID.
 
-Categories and their achievements are sorted by numeric ID. Names are not unique;
-preserve every ID when matching titles. The `n.zh` field follows the scanner mapping
-contract. Only achievements admitted by the website's release evidence are included.
+The full shared display/scanner contract is in HoyoData's
+`docs/achievement-reference.md`. Display logic is separate from the en/zh
+files; scanner data is self-contained and contains released achievements only.
 
-Regenerate and sync from HoyoData:
+Regenerate and synchronize from HoyoData:
 
 ```sh
 uv run python -m hsr_data reference
 ```
-
-This writes the mapping here and mirrors it into HoyoData's versioned website
-archive alongside `hsr_data_cache.json`.

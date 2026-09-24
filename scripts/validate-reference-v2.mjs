@@ -271,10 +271,17 @@ function achievements(catalog) {
   );
 }
 
-export function validateReferenceV2(catalog, schemaVersion) {
+export function validateReferenceV2(
+  catalog,
+  schemaVersion,
+  { separateAchievements = false } = {}
+) {
   assert.equal(schemaVersion, "2.0.0", "Unsupported current reference schema");
   validatePublicValues(catalog, "catalog");
-  const parsed = shape.safeParse(catalog);
+  const selectedShape = separateAchievements
+    ? shape.omit({ achievements: true, achievement_categories: true })
+    : shape;
+  const parsed = selectedShape.safeParse(catalog);
   assert.ok(
     parsed.success,
     parsed.success
@@ -453,5 +460,5 @@ export function validateReferenceV2(catalog, schemaVersion) {
       else reference(row.property_id, propertyIds, `${key} property`);
     }
   }
-  achievements(catalog);
+  if (!separateAchievements) achievements(catalog);
 }

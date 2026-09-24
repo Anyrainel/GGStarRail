@@ -35,7 +35,9 @@ const capture = JSON.parse(
 );
 
 test("current published catalog and capture values agree", () => {
-  validateCurrentReference(documents, capture, manifest);
+  validateCurrentReference(documents, capture, manifest, {
+    separateAchievements: true,
+  });
   assert.ok(capture.snapshot.characters.some((row) => row.gameId === 1508));
 });
 
@@ -44,7 +46,9 @@ test("unobserved character and Light Cone release versions remain nullable", () 
   for (const member of ["characters", "light_cones"])
     for (const channel of Object.values(changed[member]))
       for (const entry of channel) entry.release_version = null;
-  validateCurrentReference(changed, capture, manifest);
+  validateCurrentReference(changed, capture, manifest, {
+    separateAchievements: true,
+  });
 });
 
 for (const [label, mutate] of [
@@ -83,20 +87,14 @@ for (const [label, mutate] of [
     const changed = structuredClone(capture);
     mutate(changed);
     assert.throws(
-      () => validateCurrentReference(documents, changed, manifest),
+      () =>
+        validateCurrentReference(documents, changed, manifest, {
+          separateAchievements: true,
+        }),
       /Capture field mismatch/
     );
   });
 }
-
-test("rejects broken achievement category relationships", () => {
-  const changed = structuredClone(documents);
-  changed.achievements.released[0].category_id = "missing";
-  assert.throws(
-    () => validateCurrentReference(changed, capture, manifest),
-    /category/
-  );
-});
 
 for (const [label, mutate, expected] of [
   [
@@ -136,7 +134,10 @@ for (const [label, mutate, expected] of [
     const changed = structuredClone(documents);
     mutate(changed);
     assert.throws(
-      () => validateCurrentReference(changed, capture, manifest),
+      () =>
+        validateCurrentReference(changed, capture, manifest, {
+          separateAchievements: true,
+        }),
       expected
     );
   });
@@ -301,27 +302,15 @@ for (const [label, mutate, expected] of [
     },
     /Scoring character_exported/,
   ],
-  [
-    "achievement chain drift",
-    (data) => {
-      data.achievements[0].chain_index = 99;
-    },
-    /chain index/,
-  ],
 ]) {
   test(`v2 rejects ${label}`, () => {
     const catalog = mergeCatalog(structuredClone(documents));
-    const order = new Map(
-      catalog.achievement_categories.map((row, index) => [row.id, index])
-    );
-    catalog.achievements.sort(
-      (a, b) =>
-        order.get(a.category_id) - order.get(b.category_id) ||
-        b.order - a.order ||
-        a.id - b.id
-    );
     mutate(catalog);
-    assert.throws(() => validateReferenceV2(catalog, "2.0.0"), expected);
+    assert.throws(
+      () =>
+        validateReferenceV2(catalog, "2.0.0", { separateAchievements: true }),
+      expected
+    );
   });
 }
 

@@ -19,12 +19,9 @@ function achievement(
     categoryId: 1,
     name: `Achievement ${id}`,
     description: `Description ${id}`,
-    hiddenDescription: null,
     order: 100 - id,
     releaseVersion: "3.4",
-    visibility: "visible",
-    chainIds: [id],
-    chainIndex: 0,
+    groupIds: [id],
     ...overrides,
   };
 }
@@ -33,8 +30,6 @@ describe("achievement archive filtering", () => {
   const hidden = achievement(2, {
     name: "Clockwork Dreams",
     description: "Reach the final room.",
-    hiddenDescription: "Find the scarlet secret.",
-    visibility: "hidden_description",
   });
 
   it("uses whitespace-token AND search across item reference text", () => {
@@ -62,8 +57,6 @@ describe("achievement archive filtering", () => {
     const concealed = achievement(9, {
       name: "Secret Finale",
       description: "Witness the last scene.",
-      hiddenDescription: "A decoy description.",
-      visibility: "show_after_finish",
     });
 
     expect(
@@ -172,13 +165,13 @@ describe("achievement archive filtering", () => {
 });
 
 describe("achievement series and completion", () => {
-  it("groups adjacent chain members in game-priority order while retaining completion dependencies", () => {
+  it("groups exported members in game-priority order", () => {
     const chain = [20, 10, 30];
     const grouped = groupAchievementSeries([
-      achievement(10, { chainIds: chain, chainIndex: 1, order: 100 }),
+      achievement(10, { groupIds: chain, order: 100 }),
       achievement(40),
-      achievement(30, { chainIds: chain, chainIndex: 2, order: 110 }),
-      achievement(20, { chainIds: chain, chainIndex: 0, order: 90 }),
+      achievement(30, { groupIds: chain, order: 110 }),
+      achievement(20, { groupIds: chain, order: 90 }),
     ]);
 
     expect(grouped.map((group) => group.items.map((item) => item.id))).toEqual([
@@ -188,25 +181,22 @@ describe("achievement series and completion", () => {
     expect(grouped[0]?.seriesIds).toEqual(chain);
   });
 
-  it("sorts releases numerically before game priority and splits chains across intervening rows", () => {
+  it("sorts releases numerically and keeps exported groups together", () => {
     const chain = [20, 10, 30];
     const items = [
       achievement(20, {
-        chainIds: chain,
-        chainIndex: 0,
+        groupIds: chain,
         releaseVersion: null,
         order: 9999,
       }),
       achievement(10, {
-        chainIds: chain,
-        chainIndex: 1,
+        groupIds: chain,
         releaseVersion: "2.7",
         order: 9000,
       }),
       achievement(40, { releaseVersion: "4.2", order: 500 }),
       achievement(30, {
-        chainIds: chain,
-        chainIndex: 2,
+        groupIds: chain,
         releaseVersion: "4.10",
         order: 1,
       }),
@@ -217,12 +207,12 @@ describe("achievement series and completion", () => {
     const grouped = groupAchievementSeries(items);
     expect(
       grouped.flatMap((group) => group.items.map((item) => item.id))
-    ).toEqual([50, 60, 30, 40, 10, 20, 70]);
+    ).toEqual([50, 60, 30, 10, 20, 40, 70]);
     expect(
       grouped
         .filter((group) => group.seriesIds.length === 3)
         .map((group) => group.seriesIds)
-    ).toEqual([chain, chain]);
+    ).toEqual([chain]);
     expect(items[0]?.id).toBe(20);
     // Filtering out a newer chain member cannot raise its older displayed member.
     expect(

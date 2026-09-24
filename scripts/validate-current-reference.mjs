@@ -56,20 +56,29 @@ export function mergeCatalog(documents) {
   );
 }
 
-export function validateCurrentReference(documents, capture, manifest) {
+export function validateCurrentReference(
+  documents,
+  capture,
+  manifest,
+  { separateAchievements = false } = {}
+) {
   const catalog = mergeCatalog(documents);
   // Splitting released/beta records changes their interleaving, so restore the
   // source display order before applying the full catalog validator.
-  const categoryOrder = new Map(
-    catalog.achievement_categories.map((row, index) => [row.id, index])
-  );
-  catalog.achievements.sort(
-    (a, b) =>
-      categoryOrder.get(a.category_id) - categoryOrder.get(b.category_id) ||
-      b.order - a.order ||
-      Number(a.id) - Number(b.id)
-  );
-  validateReferenceV2(catalog, manifest.reference_manifest.schema_version);
+  if (!separateAchievements) {
+    const categoryOrder = new Map(
+      catalog.achievement_categories.map((row, index) => [row.id, index])
+    );
+    catalog.achievements.sort(
+      (a, b) =>
+        categoryOrder.get(a.category_id) - categoryOrder.get(b.category_id) ||
+        b.order - a.order ||
+        Number(a.id) - Number(b.id)
+    );
+  }
+  validateReferenceV2(catalog, manifest.reference_manifest.schema_version, {
+    separateAchievements,
+  });
   validateCurrencyWarCatalog(catalog);
   const name = (text) => ({ en: text.en.value, zhCn: text["zh-CN"].value });
   const compare = (actual, expected, label) => {

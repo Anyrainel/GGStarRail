@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { checkAchievementData } from "./check-achievement-data.mjs";
 import { root, sha256 } from "./crawl-common.mjs";
 import { currencyWarMembers } from "./validate-currency-war.mjs";
 import { validateCurrentReference } from "./validate-current-reference.mjs";
@@ -12,8 +13,6 @@ const baseMembers = [
   "light_cones",
   "relic_sets",
   "relic_pieces",
-  "achievement_categories",
-  "achievements",
   "progression",
   "property_tables",
   ...currencyWarMembers,
@@ -205,8 +204,6 @@ export async function checkGameData(repositoryRoot = root) {
     "characters",
     "light_cones",
     "relic_sets",
-    "achievements",
-    "achievement_categories",
     ...currencyWarMembers,
   ])
     assert.equal(
@@ -239,7 +236,11 @@ export async function checkGameData(repositoryRoot = root) {
       "utf8"
     )
   );
-  validateCurrentReference(documents, capture, manifest);
+  const achievementIds = await checkAchievementData(repositoryRoot, manifest);
+  assert.deepEqual(new Set(capture.snapshot.achievementIds), achievementIds);
+  validateCurrentReference(documents, capture, manifest, {
+    separateAchievements: true,
+  });
   assert.equal(capture.formatVersion, 1);
   assert.equal(capture.snapshot.revision, manifest.source_revision);
   assert.equal(capture.packet.sourceRevision, manifest.source_revision);
@@ -247,7 +248,6 @@ export async function checkGameData(repositoryRoot = root) {
     ["characters", "characters"],
     ["light_cones", "lightCones"],
     ["relic_pieces", "gearPieces"],
-    ["achievements", "achievementIds"],
   ]) {
     const expected = new Set(
       [...documents[collection].released, ...documents[collection].beta].map(

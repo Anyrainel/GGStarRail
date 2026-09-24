@@ -12,72 +12,6 @@ export interface LocalizedText {
   "zh-CN": SourceText;
 }
 
-export type AchievementRarity = "Low" | "Mid" | "High";
-
-export type AchievementVisibility =
-  | "visible"
-  | "show_after_finish"
-  | "hidden_description";
-
-export interface AchievementCategoryDefinition {
-  id: number;
-  name: LocalizedText;
-  order: number;
-  icon_path: string;
-  main_icon_path: string;
-  gold_icon_path: string;
-  silver_icon_path: string;
-  copper_icon_path: string;
-}
-
-export interface AchievementCompletionConditionDefinition {
-  id: number;
-  finish_type: string;
-  parameter_type: string;
-  parameter_string: string;
-  parameter_integer_1: number | null;
-  parameter_integer_2: number | null;
-  parameter_integer_3: number | null;
-  parameter_integers: readonly number[];
-  progress: number;
-  is_backtrack: boolean;
-  maze_floor_id: number | null;
-  maze_plane_id: number | null;
-}
-
-export interface AchievementRewardDefinition {
-  reward_id: number;
-  item_id: 1;
-  count: 5 | 10 | 20;
-}
-
-export interface AchievementDefinition {
-  id: number;
-  category_id: number;
-  quest_id: number;
-  linear_quest_id: number;
-  name: LocalizedText;
-  description: LocalizedText;
-  hidden_description: LocalizedText | null;
-  description_parameters: readonly number[];
-  order: number;
-  rarity: AchievementRarity;
-  visibility: AchievementVisibility;
-  icon_path: string;
-  reward: AchievementRewardDefinition;
-  chain_ids: readonly number[];
-  chain_index: number;
-  previous_id: number | null;
-  next_ids: readonly number[];
-  completion_condition: AchievementCompletionConditionDefinition;
-  ps_trophy_id: string | null;
-  ps_name: LocalizedText | null;
-  ps_description: LocalizedText | null;
-  record_type: string | null;
-  record_text: LocalizedText | null;
-  release_version: string | null;
-}
-
 export interface MemberDocument<
   T,
   TSchemaVersion extends BundleSchemaVersion = BundleSchemaVersion,
@@ -598,14 +532,6 @@ export interface DefinitionCatalog<
   byId: ReadonlyMap<T["id"], T>;
 }
 
-export type AchievementCategoryCatalog = DefinitionCatalog<
-  AchievementCategoryDefinition,
-  "2.0.0"
->;
-export type AchievementCatalog = DefinitionCatalog<
-  AchievementDefinition,
-  "2.0.0"
->;
 export type CharacterCatalog = DefinitionCatalog<CharacterDefinition, "2.0.0">;
 export type LightConeCatalog = DefinitionCatalog<LightConeDefinition, "2.0.0">;
 

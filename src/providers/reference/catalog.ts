@@ -1,3 +1,4 @@
+import { loadAchievementLogic } from "@/data/achievementLoader";
 import manifestJson from "@/data/game/manifest.json";
 import { loadGameMember } from "@/data/gameDataLoader";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
@@ -5,8 +6,6 @@ import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
 import { loadCatalogAssetLookup } from "./assets";
 import type {
-  AchievementCategoryDefinition,
-  AchievementDefinition,
   CharacterDefinition,
   DefinitionCatalog,
   LightConeDefinition,
@@ -64,16 +63,12 @@ export function getLocalizedValue(
   return text?.[locale].value ?? null;
 }
 
-export function loadAchievementCategories() {
-  return loadDefinitions<AchievementCategoryDefinition>(
-    "achievement_categories"
-  );
-}
-export function loadAchievements() {
-  return loadDefinitions<AchievementDefinition>("achievements");
-}
 export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
-  return new Set((await loadAchievements()).byId.keys());
+  return new Set(
+    (await loadAchievementLogic()).categories.flatMap((category) =>
+      category.achievements.flatMap((group) => group.map((entry) => entry.id))
+    )
+  );
 }
 export async function loadCharacters() {
   const catalog = await loadDefinitions<CharacterDefinition>("characters");

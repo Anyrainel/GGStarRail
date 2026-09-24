@@ -4,9 +4,7 @@ import {
   getLocalizedValue,
   HSR_REFERENCE_MANIFEST,
   HSR_REFERENCE_REVISION,
-  loadAchievementCategories,
   loadAchievementIds,
-  loadAchievements,
   loadCharacters,
   loadLightCones,
   loadProgression,
@@ -54,8 +52,6 @@ describe("lazy reference producer catalog provider", () => {
   });
   it("loads complete typed catalogs with stable bilingual identities", async () => {
     const [
-      achievementCategories,
-      achievements,
       achievementIds,
       characters,
       lightCones,
@@ -63,8 +59,6 @@ describe("lazy reference producer catalog provider", () => {
       relicPieces,
       propertyTables,
     ] = await Promise.all([
-      loadAchievementCategories(),
-      loadAchievements(),
       loadAchievementIds(),
       loadCharacters(),
       loadLightCones(),
@@ -77,8 +71,6 @@ describe("lazy reference producer catalog provider", () => {
       "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
     );
     expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("2.0.0");
-    expect(achievementCategories.values).toHaveLength(9);
-    expect(achievements.values).toHaveLength(1921);
     expect(achievementIds.size).toBe(1921);
     expect(characters.values).toHaveLength(97);
     expect(lightCones.values).toHaveLength(169);
@@ -88,47 +80,11 @@ describe("lazy reference producer catalog provider", () => {
     expect(propertyTables.paths).toHaveLength(9);
     expect(propertyTables.combatTypes).toHaveLength(7);
     expect(propertyTables.relicSlots).toHaveLength(6);
-    expect(achievementCategories.schemaVersion).toBe("2.0.0");
-    expect(achievements.schemaVersion).toBe("2.0.0");
     expect(characters.schemaVersion).toBe("2.0.0");
     expect(lightCones.schemaVersion).toBe("2.0.0");
     expect(propertyTables.schemaVersion).toBe("2.0.0");
 
-    const trailblazerCategory = achievementCategories.byId.get(1);
-    expect(getLocalizedValue(trailblazerCategory?.name, "en")).toBe(
-      "I, Trailblazer"
-    );
-    const everBurningAmber = achievements.byId.get(4_010_101);
-    expect(getLocalizedValue(everBurningAmber?.name, "en")).toBe(
-      "Ever-Burning Amber"
-    );
-    expect(everBurningAmber).toMatchObject({
-      category_id: 1,
-      chain_ids: [4_010_101],
-      chain_index: 0,
-      previous_id: null,
-      next_ids: [],
-      release_version: "1.0",
-      reward: { item_id: 1, count: 20 },
-    });
     expect(achievementIds.has(4_010_101)).toBe(true);
-    expect(
-      new Set(
-        achievements.values
-          .filter((achievement) => achievement.release_version !== null)
-          .map((achievement) => achievement.release_version!.split(".")[0])
-      )
-    ).toEqual(new Set(["1", "2", "3", "4"]));
-    const hidden = achievements.values.find(
-      (achievement) => achievement.visibility === "hidden_description"
-    );
-    expect(hidden?.hidden_description).not.toBeNull();
-    expect(
-      achievements.values.some(
-        (achievement) => achievement.description_parameters.length > 0
-      )
-    ).toBe(true);
-
     const march = characters.byId.get("1001");
     expect(getLocalizedValue(march?.name, "en")).toBe("March 7th");
     expect(getLocalizedValue(march?.name, "zh-CN")).toBe("三月七");
@@ -305,8 +261,6 @@ describe("lazy reference producer catalog provider", () => {
       properties,
       progression,
       mode,
-      categories,
-      achievements,
     ] = await Promise.all([
       loadCharacters(),
       loadLightCones(),
@@ -315,8 +269,6 @@ describe("lazy reference producer catalog provider", () => {
       loadPropertyTables(),
       loadProgression(),
       loadCurrencyWarCatalog(),
-      loadAchievementCategories(),
-      loadAchievements(),
     ]);
     const keys = new Set(
       payloadKeys([
@@ -327,8 +279,6 @@ describe("lazy reference producer catalog provider", () => {
         properties.properties,
         progression,
         mode,
-        categories.values,
-        achievements.values,
       ])
     );
     for (const obsolete of [

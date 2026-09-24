@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { loadAchievementDisplay } from "@/data/achievementLoader";
 import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { configureCatalogAssetLookup } from "@/lib/assets";
@@ -10,10 +11,6 @@ import {
   createAchievementArchiveViewData,
   formatAchievementArchiveText,
 } from "@/pages/archive/AchievementArchiveView";
-import {
-  loadAchievementCategories,
-  loadAchievements,
-} from "@/providers/reference/catalog";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "./fixtures";
 
@@ -42,16 +39,11 @@ async function loadRealViewData(
   dynamicTextFallback: string,
   trailblazerFallback: string
 ) {
-  const [categories, achievements] = await Promise.all([
-    loadAchievementCategories(),
-    loadAchievements(),
-  ]);
+  const data = await loadAchievementDisplay(locale);
   return {
-    rawAchievements: achievements.values,
+    rawAchievements: data.achievements,
     viewData: createAchievementArchiveViewData(
-      categories.values,
-      achievements.values,
-      locale,
+      data,
       dynamicTextFallback,
       trailblazerFallback
     ),
@@ -64,7 +56,7 @@ afterEach(() => {
 
 describe("achievement archive reference producer adapter", () => {
   beforeEach(() => setBetaEnabled(true));
-  it("maps the complete real bilingual catalogs with release versions and visibility", async () => {
+  it("maps the complete real bilingual catalogs with release versions", async () => {
     const [english, chinese] = await Promise.all([
       loadRealViewData("en", "[dynamic in-game text]", "Trailblazer"),
       loadRealViewData("zh-CN", "【游戏内动态文本】", "开拓者"),
@@ -94,7 +86,7 @@ describe("achievement archive reference producer adapter", () => {
     ).toEqual(
       english.rawAchievements.map((achievement) => [
         achievement.id,
-        achievement.release_version,
+        achievement.version,
       ])
     );
     expect(
@@ -116,20 +108,8 @@ describe("achievement archive reference producer adapter", () => {
     ).toBe("我，开拓者");
 
     expect(
-      english.viewData.achievements.filter(
-        (achievement) => achievement.visibility === "visible"
-      )
-    ).toHaveLength(805);
-    expect(
-      english.viewData.achievements.filter(
-        (achievement) => achievement.visibility === "show_after_finish"
-      )
-    ).toHaveLength(806);
-    expect(
-      english.viewData.achievements.filter(
-        (achievement) => achievement.visibility === "hidden_description"
-      )
-    ).toHaveLength(310);
+      english.viewData.achievements.every((entry) => !("visibility" in entry))
+    ).toBe(true);
   });
 
   it("formats parameters while replacing only complete TEXTJOIN tokens", () => {
@@ -153,7 +133,7 @@ describe("achievement archive reference producer adapter", () => {
       loadRealViewData("zh-CN", "【游戏内动态文本】", "开拓者"),
     ]);
     const source = english.rawAchievements.find((achievement) =>
-      achievement.description.en.value.includes("{TEXTJOIN#")
+      achievement.description.includes("{TEXTJOIN#")
     );
     if (!source)
       throw new Error("Real achievement TEXTJOIN fixture is missing");
@@ -190,9 +170,7 @@ describe("achievement archive reference producer adapter", () => {
         cachePath: reward[2],
       },
     ]);
-    const achievement = viewData.achievements.find(
-      (candidate) => candidate.visibility === "visible"
-    );
+    const achievement = viewData.achievements[0];
     if (!achievement) throw new Error("Visible achievement fixture is missing");
     const category = viewData.categories.find(
       (candidate) => candidate.id === achievement.categoryId
