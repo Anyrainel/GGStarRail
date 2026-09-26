@@ -99,31 +99,79 @@ export async function checkAchievementData(root, manifest) {
       "utf8"
     )
   );
-  assert.equal(scanner.schemaVersion, 2);
+  assert.equal(scanner.schemaVersion, 3);
   assert.deepEqual(
-    scanner.categories.map((category) => ({
-      id: category.id,
-      achievements: category.achievements.map((group) =>
-        group.map((entry) => entry.id)
-      ),
-    })),
-    releasedGroups
+    scanner.categories.map((category) => category.id),
+    releasedGroups.map((category) => category.id)
   );
-  for (const category of scanner.categories)
+  const scannerEntries = new Map();
+  for (const category of scanner.categories) {
     assert.equal(category.name.zh, releasedCategoryNames[category.id]);
-  const scannerIds = new Set();
-  for (const category of scanner.categories)
-    for (const group of category.achievements)
-      for (const entry of group) {
-        assert.ok(!scannerIds.has(entry.id));
-        scannerIds.add(entry.id);
+    const expected = releasedGroups.find(
+      (candidate) => candidate.id === category.id
+    );
+    const categoryIds = new Set();
+    for (const item of category.achievements) {
+      const stages = item.stages ?? [item];
+      if (item.stages) {
+        assert.deepEqual(Object.keys(item).sort(), ["name", "stages"]);
+        assert.ok(stages.length > 1);
+        assert.ok(
+          expected.achievements.some(
+            (group) =>
+              group.length === stages.length &&
+              stages.every((stage) => group.includes(stage.id))
+          )
+        );
+      }
+      for (const entry of stages) {
+        assert.ok(!scannerEntries.has(entry.id));
+        scannerEntries.set(entry.id, entry);
+        categoryIds.add(entry.id);
         assert.deepEqual(released.get(entry.id), {
           categoryId: category.id,
-          name: entry.name.zh,
+          name: item.name.zh,
         });
+        assert.ok(!("replaces" in entry));
+        if (item.stages) {
+          assert.ok(!("name" in entry));
+          for (const id of [
+            ...(entry.requires ?? []),
+            ...(entry.requiredBy ?? []),
+          ]) {
+            assert.ok(
+              !stages.some((stage) => stage.id === id),
+              "Stage edges must not be duplicated"
+            );
+          }
+        }
         if ("hidden" in entry) assert.equal(entry.hidden, true);
-        for (const id of entry.requires ?? []) assert.ok(released.has(id));
+        if ("total" in entry)
+          assert.ok(Number.isFinite(entry.total) && entry.total > 0);
+        for (const field of ["desc", "unearnedDesc"]) {
+          if (field in entry)
+            assert.ok(
+              typeof entry[field].zh === "string" && entry[field].zh.length
+            );
+        }
+        if ("reward" in entry) assert.ok([5, 10, 20].includes(entry.reward));
+        for (const field of ["requires", "requiredBy"]) {
+          if (!(field in entry)) continue;
+          assert.ok(Array.isArray(entry[field]) && entry[field].length);
+          assert.equal(new Set(entry[field]).size, entry[field].length);
+          for (const id of entry[field])
+            assert.ok(id !== entry.id && released.has(id));
+        }
       }
-  assert.deepEqual(scannerIds, new Set(released.keys()));
+    }
+    assert.deepEqual(categoryIds, new Set(expected.achievements.flat()));
+  }
+  assert.deepEqual(new Set(scannerEntries.keys()), new Set(released.keys()));
+  for (const entry of scannerEntries.values()) {
+    for (const id of entry.requires ?? [])
+      assert.ok(scannerEntries.get(id).requiredBy?.includes(entry.id));
+    for (const id of entry.requiredBy ?? [])
+      assert.ok(scannerEntries.get(id).requires?.includes(entry.id));
+  }
   return all;
 }
