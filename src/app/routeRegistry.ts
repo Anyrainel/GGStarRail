@@ -17,8 +17,7 @@ export interface RouteDefinition {
     | "archive-light-cones"
     | "archive-relic-sets"
     | "archive-achievements"
-    | "archive-currency-war"
-    | "imports";
+    | "archive-currency-war";
   path: AppPath;
   titleKey: MessageKey;
   descriptionKey: MessageKey;
@@ -114,12 +113,6 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.archiveCurrencyWar,
     titleKey: "route.archiveCurrencyWar.title",
     descriptionKey: "route.archiveCurrencyWar.description",
-  },
-  {
-    id: "imports",
-    path: APP_PATHS.imports,
-    titleKey: "route.imports.title",
-    descriptionKey: "route.imports.description",
   },
 ];
 

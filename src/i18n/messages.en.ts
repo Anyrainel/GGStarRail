@@ -134,6 +134,32 @@ export const messagesEn = {
   "filter.configuredOnly": "Configured builds only",
   "filter.reset": "Reset filters",
   "home.brand": "GGArtifact",
+  "home.heroDescription":
+    "Practical tools to manage your Star Rail roster, plan builds, and find the right Relics.",
+  "home.disclaimerPrefix": "Honkai: Star Rail is a trademark of HoYoverse. ",
+  "home.disclaimerProject": "This project",
+  "home.disclaimerSuffix": " is not affiliated with or endorsed by HoYoverse.",
+  "home.dataAttribution": "Thanks to HoYoWiki and Nanoka for the game data.",
+  "guide.open": "Quick Guide",
+  "guide.previous": "Previous",
+  "guide.next": "Next",
+  "guide.done": "Let's go",
+  "guide.progress": "Quick guide · {current} / {total}",
+  "guide.account.body":
+    "Open Account Data and choose Import account. Import a compatible scanner JSON file or look up your public UID showcase, then review the data before applying it.",
+  "guide.account.hint":
+    "A public showcase only includes displayed Characters and equipped gear. Use a scanner export for the rest of your inventory.",
+  "guide.builds.body":
+    "Choose a Character and create a build with Cavern Relic and Planar Ornament sets. Set main stats and substat weights, then open Relic Filters to see matching pieces.",
+  "guide.builds.hint":
+    "You can configure builds before importing an account. Matching gear requires imported Relics.",
+  "guide.priority.body":
+    "Arrange Characters, Light Cones, and Relic sets into your own priority tiers.",
+  "guide.priority.hint":
+    "Adjust your priorities as your roster and goals change.",
+  "guide.archive.body":
+    "Browse Characters, Light Cones, and Relic sets. Search or filter to find details for your builds.",
+  "guide.archive.hint": "No account import is needed to browse the Archive.",
   "home.openBuilds": "Configure builds",
   "home.openTiers": "Arrange priorities",
   "build.chooseSet": "Choose a set",
@@ -221,7 +247,6 @@ export const messagesEn = {
   "nav.tierCharacters": "Character Priority",
   "nav.tierLightCones": "Light Cone Priority",
   "nav.tierRelics": "Relic Priority",
-  "nav.imports": "Data Sources",
   "route.home.title": "Build better. Keep the relics that matter.",
   "route.home.description":
     "Your Honkai: Star Rail companion for Relics, builds, and account planning.",
@@ -271,9 +296,6 @@ export const messagesEn = {
   "route.tierRelics.title": "Relic Priority",
   "route.tierRelics.description":
     "Organize Cavern Relic and Planar Ornament sets together by role and personal priority.",
-  "route.imports.title": "Data sources",
-  "route.imports.description":
-    "Import scanner files or your public UID showcase, and review the available account import options.",
   "route.notFound.title": "Page not found",
   "route.notFound.description":
     "This page could not be found. Choose a tool from the navigation to continue.",
@@ -638,21 +660,8 @@ export const messagesEn = {
   "archive.servants": "Memosprites ({servants})",
   "archive.seasonalEnhancements": "Character enhancements ({value})",
   "archive.superimposition": "Superimposition {value}",
-  "imports.scanner.title": "Scanner export",
-  "imports.scanner.body":
-    "GGArtifact, GOODScanner HSR, Reliquary, HSR-Scanner, Kel, and Fribbels JSON.",
-  "imports.hoyolab.title": "HoYoLAB account import",
-  "imports.hoyolab.body":
-    "Owned Characters and equipped gear only. Unequipped inventory unavailable. Live credential import unverified.",
-  "imports.security.title": "Authentication-cookie safety",
-  "imports.security.body":
-    "Authentication cookies are never stored, exported, or logged.",
-  "imports.boundary.ready": "Contract ready",
-  "imports.boundary.future": "Live credentials unverified",
   "imports.open": "Import account",
   "imports.dialog.title": "Import account data",
-  "imports.help.open": "Data source details",
-  "imports.help.title": "Account import",
   "imports.account.title": "Local account import",
   "imports.selectFile": "Choose JSON file",
   "imports.fileHelp":

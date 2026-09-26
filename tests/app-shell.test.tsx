@@ -26,6 +26,17 @@ describe("GGArtifact family shell", () => {
     localStorage.clear();
   });
 
+  it("opens the home guide and shows the site disclaimer", async () => {
+    const user = userEvent.setup();
+    renderApp(APP_PATHS.home);
+
+    expect(screen.getByText(/manage your Star Rail roster/)).toBeVisible();
+    expect(screen.getByText(/Thanks to HoYoWiki and Nanoka/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Quick Guide" }));
+    expect(screen.getByRole("dialog")).toHaveTextContent("Quick guide · 1 / 4");
+    expect(screen.queryByRole("link", { name: "Data Sources" })).toBeNull();
+  });
+
   it("owns tier file actions in the appbar and clears them on route changes", async () => {
     const user = userEvent.setup();
     renderApp("/tier-list/characters");
@@ -73,6 +84,11 @@ describe("GGArtifact family shell", () => {
   it("exposes a selected Star Rail site and a plain Genshin site link", async () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.archiveCharacters);
+
+    expect(screen.getByRole("link", { name: "GGArtifact" })).toHaveAttribute(
+      "href",
+      APP_PATHS.home
+    );
 
     await user.click(screen.getByRole("button", { name: "Switch game site" }));
 
@@ -150,21 +166,6 @@ describe("GGArtifact family shell", () => {
     expect(screen.getByLabelText("Cookie header")).toHaveValue("");
   });
 
-  it("keeps Data Sources as secondary diagnostics until import is requested", async () => {
-    const user = userEvent.setup();
-    renderApp(APP_PATHS.imports);
-
-    expect(
-      screen.queryByRole("heading", { name: "UID profile showcase" })
-    ).not.toBeInTheDocument();
-    await user.click(
-      await screen.findByRole("button", { name: "Import account" })
-    );
-    expect(
-      screen.getByRole("heading", { name: "UID profile showcase" })
-    ).toBeInTheDocument();
-  });
-
   it("groups every section in the mobile navigation dialog", async () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.characters);
@@ -176,8 +177,8 @@ describe("GGArtifact family shell", () => {
     expect(within(dialog).getByText("Tier List")).toBeVisible();
     expect(within(dialog).getByText("Archive")).toBeVisible();
     expect(
-      within(dialog).getByRole("link", { name: "Data Sources" })
-    ).toBeVisible();
+      within(dialog).queryByRole("link", { name: "Data Sources" })
+    ).toBeNull();
     expect(
       within(dialog).getByRole("link", { name: "Relic Triage" })
     ).toHaveAttribute("href", APP_PATHS.triage);

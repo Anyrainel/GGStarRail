@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Database, UsersRound } from "lucide-react";
+import { UsersRound } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -33,12 +33,6 @@ export function WorkspaceStartState({
         ) : (
           <AccountImportAction />
         )}
-        <Button asChild variant="ghost">
-          <Link to={APP_PATHS.imports}>
-            <Database className="h-4 w-4" aria-hidden />
-            {t("imports.help.open")}
-          </Link>
-        </Button>
       </div>
     </EmptyState>
   );

@@ -129,6 +129,30 @@ export const messagesZhCn = {
   "filter.configuredOnly": "仅已配置配装",
   "filter.reset": "重置筛选",
   "home.brand": "GGArtifact",
+  "home.heroDescription":
+    "实用的星铁工具，助你管理角色养成、规划配装、筛选遗器。",
+  "home.disclaimerPrefix": "《崩坏：星穹铁道》为米哈游／HoYoverse 的商标，",
+  "home.disclaimerProject": "本项目",
+  "home.disclaimerSuffix": "与其无关联，也未获得其认可。",
+  "home.dataAttribution": "感谢 HoYoWiki 与 Nanoka 提供游戏数据。",
+  "guide.open": "使用教程",
+  "guide.previous": "上一步",
+  "guide.next": "下一步",
+  "guide.done": "开始使用",
+  "guide.progress": "使用教程 · {current} / {total}",
+  "guide.account.body":
+    "进入账号数据，点击「导入账号」。选择兼容的扫描器 JSON 文件，或通过 UID 获取公开角色展柜数据，确认预览后再导入。",
+  "guide.account.hint":
+    "公开展柜仅包含展示的角色及其装备。要导入背包中的其他装备，请使用扫描器导出的文件。",
+  "guide.builds.body":
+    "选择角色，指定隧洞遗器和位面饰品套装来创建配装。设置主词条和副词条权重后，前往遗器筛选查看匹配装备。",
+  "guide.builds.hint":
+    "无需导入账号即可配置配装；查看匹配装备则需要先导入遗器。",
+  "guide.priority.body": "将角色、光锥和遗器套装排入自己的优先级档位。",
+  "guide.priority.hint": "可以随时按角色池和目标调整优先级。",
+  "guide.archive.body":
+    "查阅角色、光锥和遗器套装。通过搜索与筛选找到配装所需的信息。",
+  "guide.archive.hint": "浏览图鉴无需导入账号。",
   "home.openBuilds": "配置配装",
   "home.openTiers": "整理优先级",
   "build.chooseSet": "选择套装",
@@ -215,7 +239,6 @@ export const messagesZhCn = {
   "nav.tierCharacters": "角色优先级",
   "nav.tierLightCones": "光锥优先级",
   "nav.tierRelics": "遗器优先级",
-  "nav.imports": "数据来源",
   "route.home.title": "配好角色，留下真正有用的遗器",
   "route.home.description": "你的《崩坏：星穹铁道》遗器、配装与养成规划助手。",
   "home.openAccount": "打开账号数据",
@@ -261,9 +284,6 @@ export const messagesZhCn = {
   "route.tierRelics.title": "遗器优先级",
   "route.tierRelics.description":
     "把隧洞遗器与位面饰品放在同一张表中，按用途与个人优先级整理。",
-  "route.imports.title": "数据来源",
-  "route.imports.description":
-    "导入扫描器文件或公开 UID 展示，查看可用的账号导入方式。",
   "route.notFound.title": "页面不存在",
   "route.notFound.description": "找不到此页面，请从导航中选择工具继续使用。",
   "home.snapshot.title": "本地工作区",
@@ -612,20 +632,8 @@ export const messagesZhCn = {
   "archive.servants": "忆灵（{servants}）",
   "archive.seasonalEnhancements": "角色强化（{value}）",
   "archive.superimposition": "叠影 {value}",
-  "imports.scanner.title": "扫描器导出",
-  "imports.scanner.body":
-    "GGArtifact、GOODScanner 星铁、Reliquary、HSR-Scanner、Kel 和 Fribbels JSON。",
-  "imports.hoyolab.title": "HoYoLAB 账号导入",
-  "imports.hoyolab.body":
-    "仅限本人账号的角色及已装备物品，不含未装备背包。凭据导入尚未通过实测。",
-  "imports.security.title": "身份 Cookie 安全",
-  "imports.security.body": "身份 Cookie 不会被保存、导出或写入日志。",
-  "imports.boundary.ready": "契约已就绪",
-  "imports.boundary.future": "尚未用真实凭据验证",
   "imports.open": "导入账号",
   "imports.dialog.title": "导入账号数据",
-  "imports.help.open": "查看数据来源说明",
-  "imports.help.title": "账号导入",
   "imports.account.title": "本地账号导入",
   "imports.selectFile": "选择 JSON 文件",
   "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",

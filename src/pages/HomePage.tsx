@@ -1,6 +1,7 @@
 import { Award, Database, Filter, Library } from "lucide-react";
 import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
+import { WelcomeGuideManual } from "@/components/home/WelcomeGuideManual";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
@@ -19,12 +20,15 @@ export default function HomePage() {
               alt=""
               width="560"
               height="200"
-              className="h-auto w-full drop-shadow-lg"
+              className="h-auto w-full drop-shadow-[0_2px_1px_#243747]"
             />
           </h1>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-foreground/75 sm:text-sm">
-            {t("site.starRail")}
+          <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-foreground/80 sm:text-xl">
+            {t("home.heroDescription")}
           </p>
+        </div>
+        <div className="pt-2">
+          <WelcomeGuideManual />
         </div>
       </section>
       <section className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
@@ -62,6 +66,21 @@ export default function HomePage() {
         />
       </section>
       <FeatureMatrix />
+      <footer className="mt-auto space-y-1 border-t border-border/20 pb-2 pt-6 text-center text-xs leading-relaxed text-muted-foreground">
+        <p>
+          {t("home.disclaimerPrefix")}
+          <a
+            href="https://github.com/Anyrainel/GGStarRail"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium underline underline-offset-2 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t("home.disclaimerProject")}
+          </a>
+          {t("home.disclaimerSuffix")}
+        </p>
+        <p>{t("home.dataAttribution")}</p>
+      </footer>
     </ScrollLayout>
   );
 }

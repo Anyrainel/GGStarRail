@@ -27,7 +27,6 @@ const ArtifactBuildsView = lazy(
 const CharacterBuildView = lazy(
   () => import("@/pages/artifact-builds/CharacterBuildView")
 );
-const DataSourcesPage = lazy(() => import("@/pages/DataSourcesPage"));
 const CharacterTierListView = lazy(
   () => import("@/pages/tier-list/CharacterTierListView")
 );
@@ -152,7 +151,6 @@ export default function App() {
               />
             }
           />
-          <Route path={APP_PATHS.imports} element={<DataSourcesPage />} />
           <Route
             path={APP_PATHS.archiveCurrencyWar}
             element={

@@ -1,7 +1,6 @@
 import {
   Check,
   ChevronDown,
-  Database,
   ExternalLink,
   Languages,
   Menu,
@@ -38,7 +37,6 @@ import {
 } from "@/components/ui/sheet";
 import {
   APP_PATHS,
-  DATA_SOURCES_NAV,
   NAVIGATION_SECTIONS,
   navigationSection,
 } from "@/config/navigation";
@@ -56,20 +54,16 @@ function SiteSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-10 min-w-0 gap-2 px-1.5 text-muted-foreground hover:bg-transparent hover:text-foreground sm:px-2"
+          className="h-10 min-w-0 gap-1.5 px-1 text-muted-foreground hover:bg-transparent hover:text-foreground"
           aria-label={t("site.switcher.label")}
         >
-          <img src={getAssetUrl("logo-hsr.svg")} className="h-8 w-8" alt="" />
-          <span className="hidden text-base font-semibold sm:inline">
-            GGArtifact
-          </span>
           <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
             {t("site.starRail.short")}
           </span>
           <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-72">
+      <DropdownMenuContent align="start" className="w-max min-w-48">
         <DropdownMenuLabel>{t("site.switcher.label")}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={GENSHIN_SITE_URL}>
@@ -110,13 +104,6 @@ function ThemeAndLocaleMenu({ actions }: { actions: ReactNode }) {
       <DropdownMenuContent align="end" className="w-64">
         {actions}
         {actions && <DropdownMenuSeparator />}
-        <DropdownMenuItem asChild>
-          <Link to={APP_PATHS.imports}>
-            <Database className="h-4 w-4" aria-hidden="true" />
-            {t("nav.imports")}
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuLabel className="flex items-center gap-2">
           <Languages className="h-4 w-4" aria-hidden="true" />
           {t("app.locale")}
@@ -233,20 +220,6 @@ function MobileMenu() {
               </div>
             </section>
           ))}
-          <Button
-            variant={pathname === APP_PATHS.imports ? "secondary" : "ghost"}
-            asChild
-            className="h-9 w-full justify-start"
-            onClick={() => setOpen(false)}
-          >
-            <Link
-              to={APP_PATHS.imports}
-              aria-current={pathname === APP_PATHS.imports ? "page" : undefined}
-            >
-              <DATA_SOURCES_NAV.icon className="h-4 w-4" aria-hidden="true" />
-              {t(DATA_SOURCES_NAV.labelKey)}
-            </Link>
-          </Button>
         </nav>
       </SheetContent>
     </Sheet>
@@ -301,6 +274,7 @@ function SectionTabs() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const { pathname } = useLocation();
   const [registeredActions, setActions] =
     useState<RegisteredPageActions | null>(null);
@@ -316,6 +290,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
             <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
               <MobileMenu />
+              <Link
+                to={APP_PATHS.home}
+                className="flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 font-semibold hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={t("home.brand")}
+              >
+                <img
+                  src={getAssetUrl("logo-hsr.svg")}
+                  className="h-8 w-8"
+                  alt=""
+                />
+                <span className="hidden text-base sm:inline">GGArtifact</span>
+              </Link>
               <SiteSwitcher />
               <DesktopNavigation />
             </div>

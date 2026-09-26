@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { APP_PATHS } from "@/config/navigation";
 import { I18nProvider } from "@/i18n/I18nContext";
 import CharacterView from "@/pages/account-data/CharacterView";
 import InventoryView from "@/pages/account-data/InventoryView";
@@ -40,8 +39,8 @@ describe("Fresh workspace actions", () => {
       screen.queryByRole("button", { name: "Load demo account" })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Data source details" })
-    ).toHaveAttribute("href", APP_PATHS.imports);
+      screen.queryByRole("link", { name: "Data source details" })
+    ).toBeNull();
   });
 
   it("opens the responsive account import flow from an empty Account Data page", async () => {

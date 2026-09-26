@@ -40,7 +40,7 @@
     <path d="m18-30 124-3 20-4h43m-189 33 135-5 46-2 43 6" fill="none" stroke="#e4edf0" stroke-width="1.2" opacity=".7"/>
   </g>
   <!-- Hand-drawn angular letterforms spell GGArtifact in small capitals. -->
-  <g transform="translate(84 84) skewX(-13)" fill="url(#letters)" stroke="#658297" stroke-width=".8" paint-order="stroke fill">
+  <g transform="translate(84 84) skewX(-13)" fill="url(#letters)" stroke="#30495c" stroke-width="2.5" stroke-linejoin="round" paint-order="stroke fill">
     <use href="#g"/>
     <use href="#g" x="49"/>
     <use href="#a" x="99"/>

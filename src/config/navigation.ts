@@ -4,7 +4,6 @@ import {
   Boxes,
   Coins,
   Crown,
-  Database,
   DatabaseZap,
   Filter,
   Gem,
@@ -34,7 +33,6 @@ export const APP_PATHS = {
   archiveRelicSets: "/archive/relic-sets",
   archiveAchievements: "/archive/achievements",
   archiveCurrencyWar: "/archive/currency-war",
-  imports: "/data-sources",
 } as const;
 
 export type AppPath = (typeof APP_PATHS)[keyof typeof APP_PATHS];
@@ -135,12 +133,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
     ],
   },
 ];
-
-export const DATA_SOURCES_NAV: NavigationItem = {
-  path: APP_PATHS.imports,
-  labelKey: "nav.imports",
-  icon: Database,
-};
 
 export function navigationSection(pathname: string) {
   return NAVIGATION_SECTIONS.find((section) =>
