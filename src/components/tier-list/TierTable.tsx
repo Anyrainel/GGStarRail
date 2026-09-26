@@ -10,7 +10,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { type ReactNode, useCallback, useMemo, useRef, useState } from "react";
+import { type ReactNode, useMemo, useRef, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
@@ -22,10 +22,7 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
-import {
-  PRIORITY_ROWS,
-  RELIC_PRIORITY_GROUPS,
-} from "@/domain/tier-list/constants";
+import { PRIORITY_ROWS } from "@/domain/tier-list/constants";
 import type {
   TierDocument,
   TierPresentation,
@@ -35,7 +32,6 @@ import type {
   PriorityPlacement,
   PriorityTier,
   RelicGroupAssignments,
-  RelicPriorityGroup,
 } from "@/domain/tier-list/types";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
@@ -53,7 +49,6 @@ interface TierTableProps<Group extends string> {
   groups: readonly TierGroupConfig<Group>[];
   assignments: PriorityAssignments;
   groupAssignments?: RelicGroupAssignments;
-  allowGroupChange?: boolean;
   filterItem?: (item: TierItemData<Group>) => boolean;
   onChange: (value: {
     assignments: PriorityAssignments;
@@ -77,7 +72,6 @@ export function TierTable<Group extends string>({
   groups,
   assignments,
   groupAssignments = {},
-  allowGroupChange = false,
   filterItem,
   onChange,
 }: TierTableProps<Group>) {
@@ -193,16 +187,6 @@ export function TierTable<Group extends string>({
     [groups]
   );
 
-  const effectiveGroup = useCallback(
-    (item: TierItemData<Group>): Group => {
-      const override = groupAssignments[item.id];
-      return allowGroupChange && override && groupIds.has(override as Group)
-        ? (override as Group)
-        : item.group;
-    },
-    [allowGroupChange, groupAssignments, groupIds]
-  );
-
   const itemsByCell = useMemo(() => {
     const result = new Map<string, TierItemData<Group>[]>();
     for (const group of groups) {
@@ -210,7 +194,7 @@ export function TierTable<Group extends string>({
     }
     for (const item of visibleItems) {
       if (filterItem && !filterItem(item)) continue;
-      const group = effectiveGroup(item);
+      const group = item.group;
       const tier = assignments[item.id]?.tier ?? "Pool";
       result.get(cellKey(group, tier))?.push(item);
     }
@@ -225,7 +209,7 @@ export function TierTable<Group extends string>({
       }
     }
     return result;
-  }, [assignments, effectiveGroup, filterItem, groups, visibleItems]);
+  }, [assignments, filterItem, groups, visibleItems]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -237,7 +221,6 @@ export function TierTable<Group extends string>({
 
   function reindexCell(
     nextAssignments: PriorityAssignments,
-    nextGroups: RelicGroupAssignments,
     group: Group,
     tier: Exclude<PriorityTier, "Pool">,
     orderedIds?: readonly string[]
@@ -246,12 +229,9 @@ export function TierTable<Group extends string>({
       orderedIds ??
       items
         .filter((item) => {
-          const override = nextGroups[item.id];
-          const itemGroup =
-            allowGroupChange && override && groupIds.has(override as Group)
-              ? (override as Group)
-              : item.group;
-          return itemGroup === group && nextAssignments[item.id]?.tier === tier;
+          return (
+            item.group === group && nextAssignments[item.id]?.tier === tier
+          );
         })
         .sort(
           (left, right) =>
@@ -267,7 +247,7 @@ export function TierTable<Group extends string>({
   function moveItem(itemId: string, target: DropTarget<Group>) {
     const item = itemsById.get(itemId);
     if (!item) return;
-    const oldGroup = effectiveGroup(item);
+    const oldGroup = item.group;
     const existingPlacement: PriorityPlacement | undefined = Object.hasOwn(
       assignments,
       itemId
@@ -275,33 +255,17 @@ export function TierTable<Group extends string>({
       ? assignments[itemId]
       : undefined;
     const oldTier: PriorityTier = existingPlacement?.tier ?? "Pool";
-    if (!allowGroupChange && target.group !== item.group) return;
-    if (
-      allowGroupChange &&
-      !RELIC_PRIORITY_GROUPS.includes(target.group as RelicPriorityGroup)
-    ) {
-      return;
-    }
+    if (target.group !== item.group) return;
 
     const nextAssignments = { ...assignments };
-    const nextGroups = { ...groupAssignments };
-    if (allowGroupChange) {
-      if (target.group === item.group) delete nextGroups[itemId];
-      else nextGroups[itemId] = target.group as RelicPriorityGroup;
-    }
     delete nextAssignments[itemId];
 
     if (target.tier !== "Pool") {
       const targetIds = items
         .filter((candidate) => {
           if (candidate.id === itemId) return false;
-          const override = nextGroups[candidate.id];
-          const candidateGroup =
-            allowGroupChange && override && groupIds.has(override as Group)
-              ? (override as Group)
-              : candidate.group;
           return (
-            candidateGroup === target.group &&
+            candidate.group === target.group &&
             nextAssignments[candidate.id]?.tier === target.tier
           );
         })
@@ -317,23 +281,17 @@ export function TierTable<Group extends string>({
         0,
         itemId
       );
-      reindexCell(
-        nextAssignments,
-        nextGroups,
-        target.group,
-        target.tier,
-        targetIds
-      );
+      reindexCell(nextAssignments, target.group, target.tier, targetIds);
     }
 
     if (
       oldTier !== "Pool" &&
       (oldTier !== target.tier || oldGroup !== target.group)
     ) {
-      reindexCell(nextAssignments, nextGroups, oldGroup, oldTier);
+      reindexCell(nextAssignments, oldGroup, oldTier);
     }
 
-    onChange({ assignments: nextAssignments, groupAssignments: nextGroups });
+    onChange({ assignments: nextAssignments, groupAssignments });
     const tierName =
       target.tier === "Pool" ? t("tier.priority.pool") : target.tier;
     setAnnouncement(
@@ -374,7 +332,7 @@ export function TierTable<Group extends string>({
     if (
       target.itemId === itemId &&
       target.tier === currentTier &&
-      target.group === effectiveGroup(item)
+      target.group === item.group
     ) {
       return;
     }
@@ -384,7 +342,7 @@ export function TierTable<Group extends string>({
   const selectedItem = selectedItemId
     ? (itemsById.get(selectedItemId) ?? null)
     : null;
-  const selectedGroup = selectedItem ? effectiveGroup(selectedItem) : null;
+  const selectedGroup = selectedItem ? selectedItem.group : null;
   const selectedTier = selectedItem
     ? (assignments[selectedItem.id]?.tier ?? "Pool")
     : null;
@@ -551,34 +509,6 @@ export function TierTable<Group extends string>({
                     ))}
                   </div>
                 </fieldset>
-                {allowGroupChange && (
-                  <fieldset className="space-y-2">
-                    <legend className="text-sm font-semibold">
-                      {t("tier.priority.chooseRole")}
-                    </legend>
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      {groups.map((group) => (
-                        <Button
-                          key={group.id}
-                          type="button"
-                          variant={
-                            group.id === selectedGroup ? "default" : "outline"
-                          }
-                          aria-pressed={group.id === selectedGroup}
-                          onClick={() =>
-                            moveItem(selectedItem.id, {
-                              group: group.id,
-                              tier: selectedTier,
-                              itemId: null,
-                            })
-                          }
-                        >
-                          {group.name}
-                        </Button>
-                      ))}
-                    </div>
-                  </fieldset>
-                )}
               </div>
             </>
           )}

@@ -91,19 +91,19 @@ describe("HSR Tier List views", () => {
     expect(useLightConePriorityStore.getState().assignments).toEqual({});
   });
 
-  it("keeps Relics and Planar Ornaments together with player-owned role columns", async () => {
+  it("groups Relics by kind and preserves ranks independently of legacy roles", async () => {
     const user = userEvent.setup();
     const { container } = renderView(<RelicTierListView />);
 
     expect(
       await screen.findByText("0 ranked · 58 in Pool", {}, catalogTimeout)
     ).toBeVisible();
-    expect(screen.getByRole("tab", { name: "Other" })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: "Cavern Relic" })).toHaveAttribute(
       "aria-selected",
       "true"
     );
     await waitFor(
-      () => expect(priorityItems(container).length).toBe(58),
+      () => expect(priorityItems(container).length).toBeGreaterThan(0),
       catalogTimeout
     );
     expect(
@@ -119,57 +119,53 @@ describe("HSR Tier List views", () => {
     if (!firstItem) throw new Error("Relic priority item missing");
     const itemId = firstItem.dataset.priorityItemId;
     if (!itemId) throw new Error("Relic priority ID missing");
-    await user.click(firstItem);
+    act(() => {
+      useRelicPriorityStore.getState().setPriorityState({
+        assignments: { [itemId]: { tier: "B", position: 0 } },
+        groupAssignments: { [itemId]: "support" },
+      });
+    });
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.queryByRole("tab", { name: "Support" })).toBeNull();
+    await user.click(
+      container.querySelector<HTMLElement>(
+        `[data-priority-item-id="${itemId}"]`
+      )!
+    );
     const dialog = screen.getByRole("dialog");
+    expect(within(dialog).queryByRole("button", { name: "DPS" })).toBeNull();
     await user.click(within(dialog).getByRole("button", { name: "A" }));
-    await user.click(within(dialog).getByRole("button", { name: "DPS" }));
 
     await waitFor(() => {
       expect(useRelicPriorityStore.getState().assignments[itemId]).toEqual({
         tier: "A",
         position: 0,
       });
-      expect(useRelicPriorityStore.getState().groupAssignments[itemId]).toBe(
-        "dps"
-      );
     });
 
     await user.click(within(dialog).getByRole("button", { name: "Close" }));
-    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const cavernIds = new Set(
+      [...priorityItems(container)].map((item) => item.dataset.priorityItemId)
+    );
+    await user.click(screen.getByRole("tab", { name: "Planar Ornament" }));
     expect(
-      within(screen.getByRole("dialog")).getByRole("button", {
-        name: "Cavern Relic",
-      })
-    ).toBeVisible();
-    await user.click(
-      within(screen.getByRole("dialog")).getByRole("button", {
-        name: "Planar Ornament",
-      })
-    );
-    await user.click(
-      within(screen.getByRole("dialog")).getByRole("button", { name: "Close" })
-    );
+      [...priorityItems(container)].every(
+        (item) => !cavernIds.has(item.dataset.priorityItemId)
+      )
+    ).toBe(true);
     const planarItems = container.querySelectorAll("[data-priority-item-id]");
     expect(planarItems.length).toBeGreaterThan(0);
     expect(planarItems.length).toBeLessThan(58);
   });
 
   it("renders the priority controls and Relic categories in zh-CN", async () => {
-    const user = userEvent.setup();
     localStorage.setItem(STORAGE_KEYS.locale, "zh-CN");
     renderView(<RelicTierListView />);
 
     expect(
       await screen.findByRole("heading", { name: "遗器优先级" }, catalogTimeout)
     ).toBeVisible();
-    await user.click(
-      await screen.findByRole("button", { name: "筛选" }, catalogTimeout)
-    );
-    expect(
-      within(screen.getByRole("dialog")).getByRole("button", {
-        name: "隧洞遗器",
-      })
-    ).toBeVisible();
-    expect(screen.getByRole("button", { name: "位面饰品" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "隧洞遗器" })).toBeVisible();
+    expect(screen.getByRole("tab", { name: "位面饰品" })).toBeVisible();
   });
 });

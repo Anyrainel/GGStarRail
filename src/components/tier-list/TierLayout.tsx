@@ -101,8 +101,7 @@ export function TierLayout<Group extends string>({
   );
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
-  const defaultGroup =
-    groups.find((group) => group.id === "other") ?? groups[0];
+  const defaultGroup = groups[0];
 
   useEffect(() => {
     if (selectedGroup && !groups.some((group) => group.id === selectedGroup)) {

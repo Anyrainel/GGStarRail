@@ -1,16 +1,14 @@
-import { HeartHandshake, Shapes, Sword } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Gem, Orbit } from "lucide-react";
+import { useMemo } from "react";
 import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { FilterChip } from "@/components/shared/FilterChip";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
   TierItemData,
 } from "@/components/tier-list/tierTableTypes";
-import type { RelicPriorityGroup } from "@/domain/tier-list/types";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { localizedName } from "@/lib/catalogPresentation";
@@ -18,12 +16,13 @@ import { formatGameText } from "@/lib/gameText";
 import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { useRelicPriorityStore } from "@/stores/useRelicPriorityStore";
 
-type RelicKindFilter = "all" | "cavern_relic" | "planar_ornament";
+type RelicKind = "cavern_relic" | "planar_ornament";
 
 export default function RelicTierListView() {
   const { locale, t } = useI18n();
   const { data, error, loading } = useRelicReferences();
   const assignments = useRelicPriorityStore((state) => state.assignments);
+  // Keep legacy role metadata round-trippable; columns use catalog kinds only.
   const groupAssignments = useRelicPriorityStore(
     (state) => state.groupAssignments
   );
@@ -31,31 +30,22 @@ export default function RelicTierListView() {
     (state) => state.setPriorityState
   );
 
-  const [kind, setKind] = useState<RelicKindFilter>("all");
-
-  const groups = useMemo<readonly TierGroupConfig<RelicPriorityGroup>[]>(
+  const groups = useMemo<readonly TierGroupConfig<RelicKind>[]>(
     () => [
       {
-        id: "dps",
-        name: t("tier.priority.role.dps"),
-        icon: <Sword className="h-5 w-5 text-primary" aria-hidden="true" />,
+        id: "cavern_relic",
+        name: t("archive.kind.cavern"),
+        icon: <Gem className="h-5 w-5 text-primary" aria-hidden="true" />,
       },
       {
-        id: "support",
-        name: t("tier.priority.role.support"),
-        icon: (
-          <HeartHandshake className="h-5 w-5 text-primary" aria-hidden="true" />
-        ),
-      },
-      {
-        id: "other",
-        name: t("tier.priority.role.other"),
-        icon: <Shapes className="h-5 w-5 text-primary" aria-hidden="true" />,
+        id: "planar_ornament",
+        name: t("archive.kind.planar"),
+        icon: <Orbit className="h-5 w-5 text-primary" aria-hidden="true" />,
       },
     ],
     [t]
   );
-  const items = useMemo<readonly TierItemData<RelicPriorityGroup>[]>(() => {
+  const items = useMemo<readonly TierItemData<RelicKind>[]>(() => {
     const rarityBySet = createRelicSetRarityMap(data?.relicPieces.values ?? []);
     return [...(data?.relicSets.values ?? [])]
       .map((relicSet) => ({
@@ -64,17 +54,11 @@ export default function RelicTierListView() {
         sourcePath: relicSet.icon_path,
         name: formatGameText(localizedName(relicSet.name, locale, relicSet.id)),
         rarity: rarityBySet.get(relicSet.id) ?? null,
-        group: "other" as const,
+        group: relicSet.kind,
         detail: relicSet.kind,
       }))
       .sort((left, right) => left.name.localeCompare(right.name, locale));
   }, [data, locale]);
-  const filters: readonly [RelicKindFilter, string][] = [
-    ["all", t("filter.allKinds")],
-    ["cavern_relic", t("archive.kind.cavern")],
-    ["planar_ornament", t("archive.kind.planar")],
-  ];
-
   return (
     <>
       {loading ? (
@@ -83,25 +67,10 @@ export default function RelicTierListView() {
         <CatalogLoadError error={error} />
       ) : (
         <TierTable
-          extraFilters={
-            <div className="flex flex-wrap gap-1.5">
-              {filters.map(([value, label]) => (
-                <FilterChip
-                  key={value}
-                  active={kind === value}
-                  onClick={() => setKind(value)}
-                >
-                  {label}
-                </FilterChip>
-              ))}
-            </div>
-          }
           items={items}
           groups={groups}
           assignments={assignments}
           groupAssignments={groupAssignments}
-          allowGroupChange
-          filterItem={(item) => kind === "all" || item.detail === kind}
           onChange={setPriorityState}
         />
       )}
