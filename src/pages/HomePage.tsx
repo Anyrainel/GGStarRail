@@ -38,6 +38,8 @@ export default function HomePage() {
           link={APP_PATHS.characters}
           bgImage="assets/ggstarrail/home/firefly.webp"
           bgPosition="55% center"
+          bgScale={1.3}
+          bgOffsetX="20%"
           ctaText={t("home.openAccount")}
         />
         <FeatureCard
@@ -62,6 +64,8 @@ export default function HomePage() {
           link={APP_PATHS.archiveCharacters}
           bgImage="assets/ggstarrail/home/evernight.webp"
           bgPosition="55% center"
+          bgScale={1.1}
+          bgOffsetX="20%"
           ctaText={t("home.openArchive")}
         />
       </section>

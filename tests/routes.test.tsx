@@ -36,9 +36,12 @@ describe("HSR route foundation", () => {
       })
     ).toBeInTheDocument();
     if (route.path === APP_PATHS.home) {
-      expect(
-        document.querySelectorAll('img[src^="/assets/ggstarrail/home/"]')
-      ).toHaveLength(4);
+      const cardArt =
+        document.querySelectorAll<HTMLElement>(".home-card-image");
+      expect(cardArt).toHaveLength(4);
+      for (const art of cardArt) {
+        expect(art.style.backgroundImage).toContain("/assets/ggstarrail/home/");
+      }
       expect(document.querySelectorAll("[data-asset-source]")).toHaveLength(0);
     }
   });

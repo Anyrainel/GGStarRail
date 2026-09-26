@@ -1,7 +1,8 @@
 import { ArrowRight } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { getAssetUrl } from "@/lib/assets";
+import "./FeatureCard.css";
 
 interface FeatureCardProps {
   icon: ReactNode;
@@ -9,6 +10,9 @@ interface FeatureCardProps {
   link: string;
   bgImage: string;
   bgPosition?: string;
+  bgScale?: number;
+  bgOffsetX?: string;
+  bgOffsetY?: string;
   ctaText: string;
 }
 
@@ -19,21 +23,28 @@ export function FeatureCard({
   link,
   bgImage,
   bgPosition = "center center",
+  bgScale = 1,
+  bgOffsetX = "0%",
+  bgOffsetY = "0%",
   ctaText,
 }: FeatureCardProps) {
   return (
     <Link
       to={link}
-      className="group relative flex min-h-[230px] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[250px]"
+      className="group relative flex min-h-[180px] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[200px]"
     >
       <div className="absolute inset-y-0 right-0 z-0 w-[65%] overflow-hidden">
-        <img
-          src={getAssetUrl(bgImage)}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          style={{ objectPosition: bgPosition }}
-          className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+        <div
+          style={
+            {
+              backgroundImage: `url('${getAssetUrl(bgImage)}')`,
+              backgroundPosition: bgPosition,
+              "--image-scale": bgScale,
+              "--image-offset-x": bgOffsetX,
+              "--image-offset-y": bgOffsetY,
+            } as CSSProperties
+          }
+          className="home-card-image absolute inset-0 bg-cover transition-transform duration-700"
         />
         <div
           className="absolute inset-0"

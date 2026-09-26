@@ -1,0 +1,9 @@
+.home-card-image {
+  transform: translate(var(--image-offset-x), var(--image-offset-y))
+    scale(var(--image-scale));
+}
+
+.group:hover .home-card-image {
+  transform: translate(var(--image-offset-x), var(--image-offset-y))
+    scale(calc(var(--image-scale) * 1.05));
+}
