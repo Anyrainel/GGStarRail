@@ -20,7 +20,7 @@ describe("GGArtifact Star Rail home", () => {
     const index = screen.getByRole("region", { name: "Find your next step" });
     expect(within(index).getAllByRole("link")).toHaveLength(14);
     expect(
-      within(index).getByRole("link", { name: "Currency War" })
+      within(index).getByRole("link", { name: /Currency War lookup/ })
     ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
