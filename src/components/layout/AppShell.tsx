@@ -1,5 +1,5 @@
 import {
-  Check,
+  ArrowRight,
   ChevronDown,
   ExternalLink,
   Languages,
@@ -7,7 +7,7 @@ import {
   MoreVertical,
   Palette,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
 import {
@@ -49,44 +49,87 @@ const GENSHIN_SITE_URL =
 
 function SiteSwitcher() {
   const { t } = useI18n();
+  const brandRef = useRef<HTMLAnchorElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [alignOffset, setAlignOffset] = useState(0);
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-10 min-w-0 gap-1.5 rounded-md px-1 text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:bg-accent/70 focus-visible:ring-0 data-[state=open]:bg-accent/50 data-[state=open]:text-foreground"
-          aria-label={t("site.switcher.label")}
+    <div className="flex shrink-0 items-center gap-1 md:gap-3">
+      <Link
+        ref={brandRef}
+        to={APP_PATHS.home}
+        className="flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 font-semibold hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label={t("home.brand")}
+      >
+        <img src={getAssetUrl("logo-hsr.svg")} className="h-8 w-8" alt="" />
+        <span className="hidden text-base sm:inline">GGArtifact</span>
+      </Link>
+      <DropdownMenu
+        onOpenChange={(open) => {
+          if (open && brandRef.current && triggerRef.current) {
+            setAlignOffset(
+              Math.round(
+                brandRef.current.getBoundingClientRect().left -
+                  triggerRef.current.getBoundingClientRect().left
+              )
+            );
+          }
+        }}
+      >
+        <div ref={triggerRef}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="h-10 min-w-0 gap-1.5 rounded-md px-1 text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:bg-accent/70 focus-visible:ring-0 data-[state=open]:bg-accent/50 data-[state=open]:text-foreground"
+              aria-label={t("site.switcher.label")}
+            >
+              <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+                {t("site.starRail.short")}
+              </span>
+              <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          </DropdownMenuTrigger>
+        </div>
+        <DropdownMenuContent
+          align="start"
+          alignOffset={alignOffset}
+          className="w-max min-w-48"
         >
-          <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-            {t("site.starRail.short")}
-          </span>
-          <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-max min-w-48">
-        <DropdownMenuItem asChild>
-          <a href={GENSHIN_SITE_URL}>
-            <img src={getAssetUrl("logo-gi.svg")} className="h-7 w-7" alt="" />
-            <span className="min-w-0 flex-1 font-medium">
-              {t("site.genshin")}
-            </span>
-            <ExternalLink
-              className="text-muted-foreground"
-              aria-hidden="true"
-            />
-          </a>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={APP_PATHS.home} aria-current="page">
-            <img src={getAssetUrl("logo-hsr.svg")} className="h-7 w-7" alt="" />
-            <span className="min-w-0 flex-1 font-medium">
-              {t("site.starRail")}
-            </span>
-            <Check className="text-primary" aria-hidden="true" />
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem asChild>
+            <a
+              href={GENSHIN_SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img
+                src={getAssetUrl("logo-gi.svg")}
+                className="h-7 w-7"
+                alt=""
+              />
+              <span className="min-w-0 flex-1 font-medium">
+                {t("site.genshin")}
+              </span>
+              <ExternalLink
+                className="text-muted-foreground"
+                aria-hidden="true"
+              />
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.home} aria-current="page">
+              <img
+                src={getAssetUrl("logo-hsr.svg")}
+                className="h-7 w-7"
+                alt=""
+              />
+              <span className="min-w-0 flex-1 font-medium">
+                {t("site.starRail")}
+              </span>
+              <ArrowRight className="text-primary" aria-hidden="true" />
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
 
@@ -273,7 +316,6 @@ function SectionTabs() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { t } = useI18n();
   const { pathname } = useLocation();
   const [registeredActions, setActions] =
     useState<RegisteredPageActions | null>(null);
@@ -289,18 +331,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
             <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
               <MobileMenu />
-              <Link
-                to={APP_PATHS.home}
-                className="flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 font-semibold hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={t("home.brand")}
-              >
-                <img
-                  src={getAssetUrl("logo-hsr.svg")}
-                  className="h-8 w-8"
-                  alt=""
-                />
-                <span className="hidden text-base sm:inline">GGArtifact</span>
-              </Link>
               <SiteSwitcher />
               <DesktopNavigation />
             </div>

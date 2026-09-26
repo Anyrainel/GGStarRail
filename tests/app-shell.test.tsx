@@ -97,11 +97,16 @@ describe("GGArtifact family shell", () => {
     expect(
       screen.getByRole("menuitem", { name: "Genshin Impact" })
     ).toHaveAttribute("href", "https://ggartifact.com");
+    expect(
+      screen.getByRole("menuitem", { name: "Genshin Impact" })
+    ).toHaveAttribute("target", "_blank");
     const starRailItem = screen.getByRole("menuitem", {
       name: "Honkai: Star Rail",
     });
     expect(starRailItem).toHaveAttribute("href", APP_PATHS.home);
     expect(starRailItem).toHaveAttribute("aria-current", "page");
+    expect(starRailItem.querySelector(".lucide-arrow-right")).not.toBeNull();
+    expect(starRailItem.querySelector(".lucide-check")).toBeNull();
   });
 
   it("derives the active top-level section and archive tab from the route", () => {
