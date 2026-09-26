@@ -5,10 +5,10 @@ import { RarityStars } from "@/components/shared/RarityStars";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
+import { groupLightConeEffects } from "@/lib/lightConeEffects";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   LightConeDefinition,
-  LightConeSuperimposition,
   PathDefinition,
 } from "@/providers/reference/types";
 
@@ -30,21 +30,7 @@ export function LightConeDetail({
         { name: t("stat.short.def"), value: scaling.stats.defence },
       ]
     : [];
-  const groups = new Map<
-    string,
-    { name: string; description: string; levels: LightConeSuperimposition[] }
-  >();
-  for (const level of lightCone.effect.superimpositions) {
-    const name = getLocalizedValue(level.name ?? lightCone.effect.name, locale);
-    const description = getLocalizedValue(
-      level.description ?? lightCone.effect.description,
-      locale
-    );
-    const key = JSON.stringify([name, description]);
-    const group = groups.get(key);
-    if (group) group.levels.push(level);
-    else groups.set(key, { name, description, levels: [level] });
-  }
+  const groups = groupLightConeEffects(lightCone, locale);
   return (
     <article data-testid="light-cone-detail" className="space-y-5 select-text">
       <div className="flex items-center gap-3 pr-8">

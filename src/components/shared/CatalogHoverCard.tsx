@@ -17,6 +17,8 @@ import {
 } from "@/lib/catalogPresentation";
 import { combatTypeColor } from "@/lib/gameColors";
 import { formatGameText } from "@/lib/gameText";
+import { formatGameTextVariants } from "@/lib/gameTextVariants";
+import { groupLightConeEffects } from "@/lib/lightConeEffects";
 import { ItemIcon } from "./ItemIcon";
 
 interface CatalogHoverCardProps {
@@ -97,7 +99,6 @@ function CatalogHoverContent({
     ? data.properties.combatTypeById.get(character.combat_type_id)
     : undefined;
   const scaling = character?.stat_scaling.at(-1) ?? cone?.stat_scaling.at(-1);
-  const effect = cone?.effect.superimpositions[0];
   return (
     <article className="space-y-3 select-text" aria-label={name}>
       <header className="flex items-center gap-3">
@@ -163,27 +164,24 @@ function CatalogHoverContent({
           )}
         </p>
       )}
-      {cone && (
-        <section className="space-y-1 border-t border-border pt-2 text-sm">
-          <h4 className="font-semibold">
-            {formatGameText(
-              localizedName(effect?.name ?? cone.effect.name, locale, "")
-            )}{" "}
-            · S1
-          </h4>
-          <p className="whitespace-pre-line leading-relaxed">
-            {formatGameText(
-              localizedName(
-                effect?.description ?? cone.effect.description,
-                locale,
-                ""
-              ),
-              effect?.parameters,
-              t("terms.trailblazer")
-            )}
-          </p>
-        </section>
-      )}
+      {cone &&
+        [...groupLightConeEffects(cone, locale)].map(([key, group]) => (
+          <section
+            key={key}
+            className="space-y-1 border-t border-border pt-2 text-sm"
+          >
+            <h4 className="font-semibold">
+              {formatGameText(group.name, [], t("terms.trailblazer"))}
+            </h4>
+            <p className="whitespace-pre-line leading-relaxed">
+              {formatGameTextVariants(
+                group.description,
+                group.levels,
+                t("terms.trailblazer")
+              )}
+            </p>
+          </section>
+        ))}
       {relic && (
         <dl className="space-y-1 border-t border-border pt-2 text-sm">
           {[relic.mainStat, ...relic.substats].map((stat, index) => (
