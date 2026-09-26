@@ -131,7 +131,7 @@ function PreviewCard({
             <span className="line-clamp-2 block text-sm font-medium">
               {name}
             </span>
-            {kind === "lightCones" && <RarityStars rarity={entry.rarity} />}
+            <RarityStars rarity={entry.rarity} />
             <Badge variant="outline" className="mt-1">
               {t("beta.previewBadge")}
             </Badge>
@@ -155,7 +155,7 @@ function PreviewCard({
             />
             <div className="space-y-2">
               <ResponsiveDialogTitle>{name}</ResponsiveDialogTitle>
-              {kind === "lightCones" && <RarityStars rarity={entry.rarity} />}
+              <RarityStars rarity={entry.rarity} />
               <Badge variant="outline">{t("beta.previewBadge")}</Badge>
             </div>
           </div>

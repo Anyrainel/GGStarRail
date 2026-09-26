@@ -7,7 +7,7 @@ export function RarityStars({ rarity }: { rarity: number | null }) {
     <span
       role="img"
       aria-label={t("field.rarity", { value: rarity })}
-      className="block text-xs leading-none tracking-wider text-primary"
+      className="block whitespace-nowrap text-xs leading-none tracking-wider text-[hsl(var(--rarity-star))]"
     >
       {"★".repeat(rarity)}
     </span>

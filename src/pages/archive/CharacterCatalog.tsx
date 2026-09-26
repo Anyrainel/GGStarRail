@@ -4,9 +4,10 @@ import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
+import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
-import { Badge } from "@/components/ui/badge";
+import { RarityStars } from "@/components/shared/RarityStars";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
@@ -304,10 +305,11 @@ function CharacterListRow({
             : undefined
         }
       />
-      <span className="min-w-0 text-center md:flex-1 md:text-left">
+      <span className="w-full min-w-0 text-center md:flex-1 md:text-left">
         <span className="block w-full truncate text-xs font-medium md:text-sm">
           {name}
         </span>
+        <RarityStars rarity={character.rarity} />
       </span>
       <BetaBadge member="characters" id={character.id} />
     </button>
@@ -343,20 +345,11 @@ function CharacterDetail({
             />
             <div className="min-w-0 space-y-2">
               <h2 className="text-xl font-bold md:text-2xl">{name}</h2>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">
-                  {getLocalizedValue(
-                    propertyTables.pathById.get(character.path_id)?.name,
-                    locale
-                  )}
-                </Badge>
-                <Badge variant="outline">
-                  {getLocalizedValue(
-                    propertyTables.combatTypeById.get(character.combat_type_id)
-                      ?.name,
-                    locale
-                  )}
-                </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <CharacterBadgeGroup
+                  character={character}
+                  properties={propertyTables}
+                />
                 <BetaBadge member="characters" id={character.id} />
               </div>
             </div>

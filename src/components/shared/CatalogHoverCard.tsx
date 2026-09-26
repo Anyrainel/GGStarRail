@@ -20,6 +20,7 @@ import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { groupLightConeEffects } from "@/lib/lightConeEffects";
 import { ItemIcon } from "./ItemIcon";
+import { RarityStars } from "./RarityStars";
 
 interface CatalogHoverCardProps {
   kind: CatalogAssetKind;
@@ -112,9 +113,7 @@ function CatalogHoverContent({
         />
         <div className="min-w-0 space-y-1">
           <h3 className="text-base font-bold">{name}</h3>
-          {"rarity" in entry && (
-            <p className="text-xs text-primary">{"★".repeat(entry.rarity)}</p>
-          )}
+          {"rarity" in entry && <RarityStars rarity={entry.rarity} />}
           <div className="flex flex-wrap gap-2 text-xs">
             {combatType && (
               <span style={{ color: combatTypeColor(combatType.id) }}>
