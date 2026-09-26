@@ -92,6 +92,8 @@ describe("GGArtifact family shell", () => {
 
     await user.click(screen.getByRole("button", { name: "Switch game site" }));
 
+    expect(screen.queryByText("Switch game site")).toBeNull();
+
     expect(
       screen.getByRole("menuitem", { name: "Genshin Impact" })
     ).toHaveAttribute("href", "https://ggartifact.com");

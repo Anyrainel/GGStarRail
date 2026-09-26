@@ -54,7 +54,7 @@ function SiteSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-10 min-w-0 gap-1.5 px-1 text-muted-foreground hover:bg-transparent hover:text-foreground"
+          className="h-10 min-w-0 gap-1.5 rounded-md px-1 text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:bg-accent/70 focus-visible:ring-0 data-[state=open]:bg-accent/50 data-[state=open]:text-foreground"
           aria-label={t("site.switcher.label")}
         >
           <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
@@ -64,7 +64,6 @@ function SiteSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-max min-w-48">
-        <DropdownMenuLabel>{t("site.switcher.label")}</DropdownMenuLabel>
         <DropdownMenuItem asChild>
           <a href={GENSHIN_SITE_URL}>
             <img src={getAssetUrl("logo-gi.svg")} className="h-7 w-7" alt="" />
