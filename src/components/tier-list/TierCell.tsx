@@ -12,6 +12,7 @@ interface TierCellProps<Group extends string> {
   items: readonly TierItemData<Group>[];
   onSelect: (itemId: string) => void;
   compact?: boolean;
+  dense?: boolean;
 }
 
 export function TierCell<Group extends string>({
@@ -20,6 +21,7 @@ export function TierCell<Group extends string>({
   items,
   onSelect,
   compact = false,
+  dense = false,
 }: TierCellProps<Group>) {
   const droppable = useDroppable({
     id: `priority-cell:${group}:${tier}`,
@@ -34,6 +36,7 @@ export function TierCell<Group extends string>({
       style={{ backgroundColor: tierColor(tier, "background") }}
       className={cn(
         "flex min-h-[5rem] flex-wrap content-start items-end justify-center gap-2 border-gray-600 bg-clip-padding p-2 transition-colors",
+        dense && "px-1",
         compact
           ? "min-h-[4rem] rounded-b-md border border-t-0"
           : "border-b border-r",

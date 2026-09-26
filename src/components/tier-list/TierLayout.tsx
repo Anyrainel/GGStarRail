@@ -211,6 +211,7 @@ export function TierLayout<Group extends string>({
           ...groups.map((group) => (
             <TierCell
               key={`${tier}:${group.id}`}
+              dense={groups.length > 7}
               group={group.id}
               tier={tier}
               items={itemsByCell.get(cellKey(group.id, tier)) ?? []}

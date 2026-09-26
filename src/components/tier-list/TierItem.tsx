@@ -46,7 +46,8 @@ export function TierItem<Group extends string>({
         aria-label={item.name}
         data-priority-item-id={item.id}
         className={cn(
-          "group/item relative w-16 shrink-0 touch-none bg-transparent shadow-sm outline-none",
+          "group/item relative shrink-0 touch-none bg-transparent shadow-sm outline-none",
+          item.kind === "light-cone" ? "w-14" : "w-16",
           item.kind === "character"
             ? "rounded-[3px]"
             : item.kind !== "light-cone" && "rounded-[10px]",
@@ -60,7 +61,7 @@ export function TierItem<Group extends string>({
           sourcePath={item.sourcePath}
           alt={item.name}
           rarity={item.rarity}
-          size="lg"
+          size={item.kind === "light-cone" ? "md" : "lg"}
         />
       </button>
     </CatalogHoverCard>
@@ -80,7 +81,7 @@ export function TierItemPreview<Group extends string>({
       sourcePath={item.sourcePath}
       alt={item.name}
       rarity={item.rarity}
-      size="lg"
+      size={item.kind === "light-cone" ? "md" : "lg"}
       className={cn(
         "ring-2 ring-primary shadow-2xl",
         item.kind === "character"
