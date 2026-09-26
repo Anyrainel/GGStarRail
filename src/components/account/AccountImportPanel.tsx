@@ -6,6 +6,8 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { type ChangeEvent, type FormEvent, useState } from "react";
+import { ImportMethodItem } from "@/components/shared/ImportMethodItem";
+import { Accordion } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,6 +80,7 @@ export function AccountImportPanel({
   const applyAccountImport = useWorkspaceStore(
     (state) => state.applyAccountImport
   );
+  const [method, setMethod] = useState("json");
   const [draft, setDraft] = useState<AccountImportDraft | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
@@ -295,59 +298,59 @@ export function AccountImportPanel({
   };
 
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe2 className="h-5 w-5 text-primary" aria-hidden />
-            {t("imports.uid.title")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-3" onSubmit={importUid}>
-            <label className="block space-y-1.5 text-sm font-medium">
-              <span>{t("imports.uid.label")}</span>
+    <section className="space-y-4">
+      {!draft && (
+        <Accordion
+          type="single"
+          value={method}
+          onValueChange={(value) => {
+            setMethod(value);
+            setError(null);
+            setSuccess(null);
+          }}
+          disabled={busy}
+          className="space-y-3"
+        >
+          <ImportMethodItem
+            value="json"
+            title={t("imports.account.title")}
+            icon={FileJson}
+            summary={t("imports.method.file")}
+            badge={t("imports.method.recommended")}
+          >
+            <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+              <FileJson className="h-4 w-4" aria-hidden />
+              {busy ? t("common.loading") : t("imports.selectFile")}
               <input
-                className={FIELD_CLASS}
-                value={uid}
-                onChange={(event) => setUid(event.target.value)}
-                inputMode="numeric"
-                pattern="[0-9]{9}"
-                minLength={9}
-                maxLength={9}
-                autoComplete="off"
-                placeholder={t("imports.uid.placeholder")}
-                required
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
                 disabled={busy}
+                onChange={handleFile}
               />
             </label>
             <p className="text-xs leading-5 text-muted-foreground">
-              {t("imports.uid.help")}
+              {t("imports.fileHelp")}
             </p>
-            <Button type="submit" disabled={busy || !/^\d{9}$/.test(uid)}>
-              {busy ? t("common.loading") : t("imports.uid.action")}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <KeyRound className="h-5 w-5 text-primary" aria-hidden />
-            {t("imports.credentials.title")}
-          </CardTitle>
-          <CardDescription>{t("imports.credentials.body")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-3" onSubmit={importHoYoLab}>
-            <div className="grid gap-3 sm:grid-cols-2">
+            {account && (
+              <p className="text-sm text-muted-foreground">
+                {t("imports.existingWarning")}
+              </p>
+            )}
+          </ImportMethodItem>
+          <ImportMethodItem
+            value="uid"
+            title={t("imports.uid.title")}
+            icon={Globe2}
+            summary={t("imports.method.uid")}
+          >
+            <form className="space-y-3" onSubmit={importUid}>
               <label className="block space-y-1.5 text-sm font-medium">
                 <span>{t("imports.uid.label")}</span>
                 <input
                   className={FIELD_CLASS}
-                  value={hoYoUid}
-                  onChange={(event) => setHoYoUid(event.target.value)}
+                  value={uid}
+                  onChange={(event) => setUid(event.target.value)}
                   inputMode="numeric"
                   pattern="[0-9]{9}"
                   minLength={9}
@@ -358,111 +361,120 @@ export function AccountImportPanel({
                   disabled={busy}
                 />
               </label>
-              <label className="block space-y-1.5 text-sm font-medium">
-                <span>{t("imports.credentials.region")}</span>
-                <select
-                  className={FIELD_CLASS}
-                  value={hoYoRegion}
-                  onChange={(event) =>
-                    setHoYoRegion(event.target.value as HoYoLabRegion)
-                  }
-                  disabled={busy}
-                >
-                  <option value="os">{t("imports.credentials.global")}</option>
-                  <option value="cn">{t("imports.credentials.cn")}</option>
-                </select>
-              </label>
-            </div>
-            <label className="block space-y-1.5 text-sm font-medium">
-              <span>{t("imports.credentials.cookie")}</span>
-              <textarea
-                className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
-                value={rawCookie}
-                onChange={(event) => setRawCookie(event.target.value)}
-                autoComplete="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                required
-                disabled={busy}
-              />
-            </label>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="block space-y-1.5 text-sm font-medium">
-                <span>{t("imports.credentials.deviceId")}</span>
-                <input
-                  className={FIELD_CLASS}
-                  type="password"
-                  value={deviceId}
-                  onChange={(event) => setDeviceId(event.target.value)}
-                  autoComplete="off"
-                  required
-                  disabled={busy}
-                />
-              </label>
-              <label className="block space-y-1.5 text-sm font-medium">
-                <span>{t("imports.credentials.deviceFp")}</span>
-                <input
-                  className={FIELD_CLASS}
-                  type="password"
-                  value={deviceFp}
-                  onChange={(event) => setDeviceFp(event.target.value)}
-                  autoComplete="off"
-                  required
-                  disabled={busy}
-                />
-              </label>
-            </div>
-            <p className="text-xs leading-5 text-muted-foreground">
-              {t("imports.credentials.help")}
-            </p>
-            <Button
-              type="submit"
-              disabled={
-                busy ||
-                !/^\d{9}$/.test(hoYoUid) ||
-                !rawCookie ||
-                !deviceId ||
-                !deviceFp
-              }
-            >
-              {busy ? t("common.loading") : t("imports.credentials.action")}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5 text-primary" aria-hidden />
-            {t("imports.account.title")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
-            <FileJson className="h-4 w-4" aria-hidden />
-            {busy ? t("common.loading") : t("imports.selectFile")}
-            <input
-              type="file"
-              accept="application/json,.json"
-              className="sr-only"
-              disabled={busy}
-              onChange={handleFile}
-            />
-          </label>
-          <p className="text-xs leading-5 text-muted-foreground">
-            {t("imports.fileHelp")}
-          </p>
-          {account && (
+              <p className="text-xs leading-5 text-muted-foreground">
+                {t("imports.uid.help")}
+              </p>
+              <Button type="submit" disabled={busy || !/^\d{9}$/.test(uid)}>
+                {busy ? t("common.loading") : t("imports.uid.action")}
+              </Button>
+            </form>
+          </ImportMethodItem>
+          <ImportMethodItem
+            value="hoyolab"
+            title={t("imports.credentials.title")}
+            icon={KeyRound}
+            summary={t("imports.method.hoyolab")}
+          >
             <p className="text-sm text-muted-foreground">
-              {t("imports.existingWarning")}
+              {t("imports.credentials.body")}
             </p>
-          )}
-        </CardContent>
-      </Card>
+
+            <form className="space-y-3" onSubmit={importHoYoLab}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-1.5 text-sm font-medium">
+                  <span>{t("imports.uid.label")}</span>
+                  <input
+                    className={FIELD_CLASS}
+                    value={hoYoUid}
+                    onChange={(event) => setHoYoUid(event.target.value)}
+                    inputMode="numeric"
+                    pattern="[0-9]{9}"
+                    minLength={9}
+                    maxLength={9}
+                    autoComplete="off"
+                    placeholder={t("imports.uid.placeholder")}
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                <label className="block space-y-1.5 text-sm font-medium">
+                  <span>{t("imports.credentials.region")}</span>
+                  <select
+                    className={FIELD_CLASS}
+                    value={hoYoRegion}
+                    onChange={(event) =>
+                      setHoYoRegion(event.target.value as HoYoLabRegion)
+                    }
+                    disabled={busy}
+                  >
+                    <option value="os">
+                      {t("imports.credentials.global")}
+                    </option>
+                    <option value="cn">{t("imports.credentials.cn")}</option>
+                  </select>
+                </label>
+              </div>
+              <label className="block space-y-1.5 text-sm font-medium">
+                <span>{t("imports.credentials.cookie")}</span>
+                <textarea
+                  className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
+                  value={rawCookie}
+                  onChange={(event) => setRawCookie(event.target.value)}
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  required
+                  disabled={busy}
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-1.5 text-sm font-medium">
+                  <span>{t("imports.credentials.deviceId")}</span>
+                  <input
+                    className={FIELD_CLASS}
+                    type="password"
+                    value={deviceId}
+                    onChange={(event) => setDeviceId(event.target.value)}
+                    autoComplete="off"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+                <label className="block space-y-1.5 text-sm font-medium">
+                  <span>{t("imports.credentials.deviceFp")}</span>
+                  <input
+                    className={FIELD_CLASS}
+                    type="password"
+                    value={deviceFp}
+                    onChange={(event) => setDeviceFp(event.target.value)}
+                    autoComplete="off"
+                    required
+                    disabled={busy}
+                  />
+                </label>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">
+                {t("imports.credentials.help")}
+              </p>
+              <Button
+                type="submit"
+                disabled={
+                  busy ||
+                  !/^\d{9}$/.test(hoYoUid) ||
+                  !rawCookie ||
+                  !deviceId ||
+                  !deviceFp
+                }
+              >
+                {busy ? t("common.loading") : t("imports.credentials.action")}
+              </Button>
+            </form>
+          </ImportMethodItem>
+        </Accordion>
+      )}
 
       {draft && (
-        <Card className="border-primary/35 lg:col-span-2">
+        <Card className="border-primary/35">
           <CardHeader>
             <CardTitle>{t("imports.review.title")}</CardTitle>
             <CardDescription>
@@ -603,7 +615,7 @@ export function AccountImportPanel({
 
       {error !== null && (
         <div
-          className="space-y-2 rounded-xl border border-destructive/50 bg-destructive/10 p-5 lg:col-span-2"
+          className="space-y-2 rounded-xl border border-destructive/50 bg-destructive/10 p-5"
           role="alert"
         >
           <div className="flex items-center gap-2 font-medium">
@@ -619,7 +631,7 @@ export function AccountImportPanel({
 
       {success !== null && (
         <div
-          className="flex items-center gap-3 rounded-xl border border-primary/35 bg-primary/10 p-5 text-sm lg:col-span-2"
+          className="flex items-center gap-3 rounded-xl border border-primary/35 bg-primary/10 p-5 text-sm"
           role="status"
         >
           <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden />

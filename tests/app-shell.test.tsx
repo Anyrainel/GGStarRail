@@ -159,9 +159,10 @@ describe("GGArtifact family shell", () => {
       screen.getByRole("dialog", { name: "Import account data" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "UID profile showcase" })
+      screen.getByRole("heading", { name: /UID profile showcase/ })
     ).toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: /credential import/ }));
     const cookie = screen.getByLabelText("Cookie header");
     await user.type(cookie, "ltoken_v2=transient-only");
     await user.click(
@@ -170,6 +171,10 @@ describe("GGArtifact family shell", () => {
       ).getByRole("button", { name: "Close" })
     );
     await user.click(appBarImport);
+    expect(
+      screen.getByRole("button", { name: /JSON file import/ })
+    ).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: /credential import/ }));
     expect(screen.getByLabelText("Cookie header")).toHaveValue("");
   });
 

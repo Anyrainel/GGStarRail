@@ -31,6 +31,36 @@ afterEach(() => {
 });
 
 describe("Account import and demo workflows", () => {
+  it("starts with JSON and keeps exactly one method open while preserving UID input", async () => {
+    const user = userEvent.setup();
+    render(
+      <I18nProvider>
+        <AccountImportPanel />
+      </I18nProvider>
+    );
+    const file = screen.getByRole("button", { name: /JSON file import/ });
+    const uid = screen.getByRole("button", { name: /UID profile showcase/ });
+    const hoyolab = screen.getByRole("button", { name: /credential import/ });
+    expect(file).toHaveAttribute("aria-expanded", "true");
+    expect(uid).toHaveAttribute("aria-expanded", "false");
+    expect(hoyolab).toHaveAttribute("aria-expanded", "false");
+    expect(
+      screen
+        .getAllByRole("button")
+        .filter((button) => button.hasAttribute("aria-expanded"))
+    ).toEqual([file, uid, hoyolab]);
+    await user.click(uid);
+    expect(file).toHaveAttribute("aria-expanded", "false");
+    await user.type(screen.getByLabelText("Star Rail UID"), "600000001");
+    await user.click(hoyolab);
+    expect(uid).toHaveAttribute("aria-expanded", "false");
+    expect(hoyolab).toHaveAttribute("aria-expanded", "true");
+    await user.click(uid);
+    expect(screen.getByLabelText("Star Rail UID")).toHaveValue("600000001");
+    await user.click(uid);
+    expect(uid).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("adapts the audited GOODScanner experimental v1 envelope", async () => {
     const draft = await parseVersionedScannerExport(
       goodScannerFixture,
@@ -243,8 +273,11 @@ describe("Account import and demo workflows", () => {
       </I18nProvider>
     );
 
+    await user.click(
+      screen.getByRole("button", { name: /UID profile showcase/ })
+    );
     await user.type(
-      screen.getAllByLabelText("Star Rail UID")[0] as HTMLInputElement,
+      screen.getByLabelText("Star Rail UID") as HTMLInputElement,
       "600000001"
     );
     await act(async () => {
@@ -294,8 +327,11 @@ describe("Account import and demo workflows", () => {
       </I18nProvider>
     );
 
+    await user.click(
+      screen.getByRole("button", { name: /UID profile showcase/ })
+    );
     await user.type(
-      screen.getAllByLabelText("Star Rail UID")[0] as HTMLInputElement,
+      screen.getByLabelText("Star Rail UID") as HTMLInputElement,
       "600000001"
     );
     await act(async () => {
@@ -354,8 +390,11 @@ describe("Account import and demo workflows", () => {
       </I18nProvider>
     );
 
+    await user.click(
+      screen.getByRole("button", { name: /UID profile showcase/ })
+    );
     await user.type(
-      screen.getAllByLabelText("Star Rail UID")[0] as HTMLInputElement,
+      screen.getByLabelText("Star Rail UID") as HTMLInputElement,
       "700000001"
     );
     await act(async () => {
@@ -423,6 +462,7 @@ describe("Account import and demo workflows", () => {
       </I18nProvider>
     );
 
+    await user.click(screen.getByRole("button", { name: /credential import/ }));
     const uidFields = screen.getAllByLabelText(
       "Star Rail UID"
     ) as HTMLInputElement[];
@@ -433,7 +473,7 @@ describe("Account import and demo workflows", () => {
     const fingerprint = screen.getByLabelText(
       "Device fingerprint"
     ) as HTMLInputElement;
-    await user.type(uidFields[1] as HTMLInputElement, "600000001");
+    await user.type(uidFields[0] as HTMLInputElement, "600000001");
     await user.type(cookie, "ltuid_v2=600000001; ltoken_v2=one-use-value");
     await user.type(device, "test-device-id");
     await user.type(fingerprint, "1234567890123");
@@ -444,9 +484,10 @@ describe("Account import and demo workflows", () => {
     });
 
     expect(await screen.findByText("Review before import")).toBeInTheDocument();
-    expect(cookie).toHaveValue("");
-    expect(device).toHaveValue("");
-    expect(fingerprint).toHaveValue("");
+    await user.click(screen.getByRole("button", { name: /Cancel/ }));
+    expect(screen.getByLabelText("Cookie header")).toHaveValue("");
+    expect(screen.getByLabelText("Device ID")).toHaveValue("");
+    expect(screen.getByLabelText("Device fingerprint")).toHaveValue("");
   });
 
   it("does not offer synthetic accounts or mutate an existing snapshot", () => {

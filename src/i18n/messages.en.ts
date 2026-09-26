@@ -693,7 +693,11 @@ export const messagesEn = {
   "archive.superimposition": "Superimposition {value}",
   "imports.open": "Import account",
   "imports.dialog.title": "Import account data",
-  "imports.account.title": "Local account import",
+  "imports.account.title": "JSON file import",
+  "imports.method.recommended": "Recommended",
+  "imports.method.file": "Coverage depends on the exported file",
+  "imports.method.uid": "Public showcase and equipped items only",
+  "imports.method.hoyolab": "Characters and equipped items only",
   "imports.selectFile": "Choose JSON file",
   "imports.fileHelp":
     "JSON only. Importing never sends the file or account data over the network.",

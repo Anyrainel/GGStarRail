@@ -51,6 +51,7 @@ export function AccountImportAction({
       </ResponsiveDialogTrigger>
       {open && (
         <ResponsiveDialogContent
+          className="md:max-w-xl"
           aria-describedby={undefined}
           closeLabel={t("common.close")}
         >

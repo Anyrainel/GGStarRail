@@ -52,11 +52,12 @@ describe("Fresh workspace actions", () => {
     const dialog = screen.getByRole("dialog", { name: "Import account data" });
     expect(dialog).toBeInTheDocument();
     const methodHeadings = screen.getAllByRole("heading", { level: 3 });
-    expect(methodHeadings.map((heading) => heading.textContent)).toEqual([
-      "UID profile showcase",
-      "HoYoLAB / 米游社 credential import",
-      "Local account import",
-    ]);
+    expect(methodHeadings).toHaveLength(3);
+    expect(methodHeadings[0]).toHaveTextContent("JSON file import");
+    expect(methodHeadings[1]).toHaveTextContent("UID profile showcase");
+    expect(methodHeadings[2]).toHaveTextContent(
+      "HoYoLAB / 米游社 credential import"
+    );
     expect(screen.getByLabelText("Choose JSON file").parentElement).toHaveClass(
       "focus-within:ring-2"
     );
