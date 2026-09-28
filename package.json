@@ -20,7 +20,7 @@
     "data:package": "node scripts/data-bundle.mjs package",
     "build:cloudflare": "npm run data:restore && npm run assets:webp && npm run check",
     "deploy": "wrangler deploy",
-    "build": "npm run assets:webp && tsc -b && vite build && node scripts/check-home-assets.mjs",
+    "build": "npm run assets:webp && tsc -b && vite build && node scripts/check-home-assets.mjs && node scripts/check-public-assets.mjs",
     "preview": "vite preview",
     "type-check": "tsc -b --noEmit",
     "type-check:worker": "tsc -p tsconfig.worker.json --noEmit",

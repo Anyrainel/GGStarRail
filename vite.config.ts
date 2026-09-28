@@ -52,30 +52,21 @@ export default defineConfig({
         await mkdir(path.resolve(__dirname, "dist/assets/ggstarrail/webp"), {
           recursive: true,
         });
-        await mkdir(path.resolve(__dirname, "dist/good"), { recursive: true });
-        await copyFile(
-          path.resolve(__dirname, "public/_headers"),
-          path.resolve(__dirname, "dist/_headers")
-        );
-        for (const asset of [
-          "logo-gi.svg",
-          "logo-hsr.svg",
-          "favicon.svg",
-          "favicon-48.png",
-          "apple-touch-icon.png",
-          "assets/ggstarrail/wordmark.svg",
-          "good/mapping_achievements.json",
-        ]) {
-          await copyFile(
-            path.resolve(__dirname, "public", asset),
-            path.resolve(__dirname, "dist", asset)
-          );
-        }
-        await cp(
-          path.resolve(__dirname, "public/assets/ggstarrail/home"),
-          path.resolve(__dirname, "dist/assets/ggstarrail/home"),
-          { recursive: true }
-        );
+        const publicDirectory = path.resolve(__dirname, "public");
+        // Public files are published by default, including newly added data
+        // endpoints. Generated image directories are handled separately below.
+        await cp(publicDirectory, path.resolve(__dirname, "dist"), {
+          recursive: true,
+          filter(source) {
+            const relative = path
+              .relative(publicDirectory, source)
+              .replaceAll("\\", "/");
+            return ![
+              "assets/ggstarrail/cache",
+              "assets/ggstarrail/webp",
+            ].includes(relative);
+          },
+        });
         for (const image of images) {
           if (!/^webp\/[a-f0-9]{64}\.webp$/.test(image))
             throw new Error(`Invalid WebP path: ${image}`);
