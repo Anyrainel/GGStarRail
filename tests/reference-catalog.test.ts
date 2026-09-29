@@ -68,14 +68,14 @@ describe("lazy reference producer catalog provider", () => {
     ]);
 
     expect(HSR_REFERENCE_REVISION).toBe(
-      "8cdb905dc2f8e6fffa9be4eb07af3e34435d6091"
+      "6b2bc17ebf461e497ba0dd0ffd44875f1866762b"
     );
     expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("2.0.0");
-    expect(achievementIds.size).toBe(1921);
-    expect(characters.values).toHaveLength(97);
-    expect(lightCones.values).toHaveLength(169);
-    expect(relicSets.values).toHaveLength(60);
-    expect(relicPieces.values).toHaveLength(742);
+    expect(achievementIds.size).toBe(1950);
+    expect(characters.values).toHaveLength(98);
+    expect(lightCones.values).toHaveLength(170);
+    expect(relicSets.values).toHaveLength(62);
+    expect(relicPieces.values).toHaveLength(774);
     expect(propertyTables.properties).toHaveLength(56);
     expect(propertyTables.paths).toHaveLength(9);
     expect(propertyTables.combatTypes).toHaveLength(7);
@@ -117,13 +117,13 @@ describe("lazy reference producer catalog provider", () => {
     const enhancements = expandedCharacters.flatMap(
       (character) => character.enhancements
     );
-    expect(skills).toHaveLength(639);
-    expect(ranks).toHaveLength(582);
-    expect(traces).toHaveLength(801);
-    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(4_048);
+    expect(skills).toHaveLength(648);
+    expect(ranks).toHaveLength(588);
+    expect(traces).toHaveLength(810);
+    expect(traces.flatMap((trace) => trace.levels)).toHaveLength(4_098);
     expect(
       expandedCharacters.flatMap((character) => character.trace_stats)
-    ).toHaveLength(291);
+    ).toHaveLength(295);
     expect(march?.trace_stats).toEqual([
       { property_id: "DefenceAddedRatio", value: 0.225 },
       { property_id: "IceAddedRatio", value: 0.224 },
@@ -203,7 +203,7 @@ describe("lazy reference producer catalog provider", () => {
       lightCones.values.flatMap(
         (lightCone) => lightCone.effect.superimpositions
       )
-    ).toHaveLength(845);
+    ).toHaveLength(850);
     expect(
       lightCones.values.every(
         (lightCone) =>
@@ -240,10 +240,10 @@ describe("lazy reference producer catalog provider", () => {
     expect(progression.relic_scoring.main_affix_base_values).toHaveLength(20);
     expect(progression.relic_scoring.sub_affix_base_values).toHaveLength(12);
     expect(progression.relic_scoring.main_affix_character_weights).toHaveLength(
-      97
+      98
     );
     expect(progression.relic_scoring.sub_affix_character_weights).toHaveLength(
-      97
+      98
     );
     expect(Object.keys(progression).sort()).toEqual([
       "relic_main_affixes",

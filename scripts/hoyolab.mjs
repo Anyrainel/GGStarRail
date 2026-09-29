@@ -24,7 +24,6 @@ const menus = {
   characters: "104",
   light_cones: "107",
   relic_sets: "108",
-  "progression.items": "110",
   achievements: "134",
 };
 
@@ -120,10 +119,7 @@ export async function crawlHoyolab({
   const entries = [];
   const unmatched = [];
   for (const [collection, menu] of Object.entries(menus)) {
-    const records =
-      collection === "progression.items"
-        ? documents.progression.items
-        : documents[collection];
+    const records = documents[collection];
     const index = exactNameIndex(records);
     const candidates = new Map();
     for (const [language, locale] of [

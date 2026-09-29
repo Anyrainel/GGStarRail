@@ -45,7 +45,7 @@ describe("HSR Tier List views", () => {
       await screen.findByRole("heading", { name: "Character Priority" })
     ).toBeVisible();
     expect(
-      await screen.findByText("0 ranked · 92 in Pool", {}, catalogTimeout)
+      await screen.findByText("0 ranked · 93 in Pool", {}, catalogTimeout)
     ).toBeVisible();
     await waitFor(
       () => expect(priorityItems(container).length).toBeGreaterThan(0),
@@ -69,14 +69,14 @@ describe("HSR Tier List views", () => {
         position: 0,
       });
     });
-    expect(screen.getByText("1 ranked · 91 in Pool")).toBeVisible();
+    expect(screen.getByText("1 ranked · 92 in Pool")).toBeVisible();
   });
 
   it("groups Light Cones by Path while leaving every entry unranked", async () => {
     const { container } = renderView(<LightConeTierListView />);
 
     expect(
-      await screen.findByText("0 ranked · 166 in Pool", {}, catalogTimeout)
+      await screen.findByText("0 ranked · 170 in Pool", {}, catalogTimeout)
     ).toBeVisible();
     await waitFor(
       () => expect(priorityItems(container).length).toBeGreaterThan(0),

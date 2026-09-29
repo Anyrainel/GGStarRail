@@ -26,7 +26,7 @@ it("loads preview logic and the selected preview language only when enabled", as
   setBetaEnabled(true);
   const { loadAchievementDisplay } = await import("@/data/achievementLoader");
   expect((await loadAchievementDisplay("zh-CN")).achievements).toHaveLength(
-    1921
+    1950
   );
   expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
     "/src/data/game/achievements.json",

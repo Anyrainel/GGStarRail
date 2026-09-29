@@ -63,9 +63,9 @@ describe("achievement archive reference producer adapter", () => {
     ]);
 
     expect(english.viewData.categories).toHaveLength(9);
-    expect(english.viewData.achievements).toHaveLength(1921);
+    expect(english.viewData.achievements).toHaveLength(1950);
     expect(chinese.viewData.categories).toHaveLength(9);
-    expect(chinese.viewData.achievements).toHaveLength(1921);
+    expect(chinese.viewData.achievements).toHaveLength(1950);
     expect(
       english.viewData.achievements.every((achievement) =>
         /^\d+\.\d+$/.test(achievement.releaseVersion ?? "")
@@ -77,7 +77,7 @@ describe("achievement archive reference producer adapter", () => {
           (achievement) => achievement.releaseVersion
         )
       ).size
-    ).toBe(30);
+    ).toBe(31);
     expect(
       english.viewData.achievements.map((achievement) => [
         achievement.id,
