@@ -198,6 +198,13 @@ The producer's source refresh includes acquisition; cached preparation only veri
 artwork and fails if an image is missing. A previously unknown icon namespace
 also fails for explicit review instead of generating an unverified URL.
 
+The tracked Light Cone source WebPs retain their original artwork. During
+`assets:webp`, the runtime copies are resized to at most 384 px wide and encoded
+at WebP quality 75. The app displays them at no more than 80 CSS px wide; the
+runtime files use content-hashed paths so a conversion change invalidates old
+browser caches. Character and Relic artwork keeps its existing dimensions and
+encoding.
+
 ## Home card publisher wallpapers
 
 The four curated images in `public/assets/ggstarrail/home/` come directly from

@@ -1,11 +1,13 @@
-import { copyFile, mkdir, readFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import sharp from "sharp";
 import { crawlRoot, root, saveJson, sha256 } from "./crawl-common.mjs";
 import { currencyWarAssetKinds } from "./currency-war-assets.mjs";
 import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
 
 const directory = path.join(root, "data/source-assets");
 const manifestPath = path.join(directory, "manifest.json");
+export const LIGHT_CONE_WEBP_OPTIONS = { width: 384, quality: 75 };
 const kindByCollection = {
   characters: "character",
   light_cones: "light-cone",
@@ -91,13 +93,26 @@ export async function restoreSourceAssets(lookup) {
       path.basename(entry.path, ".webp") !== entry.sha256
     )
       throw new Error(`Tracked source asset checksum mismatch: ${entry.path}`);
-    const target = path.join(root, "public/assets/ggstarrail", entry.path);
+    const output =
+      entry.kind === "light-cone"
+        ? await sharp(payload)
+            .resize({
+              width: LIGHT_CONE_WEBP_OPTIONS.width,
+              withoutEnlargement: true,
+            })
+            .webp({ quality: LIGHT_CONE_WEBP_OPTIONS.quality, effort: 4 })
+            .toBuffer()
+        : payload;
+    const outputPath =
+      entry.kind === "light-cone" ? `webp/${sha256(output)}.webp` : entry.path;
+    const target = path.join(root, "public/assets/ggstarrail", outputPath);
     await mkdir(path.dirname(target), { recursive: true });
-    await copyFile(path.join(directory, entry.path), target);
+    if (entry.kind === "light-cone") await writeFile(target, output);
+    else await copyFile(path.join(directory, entry.path), target);
     entries.set(`${entry.kind}:${entry.id}`, [
       entry.kind,
       entry.id,
-      entry.path,
+      outputPath,
     ]);
   }
   for (const id of ["8001", "8003", "8005", "8007", "8009"]) {

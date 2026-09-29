@@ -2,7 +2,10 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { restoreSourceAssets } from "./source-assets.mjs";
+import {
+  LIGHT_CONE_WEBP_OPTIONS,
+  restoreSourceAssets,
+} from "./source-assets.mjs";
 import {
   DEFAULT_ASSET_CACHE_DIRECTORY,
   validatePublishedAssets,
@@ -17,6 +20,7 @@ const encoder = JSON.stringify({
   quality: 85,
   alphaQuality: 100,
   effort: 4,
+  lightConeOptions: LIGHT_CONE_WEBP_OPTIONS,
 });
 const lookupPath = path.join(generated, "runtime-lookup.json");
 // Avoid re-encoding unchanged inputs on every code-only build. Verify all
@@ -54,14 +58,29 @@ await mkdir(generated, { recursive: true });
 const paths = new Map();
 let sourceBytes = 0;
 let outputBytes = 0;
-// Preserve full dimensions and alpha; hash the encoded bytes, not source paths.
+// Preserve alpha, and resize only Light Cone art; hash the encoded bytes.
 // Encoding changes therefore produce a new URL without purging old clients.
 for (const assetPath of [...validated.assetPaths.keys()].sort()) {
+  const asset = validated.assetPaths.get(assetPath);
   const png = await readFile(
     path.join(DEFAULT_ASSET_CACHE_DIRECTORY, assetPath)
   );
-  const webp = await sharp(png)
-    .webp({ quality: 85, alphaQuality: 100, effort: 4 })
+  const image = sharp(png);
+  if (asset.logical_kind === "light_cone") {
+    image.resize({
+      width: LIGHT_CONE_WEBP_OPTIONS.width,
+      withoutEnlargement: true,
+    });
+  }
+  const webp = await image
+    .webp({
+      quality:
+        asset.logical_kind === "light_cone"
+          ? LIGHT_CONE_WEBP_OPTIONS.quality
+          : 85,
+      alphaQuality: 100,
+      effort: 4,
+    })
     .toBuffer();
   const hash = createHash("sha256").update(webp).digest("hex");
   await writeFile(path.join(media, `${hash}.webp`), webp);
