@@ -43,7 +43,7 @@ export function FilterChip({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         active
           ? "border-primary/40 bg-card text-foreground shadow-sm"
           : "border-border bg-transparent text-muted-foreground hover:bg-card hover:text-foreground",
