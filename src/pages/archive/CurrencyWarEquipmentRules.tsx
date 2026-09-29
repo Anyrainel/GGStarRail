@@ -39,6 +39,23 @@ export function CurrencyWarEquipmentRules({
     const bond = bonds.find((entry) => entry.id === String(id));
     return bond ? [bond] : [];
   });
+  const descriptionRepeatsBondRule =
+    equipment.dress_rule === "DressRuleTraitOnly" &&
+    linkedBonds.length > 0 &&
+    linkedBonds.every((bond) =>
+      (["en", "zh-CN"] as const).every((language) => {
+        const description = equipment.description?.[language].value ?? "";
+        const name = bond.name[language].value;
+        return (
+          description.includes(name) &&
+          (language === "zh-CN"
+            ? /(?:仅供|只能|仅限).{0,40}(?:穿戴|装备)/.test(description)
+            : /(?:only|exclusive).{0,80}(?:equip|wear)|(?:equip|wear).{0,80}(?:only|exclusive)/i.test(
+                description
+              ))
+        );
+      })
+    );
   const unique = equipment.dress_rule === "DressRuleUnique";
   const uniqueBond =
     equipment.dress_rule === "DressRuleUniqueAndExclusiveTrait";
@@ -52,7 +69,7 @@ export function CurrencyWarEquipmentRules({
     !uniqueBond &&
     !emptySlots &&
     !eligibleCharacters.length &&
-    !linkedBonds.length &&
+    (!linkedBonds.length || descriptionRepeatsBondRule) &&
     capacity === undefined
   )
     return null;
@@ -86,7 +103,7 @@ export function CurrencyWarEquipmentRules({
           </div>
         </div>
       )}
-      {linkedBonds.length > 0 && (
+      {linkedBonds.length > 0 && !descriptionRepeatsBondRule && (
         <div className="space-y-2">
           <p>
             {equipment.dress_rule === "DressRuleTraitOnly"

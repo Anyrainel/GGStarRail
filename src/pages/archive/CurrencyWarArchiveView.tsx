@@ -345,21 +345,13 @@ export function CurrencyWarCharacterLinks({
   if (!entries.length) return null;
   return (
     <CurrencyWarSection title={t("archive.currencyWar.characters")}>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {entries.map((character) => (
           <Link
             key={character.id}
             to={`${APP_PATHS.archiveCharacters}?id=${character.id}`}
-            className="flex items-center gap-2 rounded-lg border border-border bg-background/60 py-1.5 pl-1.5 pr-3 text-xs font-medium hover:border-primary/60"
+            className="rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary/60"
           >
-            <ItemIcon
-              kind="character"
-              id={character.id}
-              sourcePath={character.icon_path}
-              alt=""
-              rarity={character.rarity}
-              size="xs"
-            />
             {characterCatalogName(character, locale, t("terms.trailblazer"))}
           </Link>
         ))}
@@ -426,6 +418,19 @@ function CurrencyWarDetail({
 }) {
   const { locale, t } = useI18n();
   const config = tabs.find((entry) => entry.id === tab)!;
+  const recommendedCharacterIds =
+    "recommended_character_ids" in record
+      ? record.recommended_character_ids
+      : [];
+  const ruleCharacterIds =
+    "dress_rule" in record && record.dress_rule === "DressRuleRoleOnly"
+      ? record.dress_rule_parameters.map(String)
+      : [];
+  const recommendationsRepeatRule =
+    ruleCharacterIds.length > 0 &&
+    recommendedCharacterIds.length > 0 &&
+    recommendedCharacterIds.every((id) => ruleCharacterIds.includes(id)) &&
+    ruleCharacterIds.every((id) => recommendedCharacterIds.includes(id));
   return (
     <article
       id={`currency-war-card-${record.id}`}
@@ -433,7 +438,7 @@ function CurrencyWarDetail({
       data-testid="currency-war-detail"
       data-strategy-quality={"quality" in record ? record.quality : undefined}
       className={cn(
-        "min-w-0 space-y-4 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "min-w-0 space-y-3 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "quality" in record &&
           (record.quality === "Gold" || record.quality === "Orange") &&
           "border-[hsl(var(--quality-gold)/0.65)] bg-[linear-gradient(135deg,color-mix(in_srgb,hsl(var(--quality-gold))_55%,hsl(var(--card))),color-mix(in_srgb,hsl(var(--quality-gold))_43%,hsl(var(--card))))]",
@@ -562,7 +567,7 @@ function CurrencyWarDetail({
           characters={characters}
         />
       )}
-      {"recommended_character_ids" in record && (
+      {"recommended_character_ids" in record && !recommendationsRepeatRule && (
         <CurrencyWarCharacterLinks
           ids={record.recommended_character_ids}
           characters={characters}

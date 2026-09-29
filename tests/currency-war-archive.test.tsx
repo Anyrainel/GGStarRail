@@ -172,6 +172,27 @@ function card(name: string) {
 }
 
 describe("Currency War archive", () => {
+  it("omits a bond restriction when both descriptions already state it", async () => {
+    const restricted = {
+      ...equipment("3", "Bond blade", "羁绊之刃"),
+      description: localized(
+        "Only Astral Express members can equip this.",
+        "仅供【星穹列车】羁绊队员穿戴。"
+      ),
+      dress_rule: "DressRuleTraitOnly",
+      dress_rule_parameters: [30],
+    };
+    renderArchive("/archive/currency-war?tab=equipment&id=3", {
+      ...CATALOG,
+      equipment: [restricted],
+    });
+    await userEvent.click(screen.getByRole("button", { name: "中文" }));
+    expect(
+      screen.getByText(/仅供【星穹列车】羁绊队员穿戴/)
+    ).toBeInTheDocument();
+    expect(screen.queryByLabelText("穿戴限制")).not.toBeInTheDocument();
+  });
+
   it("shows localized equipment eligibility and Bond links without exposing source enums", async () => {
     const characters = await loadCharacters();
     const roleOnly = {
