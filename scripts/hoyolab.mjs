@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -113,15 +114,30 @@ export function achievementHeadings(page) {
 export async function crawlHoyolab({
   referenceRoot,
   output = path.join(crawlRoot, "hoyolab.json"),
+  pageRoot = path.join(crawlRoot, "hoyolab-pages"),
   images = true,
 } = {}) {
   const { manifest, documents } = await referenceDocuments(referenceRoot);
+  let previousAssets = new Map();
+  try {
+    const previous = JSON.parse(await readFile(output, "utf8"));
+    if (previous.schema_version === "1.0.0" && Array.isArray(previous.entries))
+      previousAssets = new Map(
+        previous.entries.map((entry) => [
+          `${entry.collection}:${entry.id}`,
+          entry.asset,
+        ])
+      );
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
   const entries = [];
   const unmatched = [];
   for (const [collection, menu] of Object.entries(menus)) {
     const records = documents[collection];
     const index = exactNameIndex(records);
     const candidates = new Map();
+    const achievementPages = [];
     for (const [language, locale] of [
       ["en-us", "en"],
       ["zh-cn", "zh-CN"],
@@ -148,39 +164,7 @@ export async function crawlHoyolab({
         seen += data.list.length;
         for (const item of data.list) {
           if (collection === "achievements") {
-            const response = await request(
-              `entry_page?entry_page_id=${item.entry_page_id}`,
-              language
-            );
-            const page = response.data.page;
-            if (!releasedPage(page)) continue;
-            for (const name of achievementHeadings(page)) {
-              const matches = index.get(`${locale}:${name}`);
-              if (matches?.size !== 1) continue;
-              const id = [...matches][0];
-              if (
-                !entries.some(
-                  (entry) => entry.collection === collection && entry.id === id
-                )
-              )
-                entries.push({
-                  collection,
-                  id,
-                  source: "hoyolab",
-                  url: `https://wiki.hoyolab.com/pc/hsr/entry/${item.entry_page_id}`,
-                  sha256: response.sha256,
-                  beta: false,
-                  status: "Online",
-                });
-            }
-            await saveJson(
-              path.join(
-                crawlRoot,
-                "hoyolab-pages",
-                `${item.entry_page_id}-${locale}.json`
-              ),
-              response.data
-            );
+            achievementPages.push({ item, language, locale });
             continue;
           }
           const ids =
@@ -219,6 +203,43 @@ export async function crawlHoyolab({
         }
       }
     }
+    if (collection === "achievements") {
+      const discovered = await mapConcurrent(
+        achievementPages,
+        async ({ item, language, locale }) => {
+          const response = await request(
+            `entry_page?entry_page_id=${item.entry_page_id}`,
+            language
+          );
+          await saveJson(
+            path.join(pageRoot, `${item.entry_page_id}-${locale}.json`),
+            response.data
+          );
+          if (!releasedPage(response.data.page)) return [];
+          return achievementHeadings(response.data.page).flatMap((name) => {
+            const matches = index.get(`${locale}:${name}`);
+            if (matches?.size !== 1) return [];
+            return [
+              {
+                collection,
+                id: [...matches][0],
+                source: "hoyolab",
+                url: `https://wiki.hoyolab.com/pc/hsr/entry/${item.entry_page_id}`,
+                sha256: response.sha256,
+                beta: false,
+                status: "Online",
+              },
+            ];
+          });
+        }
+      );
+      const seen = new Set();
+      for (const entry of discovered.flat()) {
+        if (seen.has(entry.id)) continue;
+        seen.add(entry.id);
+        entries.push(entry);
+      }
+    }
     const found = await mapConcurrent(
       [...candidates.values()],
       async (candidate) => {
@@ -239,11 +260,7 @@ export async function crawlHoyolab({
           status: page.status,
         };
         await saveJson(
-          path.join(
-            crawlRoot,
-            "hoyolab-pages",
-            `${candidate.page_id}-${candidate.id}.json`
-          ),
+          path.join(pageRoot, `${candidate.page_id}-${candidate.id}.json`),
           response.data
         );
         if (images && releasedPage(page) && page.icon_url)
@@ -251,7 +268,8 @@ export async function crawlHoyolab({
             page.icon_url,
             collection === "characters"
               ? trailblazerPortraitFrame(candidate.id)
-              : undefined
+              : undefined,
+            previousAssets.get(`${collection}:${candidate.id}`)
           );
         return entry;
       }

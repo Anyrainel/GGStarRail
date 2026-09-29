@@ -35,6 +35,21 @@ export async function crawlNanoka({
   const manifestBytes = await fetchBytes(`${host}/manifest.json`);
   const manifest = JSON.parse(manifestBytes);
   const version = nanokaVersion(manifest);
+  let previousAssets = new Map();
+  try {
+    const previous = JSON.parse(
+      await readFile(path.join(outputRoot, "latest.json"), "utf8")
+    );
+    if (previous.schema_version === "1.0.0" && Array.isArray(previous.entries))
+      previousAssets = new Map(
+        previous.entries.map((entry) => [
+          `${entry.collection}:${entry.id}`,
+          entry.asset,
+        ])
+      );
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
   const official = JSON.parse(await readFile(evidencePath, "utf8"));
   const released = new Set(
     official.entries
@@ -100,7 +115,11 @@ export async function crawlNanoka({
             : collection === "light_cones"
               ? `lightconemediumicon/${id}.webp`
               : `itemfigures/${path.posix.basename(record.icon).replace(/\.png$/i, ".webp")}`;
-        entry.asset = await webpAsset(`${host}/assets/hsr/${imagePath}`);
+        entry.asset = await webpAsset(
+          `${host}/assets/hsr/${imagePath}`,
+          undefined,
+          previousAssets.get(`${collection}:${id}`)
+        );
       }
       return entry;
     });

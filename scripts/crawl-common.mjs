@@ -50,10 +50,49 @@ export async function mapConcurrent(values, action, concurrency = 6) {
   return result;
 }
 
-export async function webpAsset(url, frame) {
+export async function webpAsset(url, frame, previous) {
   const key = `${url}#${frame ?? "default"}`;
-  if (!assetPromises.has(key)) assetPromises.set(key, encodeAsset(url, frame));
+  if (!assetPromises.has(key)) {
+    const pending = reuseOrEncodeAsset(url, frame, previous);
+    assetPromises.set(key, pending);
+    pending.then(
+      () => assetPromises.delete(key),
+      () => assetPromises.delete(key)
+    );
+  }
   return assetPromises.get(key);
+}
+
+async function reuseOrEncodeAsset(url, frame, previous) {
+  return (
+    (await reusableWebpAsset(url, frame, previous)) ?? encodeAsset(url, frame)
+  );
+}
+
+export async function reusableWebpAsset(
+  url,
+  frame,
+  previous,
+  assetDirectory = path.join(root, "public/assets/ggstarrail")
+) {
+  if (
+    previous?.source_url === url &&
+    previous.source_frame === frame &&
+    /^webp\/[a-f0-9]{64}\.webp$/.test(previous.path) &&
+    previous.path === `webp/${previous.sha256}.webp`
+  ) {
+    try {
+      const bytes = await readFile(path.join(assetDirectory, previous.path));
+      if (
+        bytes.length === previous.byte_count &&
+        sha256(bytes) === previous.sha256
+      )
+        return previous;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+  return null;
 }
 
 async function encodeAsset(url, frame) {

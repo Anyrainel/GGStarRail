@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { sha256 } from "./crawl-common.mjs";
+import { reusableWebpAsset, sha256 } from "./crawl-common.mjs";
 import {
   currencyWarAssetKinds,
   currencyWarAssetRequests,
@@ -13,6 +13,7 @@ import {
 import {
   achievementHeadings,
   characterMatches,
+  crawlHoyolab,
   releasedPage,
 } from "./hoyolab.mjs";
 import { nanokaVersion } from "./nanoka.mjs";
@@ -112,6 +113,186 @@ test("achievement evidence comes from visible headings, not arbitrary descriptio
     ],
   };
   assert.deepEqual(achievementHeadings(page), ["A & B"]);
+});
+
+test("current reference collections produce bilingual release evidence offline", async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "ggsr-source-crawl-"));
+  t.after(async () => {
+    assert.equal(path.dirname(directory), path.resolve(os.tmpdir()));
+    assert.ok(path.basename(directory).startsWith("ggsr-source-crawl-"));
+    await rm(directory, { recursive: true });
+  });
+  const referenceRoot = path.join(directory, "reference");
+  await mkdir(referenceRoot);
+  const names = {
+    characters: [
+      {
+        id: "1001",
+        name: { en: { value: "March 7th" }, "zh-CN": { value: "三月七" } },
+        path_id: "Knight",
+        combat_type_id: "Ice",
+      },
+    ],
+    light_cones: [
+      {
+        id: "20000",
+        name: { en: { value: "Arrows" }, "zh-CN": { value: "锋镝" } },
+      },
+    ],
+    relic_sets: [
+      {
+        id: "101",
+        name: { en: { value: "Test Set" }, "zh-CN": { value: "测试套装" } },
+      },
+    ],
+    achievements: [
+      {
+        id: 4010101,
+        name: { en: { value: "First Step" }, "zh-CN": { value: "第一步" } },
+      },
+    ],
+    progression: {
+      relic_main_affixes: [],
+      relic_sub_affixes: [],
+      relic_scoring: {},
+    },
+  };
+  const files = {};
+  for (const [name, value] of Object.entries(names)) {
+    const filename = `${name}.json`;
+    const bytes = JSON.stringify({ value });
+    files[filename] = { sha256: sha256(bytes) };
+    await writeFile(path.join(referenceRoot, filename), bytes);
+  }
+  await writeFile(
+    path.join(referenceRoot, "manifest.json"),
+    JSON.stringify({ source: { revision: "fixture-revision" }, files })
+  );
+
+  const menuNames = {
+    104: "characters",
+    107: "light_cones",
+    108: "relic_sets",
+    134: "achievements",
+  };
+  const pageIds = {
+    characters: "1",
+    light_cones: "2",
+    relic_sets: "3",
+    achievements: "4",
+  };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options = {}) => {
+    const language = options.headers["x-rpc-language"];
+    const chinese = language === "zh-cn";
+    let data;
+    if (String(url).endsWith("get_entry_page_list")) {
+      const collection = menuNames[JSON.parse(options.body).menu_id];
+      const record = names[collection][0];
+      data = {
+        total: 1,
+        list: [
+          {
+            entry_page_id: pageIds[collection],
+            name: record.name[chinese ? "zh-CN" : "en"].value,
+            ...(collection === "characters"
+              ? {
+                  filter_values: {
+                    character_combat_type: {
+                      value_types: [{ enum_string: "ice" }],
+                    },
+                    character_paths: {
+                      value_types: [{ enum_string: "preservation" }],
+                    },
+                  },
+                }
+              : {}),
+          },
+        ],
+      };
+    } else {
+      const id = new URL(url).searchParams.get("entry_page_id");
+      data = {
+        page: {
+          id,
+          beta: false,
+          status: "Online",
+          modules:
+            id === "4"
+              ? [
+                  {
+                    components: [
+                      {
+                        data: JSON.stringify({
+                          data: `<h3>${chinese ? "第一步" : "First Step"}</h3>`,
+                        }),
+                      },
+                    ],
+                  },
+                ]
+              : [],
+        },
+      };
+    }
+    return new Response(JSON.stringify({ retcode: 0, data }), { status: 200 });
+  };
+  try {
+    const evidence = await crawlHoyolab({
+      referenceRoot,
+      output: path.join(directory, "evidence.json"),
+      pageRoot: path.join(directory, "pages"),
+      images: false,
+    });
+    assert.equal(evidence.source_revision, "fixture-revision");
+    assert.deepEqual(
+      evidence.entries.map((entry) => `${entry.collection}:${entry.id}`).sort(),
+      [
+        "achievements:4010101",
+        "characters:1001",
+        "light_cones:20000",
+        "relic_sets:101",
+      ]
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("incremental artwork reuse checks URL and cached bytes", async (t) => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "ggsr-image-cache-"));
+  t.after(async () => {
+    assert.equal(path.dirname(directory), path.resolve(os.tmpdir()));
+    assert.ok(path.basename(directory).startsWith("ggsr-image-cache-"));
+    await rm(directory, { recursive: true });
+  });
+  const bytes = Buffer.from("verified WebP fixture");
+  const hash = sha256(bytes);
+  const asset = {
+    source_url: "https://example.com/icon.webp",
+    path: `webp/${hash}.webp`,
+    sha256: hash,
+    byte_count: bytes.length,
+  };
+  await mkdir(path.join(directory, "webp"));
+  await writeFile(path.join(directory, asset.path), bytes);
+  assert.deepEqual(
+    await reusableWebpAsset(asset.source_url, undefined, asset, directory),
+    asset
+  );
+  assert.equal(
+    await reusableWebpAsset(
+      "https://example.com/new.webp",
+      undefined,
+      asset,
+      directory
+    ),
+    null
+  );
+  await writeFile(path.join(directory, asset.path), "corrupted");
+  assert.equal(
+    await reusableWebpAsset(asset.source_url, undefined, asset, directory),
+    null
+  );
 });
 
 test("Nanoka requires a version explicitly present in available snapshots", () => {
