@@ -56,7 +56,7 @@ export function CharacterBadgeGroup({
   const affiliation =
     AFFILIATION_KEYS[characterAffiliationIds[character.id] ?? ""];
   const badgeClass =
-    "max-w-full gap-1 rounded-full border-2 border-current px-1.5 py-0 text-xs font-medium shadow-none md:px-2 md:py-0.5 md:text-sm";
+    "min-h-6 max-w-full gap-1 rounded-full border-2 border-current px-1.5 py-0 text-xs font-medium shadow-none md:min-h-7 md:px-2 md:py-0.5 md:text-sm";
   return (
     <div className="flex flex-wrap items-center gap-1 md:gap-2">
       {combatType && (
