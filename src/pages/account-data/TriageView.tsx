@@ -21,6 +21,7 @@ import {
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { StatusBanner } from "@/components/builds/StatusBanner";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -172,307 +173,314 @@ export function TriageView() {
   }
 
   return (
-    <ScrollLayout bodyClassName="space-y-4">
+    <PageLayout>
       <PageHeader titleKey="route.triage.title" visuallyHidden />
-      <SourceCoverageNotice account={account} />
-      {!account ? (
-        <WorkspaceStartState
-          messageKey="triage.needsAccount"
-          icon={ShieldCheck}
-        />
-      ) : loading ? (
-        <CatalogLoading />
-      ) : error || !data || !scoringContext ? (
-        <CatalogLoadError error={error} />
-      ) : builds.length === 0 ? (
-        <EmptyState messageKey="triage.needsBuild" icon={ShieldCheck}>
-          <Button asChild size="sm">
-            <Link to={APP_PATHS.builds}>{t("triage.openBuilds")}</Link>
-          </Button>
-        </EmptyState>
-      ) : (
-        <div className="space-y-4">
-          <section
-            aria-labelledby="triage-summary-heading"
-            className="space-y-3"
-          >
-            <div>
-              <h2 id="triage-summary-heading" className="text-sm font-semibold">
-                {t("triage.summaryTitle")}
-              </h2>
-            </div>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {DECISIONS.map((decision) => (
-                <button
-                  key={decision}
-                  type="button"
-                  aria-label={`${t("triage.filterLabel")}: ${decisionLabel(
-                    decision,
-                    t
-                  )}`}
-                  aria-pressed={decisionFilter === decision}
-                  className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() =>
-                    setDecisionFilter((current) =>
-                      current === decision ? "all" : decision
-                    )
-                  }
+      <ScrollLayout bodyClassName="space-y-4">
+        <SourceCoverageNotice account={account} />
+        {!account ? (
+          <WorkspaceStartState
+            messageKey="triage.needsAccount"
+            icon={ShieldCheck}
+          />
+        ) : loading ? (
+          <CatalogLoading />
+        ) : error || !data || !scoringContext ? (
+          <CatalogLoadError error={error} />
+        ) : builds.length === 0 ? (
+          <EmptyState messageKey="triage.needsBuild" icon={ShieldCheck}>
+            <Button asChild size="sm">
+              <Link to={APP_PATHS.builds}>{t("triage.openBuilds")}</Link>
+            </Button>
+          </EmptyState>
+        ) : (
+          <div className="space-y-4">
+            <section
+              aria-labelledby="triage-summary-heading"
+              className="space-y-3"
+            >
+              <div>
+                <h2
+                  id="triage-summary-heading"
+                  className="text-sm font-semibold"
                 >
-                  <Card className="h-full transition-colors hover:border-primary/45">
-                    <CardContent className="p-3 sm:p-4">
-                      <p className="text-[11px] leading-4 text-muted-foreground sm:text-xs">
-                        {decisionLabel(decision, t)}
-                      </p>
-                      <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">
-                        {summary.decisions[decision]}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border bg-gradient-select p-4">
-              <CardTitle className="text-sm">
-                {t("triage.rulesTitle")}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {t("triage.rulesHelp")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
-              <NumberField
-                label={t("triage.keepThreshold")}
-                value={rules.keepScoreAtLeast}
-                min={rules.reviewScoreAtLeast}
-                max={100}
-                suffix="%"
-                onChange={(keepScoreAtLeast) =>
-                  updateRules({ ...rules, keepScoreAtLeast })
-                }
-              />
-              <NumberField
-                label={t("triage.reviewThreshold")}
-                value={rules.reviewScoreAtLeast}
-                min={0}
-                max={rules.keepScoreAtLeast}
-                suffix="%"
-                onChange={(reviewScoreAtLeast) =>
-                  updateRules({ ...rules, reviewScoreAtLeast })
-                }
-              />
-              <ToggleField
-                label={t("triage.protectLocked")}
-                checked={rules.protectLocked}
-                onChange={(protectLocked) =>
-                  updateRules({ ...rules, protectLocked })
-                }
-              />
-              <ToggleField
-                label={t("triage.protectEquipped")}
-                checked={rules.protectEquipped}
-                onChange={(protectEquipped) =>
-                  updateRules({ ...rules, protectEquipped })
-                }
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border bg-gradient-select p-4">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <CardTitle className="text-sm">
-                    {t("triage.managerTitle")}
-                  </CardTitle>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={managerBusy}
-                    onClick={() => void createPreview()}
-                  >
-                    <Eye className="h-4 w-4" aria-hidden />
-                    {managerBusy
-                      ? t("triage.managerPreparing")
-                      : t("triage.managerPreview")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={!managerPreview}
-                    onClick={downloadPreview}
-                  >
-                    <Download className="h-4 w-4" aria-hidden />
-                    {t("triage.managerDownload")}
-                  </Button>
-                </div>
+                  {t("triage.summaryTitle")}
+                </h2>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-3 p-4">
-              <div className="flex items-start gap-3 rounded-lg border border-border bg-background/40 p-3 text-sm">
-                <TriangleAlert
-                  className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-                  aria-hidden
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {DECISIONS.map((decision) => (
+                  <button
+                    key={decision}
+                    type="button"
+                    aria-label={`${t("triage.filterLabel")}: ${decisionLabel(
+                      decision,
+                      t
+                    )}`}
+                    aria-pressed={decisionFilter === decision}
+                    className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() =>
+                      setDecisionFilter((current) =>
+                        current === decision ? "all" : decision
+                      )
+                    }
+                  >
+                    <Card className="h-full transition-colors hover:border-primary/45">
+                      <CardContent className="p-3 sm:p-4">
+                        <p className="text-[11px] leading-4 text-muted-foreground sm:text-xs">
+                          {decisionLabel(decision, t)}
+                        </p>
+                        <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">
+                          {summary.decisions[decision]}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b border-border bg-gradient-select p-4">
+                <CardTitle className="text-sm">
+                  {t("triage.rulesTitle")}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {t("triage.rulesHelp")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-4">
+                <NumberField
+                  label={t("triage.keepThreshold")}
+                  value={rules.keepScoreAtLeast}
+                  min={rules.reviewScoreAtLeast}
+                  max={100}
+                  suffix="%"
+                  onChange={(keepScoreAtLeast) =>
+                    updateRules({ ...rules, keepScoreAtLeast })
+                  }
                 />
-                <p className="leading-6 text-muted-foreground">
-                  {t("triage.managerBoundary")}
-                </p>
-              </div>
-              {managerError && (
-                <StatusBanner message={managerError} tone="error" />
-              )}
-              {managerPreview && (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <PreviewMetric
-                    label={t("triage.managerInstructions")}
-                    value={managerActionability?.instructions.length ?? 0}
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerPreviewOnly")}
-                    value={managerActionability?.previewOnlyCount ?? 0}
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerExecutable")}
-                    value={managerActionability?.actionableCount ?? 0}
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerReasonUnknownBefore")}
-                    value={
-                      managerActionability?.reasonCounts["unknown-before"] ?? 0
-                    }
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerReasonEquipped")}
-                    value={managerActionability?.reasonCounts.equipped ?? 0}
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerReasonLocked")}
-                    value={managerActionability?.reasonCounts.locked ?? 0}
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerReasonAmbiguous")}
-                    value={
-                      managerActionability?.reasonCounts["ambiguous-matcher"] ??
-                      0
-                    }
-                  />
-                  <PreviewMetric
-                    label={t("triage.managerBlockedLockedDiscard")}
-                    value={managerPreview.omittedInstructionIds.length}
-                  />
-                  <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-4">
-                    {(managerActionability?.instructions.length ?? 0) === 0
-                      ? t("triage.managerNoInstructions")
-                      : (managerActionability?.previewOnlyCount ?? 0) > 0
-                        ? t("triage.managerReasonHelp")
-                        : t("triage.managerFreshEvidence")}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                <NumberField
+                  label={t("triage.reviewThreshold")}
+                  value={rules.reviewScoreAtLeast}
+                  min={0}
+                  max={rules.keepScoreAtLeast}
+                  suffix="%"
+                  onChange={(reviewScoreAtLeast) =>
+                    updateRules({ ...rules, reviewScoreAtLeast })
+                  }
+                />
+                <ToggleField
+                  label={t("triage.protectLocked")}
+                  checked={rules.protectLocked}
+                  onChange={(protectLocked) =>
+                    updateRules({ ...rules, protectLocked })
+                  }
+                />
+                <ToggleField
+                  label={t("triage.protectEquipped")}
+                  checked={rules.protectEquipped}
+                  onChange={(protectEquipped) =>
+                    updateRules({ ...rules, protectEquipped })
+                  }
+                />
+              </CardContent>
+            </Card>
 
-          <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border bg-gradient-select p-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b border-border bg-gradient-select p-4">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <CardTitle className="text-sm">
-                      {t("triage.resultsTitle")}
+                      {t("triage.managerTitle")}
                     </CardTitle>
-                    <CardDescription className="space-y-1 text-xs">
-                      <span className="block">{t("triage.resultsHelp")}</span>
-                      <span className="block tabular-nums">
-                        {t("triage.visibleCount", {
-                          shown: visible.length,
-                          total: summary.total,
-                        })}
-                      </span>
-                    </CardDescription>
                   </div>
-                  <SelectField
-                    label={t("triage.filterSlot")}
-                    value={slotFilter}
-                    options={slotOptions}
-                    onChange={(value) => setSlotFilter(value as SlotFilter)}
-                    className="w-full sm:w-48"
-                  />
-                </div>
-                <fieldset className="flex flex-wrap items-center gap-2">
-                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
-                    {t("triage.filterLabel")}
-                  </legend>
-                  <ChoiceChip
-                    selected={decisionFilter === "all"}
-                    onClick={() => setDecisionFilter("all")}
-                  >
-                    {t("triage.all")}
-                  </ChoiceChip>
-                  {DECISIONS.map((decision) => (
-                    <ChoiceChip
-                      key={decision}
-                      selected={decisionFilter === decision}
-                      onClick={() => setDecisionFilter(decision)}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={managerBusy}
+                      onClick={() => void createPreview()}
                     >
-                      {decisionLabel(decision, t)}
-                    </ChoiceChip>
-                  ))}
-                </fieldset>
-                <fieldset className="flex flex-wrap items-center gap-2">
-                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
-                    {t("triage.filterCategory")}
-                  </legend>
-                  <ChoiceChip
-                    selected={categoryFilter === "all"}
-                    onClick={() => setCategoryFilter("all")}
-                  >
-                    {t("triage.all")}
-                  </ChoiceChip>
-                  <ChoiceChip
-                    selected={categoryFilter === "cavern"}
-                    onClick={() => setCategoryFilter("cavern")}
-                  >
-                    {t("triage.category.cavern")}
-                    <Badge variant="outline" className="tabular-nums">
-                      {summary.categories.cavern}
-                    </Badge>
-                  </ChoiceChip>
-                  <ChoiceChip
-                    selected={categoryFilter === "planar"}
-                    onClick={() => setCategoryFilter("planar")}
-                  >
-                    {t("triage.category.planar")}
-                    <Badge variant="outline" className="tabular-nums">
-                      {summary.categories.planar}
-                    </Badge>
-                  </ChoiceChip>
-                </fieldset>
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-              {visible.map((evaluation) => (
-                <TriageRelic
-                  key={evaluation.relic.key}
-                  evaluation={evaluation}
-                  references={data}
-                />
-              ))}
-              {visible.length === 0 && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Filter className="h-4 w-4" aria-hidden />
-                  {t("triage.noResults")}
+                      <Eye className="h-4 w-4" aria-hidden />
+                      {managerBusy
+                        ? t("triage.managerPreparing")
+                        : t("triage.managerPreview")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={!managerPreview}
+                      onClick={downloadPreview}
+                    >
+                      <Download className="h-4 w-4" aria-hidden />
+                      {t("triage.managerDownload")}
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </ScrollLayout>
+              </CardHeader>
+              <CardContent className="space-y-3 p-4">
+                <div className="flex items-start gap-3 rounded-lg border border-border bg-background/40 p-3 text-sm">
+                  <TriangleAlert
+                    className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                    aria-hidden
+                  />
+                  <p className="leading-6 text-muted-foreground">
+                    {t("triage.managerBoundary")}
+                  </p>
+                </div>
+                {managerError && (
+                  <StatusBanner message={managerError} tone="error" />
+                )}
+                {managerPreview && (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <PreviewMetric
+                      label={t("triage.managerInstructions")}
+                      value={managerActionability?.instructions.length ?? 0}
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerPreviewOnly")}
+                      value={managerActionability?.previewOnlyCount ?? 0}
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerExecutable")}
+                      value={managerActionability?.actionableCount ?? 0}
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerReasonUnknownBefore")}
+                      value={
+                        managerActionability?.reasonCounts["unknown-before"] ??
+                        0
+                      }
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerReasonEquipped")}
+                      value={managerActionability?.reasonCounts.equipped ?? 0}
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerReasonLocked")}
+                      value={managerActionability?.reasonCounts.locked ?? 0}
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerReasonAmbiguous")}
+                      value={
+                        managerActionability?.reasonCounts[
+                          "ambiguous-matcher"
+                        ] ?? 0
+                      }
+                    />
+                    <PreviewMetric
+                      label={t("triage.managerBlockedLockedDiscard")}
+                      value={managerPreview.omittedInstructionIds.length}
+                    />
+                    <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-4">
+                      {(managerActionability?.instructions.length ?? 0) === 0
+                        ? t("triage.managerNoInstructions")
+                        : (managerActionability?.previewOnlyCount ?? 0) > 0
+                          ? t("triage.managerReasonHelp")
+                          : t("triage.managerFreshEvidence")}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b border-border bg-gradient-select p-4">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <CardTitle className="text-sm">
+                        {t("triage.resultsTitle")}
+                      </CardTitle>
+                      <CardDescription className="space-y-1 text-xs">
+                        <span className="block">{t("triage.resultsHelp")}</span>
+                        <span className="block tabular-nums">
+                          {t("triage.visibleCount", {
+                            shown: visible.length,
+                            total: summary.total,
+                          })}
+                        </span>
+                      </CardDescription>
+                    </div>
+                    <SelectField
+                      label={t("triage.filterSlot")}
+                      value={slotFilter}
+                      options={slotOptions}
+                      onChange={(value) => setSlotFilter(value as SlotFilter)}
+                      className="w-full sm:w-48"
+                    />
+                  </div>
+                  <fieldset className="flex flex-wrap items-center gap-2">
+                    <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                      {t("triage.filterLabel")}
+                    </legend>
+                    <ChoiceChip
+                      selected={decisionFilter === "all"}
+                      onClick={() => setDecisionFilter("all")}
+                    >
+                      {t("triage.all")}
+                    </ChoiceChip>
+                    {DECISIONS.map((decision) => (
+                      <ChoiceChip
+                        key={decision}
+                        selected={decisionFilter === decision}
+                        onClick={() => setDecisionFilter(decision)}
+                      >
+                        {decisionLabel(decision, t)}
+                      </ChoiceChip>
+                    ))}
+                  </fieldset>
+                  <fieldset className="flex flex-wrap items-center gap-2">
+                    <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                      {t("triage.filterCategory")}
+                    </legend>
+                    <ChoiceChip
+                      selected={categoryFilter === "all"}
+                      onClick={() => setCategoryFilter("all")}
+                    >
+                      {t("triage.all")}
+                    </ChoiceChip>
+                    <ChoiceChip
+                      selected={categoryFilter === "cavern"}
+                      onClick={() => setCategoryFilter("cavern")}
+                    >
+                      {t("triage.category.cavern")}
+                      <Badge variant="outline" className="tabular-nums">
+                        {summary.categories.cavern}
+                      </Badge>
+                    </ChoiceChip>
+                    <ChoiceChip
+                      selected={categoryFilter === "planar"}
+                      onClick={() => setCategoryFilter("planar")}
+                    >
+                      {t("triage.category.planar")}
+                      <Badge variant="outline" className="tabular-nums">
+                        {summary.categories.planar}
+                      </Badge>
+                    </ChoiceChip>
+                  </fieldset>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+                {visible.map((evaluation) => (
+                  <TriageRelic
+                    key={evaluation.relic.key}
+                    evaluation={evaluation}
+                    references={data}
+                  />
+                ))}
+                {visible.length === 0 && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Filter className="h-4 w-4" aria-hidden />
+                    {t("triage.noResults")}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </ScrollLayout>
+    </PageLayout>
   );
 }
 

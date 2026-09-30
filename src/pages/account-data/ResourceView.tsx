@@ -22,6 +22,7 @@ import {
   ToggleField,
 } from "@/components/builds/BuildControls";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -173,246 +174,248 @@ export function ResourceView() {
   ) as Record<ResourceActionKind, number>;
 
   return (
-    <ScrollLayout bodyClassName="space-y-4">
+    <PageLayout>
       <PageHeader titleKey="route.resources.title" visuallyHidden />
-      <SourceCoverageNotice account={account} />
-      {!account ? (
-        <WorkspaceStartState
-          messageKey="resource.needsAccount"
-          icon={PackageSearch}
-        />
-      ) : loading ? (
-        <CatalogLoading />
-      ) : error || !data || !scoringContext ? (
-        <CatalogLoadError error={error} />
-      ) : builds.length === 0 ? (
-        <EmptyState messageKey="resource.needsBuild" icon={PackageSearch}>
-          <Button asChild size="sm">
-            <Link to={APP_PATHS.builds}>
-              <SlidersHorizontal className="h-4 w-4" aria-hidden />
-              {t("resource.openBuilds")}
-            </Link>
-          </Button>
-        </EmptyState>
-      ) : (
-        <div className="space-y-4">
-          <Card className="overflow-hidden">
-            <details className="group">
-              <summary className="flex cursor-pointer list-none items-center gap-3 bg-gradient-select p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-semibold">
-                    {t("resource.settingsTitle")}
+      <ScrollLayout bodyClassName="space-y-4">
+        <SourceCoverageNotice account={account} />
+        {!account ? (
+          <WorkspaceStartState
+            messageKey="resource.needsAccount"
+            icon={PackageSearch}
+          />
+        ) : loading ? (
+          <CatalogLoading />
+        ) : error || !data || !scoringContext ? (
+          <CatalogLoadError error={error} />
+        ) : builds.length === 0 ? (
+          <EmptyState messageKey="resource.needsBuild" icon={PackageSearch}>
+            <Button asChild size="sm">
+              <Link to={APP_PATHS.builds}>
+                <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                {t("resource.openBuilds")}
+              </Link>
+            </Button>
+          </EmptyState>
+        ) : (
+          <div className="space-y-4">
+            <Card className="overflow-hidden">
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center gap-3 bg-gradient-select p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">
+                      {t("resource.settingsTitle")}
+                    </span>
                   </span>
-                </span>
-                <ChevronDown
-                  className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
-                  aria-hidden
-                />
-              </summary>
-              <CardContent className="grid gap-3 border-t border-border p-4 lg:grid-cols-3">
-                {ACTIONS.map((kind) => (
-                  <div key={kind} className="space-y-3">
-                    <ToggleField
-                      label={t(actionLabelKey(kind))}
-                      checked={settings.enabledActions[kind]}
-                      onChange={(enabled) => setActionEnabled(kind, enabled)}
-                    />
-                    <NumberField
-                      label={t("resource.minimumGap")}
-                      value={settings.minimumScoreGap[kind]}
-                      min={0}
-                      max={100}
-                      suffix="%"
-                      help={t("resource.minimumGapHelp")}
-                      onChange={(value) => setMinimumScoreGap(kind, value)}
-                    />
-                  </div>
-                ))}
-              </CardContent>
-            </details>
-          </Card>
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
+                    aria-hidden
+                  />
+                </summary>
+                <CardContent className="grid gap-3 border-t border-border p-4 lg:grid-cols-3">
+                  {ACTIONS.map((kind) => (
+                    <div key={kind} className="space-y-3">
+                      <ToggleField
+                        label={t(actionLabelKey(kind))}
+                        checked={settings.enabledActions[kind]}
+                        onChange={(enabled) => setActionEnabled(kind, enabled)}
+                      />
+                      <NumberField
+                        label={t("resource.minimumGap")}
+                        value={settings.minimumScoreGap[kind]}
+                        min={0}
+                        max={100}
+                        suffix="%"
+                        help={t("resource.minimumGapHelp")}
+                        onChange={(value) => setMinimumScoreGap(kind, value)}
+                      />
+                    </div>
+                  ))}
+                </CardContent>
+              </details>
+            </Card>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            {ACTIONS.map((kind) => {
-              const Icon = ACTION_ICON[kind];
-              return (
-                <button
-                  key={kind}
-                  type="button"
-                  aria-pressed={actionFilter === kind}
-                  className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  onClick={() =>
-                    setActionFilter((current) =>
-                      current === kind ? "all" : kind
-                    )
-                  }
-                >
-                  <Card className="h-full transition-colors hover:border-primary/45">
-                    <CardContent className="flex items-center gap-3 p-4">
-                      <span className="rounded-lg border border-border bg-background/60 p-2 text-primary">
-                        <Icon className="h-5 w-5" aria-hidden />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium">
-                          {t(actionLabelKey(kind))}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">
-                          {t("resource.suggestionCount", {
-                            count: actionCounts[kind],
-                          })}
-                        </span>
-                      </span>
-                    </CardContent>
-                  </Card>
-                </button>
-              );
-            })}
-          </div>
-
-          <Card className="overflow-hidden">
-            <CardContent className="space-y-3 p-4">
-              <fieldset className="flex flex-wrap items-center gap-2">
-                <legend className="mr-2 text-xs font-medium text-muted-foreground">
-                  {t("resource.filterAction")}
-                </legend>
-                <ChoiceChip
-                  selected={actionFilter === "all"}
-                  onClick={() => setActionFilter("all")}
-                >
-                  {t("common.all")}
-                </ChoiceChip>
-                {ACTIONS.map((kind) => (
-                  <ChoiceChip
+            <div className="grid gap-3 sm:grid-cols-3">
+              {ACTIONS.map((kind) => {
+                const Icon = ACTION_ICON[kind];
+                return (
+                  <button
                     key={kind}
-                    selected={actionFilter === kind}
-                    onClick={() => setActionFilter(kind)}
+                    type="button"
+                    aria-pressed={actionFilter === kind}
+                    className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() =>
+                      setActionFilter((current) =>
+                        current === kind ? "all" : kind
+                      )
+                    }
                   >
-                    {t(actionLabelKey(kind))}
-                  </ChoiceChip>
-                ))}
-              </fieldset>
-              <fieldset className="min-w-0">
-                <legend className="mb-2 text-xs font-medium text-muted-foreground">
-                  {t("resource.filterSet")}
-                </legend>
-                <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    <Card className="h-full transition-colors hover:border-primary/45">
+                      <CardContent className="flex items-center gap-3 p-4">
+                        <span className="rounded-lg border border-border bg-background/60 p-2 text-primary">
+                          <Icon className="h-5 w-5" aria-hidden />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-medium">
+                            {t(actionLabelKey(kind))}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {t("resource.suggestionCount", {
+                              count: actionCounts[kind],
+                            })}
+                          </span>
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </button>
+                );
+              })}
+            </div>
+
+            <Card className="overflow-hidden">
+              <CardContent className="space-y-3 p-4">
+                <fieldset className="flex flex-wrap items-center gap-2">
+                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                    {t("resource.filterAction")}
+                  </legend>
                   <ChoiceChip
-                    selected={setFilter === "all"}
-                    onClick={() => setSetFilter("all")}
+                    selected={actionFilter === "all"}
+                    onClick={() => setActionFilter("all")}
                   >
                     {t("common.all")}
                   </ChoiceChip>
-                  {setOptions.map(({ setId, definition }) => (
+                  {ACTIONS.map((kind) => (
                     <ChoiceChip
-                      key={setId}
-                      selected={setFilter === setId}
-                      onClick={() => setSetFilter(setId)}
+                      key={kind}
+                      selected={actionFilter === kind}
+                      onClick={() => setActionFilter(kind)}
                     >
-                      <span className="flex min-w-max items-center gap-1.5">
-                        <AssetImage
-                          kind="relic-set"
-                          id={setId}
-                          sourcePath={definition?.icon_path ?? ""}
-                          alt=""
-                          className="h-5 w-5 rounded object-contain"
-                        />
-                        {localizedName(definition?.name, locale, setId)}
-                      </span>
+                      {t(actionLabelKey(kind))}
                     </ChoiceChip>
                   ))}
-                </div>
-              </fieldset>
-              <fieldset className="flex flex-wrap items-center gap-2">
-                <legend className="mr-2 text-xs font-medium text-muted-foreground">
-                  {t("resource.filterCategory")}
-                </legend>
-                {(["all", "cavern", "planar"] as const).map((category) => (
-                  <ChoiceChip
-                    key={category}
-                    selected={categoryFilter === category}
-                    onClick={() => setCategoryFilter(category)}
-                  >
-                    {category === "all"
-                      ? t("common.all")
-                      : category === "cavern"
-                        ? t("resource.category.cavern")
-                        : t("resource.category.planar")}
-                  </ChoiceChip>
-                ))}
-              </fieldset>
-              <fieldset className="flex flex-wrap items-center gap-2">
-                <legend className="mr-2 text-xs font-medium text-muted-foreground">
-                  {t("resource.filterPriority")}
-                </legend>
-                <ChoiceChip
-                  selected={priorityFilter === "all"}
-                  onClick={() => setPriorityFilter("all")}
-                >
-                  {t("common.all")}
-                </ChoiceChip>
-                {PRIORITIES.map((priority) => (
-                  <ChoiceChip
-                    key={priority}
-                    selected={priorityFilter === priority}
-                    onClick={() => setPriorityFilter(priority)}
-                  >
-                    {t(priorityLabelKey(priority))}
-                  </ChoiceChip>
-                ))}
-              </fieldset>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-start gap-3 rounded-xl border border-border bg-background/40 p-4 text-sm">
-            <TriangleAlert
-              className="mt-0.5 h-4 w-4 shrink-0 text-primary"
-              aria-hidden
-            />
-            <p className="leading-6 text-muted-foreground">
-              {t("resource.advisoryBoundary")}
-            </p>
-          </div>
-
-          {visible.length === 0 ? (
-            <EmptyState messageKey="resource.noSuggestions" icon={Sparkles} />
-          ) : (
-            PRIORITIES.map((priority) => {
-              const group = visible.filter(
-                (suggestion) => suggestion.priority === priority
-              );
-              if (group.length === 0) return null;
-              return (
-                <section key={priority} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-semibold">
-                      {t(priorityLabelKey(priority))}
-                    </h2>
-                    <Badge variant="outline" className="tabular-nums">
-                      {group.length}
-                    </Badge>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {group.map((suggestion) => (
-                      <ResourceSuggestionCard
-                        key={suggestion.id}
-                        suggestion={suggestion}
-                        data={data}
-                        locale={locale}
-                        sourceRelic={
-                          suggestion.kind === "synthesize"
-                            ? undefined
-                            : relicByKey.get(suggestion.relicKey)
-                        }
-                      />
+                </fieldset>
+                <fieldset className="min-w-0">
+                  <legend className="mb-2 text-xs font-medium text-muted-foreground">
+                    {t("resource.filterSet")}
+                  </legend>
+                  <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    <ChoiceChip
+                      selected={setFilter === "all"}
+                      onClick={() => setSetFilter("all")}
+                    >
+                      {t("common.all")}
+                    </ChoiceChip>
+                    {setOptions.map(({ setId, definition }) => (
+                      <ChoiceChip
+                        key={setId}
+                        selected={setFilter === setId}
+                        onClick={() => setSetFilter(setId)}
+                      >
+                        <span className="flex min-w-max items-center gap-1.5">
+                          <AssetImage
+                            kind="relic-set"
+                            id={setId}
+                            sourcePath={definition?.icon_path ?? ""}
+                            alt=""
+                            className="h-5 w-5 rounded object-contain"
+                          />
+                          {localizedName(definition?.name, locale, setId)}
+                        </span>
+                      </ChoiceChip>
                     ))}
                   </div>
-                </section>
-              );
-            })
-          )}
-        </div>
-      )}
-    </ScrollLayout>
+                </fieldset>
+                <fieldset className="flex flex-wrap items-center gap-2">
+                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                    {t("resource.filterCategory")}
+                  </legend>
+                  {(["all", "cavern", "planar"] as const).map((category) => (
+                    <ChoiceChip
+                      key={category}
+                      selected={categoryFilter === category}
+                      onClick={() => setCategoryFilter(category)}
+                    >
+                      {category === "all"
+                        ? t("common.all")
+                        : category === "cavern"
+                          ? t("resource.category.cavern")
+                          : t("resource.category.planar")}
+                    </ChoiceChip>
+                  ))}
+                </fieldset>
+                <fieldset className="flex flex-wrap items-center gap-2">
+                  <legend className="mr-2 text-xs font-medium text-muted-foreground">
+                    {t("resource.filterPriority")}
+                  </legend>
+                  <ChoiceChip
+                    selected={priorityFilter === "all"}
+                    onClick={() => setPriorityFilter("all")}
+                  >
+                    {t("common.all")}
+                  </ChoiceChip>
+                  {PRIORITIES.map((priority) => (
+                    <ChoiceChip
+                      key={priority}
+                      selected={priorityFilter === priority}
+                      onClick={() => setPriorityFilter(priority)}
+                    >
+                      {t(priorityLabelKey(priority))}
+                    </ChoiceChip>
+                  ))}
+                </fieldset>
+              </CardContent>
+            </Card>
+
+            <div className="flex items-start gap-3 rounded-xl border border-border bg-background/40 p-4 text-sm">
+              <TriangleAlert
+                className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                aria-hidden
+              />
+              <p className="leading-6 text-muted-foreground">
+                {t("resource.advisoryBoundary")}
+              </p>
+            </div>
+
+            {visible.length === 0 ? (
+              <EmptyState messageKey="resource.noSuggestions" icon={Sparkles} />
+            ) : (
+              PRIORITIES.map((priority) => {
+                const group = visible.filter(
+                  (suggestion) => suggestion.priority === priority
+                );
+                if (group.length === 0) return null;
+                return (
+                  <section key={priority} className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-sm font-semibold">
+                        {t(priorityLabelKey(priority))}
+                      </h2>
+                      <Badge variant="outline" className="tabular-nums">
+                        {group.length}
+                      </Badge>
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                      {group.map((suggestion) => (
+                        <ResourceSuggestionCard
+                          key={suggestion.id}
+                          suggestion={suggestion}
+                          data={data}
+                          locale={locale}
+                          sourceRelic={
+                            suggestion.kind === "synthesize"
+                              ? undefined
+                              : relicByKey.get(suggestion.relicKey)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })
+            )}
+          </div>
+        )}
+      </ScrollLayout>
+    </PageLayout>
   );
 }
 

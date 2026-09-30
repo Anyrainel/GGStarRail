@@ -5,6 +5,7 @@ import { InventoryCharacterSection } from "@/components/account-data/InventoryCh
 import { InventoryLightConeSection } from "@/components/account-data/InventoryLightConeSection";
 import { InventoryRelicSection } from "@/components/account-data/InventoryRelicSection";
 import { InventorySection } from "@/components/account-data/InventorySection";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { useI18n } from "@/i18n/I18nContext";
@@ -15,41 +16,43 @@ export function InventoryView() {
   const account = useWorkspaceStore((state) => state.account);
 
   return (
-    <ScrollLayout bodyClassName="space-y-4">
+    <PageLayout>
       <PageHeader titleKey="route.inventory.title" visuallyHidden />
-      <AccountCoverageNotice account={account} />
-      {!account ? (
-        <WorkspaceStartState messageKey="empty.inventory" icon={Gem} />
-      ) : (
-        <div className="space-y-5">
-          <InventorySection
-            id="inventory-characters"
-            title={t("inventory.section.characters")}
-            count={account.characters.length}
-            icon={UsersRound}
-            defaultExpanded={false}
-          >
-            <InventoryCharacterSection characters={account.characters} />
-          </InventorySection>
-          <InventorySection
-            id="inventory-light-cones"
-            title={t("inventory.section.lightCones")}
-            count={account.lightCones.length}
-            icon={WandSparkles}
-          >
-            <InventoryLightConeSection lightCones={account.lightCones} />
-          </InventorySection>
-          <InventorySection
-            id="inventory-relics"
-            title={t("inventory.section.relics")}
-            count={account.relics.length}
-            icon={Gem}
-          >
-            <InventoryRelicSection relics={account.relics} />
-          </InventorySection>
-        </div>
-      )}
-    </ScrollLayout>
+      <ScrollLayout bodyClassName="space-y-4">
+        <AccountCoverageNotice account={account} />
+        {!account ? (
+          <WorkspaceStartState messageKey="empty.inventory" icon={Gem} />
+        ) : (
+          <div className="space-y-5">
+            <InventorySection
+              id="inventory-characters"
+              title={t("inventory.section.characters")}
+              count={account.characters.length}
+              icon={UsersRound}
+              defaultExpanded={false}
+            >
+              <InventoryCharacterSection characters={account.characters} />
+            </InventorySection>
+            <InventorySection
+              id="inventory-light-cones"
+              title={t("inventory.section.lightCones")}
+              count={account.lightCones.length}
+              icon={WandSparkles}
+            >
+              <InventoryLightConeSection lightCones={account.lightCones} />
+            </InventorySection>
+            <InventorySection
+              id="inventory-relics"
+              title={t("inventory.section.relics")}
+              count={account.relics.length}
+              icon={Gem}
+            >
+              <InventoryRelicSection relics={account.relics} />
+            </InventorySection>
+          </div>
+        )}
+      </ScrollLayout>
+    </PageLayout>
   );
 }
 
