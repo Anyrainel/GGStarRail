@@ -36,6 +36,7 @@ import {
   localizedName,
   localizedSearchText,
 } from "@/lib/catalogPresentation";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
@@ -155,10 +156,10 @@ export default function CharacterBuildView() {
               filters.direction
             ) || leftName.localeCompare(rightName, locale)
           );
-        const comparison =
-          filters.sort === "rarity"
-            ? left.rarity - right.rarity
-            : leftName.localeCompare(rightName, locale);
+        const comparison = -compareReleaseVersionsDescending(
+          left.release_version,
+          right.release_version
+        );
         return (
           comparison * (filters.direction === "ascending" ? 1 : -1) ||
           leftName.localeCompare(rightName, locale)

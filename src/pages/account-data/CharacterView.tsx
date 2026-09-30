@@ -13,7 +13,6 @@ import {
 import {
   type CharacterFilterOption,
   CharacterFilterPanel,
-  type CharacterFilters,
   characterFilterCount,
   defaultCharacterFilters,
 } from "@/components/account-data/CharacterFilterPanel";
@@ -31,6 +30,7 @@ import {
   localizedName,
   localizedSearchText,
 } from "@/lib/catalogPresentation";
+import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
@@ -43,11 +43,7 @@ export default function CharacterView() {
   const builds = useWorkspaceStore((state) => state.builds);
   const scoreProfiles = useWorkspaceStore((state) => state.scoreProfiles);
   const buildReferences = useBuildReferences();
-  const [filters, setFilters] = useState<CharacterFilters>(() => ({
-    ...defaultCharacterFilters(),
-    sort: "name" as const,
-    direction: "ascending" as const,
-  }));
+  const [filters, setFilters] = useState(defaultCharacterFilters);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const isVeryNarrow = useMediaQuery("(max-width: 560px)");
   const isTwoColumnCompact = useMediaQuery(
@@ -148,9 +144,10 @@ export default function CharacterView() {
         const comparison =
           filters.sort === "level"
             ? left.level - right.level
-            : filters.sort === "rarity"
-              ? (leftDefinition?.rarity ?? 0) - (rightDefinition?.rarity ?? 0)
-              : leftName.localeCompare(rightName, locale);
+            : -compareReleaseVersionsDescending(
+                leftDefinition?.release_version,
+                rightDefinition?.release_version
+              );
         return (
           comparison * direction || leftName.localeCompare(rightName, locale)
         );

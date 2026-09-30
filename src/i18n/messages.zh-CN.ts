@@ -121,8 +121,7 @@ export const messagesZhCn = {
   "filter.priorityUnavailable":
     "在角色优先级页面为角色分级后即可按优先级排序。",
   "filter.sort": "排序",
-  "filter.sortName": "名称",
-  "filter.sortRarity": "星级",
+  "filter.sortReleaseDate": "实装时间",
   "filter.sortLevel": "等级",
   "filter.ascending": "升序",
   "filter.descending": "降序",

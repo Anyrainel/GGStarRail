@@ -17,7 +17,7 @@ export interface CharacterFilters {
   rarities: number[];
   ownedOnly: boolean;
   configuredOnly: boolean;
-  sort: "name" | "rarity" | "level" | "priority";
+  sort: "release" | "level" | "priority";
   direction: "ascending" | "descending";
 }
 
@@ -29,7 +29,7 @@ export function defaultCharacterFilters(): CharacterFilters {
     rarities: [],
     ownedOnly: false,
     configuredOnly: false,
-    sort: "rarity",
+    sort: "release",
     direction: "descending",
   };
 }
@@ -135,8 +135,7 @@ export function CharacterFilterPanel({
   );
   const sortOptions: { value: CharacterFilters["sort"]; label: string }[] = [
     { value: "priority", label: t("filter.sortPriority") },
-    { value: "name", label: t("filter.sortName") },
-    { value: "rarity", label: t("filter.sortRarity") },
+    { value: "release", label: t("filter.sortReleaseDate") },
     ...(showLevelSort
       ? [{ value: "level" as const, label: t("filter.sortLevel") }]
       : []),

@@ -126,8 +126,7 @@ export const messagesEn = {
   "filter.priorityUnavailable":
     "Assign Characters in Character Priority to sort by priority.",
   "filter.sort": "Sort",
-  "filter.sortName": "Name",
-  "filter.sortRarity": "Rarity",
+  "filter.sortReleaseDate": "Release Date",
   "filter.sortLevel": "Level",
   "filter.ascending": "Ascending",
   "filter.descending": "Descending",

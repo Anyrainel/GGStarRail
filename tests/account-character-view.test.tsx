@@ -271,6 +271,12 @@ describe("Account Character loadouts", () => {
       screen.getByRole("complementary", { name: "Character filters" })
     );
     expect(
+      panel.getByRole("button", { name: "Release Date: Descending" })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      panel.queryByRole("button", { name: /^(Name|Rarity):/ })
+    ).not.toBeInTheDocument();
+    expect(
       panel.getByRole("button", { name: "Priority: Descending" })
     ).toBeDisabled();
     const prioritized = account.characters.at(-1)!;
@@ -337,7 +343,16 @@ describe("Account Character loadouts", () => {
   });
 
   it("compacts the complete card at the initial two-column breakpoint and restores full density at 2048px", async () => {
-    useWorkspaceStore.getState().replaceAccount(await createDemoAccount());
+    const [account, references] = await Promise.all([
+      createDemoAccount(),
+      loadBuildReferences(),
+    ]);
+    useWorkspaceStore.getState().replaceAccount(account);
+    const definition = references.characters.byId.get(
+      account.characters[0]!.definitionId
+    );
+    if (!definition) throw new Error("Character reference missing");
+    const cardName = `${characterCatalogName(definition, "en", "Trailblazer")} loadout`;
     vi.mocked(window.matchMedia).mockImplementation((query: string) => ({
       matches: query.includes("min-width: 1536px"),
       media: query,
@@ -350,11 +365,7 @@ describe("Account Character loadouts", () => {
     }));
 
     const compactRender = renderView();
-    const compactCard = (
-      await screen.findAllByRole("article", {
-        name: / loadout$/,
-      })
-    )[0];
+    const compactCard = await screen.findByRole("article", { name: cardName });
     const compactCharacterIcon = compactCard.querySelector(
       "[data-item-icon-kind='character']"
     );
@@ -379,11 +390,7 @@ describe("Account Character loadouts", () => {
     }));
 
     renderView();
-    const fullCard = (
-      await screen.findAllByRole("article", {
-        name: / loadout$/,
-      })
-    )[0];
+    const fullCard = await screen.findByRole("article", { name: cardName });
     expect(
       fullCard.querySelector("[data-item-icon-kind='character']")
     ).toHaveStyle({ width: "64px" });
