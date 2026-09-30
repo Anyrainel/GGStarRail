@@ -24,8 +24,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -143,20 +146,31 @@ function ThemeAndLocaleMenu({ actions }: { actions: ReactNode }) {
           <MoreVertical className="h-4 w-4" aria-hidden="true" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end">
         {actions}
         {actions && <DropdownMenuSeparator />}
-        <DropdownMenuLabel className="flex items-center gap-2">
-          <Languages className="h-4 w-4" aria-hidden="true" />
-          {t("app.locale")}
-        </DropdownMenuLabel>
-        <LocaleChoices />
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="flex items-center gap-2">
-          <Palette className="h-4 w-4" aria-hidden="true" />
-          {t("theme.label")}
-        </DropdownMenuLabel>
-        <ThemeChoices />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Languages className="h-4 w-4" aria-hidden="true" />
+            {t("app.locale")}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <LocaleChoices />
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Palette className="h-4 w-4" aria-hidden="true" />
+            {t("theme.label")}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <ThemeChoices />
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
       </DropdownMenuContent>
     </DropdownMenu>
   );

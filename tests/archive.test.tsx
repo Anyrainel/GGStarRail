@@ -47,6 +47,9 @@ async function switchLocale(
     screen.getByLabelText(/^(More|更多)$/, { selector: "button" })
   );
   await user.click(
+    await screen.findByRole("menuitem", { name: /^(Language|语言)$/ })
+  );
+  await user.click(
     await screen.findByRole("menuitemradio", {
       name: chinese ? "简体中文" : "English",
     })

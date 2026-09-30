@@ -238,6 +238,7 @@ describe("GGArtifact family shell", () => {
     renderApp(APP_PATHS.archiveCharacters);
 
     await user.click(screen.getByRole("button", { name: "More" }));
+    await user.click(screen.getByRole("menuitem", { name: "Language" }));
     await user.click(
       await screen.findByRole("menuitemradio", { name: "简体中文" })
     );
@@ -281,9 +282,11 @@ describe("GGArtifact family shell", () => {
     renderApp(APP_PATHS.characters);
 
     await user.click(screen.getByRole("button", { name: "More" }));
+    expect(screen.queryByRole("menuitemradio")).toBeNull();
+    await user.click(screen.getByRole("menuitem", { name: "Theme" }));
     await user.click(
       await screen.findByRole("menuitemradio", {
-        name: "Penacony · Dream neon",
+        name: "Penacony",
       })
     );
 
