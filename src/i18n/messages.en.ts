@@ -393,8 +393,8 @@ export const messagesEn = {
   "build.exported": "Build workspace exported.",
   "build.workspaceSummary":
     "{builds} builds · {profiles} scoring profiles · account data excluded",
-  "build.clear": "Clear workspace",
-  "build.cleared": "Build workspace cleared.",
+  "build.clear": "Clear all",
+  "build.cleared": "All builds, scoring profiles, and triage settings cleared.",
   "build.importReviewTitle": "Review build workspace import",
   "build.importApply": "Replace build workspace",
   "build.clearConfirm":

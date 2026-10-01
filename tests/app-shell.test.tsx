@@ -273,7 +273,7 @@ describe("GGArtifact family shell", () => {
       screen.getByRole("menuitem", { name: "Export builds" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("menuitem", { name: "Clear workspace" })
+      screen.getByRole("menuitem", { name: "Clear all" })
     ).toBeInTheDocument();
   });
 

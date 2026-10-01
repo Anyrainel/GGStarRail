@@ -375,8 +375,8 @@ export const messagesZhCn = {
   "build.exported": "配装工作区已导出。",
   "build.workspaceSummary":
     "{builds} 套配装 · {profiles} 个评分方案 · 不含账号数据",
-  "build.clear": "清空配装工作区",
-  "build.cleared": "已清空配装工作区。",
+  "build.clear": "清空全部",
+  "build.cleared": "已清空所有配装、评分方案和整理设置。",
   "build.importReviewTitle": "确认导入配装工作区",
   "build.importApply": "替换配装工作区",
   "build.clearConfirm":
