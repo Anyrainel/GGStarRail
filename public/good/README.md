@@ -22,5 +22,5 @@ Display logic remains separate from en/zh text; scanner data is self-contained.
 Regenerate and synchronize from HoyoData:
 
 ```sh
-uv run python -m hsr_data reference
+uv run hoyodata ggstarrail
 ```
