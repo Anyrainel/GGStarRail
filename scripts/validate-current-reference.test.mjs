@@ -51,6 +51,24 @@ test("unobserved character and Light Cone release versions remain nullable", () 
   });
 });
 
+for (const member of [
+  "characters",
+  "light_cones",
+  "relic_sets",
+  "relic_pieces",
+])
+  test(`production ${member} cannot silently move into previews`, () => {
+    const changed = structuredClone(documents);
+    changed[member].beta.push(changed[member].released.shift());
+    assert.throws(
+      () =>
+        validateCurrentReference(changed, capture, manifest, {
+          separateAchievements: true,
+        }),
+      /must not be hidden in previews/
+    );
+  });
+
 for (const [label, mutate] of [
   [
     "character path",
@@ -227,6 +245,20 @@ for (const [label, mutate, expected] of [
       data.characters[0].stat_scaling.pop();
     },
     /stat_scaling.*sequential/,
+  ],
+  [
+    "zeroed character base stats",
+    (data) => {
+      data.characters[0].stat_scaling[0].stats.hp.base_value = 0;
+    },
+    /stat_scaling.*positive/,
+  ],
+  [
+    "zeroed Light Cone base stats",
+    (data) => {
+      data.light_cones[0].stat_scaling[0].stats.attack.base_value = 0;
+    },
+    /stat_scaling.*positive/,
   ],
   [
     "skill level gap",

@@ -99,7 +99,7 @@ describe("HSR Tier List views", () => {
     const { container } = renderView(<RelicTierListView />);
 
     expect(
-      await screen.findByText("0 ranked · 58 in Pool", {}, catalogTimeout)
+      await screen.findByText("0 ranked · 62 in Pool", {}, catalogTimeout)
     ).toBeVisible();
     expect(screen.getByRole("tab", { name: "Cavern Relic" })).toHaveAttribute(
       "aria-selected",
@@ -158,7 +158,7 @@ describe("HSR Tier List views", () => {
     ).toBe(true);
     const planarItems = container.querySelectorAll("[data-priority-item-id]");
     expect(planarItems.length).toBeGreaterThan(0);
-    expect(planarItems.length).toBeLessThan(58);
+    expect(planarItems.length).toBeLessThan(62);
   });
 
   it("renders the priority controls and Relic categories in zh-CN", async () => {

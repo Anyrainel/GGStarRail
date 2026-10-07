@@ -27,6 +27,23 @@ describe("lazy reference producer catalog provider", () => {
   // Coverage of the complete normalized snapshot, including opt-in records.
   // The released-only transport and network gate are tested separately.
   beforeEach(() => setBetaEnabled(true));
+  it("publishes the full production base catalog without preview opt-in", async () => {
+    setBetaEnabled(false);
+    const [achievements, characters, cones, sets, pieces] = await Promise.all([
+      loadAchievementIds(),
+      loadCharacters(),
+      loadLightCones(),
+      loadRelicSets(),
+      loadRelicPieces(),
+    ]);
+    expect(achievements.size).toBe(1950);
+    expect(characters.values).toHaveLength(98);
+    expect(cones.values).toHaveLength(170);
+    expect(sets.values).toHaveLength(62);
+    expect(pieces.values).toHaveLength(774);
+    for (const id of ["133", "134", "327", "328"])
+      expect(sets.byId.has(id)).toBe(true);
+  });
   it("reconstructs all Currency War collections from independent bilingual members", async () => {
     const catalog = await loadCurrencyWarCatalog();
     expect(catalog.equipment).toHaveLength(165);
@@ -68,7 +85,7 @@ describe("lazy reference producer catalog provider", () => {
     ]);
 
     expect(HSR_REFERENCE_REVISION).toBe(
-      "6b2bc17ebf461e497ba0dd0ffd44875f1866762b"
+      "724b139d8c9c32d12552eb95745a4fee72bfe48b"
     );
     expect(HSR_REFERENCE_MANIFEST.schema_version).toBe("2.0.0");
     expect(achievementIds.size).toBe(1950);

@@ -62,6 +62,21 @@ export function validateCurrentReference(
   manifest,
   { separateAchievements = false } = {}
 ) {
+  if (/^OSPRODWin\d+\.\d+\.\d+(?:_|$)/.test(manifest.game_version)) {
+    for (const member of [
+      "characters",
+      "light_cones",
+      "relic_sets",
+      "relic_pieces",
+    ]) {
+      const { released, beta } = documents[member];
+      assert.deepEqual(
+        new Set(released.map((entry) => entry.id)),
+        new Set([...released, ...beta].map((entry) => entry.id)),
+        `Production ${member} must not be hidden in previews`
+      );
+    }
+  }
   const catalog = mergeCatalog(documents);
   // Splitting released/beta records changes their interleaving, so restore the
   // source display order before applying the full catalog validator.

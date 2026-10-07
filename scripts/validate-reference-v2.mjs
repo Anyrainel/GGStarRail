@@ -118,6 +118,11 @@ function statScaling(entity, label) {
         coefficients.base_value >= 0 && coefficients.level_add >= 0,
         `${label} stat_scaling ${stat} must be nonnegative`
       );
+      if (["hp", "attack", "defence", "speed"].includes(stat))
+        assert.ok(
+          coefficients.base_value > 0,
+          `${label} stat_scaling ${stat} base must be positive`
+        );
     }
   }
 }

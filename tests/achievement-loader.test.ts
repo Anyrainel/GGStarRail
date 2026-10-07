@@ -8,7 +8,7 @@ it("loads logic and only the selected language, reusing logic when language chan
     "@/data/achievementLoader"
   );
   const english = await loadAchievementDisplay("en");
-  expect(english.achievements).toHaveLength(1760);
+  expect(english.achievements).toHaveLength(1950);
   expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
     "/src/data/game/achievements.json",
     "/src/data/game/achievements_en.json",
@@ -51,6 +51,6 @@ it("retries a failed transport without refetching successful logic", async () =>
   );
   const { loadAchievementDisplay } = await import("@/data/achievementLoader");
   await expect(loadAchievementDisplay("en")).rejects.toThrow("503");
-  expect((await loadAchievementDisplay("en")).achievements).toHaveLength(1760);
+  expect((await loadAchievementDisplay("en")).achievements).toHaveLength(1950);
   expect(fetch).toHaveBeenCalledTimes(3);
 });

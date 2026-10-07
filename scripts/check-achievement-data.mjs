@@ -173,5 +173,11 @@ export async function checkAchievementData(root, manifest) {
     for (const id of entry.requiredBy ?? [])
       assert.ok(scannerEntries.get(id).requires?.includes(entry.id));
   }
+  if (/^OSPRODWin\d+\.\d+\.\d+(?:_|$)/.test(manifest.game_version))
+    assert.equal(
+      released.size,
+      all.size,
+      "Production achievements must not be hidden in previews"
+    );
   return all;
 }

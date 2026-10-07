@@ -141,7 +141,15 @@ load both. Route-level member loading remains independent.
 
 ## Visibility and merging
 
-Unknown status is gated. HoYoWiki page existence alone is insufficient: evidence
+For `OSPRODWin` snapshots, the complete normalized base catalog is published.
+Character, Light Cone and Relic exporters already apply the client's `Release`
+flags; achievements include every current `AchievementData` row because the
+source has no release flag. HoYoWiki headings can lag multiple patches and must
+not filter these populations. Nullable release-version annotations never decide
+membership. The producer verifies exact eligible source IDs, positive vital base
+stats, and finite nonnegative scaling before publishing.
+
+For nonproduction snapshots, unknown status is gated. HoYoWiki page existence alone is insufficient: evidence
 requires explicit `beta === false`, `status === "Online"`, an exact identity
 join, a source response SHA-256, and the current normalized reference revision.
 Characters additionally match HoYo Path/Combat Type filters. The two protagonist
@@ -162,8 +170,8 @@ enhancement seasons, so released `enhancements` is empty and the complete
 original character remains in beta. With opt-in only, the loader takes the beta
 enhancements while preserving every other released field. Shared progression
 mechanics remain available; path/property records are admitted through
-verified entities' references. Character-specific scoring rows are partitioned
-by released character ID. Category visibility follows verified achievements.
+published entities' references. Character-specific scoring rows are partitioned
+by released character ID. Category visibility follows published achievements.
 
 The exporter checks prior IDs before replacing any output: source disappearance
 fails instead of deleting the only available released or beta record. Promotion
