@@ -7,6 +7,7 @@ import {
   Monitor,
   ScanLine,
   Wifi,
+  X,
 } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
@@ -22,27 +23,28 @@ import { cn } from "@/lib/utils";
 
 export default function ScannerDownloadPage() {
   const { t } = useI18n();
-  const baseFeatures = [
-    t("scanner.ocrFeature"),
-    t("scanner.exportFeature"),
-    t("scanner.managerFeature"),
+  const features = [
+    { label: t("scanner.captureFeature"), needsCapture: true },
+    { label: t("scanner.ocrFeature"), needsCapture: false },
+    { label: t("scanner.exportFeature"), needsCapture: false },
+    { label: t("scanner.managerFeature"), needsCapture: false },
   ];
   const versions = [
     {
       name: "GGScanner",
       primary: true,
+      capture: true,
       icon: Wifi,
       description: t("scanner.captureDescription"),
       href: CAPTURE_DOWNLOAD,
-      features: [t("scanner.captureFeature"), ...baseFeatures],
     },
     {
       name: "GGScannerOCR",
       primary: false,
+      capture: false,
       icon: ScanLine,
       description: t("scanner.ocrDescription"),
       href: OCR_DOWNLOAD,
-      features: baseFeatures,
     },
   ];
   const setup = [
@@ -112,22 +114,35 @@ export default function ScannerDownloadPage() {
                     </span>
                   </div>
                   <h2 className="text-2xl font-bold">{version.name}</h2>
-                  <p className="mt-2 min-h-[3rem] text-sm leading-6 text-foreground/80">
+                  <p className="mt-2 text-sm leading-6 text-foreground/80">
                     {version.description}
                   </p>
                   <ul className="my-5 flex-1 space-y-3">
-                    {version.features.map((feature) => (
-                      <li
-                        key={feature}
-                        className="flex items-start gap-3 text-sm leading-6"
-                      >
-                        <Check
-                          className="mt-1 size-4 shrink-0 text-primary"
-                          aria-hidden
-                        />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
+                    {features.map((feature) => {
+                      const included = version.capture || !feature.needsCapture;
+                      const FeatureIcon = included ? Check : X;
+                      return (
+                        <li
+                          key={feature.label}
+                          className="flex items-start gap-3 text-sm leading-6"
+                        >
+                          <FeatureIcon
+                            className={cn(
+                              "mt-1 size-4 shrink-0",
+                              included ? "text-primary" : "text-foreground/70"
+                            )}
+                            aria-hidden
+                          />
+                          <span className="sr-only">
+                            {included
+                              ? t("scanner.included")
+                              : t("scanner.notIncluded")}
+                            :{" "}
+                          </span>
+                          <span>{feature.label}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                   <Button
                     asChild
