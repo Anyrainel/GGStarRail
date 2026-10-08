@@ -1,15 +1,20 @@
 import {
   ArrowRight,
   ChevronDown,
+  Download,
   ExternalLink,
   Languages,
   Menu,
   MoreVertical,
   Palette,
+  UserRound,
 } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { AccountImportAction } from "@/components/account/AccountImportAction";
+import {
+  AccountImportAction,
+  AccountImportDialog,
+} from "@/components/account/AccountImportAction";
 import {
   PageActionContext,
   type RegisteredPageActions,
@@ -133,6 +138,35 @@ function SiteSwitcher() {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+  );
+}
+
+function AccountMenu() {
+  const { t } = useI18n();
+  const [importOpen, setImportOpen] = useState(false);
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label={t("nav.account")}>
+            <UserRound className="size-5" aria-hidden />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setImportOpen(true)}>
+            <Download className="size-4" aria-hidden />
+            {t("imports.open")}
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.scannerDownload}>
+              <Download className="size-4" aria-hidden />
+              {t("scanner.menu")}
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <AccountImportDialog open={importOpen} onOpenChange={setImportOpen} />
+    </>
   );
 }
 
@@ -364,6 +398,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               ) : (
                 <ThemeAndLocaleMenu actions={actions?.overflow} />
               )}
+              <AccountMenu />
             </div>
           </div>
         </header>

@@ -21,6 +21,7 @@ const TriageView = lazy(() =>
   }))
 );
 const ArchivePage = lazy(() => import("@/pages/archive/ArchivePage"));
+const ScannerDownloadPage = lazy(() => import("@/pages/ScannerDownloadPage"));
 const ArtifactBuildsView = lazy(
   () => import("@/pages/artifact-builds/ArtifactBuildsView")
 );
@@ -63,6 +64,10 @@ export default function App() {
         }
       >
         <Routes>
+          <Route
+            path={APP_PATHS.scannerDownload}
+            element={<ScannerDownloadPage />}
+          />
           <Route path={APP_PATHS.home} element={<HomePage />} />
           <Route
             path="/account-data"

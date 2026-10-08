@@ -26,6 +26,42 @@ describe("GGArtifact family shell", () => {
     localStorage.clear();
   });
 
+  it("offers the scanner page from the account menu on every route", async () => {
+    const user = userEvent.setup();
+    renderApp(APP_PATHS.home);
+    await user.click(screen.getByRole("button", { name: "Account" }));
+    await user.click(
+      screen.getByRole("menuitem", { name: "Download GGScanner" })
+    );
+    expect(
+      await screen.findByRole("heading", { name: "GGScanner", level: 1 })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Download GGScanner" })
+    ).toHaveAttribute("href", expect.stringContaining("/GGScanner.exe"));
+    expect(
+      screen.getByRole("link", { name: "Download GGScannerOCR" })
+    ).toHaveAttribute("href", expect.stringContaining("/GGScannerOCR.exe"));
+    expect(
+      screen.getByRole("link", { name: /Game reference data/ })
+    ).toHaveAttribute("href", "/good/hsr_data_cache.json");
+    expect(
+      screen.getByRole("link", { name: /Achievement reference/ })
+    ).toHaveAttribute("href", "/good/mapping_achievements.json");
+
+    await user.click(screen.getByRole("button", { name: "Account" }));
+    await user.click(screen.getByRole("menuitem", { name: "Import account" }));
+    const dialog = screen.getByRole("dialog", { name: "Import account data" });
+    expect(
+      within(dialog).getByRole("link", { name: "Download GGScanner" })
+    ).toHaveAttribute("href", APP_PATHS.scannerDownload);
+    expect(
+      within(dialog)
+        .getAllByRole("link")
+        .some((link) => /\.exe|\/good\//.test(link.getAttribute("href") ?? ""))
+    ).toBe(false);
+  });
+
   it("opens the home guide and shows the site disclaimer", async () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.home);

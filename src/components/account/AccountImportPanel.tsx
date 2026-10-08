@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  Download,
   FileJson,
   Globe2,
   KeyRound,
@@ -17,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { APP_PATHS } from "@/config/navigation";
 import {
   type AccountImportMode,
   resolveAccountImportIdentity,
@@ -318,17 +320,25 @@ export function AccountImportPanel({
             summary={t("imports.method.file")}
             badge={t("imports.method.recommended")}
           >
-            <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
-              <FileJson className="h-4 w-4" aria-hidden />
-              {busy ? t("common.loading") : t("imports.selectFile")}
-              <input
-                type="file"
-                accept="application/json,.json"
-                className="sr-only"
-                disabled={busy}
-                onChange={handleFile}
-              />
-            </label>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="secondary" className="gap-2">
+                <a href={APP_PATHS.scannerDownload}>
+                  <Download className="size-4" aria-hidden />
+                  {t("scanner.menu")}
+                </a>
+              </Button>
+              <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+                <FileJson className="h-4 w-4" aria-hidden />
+                {busy ? t("common.loading") : t("imports.selectFile")}
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  disabled={busy}
+                  onChange={handleFile}
+                />
+              </label>
+            </div>
             <p className="text-xs leading-5 text-muted-foreground">
               {t("imports.fileHelp")}
             </p>

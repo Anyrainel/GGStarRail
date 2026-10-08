@@ -4,6 +4,7 @@ import type { MessageKey } from "@/i18n/messages.en";
 export interface RouteDefinition {
   id:
     | "home"
+    | "scanner-download"
     | "characters"
     | "inventory"
     | "resources"
@@ -29,6 +30,12 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.home,
     titleKey: "route.home.title",
     descriptionKey: "route.home.description",
+  },
+  {
+    id: "scanner-download",
+    path: APP_PATHS.scannerDownload,
+    titleKey: "scanner.title",
+    descriptionKey: "scanner.introduction",
   },
   {
     id: "characters",

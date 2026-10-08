@@ -1,5 +1,5 @@
 import { Download } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { AccountImportPanel } from "@/components/account/AccountImportPanel";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import {
@@ -34,7 +34,7 @@ export function AccountImportAction({
   const [open, setOpen] = useState(false);
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+    <AccountImportDialog open={open} onOpenChange={setOpen}>
       <ResponsiveDialogTrigger asChild>
         <Button
           type="button"
@@ -49,6 +49,23 @@ export function AccountImportAction({
           </span>
         </Button>
       </ResponsiveDialogTrigger>
+    </AccountImportDialog>
+  );
+}
+
+export function AccountImportDialog({
+  open,
+  onOpenChange,
+  children,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children?: ReactNode;
+}) {
+  const { t } = useI18n();
+  return (
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      {children}
       {open && (
         <ResponsiveDialogContent
           className="md:max-w-xl"

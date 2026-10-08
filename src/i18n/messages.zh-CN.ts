@@ -1,6 +1,41 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "scanner.menu": "下载 GGScanner",
+  "scanner.platform": "Windows 电脑 · 原神与星穹铁道",
+  "scanner.tagline": "把游戏背包，带进 GGArtifact。",
+  "scanner.introduction":
+    "导入角色、光锥、遗器与成就，用自己的账号数据规划配装、整理背包。GGScanner 支持抓包和扫图，连接游戏与 GGArtifact。",
+  "scanner.editions": "选择下载版本",
+  "scanner.recommended": "推荐版本",
+  "scanner.ocrEdition": "纯扫图版",
+  "scanner.captureDescription":
+    "功能完整的配套工具。支持抓包导出账号数据，同时包含扫图与管理功能。",
+  "scanner.ocrDescription":
+    "只想通过画面扫描？保留扫图与管理功能，不包含抓包。",
+  "scanner.captureFeature": "抓包读取账号数据与成就",
+  "scanner.ocrFeature": "扫图识别角色、光锥与遗器",
+  "scanner.exportFeature": "导出文件，直接导入 GGArtifact",
+  "scanner.managerFeature": "在游戏内管理遗器锁定与弃置标记",
+  "scanner.downloadCapture": "下载 GGScanner",
+  "scanner.downloadOcr": "下载 GGScannerOCR",
+  "scanner.choiceNote": "两个版本都支持原神和星穹铁道。抓包功能由你主动启动。",
+  "scanner.allReleases": "GitHub 发布页与直接下载",
+  "scanner.setupTitle": "从游戏背包，到下一套配装",
+  "scanner.stepOneTitle": "在电脑上打开 GGScanner",
+  "scanner.stepOneBody": "下载所需版本，在运行游戏的电脑上以管理员身份打开。",
+  "scanner.stepTwoTitle": "抓包或扫描账号",
+  "scanner.stepTwoBody":
+    "选择星穹铁道。进入游戏前开始抓包；也可使用中文客户端，在 16:9 画面下扫图。",
+  "scanner.stepThreeTitle": "把数据导入 GGArtifact",
+  "scanner.stepThreeBody":
+    "保存导出的文件，在「账号数据」页面导入，即可查看账号并规划配装。",
+  "scanner.resourcesTitle": "扫描器数据文件",
+  "scanner.resourcesDescription":
+    "需要单独下载资料文件？这里提供当前游戏资料的 JSON 文件。",
+  "scanner.gameData": "游戏资料",
+  "scanner.achievementData": "成就对照表",
+  "scanner.title": "GGScanner",
   "tier.controls.filters": "筛选",
   "tier.controls.customize": "自定义",
   "tier.controls.manage": "管理榜单",

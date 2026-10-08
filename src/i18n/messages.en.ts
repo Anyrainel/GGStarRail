@@ -1,4 +1,41 @@
 export const messagesEn = {
+  "scanner.menu": "Download GGScanner",
+  "scanner.platform": "For Windows PCs · Genshin Impact & Star Rail",
+  "scanner.tagline": "Your collection, ready for GGArtifact.",
+  "scanner.introduction":
+    "Bring your Characters, Light Cones, Relics, and achievements into GGArtifact. Capture or scan your in-game data, then use it to plan builds and organize your collection.",
+  "scanner.editions": "Choose your edition",
+  "scanner.recommended": "Recommended",
+  "scanner.ocrEdition": "OCR edition",
+  "scanner.captureDescription":
+    "The complete companion. Capture your account data, with OCR scanning and management included.",
+  "scanner.ocrDescription":
+    "Prefer screen scanning? Get OCR and management, without packet capture.",
+  "scanner.captureFeature": "Capture account data and achievements",
+  "scanner.ocrFeature": "Scan Characters, Light Cones, and Relics",
+  "scanner.exportFeature": "Export a file ready to import into GGArtifact",
+  "scanner.managerFeature": "Manage Relic locks and discard marks in game",
+  "scanner.downloadCapture": "Download GGScanner",
+  "scanner.downloadOcr": "Download GGScannerOCR",
+  "scanner.choiceNote":
+    "Both editions support Genshin Impact and Honkai: Star Rail. Capture starts only when you choose to use it.",
+  "scanner.allReleases": "GitHub releases & direct downloads",
+  "scanner.setupTitle": "From your game to your next build",
+  "scanner.stepOneTitle": "Open GGScanner on your PC",
+  "scanner.stepOneBody":
+    "Download your preferred edition and run it as administrator on the PC you use to play.",
+  "scanner.stepTwoTitle": "Capture or scan your account",
+  "scanner.stepTwoBody":
+    "Choose Honkai: Star Rail. Start capture before entering the game, or use OCR scanning with the Chinese game client at 16:9.",
+  "scanner.stepThreeTitle": "Bring your data into GGArtifact",
+  "scanner.stepThreeBody":
+    "Save the exported file, then import it from the Account Data page to view and work with your collection.",
+  "scanner.resourcesTitle": "Scanner data files",
+  "scanner.resourcesDescription":
+    "Need the data files separately? Download the current game references here.",
+  "scanner.gameData": "Game reference data",
+  "scanner.achievementData": "Achievement reference",
+  "scanner.title": "GGScanner",
   "tier.controls.filters": "Filters",
   "tier.controls.customize": "Customize",
   "tier.controls.manage": "Manage lists",
