@@ -38,10 +38,20 @@ describe("GGArtifact family shell", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Download GGScanner" })
-    ).toHaveAttribute("href", expect.stringContaining("/GGScanner.exe"));
+    ).toHaveAttribute(
+      "href",
+      expect.stringContaining(
+        "/GOODScanner/releases/latest/download/GOODCapture.exe"
+      )
+    );
     expect(
       screen.getByRole("link", { name: "Download GGScannerOCR" })
-    ).toHaveAttribute("href", expect.stringContaining("/GGScannerOCR.exe"));
+    ).toHaveAttribute(
+      "href",
+      expect.stringContaining(
+        "/GOODScanner/releases/latest/download/GOODScanner.exe"
+      )
+    );
     expect(
       screen.getByRole("link", { name: /Game reference data/ })
     ).toHaveAttribute("href", "/good/hsr_data_cache.json");
