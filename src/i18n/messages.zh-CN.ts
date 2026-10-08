@@ -4,7 +4,8 @@ export const messagesZhCn = {
   "scanner.menu": "下载 GGScanner",
   "scanner.platform": "Windows 电脑 · 原神与星穹铁道",
   "scanner.tagline": "把游戏背包，带进 GGArtifact。",
-  "scanner.introduction": "导出角色、光锥、遗器与成就，导入 GGArtifact。",
+  "scanner.introduction":
+    "将角色、光锥、遗器与成就保存为 JSON 文件，导入 GGArtifact。",
   "scanner.editions": "选择下载版本",
   "scanner.recommended": "推荐版本",
   "scanner.ocrEdition": "纯扫图版",
@@ -12,7 +13,6 @@ export const messagesZhCn = {
   "scanner.ocrDescription": "扫图 + 管理",
   "scanner.captureFeature": "账号与成就抓包",
   "scanner.ocrFeature": "角色、光锥、遗器扫图",
-  "scanner.exportFeature": "导入 GGArtifact",
   "scanner.managerFeature": "遗器锁定、弃置",
   "scanner.downloadCapture": "下载 GGScanner",
   "scanner.downloadOcr": "下载 GGScannerOCR",

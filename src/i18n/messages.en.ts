@@ -3,7 +3,7 @@ export const messagesEn = {
   "scanner.platform": "For Windows PCs · Genshin Impact & Star Rail",
   "scanner.tagline": "Your collection, ready for GGArtifact.",
   "scanner.introduction":
-    "Export Characters, Light Cones, Relics, and achievements for GGArtifact.",
+    "Save Characters, Light Cones, Relics, and achievements as a JSON file to import into GGArtifact.",
   "scanner.editions": "Choose your edition",
   "scanner.recommended": "Recommended",
   "scanner.ocrEdition": "OCR edition",
@@ -11,7 +11,6 @@ export const messagesEn = {
   "scanner.ocrDescription": "OCR + management",
   "scanner.captureFeature": "Account & achievement capture",
   "scanner.ocrFeature": "Scan Characters, Light Cones & Relics",
-  "scanner.exportFeature": "Import into GGArtifact",
   "scanner.managerFeature": "Relic locks & discard marks",
   "scanner.downloadCapture": "Download GGScanner",
   "scanner.downloadOcr": "Download GGScannerOCR",

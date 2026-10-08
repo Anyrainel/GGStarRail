@@ -26,7 +26,6 @@ export default function ScannerDownloadPage() {
   const features = [
     { label: t("scanner.captureFeature"), needsCapture: true },
     { label: t("scanner.ocrFeature"), needsCapture: false },
-    { label: t("scanner.exportFeature"), needsCapture: false },
     { label: t("scanner.managerFeature"), needsCapture: false },
   ];
   const versions = [
