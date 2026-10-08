@@ -62,7 +62,7 @@ function SiteSwitcher() {
       <Link
         to={APP_PATHS.home}
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label={t("home.brand")}
+        aria-label={t("app.name")}
         title={t("site.home")}
       >
         <img src={getAssetUrl("logo-hsr.svg")} className="h-8 w-8" alt="" />
@@ -75,7 +75,7 @@ function SiteSwitcher() {
             aria-label={t("site.switcher.label")}
           >
             <span className="hidden text-lg font-semibold sm:inline">
-              GGArtifact
+              {t("app.name")}
             </span>
             <span className="ml-auto whitespace-nowrap rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
               {t("site.starRail.short")}
@@ -248,7 +248,7 @@ function MobileMenu() {
       >
         <SheetTitle className="flex items-center gap-2 pr-8">
           <img src={getAssetUrl("logo-hsr.svg")} className="h-7 w-7" alt="" />
-          GGArtifact
+          {t("app.name")}
           <span className="text-sm font-normal text-primary">
             {t("site.starRail.short")}
           </span>

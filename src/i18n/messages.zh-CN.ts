@@ -161,7 +161,7 @@ export const messagesZhCn = {
   "filter.descending": "降序",
   "filter.configuredOnly": "仅已配置配装",
   "filter.reset": "重置筛选",
-  "home.brand": "GGArtifact",
+  "home.brand": "GG遗器",
   "home.heroDescription":
     "实用的星铁工具，助你管理角色养成、规划配装、筛选遗器。",
   "home.disclaimerPrefix": "《崩坏：星穹铁道》为米哈游／HoYoverse 的商标，",

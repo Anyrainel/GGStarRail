@@ -8,20 +8,28 @@ import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
 
 export default function HomePage() {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   return (
     <ScrollLayout bodyClassName="mx-auto flex min-h-full flex-col gap-6 overflow-x-hidden px-8 pb-4">
       <section className="space-y-3 pb-2 pt-5 text-center sm:pt-7">
         <div className="mx-auto flex w-full flex-col items-center">
-          <h1 className="w-full max-w-[30rem]">
-            <span className="sr-only">{t("home.brand")}</span>
-            <img
-              src={getAssetUrl("assets/ggstarrail/wordmark.svg")}
-              alt=""
-              width="560"
-              height="200"
-              className="h-auto w-full drop-shadow-[0_2px_1px_#243747]"
-            />
+          <h1 className="flex aspect-[14/5] w-full max-w-[30rem] items-center justify-center">
+            {locale === "zh-CN" ? (
+              <span className="font-serif text-4xl font-bold tracking-wide text-primary drop-shadow-md md:text-6xl">
+                {t("home.brand")}
+              </span>
+            ) : (
+              <>
+                <span className="sr-only">{t("home.brand")}</span>
+                <img
+                  src={getAssetUrl("assets/ggstarrail/wordmark.svg")}
+                  alt=""
+                  width="560"
+                  height="200"
+                  className="h-auto w-full drop-shadow-[0_2px_1px_#243747]"
+                />
+              </>
+            )}
           </h1>
           <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-foreground/80 sm:text-xl">
             {t("home.heroDescription")}
