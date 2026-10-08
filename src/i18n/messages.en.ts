@@ -224,6 +224,7 @@ export const messagesEn = {
   "app.locale": "Language",
   "app.locale.english": "English",
   "app.locale.chinese": "简体中文",
+  "site.home": "Home",
   "site.switcher.label": "Switch game site",
   "site.genshin": "Genshin Impact",
   "site.starRail": "Honkai: Star Rail",

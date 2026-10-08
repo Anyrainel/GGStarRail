@@ -215,6 +215,7 @@ export const messagesZhCn = {
   "app.locale": "语言",
   "app.locale.english": "English",
   "app.locale.chinese": "简体中文",
+  "site.home": "主页",
   "site.switcher.label": "切换游戏站点",
   "site.genshin": "原神",
   "site.starRail": "崩坏：星穹铁道",

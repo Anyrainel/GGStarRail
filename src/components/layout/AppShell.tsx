@@ -1,5 +1,5 @@
 import {
-  ArrowRight,
+  Check,
   ChevronDown,
   Download,
   ExternalLink,
@@ -9,7 +9,7 @@ import {
   Palette,
   UserRound,
 } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   AccountImportAction,
@@ -57,50 +57,35 @@ const GENSHIN_SITE_URL =
 
 function SiteSwitcher() {
   const { t } = useI18n();
-  const brandRef = useRef<HTMLAnchorElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const [alignOffset, setAlignOffset] = useState(0);
   return (
-    <div className="flex shrink-0 items-center gap-1 md:gap-3">
+    <div className="flex shrink-0 items-center gap-1">
       <Link
-        ref={brandRef}
         to={APP_PATHS.home}
-        className="flex shrink-0 items-center gap-2 rounded-md px-1.5 py-1 font-semibold hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={t("home.brand")}
+        title={t("site.home")}
       >
         <img src={getAssetUrl("logo-hsr.svg")} className="h-8 w-8" alt="" />
-        <span className="hidden text-base sm:inline">GGArtifact</span>
       </Link>
-      <DropdownMenu
-        onOpenChange={(open) => {
-          if (open && brandRef.current && triggerRef.current) {
-            setAlignOffset(
-              Math.round(
-                brandRef.current.getBoundingClientRect().left -
-                  triggerRef.current.getBoundingClientRect().left
-              )
-            );
-          }
-        }}
-      >
-        <div ref={triggerRef}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="h-10 min-w-0 gap-1.5 rounded-md px-1 text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:bg-accent/70 focus-visible:ring-0 data-[state=open]:bg-accent/50 data-[state=open]:text-foreground"
-              aria-label={t("site.switcher.label")}
-            >
-              <span className="rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                {t("site.starRail.short")}
-              </span>
-              <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
-          </DropdownMenuTrigger>
-        </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="h-10 w-36 gap-2 rounded-md px-2 hover:bg-accent/50 focus-visible:ring-2 data-[state=open]:bg-accent/50 sm:w-auto sm:min-w-56"
+            aria-label={t("site.switcher.label")}
+          >
+            <span className="hidden text-lg font-semibold sm:inline">
+              GGArtifact
+            </span>
+            <span className="ml-auto whitespace-nowrap rounded-md border border-primary/35 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+              {t("site.starRail.short")}
+            </span>
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          </Button>
+        </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          alignOffset={alignOffset}
-          className="w-max min-w-48"
+          className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-0"
         >
           <DropdownMenuItem asChild>
             <a
@@ -123,7 +108,7 @@ function SiteSwitcher() {
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to={APP_PATHS.home} aria-current="page">
+            <Link to={APP_PATHS.home} aria-current="true">
               <img
                 src={getAssetUrl("logo-hsr.svg")}
                 className="h-7 w-7"
@@ -132,7 +117,7 @@ function SiteSwitcher() {
               <span className="min-w-0 flex-1 font-medium">
                 {t("site.starRail")}
               </span>
-              <ArrowRight className="text-primary" aria-hidden="true" />
+              <Check className="shrink-0 text-primary" aria-hidden="true" />
             </Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -377,7 +362,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
         <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
           <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
-            <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden md:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-1 md:gap-4">
               <MobileMenu />
               <SiteSwitcher />
               <DesktopNavigation />
@@ -394,7 +379,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                 {actions?.primary}
               </div>
               {pathname === "/" ? (
-                <ThemeLocaleControls />
+                <>
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <ThemeLocaleControls />
+                  </div>
+                  <div className="sm:hidden">
+                    <ThemeAndLocaleMenu actions={undefined} />
+                  </div>
+                </>
               ) : (
                 <ThemeAndLocaleMenu actions={actions?.overflow} />
               )}

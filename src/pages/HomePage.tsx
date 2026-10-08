@@ -10,7 +10,7 @@ import { getAssetUrl } from "@/lib/assets";
 export default function HomePage() {
   const { t } = useI18n();
   return (
-    <ScrollLayout bodyClassName="mx-auto flex min-h-full w-full max-w-7xl flex-col gap-6 px-3 pb-6 sm:px-4">
+    <ScrollLayout bodyClassName="mx-auto flex min-h-full flex-col gap-6 overflow-x-hidden px-8 pb-4">
       <section className="space-y-3 pb-2 pt-5 text-center sm:pt-7">
         <div className="mx-auto flex w-full flex-col items-center">
           <h1 className="w-full max-w-[30rem]">
