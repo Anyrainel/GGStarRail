@@ -1,4 +1,5 @@
 export const messagesEn = {
+  "app.developmentNotice": "The Star Rail site is still under development.",
   "scanner.menu": "Download GGScanner",
   "scanner.platform": "For Windows PCs · Genshin Impact & Star Rail",
   "scanner.tagline": "Your collection, ready for GGArtifact.",

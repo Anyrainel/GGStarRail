@@ -349,6 +349,7 @@ function SectionTabs() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { t } = useI18n();
   const { pathname } = useLocation();
   const [registeredActions, setActions] =
     useState<RegisteredPageActions | null>(null);
@@ -360,6 +361,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <PageActionContext.Provider value={setActions}>
       <div className="flex h-dvh flex-col overflow-hidden bg-gradient-page text-foreground">
+        <div className="shrink-0 bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground">
+          {t("app.developmentNotice")}
+        </div>
         <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
           <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
             <div className="flex min-w-0 flex-1 items-center gap-1 md:gap-4">

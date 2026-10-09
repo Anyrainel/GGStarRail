@@ -1,6 +1,7 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "app.developmentNotice": "星穹铁道站仍在开发中。",
   "scanner.menu": "下载 GGScanner",
   "scanner.platform": "Windows 电脑 · 原神与星穹铁道",
   "scanner.tagline": "把游戏背包，带进 GGArtifact。",
