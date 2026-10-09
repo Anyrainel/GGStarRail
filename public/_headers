@@ -26,3 +26,10 @@
 # GOODCapture refreshes this stable endpoint independently of app releases.
 /good/hsr_data_cache.json
   Cache-Control: no-cache, must-revalidate
+
+# Shared OCR/capture inventory data; achievement IDs are downloaded on demand.
+/good/hsr_scanner_data.json
+  Cache-Control: no-cache, must-revalidate
+
+/good/hsr_achievement_ids.json
+  Cache-Control: no-cache, must-revalidate

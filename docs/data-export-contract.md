@@ -8,7 +8,10 @@ evidence helpers. It does not locate a producer checkout or launch Python.
 
 Run the export command in the producer repository and select this checkout as its
 destination. The producer writes `src/data/game/` and
-`public/good/hsr_data_cache.json`, retaining the same JSON in its own output tree.
+`public/good/hsr_scanner_data.json` and `public/good/hsr_achievement_ids.json`,
+retaining the same JSON in its own output tree. The shared scanner/capture file
+excludes achievements; the optional ID file is validated separately against the
+same source revision and achievement catalog.
 This repository requires no producer-root environment variable. For a fresh clone,
 run `npm run data:restore`, `npm run assets:webp`, and `npm run check`.
 

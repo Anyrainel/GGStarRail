@@ -232,16 +232,32 @@ export async function checkGameData(repositoryRoot = root) {
   // asset hash or executable release. Catch stale publications at build time.
   const capture = JSON.parse(
     await readFile(
-      path.join(repositoryRoot, "public/good/hsr_data_cache.json"),
+      path.join(repositoryRoot, "public/good/hsr_scanner_data.json"),
       "utf8"
     )
   );
   const achievementIds = await checkAchievementData(repositoryRoot, manifest);
-  assert.deepEqual(new Set(capture.snapshot.achievementIds), achievementIds);
+  const achievementReference = JSON.parse(
+    await readFile(
+      path.join(repositoryRoot, "public/good/hsr_achievement_ids.json"),
+      "utf8"
+    )
+  );
+  assert.equal(achievementReference.formatVersion, 1);
+  assert.equal(achievementReference.sourceRevision, manifest.source_revision);
+  assert.equal(
+    new Set(achievementReference.achievementIds).size,
+    achievementReference.achievementIds.length
+  );
+  assert.deepEqual(
+    new Set(achievementReference.achievementIds),
+    achievementIds
+  );
+  assert.equal(Object.hasOwn(capture.snapshot, "achievementIds"), false);
   validateCurrentReference(documents, capture, manifest, {
     separateAchievements: true,
   });
-  assert.equal(capture.formatVersion, 1);
+  assert.equal(capture.formatVersion, 2);
   assert.equal(capture.snapshot.revision, manifest.source_revision);
   assert.equal(capture.packet.sourceRevision, manifest.source_revision);
   for (const [collection, field] of [

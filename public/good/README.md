@@ -1,4 +1,13 @@
-# Scanner achievement mappings
+# GGScanner data
+
+`/good/hsr_scanner_data.json` is the shared non-achievement reference for OCR,
+packet capture and manager operations. Its `formatVersion: 2` document contains
+`snapshot` and `packet` from the same source revision, without `achievementIds`.
+`/good/hsr_achievement_ids.json` contains `formatVersion: 1`, `sourceRevision`
+and `achievementIds`; only achievement capture needs this additional download.
+The two source revisions must agree. HoyoData generates and mirrors both files.
+
+## Scanner achievement mappings
 
 `/good/mapping_achievements.json` uses `schemaVersion: 3`. Each category has
 native `id`, Chinese `name.zh`, and an `achievements` list. Individual entries

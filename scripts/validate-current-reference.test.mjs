@@ -31,7 +31,9 @@ for (const [member, channels] of Object.entries(manifest.members)) {
   }
 }
 const capture = JSON.parse(
-  await readFile(new URL("../public/good/hsr_data_cache.json", import.meta.url))
+  await readFile(
+    new URL("../public/good/hsr_scanner_data.json", import.meta.url)
+  )
 );
 
 test("current published catalog and capture values agree", () => {

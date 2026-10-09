@@ -55,13 +55,22 @@ network requests remain blocked.
 
 ## GOODCapture game data
 
-`/good/hsr_data_cache.json` is a stable public endpoint for the Windows companion.
-It contains the full normalized public catalog and packet affix/form mappings from
-one source revision. It carries no account data. GOODCapture checks it every two
-hours and exposes Refresh game data for an immediate update; an offline client
-can continue using its last validated local cache.
+`/good/hsr_scanner_data.json` (formatVersion 2) is the shared inventory endpoint
+for the Windows companion's OCR scanner, packet capture and manager. It contains
+the normalized public inventory catalog and packet affix/form mappings from one
+source revision, with no achievement data or account data. Clients check it every
+two hours and expose Refresh data for an immediate update; offline clients can
+continue using their last validated local cache or bundled reference.
 
-The data producer writes both `src/data/game/` and `public/good/hsr_data_cache.json`
+`/good/hsr_achievement_ids.json` carries the public achievement ID set and source
+revision. Only achievement capture downloads it, and its revision must match the
+inventory reference. The full OCR mapping remains independently published as
+`/good/mapping_achievements.json`. Inventory scanning and manager operations do
+not download either achievement file. The old `/good/hsr_data_cache.json` remains
+available for previously released clients; new clients do not read it.
+
+The data producer writes `src/data/game/`, `public/good/hsr_scanner_data.json`
+and `public/good/hsr_achievement_ids.json`
 into its selected website checkout and retains identical local exports. The website
 does not locate or invoke the producer. `data:website:check` rejects revision or
 catalog coverage drift.
