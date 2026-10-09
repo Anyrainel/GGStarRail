@@ -66,8 +66,8 @@ continue using their last validated local cache or bundled reference.
 revision. Only achievement capture downloads it, and its revision must match the
 inventory reference. The full OCR mapping remains independently published as
 `/good/mapping_achievements.json`. Inventory scanning and manager operations do
-not download either achievement file. The old `/good/hsr_data_cache.json` remains
-available for previously released clients; new clients do not read it.
+not download either achievement file. The old combined endpoint is removed;
+website and companion releases must be published together.
 
 The data producer writes `src/data/game/`, `public/good/hsr_scanner_data.json`
 and `public/good/hsr_achievement_ids.json`

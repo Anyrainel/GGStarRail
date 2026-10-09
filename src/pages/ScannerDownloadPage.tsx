@@ -55,7 +55,7 @@ export default function ScannerDownloadPage() {
     },
   ];
   const files = [
-    { label: t("scanner.gameData"), href: "good/hsr_data_cache.json" },
+    { label: t("scanner.gameData"), href: "good/hsr_scanner_data.json" },
     {
       label: t("scanner.achievementData"),
       href: "good/mapping_achievements.json",

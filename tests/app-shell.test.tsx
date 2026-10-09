@@ -54,7 +54,7 @@ describe("GGArtifact family shell", () => {
     );
     expect(
       screen.getByRole("link", { name: /Game reference data/ })
-    ).toHaveAttribute("href", "/good/hsr_data_cache.json");
+    ).toHaveAttribute("href", "/good/hsr_scanner_data.json");
     expect(
       screen.getByRole("link", { name: /Achievement reference/ })
     ).toHaveAttribute("href", "/good/mapping_achievements.json");
