@@ -170,13 +170,11 @@ export default function CharacterView() {
     [scoreProfiles]
   );
   const buildByCharacterId = useMemo(() => {
-    const result = new Map<string, (typeof builds)[number]>();
+    const result = new Map<string, typeof builds>();
     for (const build of builds) {
-      if (
-        !result.has(build.characterDefinitionId) &&
-        profileById.has(build.scoreProfileId)
-      ) {
-        result.set(build.characterDefinitionId, build);
+      if (profileById.has(build.scoreProfileId)) {
+        const entries = result.get(build.characterDefinitionId) ?? [];
+        result.set(build.characterDefinitionId, [...entries, build]);
       }
     }
     return result;
@@ -252,12 +250,8 @@ export default function CharacterView() {
                         const relic = relicByKey.get(key);
                         return relic ? [relic] : [];
                       })}
-                      build={build}
-                      profile={
-                        build
-                          ? profileById.get(build.scoreProfileId)
-                          : undefined
-                      }
+                      builds={build ?? []}
+                      profiles={profileById}
                       references={references}
                       locale={locale}
                       layout={cardLayout}

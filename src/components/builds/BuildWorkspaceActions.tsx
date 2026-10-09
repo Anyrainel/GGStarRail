@@ -122,30 +122,28 @@ function referenceImportIssue(
         id: build.characterDefinitionId,
       });
     }
-    const cavernIds =
-      build.cavern.mode === "four-piece"
-        ? [build.cavern.setId]
-        : build.cavern.setIds;
-    for (const setId of cavernIds) {
-      if (references.relicSets.byId.get(setId)?.kind !== "cavern_relic") {
-        return t("build.importIssueCavernSet", { id: setId });
+    if (build.category === "cavern") {
+      const cavernIds =
+        build.cavern.mode === "four-piece"
+          ? [build.cavern.setId]
+          : build.cavern.setIds;
+      for (const setId of cavernIds) {
+        if (references.relicSets.byId.get(setId)?.kind !== "cavern_relic") {
+          return t("build.importIssueCavernSet", { id: setId });
+        }
       }
-    }
-    if (
+    } else if (
       references.relicSets.byId.get(build.planarSetId)?.kind !==
       "planar_ornament"
     ) {
       return t("build.importIssuePlanarSet", { id: build.planarSetId });
     }
-    for (const [slot, catalogSlot] of Object.entries(MAIN_STAT_SLOTS)) {
+    for (const [slot, selected] of Object.entries(build.preferredMainStats)) {
+      const catalogSlot = MAIN_STAT_SLOTS[slot as keyof typeof MAIN_STAT_SLOTS];
       const accepted = new Set(
         references.properties.relicSlotById.get(catalogSlot)
           ?.valid_main_properties ?? []
       );
-      const selected =
-        build.preferredMainStats[
-          slot as keyof BuildWorkspaceBundle["builds"][number]["preferredMainStats"]
-        ];
       const invalid = selected.find((propertyId) => !accepted.has(propertyId));
       if (invalid) {
         return t("build.importIssueMainStat", { id: invalid });

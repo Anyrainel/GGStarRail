@@ -4,7 +4,7 @@ import { RelicCategorySchema, StableIdSchema } from "@/domain/account/schemas";
 export const ScoreProfileSchema = z
   .object({
     id: StableIdSchema,
-    name: z.string().min(1).max(80),
+    name: z.string().min(1).max(80).optional(),
     statWeights: z.record(StableIdSchema, z.number().finite().min(0).max(1)),
     includeMainStat: z.boolean(),
     mainStatWeight: z.number().finite().min(0).max(1),
@@ -51,17 +51,31 @@ export const PreferredMainStatsSchema = z
   })
   .strict();
 
-export const BuildConfigurationSchema = z
-  .object({
-    id: StableIdSchema,
-    name: z.string().min(1).max(80),
-    characterDefinitionId: StableIdSchema,
-    scoreProfileId: StableIdSchema,
+const BuildIdentitySchema = z.object({
+  id: StableIdSchema,
+  name: z.string().min(1).max(80).optional(),
+  characterDefinitionId: StableIdSchema,
+  scoreProfileId: StableIdSchema,
+});
+
+export const BuildConfigurationSchema = z.discriminatedUnion("category", [
+  BuildIdentitySchema.extend({
+    category: z.literal("cavern"),
     cavern: CavernSetPlanSchema,
+    preferredMainStats: PreferredMainStatsSchema.pick({
+      body: true,
+      feet: true,
+    }),
+  }).strict(),
+  BuildIdentitySchema.extend({
+    category: z.literal("planar"),
     planarSetId: StableIdSchema,
-    preferredMainStats: PreferredMainStatsSchema,
-  })
-  .strict();
+    preferredMainStats: PreferredMainStatsSchema.pick({
+      planarSphere: true,
+      linkRope: true,
+    }),
+  }).strict(),
+]);
 
 const NumericFilterFieldSchema = z.enum(["rarity", "level", "score"]);
 const BooleanFilterFieldSchema = z.enum(["locked", "equipped"]);

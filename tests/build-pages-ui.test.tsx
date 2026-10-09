@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import App from "@/App";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -51,6 +51,7 @@ async function prepareBuildWorkspace() {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: account.relics.find(
@@ -59,11 +60,6 @@ async function prepareBuildWorkspace() {
             relic.slot === "head"
         )!.setId,
       },
-      planarSetId: account.relics.find(
-        (relic) =>
-          relic.equippedCharacterKey === ownedCharacter.key &&
-          relic.slot === "planarSphere"
-      )!.setId,
     },
     references.properties,
     references.progression,
@@ -88,21 +84,12 @@ function metricValue(label: string): number {
   return Number(value);
 }
 
-function readBlobText(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => resolve(String(reader.result)));
-    reader.addEventListener("error", () => reject(reader.error));
-    reader.readAsText(blob);
-  });
-}
-
 afterEach(() => {
   act(() => useWorkspaceStore.getState().clearWorkspace());
 });
 
 describe("Build route interactions", () => {
-  it("creates a catalog build directly with editable 4+2 sets", async () => {
+  it("creates independent Cavern and Planar cards directly", async () => {
     const references = await loadBuildReferences();
     const character = references.characters.values[0];
     const cavern = references.relicSets.values.find(
@@ -120,19 +107,26 @@ describe("Build route interactions", () => {
       character.id
     );
     await user.click(
-      screen.getAllByRole("button", { name: "Add First Build" })[0]
+      screen.getAllByRole("button", { name: "Add Cavern build" })[0]
     );
     expect(screen.queryByRole("dialog", { name: "Add Build" })).toBeNull();
     expect(useWorkspaceStore.getState().builds).toHaveLength(1);
     expect(useWorkspaceStore.getState().builds[0]).toMatchObject({
       characterDefinitionId: character.id,
       cavern: { mode: "four-piece", setId: cavern.id },
+      category: "cavern",
+    });
+    await user.click(
+      screen.getAllByRole("button", { name: "Add Planar build" })[0]
+    );
+    expect(useWorkspaceStore.getState().builds[1]).toMatchObject({
+      category: "planar",
       planarSetId: planar.id,
     });
     expect(useWorkspaceStore.getState().account).toBeNull();
   });
 
-  it("configures a 4+2 build with four variable slots and edits its scoring profile", async () => {
+  it("configures a Cavern card with two variable slots and edits its scoring profile", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();
     renderRoute(APP_PATHS.builds);
@@ -144,9 +138,9 @@ describe("Build route interactions", () => {
       screen.getByRole("button", { name: /^Cavern 4-piece set:/ })
     ).toBeVisible();
     expect(
-      screen.getByRole("button", { name: /^Planar 2-piece set:/ })
-    ).toBeVisible();
-    expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(4);
+      screen.queryByRole("button", { name: /^Planar 2-piece set:/ })
+    ).toBeNull();
+    expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(2);
     expect(screen.queryByText("Fixed main stat")).not.toBeInTheDocument();
 
     const buildCard = document.querySelector("[data-build-card]");
@@ -216,7 +210,8 @@ describe("Build route interactions", () => {
     const user = userEvent.setup();
     renderRoute(APP_PATHS.filters);
 
-    expect(await screen.findByText("6 derived slot filters")).toBeVisible();
+    expect(await screen.findByText("Cavern Relics")).toBeVisible();
+    expect(screen.getByText("Planar Ornaments")).toBeVisible();
     expect(screen.getByText("Recommended loadout")).toBeVisible();
 
     const bodyRule = screen.getByRole("button", {
@@ -262,57 +257,26 @@ describe("Build route interactions", () => {
     expect(screen.getByText("Triage results")).toBeVisible();
   });
 
-  it("previews per-reason manager actionability before downloading review JSON", async () => {
+  it("previews per-reason manager actionability without applying an unconnected task", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();
-    const createObjectURL = vi.fn((_blob: Blob) => "blob:manager-preview");
-    const revokeObjectURL = vi.fn();
-    Object.defineProperty(URL, "createObjectURL", {
-      configurable: true,
-      value: createObjectURL,
-    });
-    Object.defineProperty(URL, "revokeObjectURL", {
-      configurable: true,
-      value: revokeObjectURL,
-    });
-    const anchorClick = vi
-      .spyOn(HTMLAnchorElement.prototype, "click")
-      .mockImplementation(() => undefined);
     renderRoute(APP_PATHS.triage);
-
-    const download = await screen.findByRole("button", {
-      name: "Download instructions",
-    });
-    expect(download).toBeDisabled();
+    const apply = await screen.findByRole("button", { name: "Apply to game" });
+    expect(apply).toBeDisabled();
     await user.click(screen.getByRole("button", { name: "Prepare preview" }));
-    await waitFor(() => expect(download).toBeEnabled());
-
+    await waitFor(() => expect(metricValue("Instructions")).toBeGreaterThan(0));
     const instructionCount = metricValue("Instructions");
-    expect(instructionCount).toBeGreaterThan(0);
     expect(metricValue("Preview only")).toBe(instructionCount);
     expect(metricValue("Actionable")).toBe(0);
     expect(metricValue("Unknown prior state")).toBe(instructionCount);
     expect(metricValue("Equipped pieces")).toBeGreaterThan(0);
     expect(metricValue("Ambiguous matchers")).toBe(0);
-    expect(screen.getByText(/reason counts can overlap/i)).toBeInTheDocument();
-
-    await user.click(download);
-    expect(createObjectURL).toHaveBeenCalledOnce();
-    expect(anchorClick).toHaveBeenCalledOnce();
-    expect(revokeObjectURL).toHaveBeenCalledWith("blob:manager-preview");
-    const blob = createObjectURL.mock.calls[0]?.[0];
-    expect(blob).toBeInstanceOf(Blob);
-
-    const managerCard = screen
-      .getByText("GOODScanner manager preview")
-      .closest("div.overflow-hidden");
-    expect(managerCard).not.toBeNull();
-    expect(
-      within(managerCard as HTMLElement).getByText(/never changes the game/i)
-    ).toBeVisible();
+    expect(apply).toBeDisabled();
+    expect(screen.getByText(/reason counts may overlap/i)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Connect" })).toBeEnabled();
   });
 
-  it("shows locked discard candidates as preview-only with protection disabled", async () => {
+  it("shows locked discard candidates as blocked with protection disabled", async () => {
     await prepareBuildWorkspace();
     const state = useWorkspaceStore.getState();
     const account = state.account;
@@ -331,56 +295,20 @@ describe("Build route interactions", () => {
       source: { ...account.source, provider: "scanner-export" },
     });
     state.setTriageRules({ ...state.triageRules, protectLocked: false });
-
     const user = userEvent.setup();
-    let downloadedBlob: Blob | null = null;
-    Object.defineProperty(URL, "createObjectURL", {
-      configurable: true,
-      value: vi.fn((blob: Blob) => {
-        downloadedBlob = blob;
-        return "blob:locked-discard-guard";
-      }),
-    });
-    Object.defineProperty(URL, "revokeObjectURL", {
-      configurable: true,
-      value: vi.fn(),
-    });
-    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
-      () => undefined
-    );
     renderRoute(APP_PATHS.triage);
     expect(
       await screen.findByRole("checkbox", { name: /^Protect locked Relics/ })
     ).not.toBeChecked();
     await user.click(screen.getByRole("button", { name: "Prepare preview" }));
-
-    await waitFor(() => {
-      expect(metricValue("Locked before discard")).toBe(1);
-    });
-    const previewInstructionCount = metricValue("Instructions");
+    await waitFor(() => expect(metricValue("Locked before discard")).toBe(1));
     expect(metricValue("Preview only")).toBeGreaterThanOrEqual(1);
+    expect(metricValue("Blocked locked discards")).toBe(1);
     expect(
-      screen.getByText(/counted in this preview but omitted from the download/i)
+      screen.getByText(/Locked pieces are never marked for discard/i)
     ).toBeVisible();
-
-    await user.click(
-      screen.getByRole("button", { name: "Download instructions" })
-    );
-    expect(downloadedBlob).toBeInstanceOf(Blob);
-    const downloaded = JSON.parse(
-      await readBlobText(downloadedBlob as unknown as Blob)
-    ) as {
-      instructions: {
-        before: { lock: boolean | null };
-        desired: { discard?: boolean };
-      }[];
-    };
     expect(
-      downloaded.instructions.some(
-        ({ before, desired }) =>
-          before.lock === true && desired.discard === true
-      )
-    ).toBe(false);
-    expect(downloaded.instructions).toHaveLength(previewInstructionCount - 1);
+      screen.getByRole("button", { name: "Apply to game" })
+    ).toBeDisabled();
   });
 });

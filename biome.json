@@ -51,6 +51,7 @@
       "!**/coverage",
       "!**/.wrangler",
       "!src/data/game",
+      "!src/presets/builds/in-game.json",
       "!public/good/hsr_data_cache.json",
       "!public/good/mapping_achievements.json",
       "!data/source-assets",

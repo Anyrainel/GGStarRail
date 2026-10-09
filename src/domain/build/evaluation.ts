@@ -27,6 +27,12 @@ export const BUILD_SLOT_ORDER: readonly RelicSlot[] = [
   "linkRope",
 ];
 
+export function buildSlots(build: BuildConfiguration): readonly RelicSlot[] {
+  return BUILD_SLOT_ORDER.filter(
+    (slot) => relicCategory(slot) === build.category
+  );
+}
+
 const CAVERN_SLOTS = BUILD_SLOT_ORDER.slice(0, 4);
 const PLANAR_SLOTS = BUILD_SLOT_ORDER.slice(4);
 
@@ -183,9 +189,10 @@ export function recommendBuildLoadout(
   const planarFilters = filters.filter((filter) =>
     PLANAR_SLOTS.includes(filter.slot)
   );
-  const cavernPlan = build.cavern;
-  const cavernAssignments =
-    cavernPlan.mode === "four-piece"
+  const cavernPlan = build.category === "cavern" ? build.cavern : null;
+  const cavernAssignments = !cavernPlan
+    ? []
+    : cavernPlan.mode === "four-piece"
       ? [new Map(CAVERN_SLOTS.map((slot) => [slot, cavernPlan.setId]))]
       : twoPlusTwoAssignments(
           CAVERN_SLOTS,
@@ -208,16 +215,19 @@ export function recommendBuildLoadout(
       const [rightCount, rightScore] = assignmentScore(right);
       return rightCount - leftCount || rightScore - leftScore;
     })[0];
-  const selectedPlanar = selectForAssignment(
-    account.relics,
-    planarFilters,
-    new Map(PLANAR_SLOTS.map((slot) => [slot, build.planarSetId])),
-    build,
-    profile,
-    context
-  );
+  const selectedPlanar =
+    build.category === "planar"
+      ? selectForAssignment(
+          account.relics,
+          planarFilters,
+          new Map(PLANAR_SLOTS.map((slot) => [slot, build.planarSetId])),
+          build,
+          profile,
+          context
+        )
+      : {};
   const selected = { ...selectedCavern, ...selectedPlanar };
-  const missingSlots = BUILD_SLOT_ORDER.filter((slot) => !selected[slot]);
+  const missingSlots = buildSlots(build).filter((slot) => !selected[slot]);
   return {
     buildId: build.id,
     selected,
@@ -232,12 +242,13 @@ function setPlanComplete(
   build: BuildConfiguration,
   kind: "cavern" | "planar"
 ): boolean {
+  if (build.category !== kind) return true;
   const relevant = relics.filter((relic) =>
     kind === "planar"
       ? PLANAR_SLOTS.includes(relic.slot)
       : CAVERN_SLOTS.includes(relic.slot)
   );
-  if (kind === "planar") {
+  if (build.category === "planar") {
     return (
       relevant.filter((relic) => relic.setId === build.planarSetId).length >= 2
     );
@@ -269,13 +280,15 @@ export function evaluateEquippedBuild(
       )
     : [];
   const selected: Partial<Record<RelicSlot, ScoredRelic>> = {};
-  for (const relic of equipped) {
+  for (const relic of equipped.filter(
+    (relic) => relicCategory(relic.slot) === build.category
+  )) {
     selected[relic.slot] = {
       relic,
       score: scoreRelic(relic, profile, context, build),
     };
   }
-  const missingSlots = BUILD_SLOT_ORDER.filter((slot) => !selected[slot]);
+  const missingSlots = buildSlots(build).filter((slot) => !selected[slot]);
   const filterCriteriaComplete =
     missingSlots.length === 0 &&
     filters.every((filter) => {
@@ -343,7 +356,9 @@ export function evaluateAccountTriage(
           score: best?.score.total ?? 0,
           locked: relic.locked,
           equipped: Boolean(relic.equippedCharacterKey),
-          configuredBuildCount: buildInputs.length,
+          configuredBuildCount: buildInputs.filter(
+            ({ build }) => build.category === relicCategory(relic.slot)
+          ).length,
           matchingBuildCount: matches.length,
         },
         rules

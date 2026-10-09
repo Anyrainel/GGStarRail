@@ -35,6 +35,7 @@ import {
 import { scoreRelic } from "@/domain/build/scoring";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import { buildDisplayName } from "@/lib/buildPresentation";
 import { createRelicScoringContext } from "@/lib/buildReferences";
 import {
   localizedName,
@@ -59,30 +60,60 @@ export default function ArtifactBuildsView() {
   const builds = useWorkspaceStore((state) => state.builds);
   const profiles = useWorkspaceStore((state) => state.scoreProfiles);
   const { data, error, loading } = useBuildReferences();
-  const [selectedBuildId, setSelectedBuildId] = useState("");
+  const [selectedCharacterId, setSelectedCharacterId] = useState("");
+  const [selectedCavernId, setSelectedCavernId] = useState("");
+  const [selectedPlanarId, setSelectedPlanarId] = useState("");
   const [selectedFilterId, setSelectedFilterId] = useState("");
   const [matchesOnly, setMatchesOnly] = useState(true);
 
-  const build =
-    builds.find((candidate) => candidate.id === selectedBuildId) ??
-    builds[0] ??
-    null;
-  const profile = build
-    ? (profiles.find((candidate) => candidate.id === build.scoreProfileId) ??
-      null)
-    : null;
+  const characterIds = [
+    ...new Set(builds.map((build) => build.characterDefinitionId)),
+  ];
+  const characterId = characterIds.includes(selectedCharacterId)
+    ? selectedCharacterId
+    : characterIds[0];
+  const cavernBuilds = builds.filter(
+    (build) =>
+      build.characterDefinitionId === characterId && build.category === "cavern"
+  );
+  const planarBuilds = builds.filter(
+    (build) =>
+      build.characterDefinitionId === characterId && build.category === "planar"
+  );
+  const cavern =
+    cavernBuilds.find(({ id }) => id === selectedCavernId) ?? cavernBuilds[0];
+  const planar =
+    planarBuilds.find(({ id }) => id === selectedPlanarId) ?? planarBuilds[0];
+  const selectedBuilds = useMemo(
+    () =>
+      [cavern, planar].flatMap((build) => {
+        const profile = profiles.find(
+          (profile) => profile.id === build?.scoreProfileId
+        );
+        return build && profile ? [{ build, profile }] : [];
+      }),
+    [cavern, planar, profiles]
+  );
   const scoringContext = useMemo(
     () => (data ? createRelicScoringContext(data) : null),
     [data]
   );
   const filters = useMemo(
-    () => (build && profile ? deriveBuildFilters(build, profile) : []),
-    [build, profile]
+    () =>
+      selectedBuilds.flatMap(({ build, profile }) =>
+        deriveBuildFilters(build, profile)
+      ),
+    [selectedBuilds]
   );
   const selectedFilter =
     filters.find((candidate) => candidate.id === selectedFilterId) ??
     filters[0] ??
     null;
+  const selectedInput = selectedBuilds.find(
+    ({ build }) => build.id === selectedFilter?.buildId
+  );
+  const build = selectedInput?.build;
+  const profile = selectedInput?.profile;
   const evaluatedRelics = useMemo(() => {
     if (!account || !selectedFilter || !build || !profile || !scoringContext) {
       return [];
@@ -107,21 +138,45 @@ export default function ArtifactBuildsView() {
       );
   }, [account, build, matchesOnly, profile, scoringContext, selectedFilter]);
   const allMatchCounts = useMemo(() => {
-    if (!account || !build || !profile || !scoringContext) return new Map();
+    if (!account || !scoringContext) return new Map();
     return new Map(
       filters.map((filter) => [
         filter.id,
         account.relics.filter((relic) => {
-          const score = scoreRelic(relic, profile, scoringContext, build);
+          const input = selectedBuilds.find(
+            ({ build }) => build.id === filter.buildId
+          )!;
+          const score = scoreRelic(
+            relic,
+            input.profile,
+            scoringContext,
+            input.build
+          );
           return evaluateBuildFilter(relic, filter, score.total).matches;
         }).length,
       ])
     );
-  }, [account, build, filters, profile, scoringContext]);
+  }, [account, selectedBuilds, filters, scoringContext]);
   const recommendation = useMemo(() => {
-    if (!account || !build || !profile || !scoringContext) return null;
-    return recommendBuildLoadout(account, build, profile, scoringContext);
-  }, [account, build, profile, scoringContext]);
+    if (!account || selectedBuilds.length === 0 || !scoringContext) return null;
+    const parts = selectedBuilds.map(({ build, profile }) =>
+      recommendBuildLoadout(account, build, profile, scoringContext)
+    );
+    const selected = Object.assign(
+      {},
+      ...parts.map((part) => part.selected)
+    ) as (typeof parts)[number]["selected"];
+    const missingSlots = BUILD_SLOT_ORDER.filter((slot) => !selected[slot]);
+    const scores = Object.values(selected).map(({ score }) => score.total);
+    return {
+      selected,
+      missingSlots,
+      complete: missingSlots.length === 0,
+      averageScore: scores.length
+        ? scores.reduce((sum, score) => sum + score, 0) / scores.length
+        : null,
+    };
+  }, [account, selectedBuilds, scoringContext]);
 
   return (
     <ScrollLayout bodyClassName="space-y-4">
@@ -146,25 +201,57 @@ export default function ArtifactBuildsView() {
       ) : (
         <>
           <Card className="overflow-hidden">
-            <CardContent className="grid gap-3 p-3 sm:grid-cols-[minmax(14rem,28rem)_auto] sm:items-end sm:justify-between">
+            <CardContent className="grid gap-3 p-3 md:grid-cols-3">
               <SelectField
-                label={t("filters.build")}
-                value={build.id}
-                options={builds.map((candidate) => ({
-                  value: candidate.id,
-                  label: candidate.name,
+                label={t("filters.character")}
+                value={characterId ?? ""}
+                options={characterIds.map((id) => ({
+                  value: id,
+                  label: localizedName(
+                    data.characters.byId.get(id)?.name,
+                    locale,
+                    id
+                  ),
                 }))}
                 onChange={(id) => {
-                  setSelectedBuildId(id);
+                  setSelectedCharacterId(id);
+                  setSelectedCavernId("");
+                  setSelectedPlanarId("");
                   setSelectedFilterId("");
                 }}
               />
-              <div className="flex flex-wrap gap-2 sm:justify-end">
-                <Badge variant="outline">
-                  {t("filters.generatedCount", { count: filters.length })}
-                </Badge>
-                <Badge variant="outline">{profile.name}</Badge>
-              </div>
+              <SelectField
+                label={t("build.cavernCards")}
+                value={cavern?.id ?? "none"}
+                options={
+                  cavernBuilds.length
+                    ? cavernBuilds.map((build) => ({
+                        value: build.id,
+                        label: buildDisplayName(build, data, locale),
+                      }))
+                    : [{ value: "none", label: t("filters.noCategoryBuild") }]
+                }
+                onChange={(id) => {
+                  setSelectedCavernId(id);
+                  setSelectedFilterId("");
+                }}
+              />
+              <SelectField
+                label={t("build.planarCards")}
+                value={planar?.id ?? "none"}
+                options={
+                  planarBuilds.length
+                    ? planarBuilds.map((build) => ({
+                        value: build.id,
+                        label: buildDisplayName(build, data, locale),
+                      }))
+                    : [{ value: "none", label: t("filters.noCategoryBuild") }]
+                }
+                onChange={(id) => {
+                  setSelectedPlanarId(id);
+                  setSelectedFilterId("");
+                }}
+              />
             </CardContent>
           </Card>
 

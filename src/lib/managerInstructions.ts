@@ -127,7 +127,7 @@ async function sha256(value: string): Promise<string> {
     .join("");
 }
 
-function matcherForRelic(
+export function matcherForRelic(
   relic: Relic,
   locationKey: string | null
 ): z.infer<typeof ManagerRelicMatcherSchema> | null {

@@ -45,6 +45,7 @@ async function prepareBuildWorkspace(accountOverride?: AccountSnapshot) {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: account.relics.find(
@@ -53,6 +54,18 @@ async function prepareBuildWorkspace(accountOverride?: AccountSnapshot) {
             relic.slot === "head"
         )!.setId,
       },
+    },
+    references.properties,
+    references.progression,
+    profile.id,
+    "Resource UI build",
+    "build:resource-ui"
+  );
+  const workspace = useWorkspaceStore.getState();
+  const planar = createCharacterBuild(
+    character,
+    {
+      category: "planar",
       planarSetId: account.relics.find(
         (relic) =>
           relic.equippedCharacterKey === ownedCharacter.key &&
@@ -62,13 +75,12 @@ async function prepareBuildWorkspace(accountOverride?: AccountSnapshot) {
     references.properties,
     references.progression,
     profile.id,
-    "Resource UI build",
-    "build:resource-ui"
+    "Planar UI build",
+    "build:resource-ui-planar"
   );
-  const workspace = useWorkspaceStore.getState();
   workspace.replaceAccount(account);
   workspace.replaceBuildWorkspace({
-    builds: [build],
+    builds: [build, planar],
     scoreProfiles: [profile],
     triageRules: workspace.triageRules,
   });
@@ -157,7 +169,7 @@ describe("Resource and Relic Triage views", () => {
       allCards[0]?.querySelector("[data-item-icon-kind='relic-piece']")
     ).toHaveAttribute("data-item-level");
     expect(
-      screen.getByRole("button", { name: "Download instructions" })
+      screen.getByRole("button", { name: "Apply to game" })
     ).toBeDisabled();
 
     const planarCount = account.relics.filter(

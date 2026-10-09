@@ -30,15 +30,13 @@ async function fixture() {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: references.relicSets.values.find(
           (set) => set.kind === "cavern_relic"
         )!.id,
       },
-      planarSetId: references.relicSets.values.find(
-        (set) => set.kind === "planar_ornament"
-      )!.id,
     },
     references.properties,
     references.progression,
@@ -82,52 +80,7 @@ describe("Character build choices", () => {
     expect(useWorkspaceStore.getState().characterLightConeIds).toEqual({
       [character.id]: [cone.id],
     });
-    expect(bundle.schemaVersion).toBe(2);
-  });
-
-  it("hydrates a v3 workspace and imports its backup without changing saved builds", async () => {
-    const { build, profile } = await fixture();
-    const old = {
-      schemaVersion: 3,
-      account: null,
-      builds: [build],
-      scoreProfiles: [profile],
-      triageRules: DEFAULT_WORKSPACE.triageRules,
-    };
-    localStorage.setItem(
-      STORAGE_KEYS.workspace,
-      JSON.stringify({ version: 3, state: old })
-    );
-    await useWorkspaceStore.persist.rehydrate();
-    expect(useWorkspaceStore.getState().builds).toEqual([build]);
-    expect(useWorkspaceStore.getState().characterLightConeIds).toEqual({});
-    const parsed = parseBackup(
-      JSON.stringify({
-        product: "GGStarRail",
-        kind: "ggstarrail.backup",
-        schemaVersion: 1,
-        createdAt: "2026-09-18T00:00:00.000Z",
-        payload: old,
-      })
-    );
-    expect(parsed.payload).toEqual({
-      ...old,
-      schemaVersion: 4,
-      characterLightConeIds: {},
-      localAchievementCompletion: { completedIds: [] },
-    });
-    const bundle = parseBuildWorkspaceBundle(
-      JSON.stringify({
-        schema: "ggstarrail.build-workspace",
-        schemaVersion: 1,
-        exportedAt: "2026-09-18T00:00:00.000Z",
-        builds: [build],
-        scoreProfiles: [profile],
-        triageRules: old.triageRules,
-      })
-    );
-    expect(bundle.builds).toEqual([build]);
-    expect(bundle.characterLightConeIds).toEqual({});
+    expect(bundle.schemaVersion).toBe(1);
   });
 
   it("duplicates an independent profile and reorders only the Character's builds", async () => {

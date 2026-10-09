@@ -13,7 +13,19 @@ import { assertNoSensitiveFields } from "./security";
 export const BuildWorkspaceBundleSchema = z
   .object({
     schema: z.literal("ggstarrail.build-workspace"),
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(1),
+    metadata: z
+      .object({
+        name: z
+          .object({
+            en: z.string().min(1).max(80),
+            "zh-CN": z.string().min(1).max(80),
+          })
+          .strict(),
+        author: z.string().min(1).max(80),
+      })
+      .strict()
+      .optional(),
     characterLightConeIds: CharacterLightConeChoicesSchema,
     exportedAt: z.string().datetime(),
     builds: z.array(BuildConfigurationSchema),
@@ -58,18 +70,6 @@ export const BuildWorkspaceBundleSchema = z
 
 export type BuildWorkspaceBundle = z.infer<typeof BuildWorkspaceBundleSchema>;
 
-// Bundle v1 contained builds, profiles, and triage rules only.
-const BuildWorkspaceBundleV1Schema = z
-  .object({
-    schema: z.literal("ggstarrail.build-workspace"),
-    schemaVersion: z.literal(1),
-    exportedAt: z.string().datetime(),
-    builds: z.array(BuildConfigurationSchema),
-    scoreProfiles: z.array(ScoreProfileSchema),
-    triageRules: TriageRulesSchema,
-  })
-  .strict();
-
 type BuildWorkspaceInput = Omit<
   BuildWorkspaceBundle,
   "schema" | "schemaVersion" | "exportedAt" | "characterLightConeIds"
@@ -81,7 +81,7 @@ export function createBuildWorkspaceBundle(
 ): BuildWorkspaceBundle {
   const bundle = BuildWorkspaceBundleSchema.parse({
     schema: "ggstarrail.build-workspace",
-    schemaVersion: 2,
+    schemaVersion: 1,
     characterLightConeIds: {},
     exportedAt: now.toISOString(),
     ...input,
@@ -99,12 +99,5 @@ export function serializeBuildWorkspaceBundle(
 export function parseBuildWorkspaceBundle(input: string): BuildWorkspaceBundle {
   const parsed: unknown = JSON.parse(input);
   assertNoSensitiveFields(parsed);
-  const previous = BuildWorkspaceBundleV1Schema.safeParse(parsed);
-  if (previous.success)
-    return BuildWorkspaceBundleSchema.parse({
-      ...previous.data,
-      schemaVersion: 2,
-      characterLightConeIds: {},
-    });
   return BuildWorkspaceBundleSchema.parse(parsed);
 }

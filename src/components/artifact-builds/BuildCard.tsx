@@ -34,10 +34,12 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
+import { buildMainStats } from "@/domain/build/configuration";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
+import { buildDisplayName } from "@/lib/buildPresentation";
 import type { BuildReferences } from "@/lib/buildReferences";
 import { catalogPickerItems } from "@/lib/catalogPickerItems";
 import {
@@ -53,7 +55,7 @@ const BUILD_SLOTS = [
   ["planarSphere", "NECK"],
   ["linkRope", "OBJECT"],
 ] as const satisfies readonly [
-  keyof BuildConfiguration["preferredMainStats"],
+  "body" | "feet" | "planarSphere" | "linkRope",
   RelicSlotId,
 ][];
 
@@ -216,12 +218,13 @@ export function BuildCard({
 }: BuildCardProps) {
   const { locale, t } = useI18n();
   const useCompactSetIcons = useMediaQuery("(max-width: 767px)");
-  const [nameDraft, setNameDraft] = useState(build.name);
+  const displayName = buildDisplayName(build, references, locale);
+  const [nameDraft, setNameDraft] = useState(displayName);
   const [scoringOpen, setScoringOpen] = useState(false);
 
   useEffect(() => {
-    setNameDraft(build.name);
-  }, [build.name]);
+    setNameDraft(displayName);
+  }, [displayName]);
 
   const setItems = useMemo(
     () =>
@@ -242,9 +245,11 @@ export function BuildCard({
     [setItems]
   );
   const fourPieceSetId =
-    build.cavern.mode === "four-piece"
-      ? build.cavern.setId
-      : build.cavern.setIds[0];
+    build.category === "planar"
+      ? ""
+      : build.cavern.mode === "four-piece"
+        ? build.cavern.setId
+        : build.cavern.setIds[0];
   const weightedProperties = Object.entries(profile.statWeights)
     .map(([propertyId, weight]) => {
       const name = localizedPropertyName(
@@ -268,16 +273,23 @@ export function BuildCard({
     );
 
   function setMainStats(
-    slot: keyof BuildConfiguration["preferredMainStats"],
+    slot: "body" | "feet" | "planarSphere" | "linkRope",
     values: string[]
   ) {
-    onBuildChange({
-      ...build,
-      preferredMainStats: {
-        ...build.preferredMainStats,
-        [slot]: values,
-      },
-    });
+    if (build.category === "cavern" && (slot === "body" || slot === "feet")) {
+      onBuildChange({
+        ...build,
+        preferredMainStats: { ...build.preferredMainStats, [slot]: values },
+      });
+    } else if (
+      build.category === "planar" &&
+      (slot === "planarSphere" || slot === "linkRope")
+    ) {
+      onBuildChange({
+        ...build,
+        preferredMainStats: { ...build.preferredMainStats, [slot]: values },
+      });
+    }
   }
 
   function updateThreshold(
@@ -306,6 +318,7 @@ export function BuildCard({
       <article
         className="overflow-hidden rounded-lg border border-border bg-muted/30"
         data-build-card
+        data-build-category={build.category}
       >
         <div className="px-2 pt-2 md:px-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -318,8 +331,9 @@ export function BuildCard({
                 onChange={(event) => setNameDraft(event.target.value)}
                 onBlur={() => {
                   const nextName = nameDraft.trim();
-                  if (nextName) onBuildChange({ ...build, name: nextName });
-                  else setNameDraft(build.name);
+                  if (nextName && nextName !== displayName)
+                    onBuildChange({ ...build, name: nextName });
+                  else setNameDraft(displayName);
                 }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") event.currentTarget.blur();
@@ -388,79 +402,117 @@ export function BuildCard({
                 aria-label={t("build.setPlanTitle")}
                 className="flex w-[6.5rem] shrink-0 flex-wrap justify-center gap-1 max-[360px]:w-[3.125rem] md:w-[8.5rem]"
               >
-                <ItemPicker
-                  kind="relic-set"
-                  showName
-                  label={
-                    build.cavern.mode === "four-piece"
-                      ? t("build.cavernFourPiece")
-                      : t("build.cavernFirstTwoPiece")
-                  }
-                  badge={build.cavern.mode === "four-piece" ? 4 : 2}
-                  triggerSize={useCompactSetIcons ? "sm" : "lg"}
-                  value={fourPieceSetId}
-                  items={
-                    build.cavern.mode === "two-plus-two"
-                      ? cavernSets.filter(
-                          (set) =>
-                            set.id !==
-                            (build.cavern.mode === "two-plus-two" &&
-                              build.cavern.setIds[1])
-                        )
-                      : cavernSets
-                  }
-                  onChange={(setId) =>
-                    onBuildChange({
-                      ...build,
-                      cavern:
-                        build.cavern.mode === "four-piece"
-                          ? { mode: "four-piece", setId }
-                          : {
-                              mode: "two-plus-two",
-                              setIds: [setId, build.cavern.setIds[1]],
-                            },
-                    })
-                  }
-                />
-                {build.cavern.mode === "two-plus-two" && (
+                {build.category === "cavern" && (
                   <ItemPicker
                     kind="relic-set"
                     showName
-                    label={t("build.cavernSecondTwoPiece")}
-                    badge={2}
+                    label={
+                      build.cavern.mode === "four-piece"
+                        ? t("build.cavernFourPiece")
+                        : t("build.cavernFirstTwoPiece")
+                    }
+                    badge={build.cavern.mode === "four-piece" ? 4 : 2}
                     triggerSize={useCompactSetIcons ? "sm" : "lg"}
-                    value={build.cavern.setIds[1]}
-                    items={cavernSets.filter(
-                      (set) => set.id !== fourPieceSetId
-                    )}
+                    value={fourPieceSetId}
+                    items={
+                      build.cavern.mode === "two-plus-two"
+                        ? cavernSets.filter(
+                            (set) =>
+                              set.id !==
+                              (build.cavern.mode === "two-plus-two" &&
+                                build.cavern.setIds[1])
+                          )
+                        : cavernSets
+                    }
                     onChange={(setId) =>
                       onBuildChange({
                         ...build,
-                        cavern: {
-                          mode: "two-plus-two",
-                          setIds: [fourPieceSetId, setId],
-                        },
+                        cavern:
+                          build.cavern.mode === "four-piece"
+                            ? { mode: "four-piece", setId }
+                            : {
+                                mode: "two-plus-two",
+                                setIds: [setId, build.cavern.setIds[1]],
+                              },
                       })
                     }
                   />
                 )}
-                <ItemPicker
-                  kind="relic-set"
-                  showName
-                  label={t("build.planarTwoPiece")}
-                  badge={2}
-                  triggerSize={useCompactSetIcons ? "sm" : "lg"}
-                  value={build.planarSetId}
-                  items={planarSets}
-                  onChange={(planarSetId) =>
-                    onBuildChange({ ...build, planarSetId })
-                  }
-                />
+                {build.category === "cavern" &&
+                  build.cavern.mode === "two-plus-two" && (
+                    <ItemPicker
+                      kind="relic-set"
+                      showName
+                      label={t("build.cavernSecondTwoPiece")}
+                      badge={2}
+                      triggerSize={useCompactSetIcons ? "sm" : "lg"}
+                      value={build.cavern.setIds[1]}
+                      items={cavernSets.filter(
+                        (set) => set.id !== fourPieceSetId
+                      )}
+                      onChange={(setId) =>
+                        onBuildChange({
+                          ...build,
+                          cavern: {
+                            mode: "two-plus-two",
+                            setIds: [fourPieceSetId, setId],
+                          },
+                        })
+                      }
+                    />
+                  )}
+                {build.category === "planar" && (
+                  <ItemPicker
+                    kind="relic-set"
+                    showName
+                    label={t("build.planarTwoPiece")}
+                    badge={2}
+                    triggerSize={useCompactSetIcons ? "sm" : "lg"}
+                    value={build.planarSetId}
+                    items={planarSets}
+                    onChange={(planarSetId) =>
+                      onBuildChange({ ...build, planarSetId })
+                    }
+                  />
+                )}
+                {build.category === "cavern" && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    aria-label={t("build.cavernMode")}
+                    onClick={() => {
+                      if (build.cavern.mode === "two-plus-two") {
+                        onBuildChange({
+                          ...build,
+                          cavern: { mode: "four-piece", setId: fourPieceSetId },
+                        });
+                      } else {
+                        const second = cavernSets.find(
+                          (set) => set.id !== fourPieceSetId
+                        );
+                        if (second)
+                          onBuildChange({
+                            ...build,
+                            cavern: {
+                              mode: "two-plus-two",
+                              setIds: [fourPieceSetId, second.id],
+                            },
+                          });
+                      }
+                    }}
+                  >
+                    {build.cavern.mode === "four-piece" ? "4" : "2+2"}
+                  </Button>
+                )}
               </section>
 
               <section className="min-w-0 flex-1 space-y-1">
-                <div className="grid grid-cols-2 gap-1 xl:grid-cols-4 xl:gap-1.5 2xl:grid-cols-2 2xl:gap-1 3xl:grid-cols-4 3xl:gap-1.5">
-                  {BUILD_SLOTS.map(([slot, catalogSlot]) => {
+                <div className="grid grid-cols-2 gap-1 md:gap-1.5">
+                  {BUILD_SLOTS.filter(
+                    ([slot]) => slot in build.preferredMainStats
+                  ).map(([slot, catalogSlot]) => {
                     const slotDefinition =
                       references.properties.relicSlotById.get(catalogSlot);
                     const validProperties =
@@ -474,7 +526,7 @@ export function BuildCard({
                       <div key={slot} data-build-slot={slot}>
                         <StatSelect
                           label={slotName}
-                          values={build.preferredMainStats[slot]}
+                          values={buildMainStats(build, slot)}
                           options={validProperties.map((propertyId) => {
                             const label = localizedPropertyName(
                               propertyId,
@@ -551,7 +603,7 @@ export function BuildCard({
             <div className="space-y-3">
               <TextField
                 label={t("scoring.profileName")}
-                value={profile.name}
+                value={profile.name ?? displayName}
                 onChange={(name) => {
                   if (name.trim()) onProfileChange({ ...profile, name });
                 }}

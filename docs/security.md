@@ -46,8 +46,13 @@ and server item identifiers. Unknown prior state is preserved as `null`; it is
 never defaulted to false evidence. Before an instruction is actionable, the
 scanner must bind its matcher to exactly one current visible Relic and verify
 that both prior lock and discard states are known, fresh, and unchanged.
-Equipped or ambiguously matched pieces remain preview-only. GGStarRail exports
-review instructions and never claims that it changed the game.
+Equipped or ambiguously matched pieces remain preview-only. GGStarRail sends
+requests only after the user chooses Apply and checks the Star Rail game marker.
+The native loopback server allows the exact HSR website origin and local
+development origins; the Genshin website cannot submit HSR requests. Account
+identifiers and credentials never enter these requests. Verified results alone
+may update uniquely matched states in the unchanged submitting account;
+pending, failed, ambiguous, and historical results cannot replace inventory.
 
 ## Diagnostics
 

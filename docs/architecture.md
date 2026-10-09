@@ -37,11 +37,9 @@ Identity is centralized in `src/config/identity.ts`:
 - backup kind: `ggstarrail.backup`
 - Worker name: `ggstarrail`
 
-There is no fallback to GenshinTools keys or backup formats. The v1 to v2
-workspace migration covers canonical account tri-state fields and the current
-build/scoring model through the public hydration and backup paths. Unknown
-store versions reset to a safe empty workspace; every later migration must
-remain explicit, pure, and fixture-tested.
+Workspace and build exports use the provisional development v1 format.
+Imports validate the current schema directly. Incompatible local workspaces
+start empty; historical experimental workspace formats have no migration support.
 
 ## Locale model
 

@@ -1,12 +1,11 @@
 # Account imports
 
-Achievement tracking also works before any account import. Workspace v4 stores
+Achievement tracking also works before any account import. The workspace stores
 that manual progress in `localAchievementCompletion`; account imports and merges
 continue to use the selected account's own achievement completion. Anonymous
 progress is preserved separately rather than assigned to an unverified account.
 Workspace backups include both, build-only imports leave both untouched, and
-clearing the workspace clears both. The v3 migration initializes empty anonymous
-tracking without changing existing account completion or capture evidence.
+clearing the workspace clears both.
 
 The account-import contracts in this repository were checked against current
 upstream implementations and deployed HSR web clients on 2026-09-02. Every
@@ -167,7 +166,8 @@ references, mismatched two-way Character/equipment references, and more than
 one equipped Relic in the same HSR slot. Unknown lock or discard observations
 remain `null`, never an inferred unlocked/unmarked state.
 
-Triage can export `goodscanner.hsr.manager-instructions` v1. The reference
+Triage submits `goodscanner.hsr.manager-instructions` v1 to the local Star Rail
+manager after an explicit Apply. The reference
 provider is also `gilore.ggstarrail-reference`. `requestId` and every
 instruction `id` are 1 to 128 characters containing only safe ASCII
 `[A-Za-z0-9._:-]`. Each instruction contains a full public visible-item
@@ -186,8 +186,18 @@ equipped pieces, and duplicate or ambiguous visible matchers remain
 preview-only. The manager envelope sets
 `accountIdentifiersIncluded`, `rawPacketDataIncluded`, and
 `serverItemIdentifiersIncluded` to literal `false` and excludes local IDs.
-GGStarRail never emits salvage, delete, equip, or unlock operations and never
-claims that exporting the file mutated the game.
+GGStarRail never emits salvage, delete, equip, or unlock operations.
+
+The desktop Manager tab starts a loopback HTTP service (default 127.0.0.1:8765).
+The website checks the Star Rail game marker before POST /manage, polls
+GET /status, and reads GET /result?jobId=...; POST /cancel?jobId=... stops the
+task while keeping the connection open. POST is never retried automatically.
+Concurrent tasks are rejected, completed duplicates retain their job ID, and
+errors / skipped reasons / manual-review counts remain visible next to the action.
+Only verified journal changes are patched into the unchanged submitting
+account, using the same unique public visible matcher and observed prior state.
+If the account changes during execution, results remain visible but no account
+is patched. Reconnecting to historical results never silently changes inventory.
 
 ## Secret lifetime
 

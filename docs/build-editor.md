@@ -15,14 +15,32 @@ Run `scripts/sync-character-affiliations.py` against the independent HSR source
 checkout to prepare a reviewable lookup update; it does not modify the normalized
 reference bundle or use GenshinTools data.
 
-Workspace v4 adds `characterLightConeIds`, an ordered list of up to five unique
-catalog Light Cone IDs per Character. These are build preferences, not equipped
-account instances. UI selection and build-import review enforce matching Paths.
-All slots remain accessible on narrow screens. Store v1/v2/v3, old backups, and
-build bundle v1 initialize this previously absent field to an empty mapping.
-Build bundle v2 carries the mapping. Account imports leave choices intact.
+The workspace stores `characterLightConeIds`, an ordered list of up to five
+unique catalog Light Cone IDs per Character. These are build preferences, not
+equipped account instances. UI selection and build-import review enforce matching
+Paths. All slots remain accessible on narrow screens. Account imports leave choices intact.
 
 Duplicate creates an independent score profile. Move swaps positions only with
-the adjacent build belonging to the same Character. Existing array order is
-preserved during migration and export. New builds use one Cavern 4-piece and one
-Planar 2-piece set; existing imported split-set builds remain editable.
+the adjacent build belonging to the same Character and category.
+
+Workspace and build bundle v1 separate Cavern and Planar builds into independent
+cards. Cavern cards configure a 4-piece or 2+2 combination, Body/Feet main stats,
+and a score profile for the four Cavern slots. Planar cards configure a 2-piece
+set, Sphere/Rope main stats, and a score profile for the two Planar slots. The
+filter page selects one card from each category for the same Character, allowing
+every cross-combination without saving duplicated 4+2 builds. Unconfigured
+categories remain unconfigured and produce review decisions in triage.
+
+The current v1 contract is provisional during development. Earlier experimental
+formats are unsupported: incompatible local workspaces start empty, and invalid
+backup/build imports are rejected. There are no historical workspace or paired
+build migrations. HoyoData generates native recommendations directly in this format.
+
+HoyoData's full `hoyodata ggstarrail` export writes generated presets to
+`src/presets/builds/in-game.json`. This uses the build bundle contract with optional
+`metadata: { name: { en, "zh-CN" }, author }`; author is `In-Game`.
+Generated card/profile names are absent. Card names derive from Character/set IDs
+in the current UI language; editing a name saves literal user text. Ordinary user
+exports may omit metadata. Conversion
+reports remain producer-side. The preset tests validate these JSON files against
+the importer and available game catalogs on every check.

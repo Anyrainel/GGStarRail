@@ -4,6 +4,7 @@ import {
   type RelicSlot,
   relicCategory,
 } from "@/domain/account/schemas";
+import { buildMainStats } from "./configuration";
 import type {
   BuildConfiguration,
   ComputedFilter,
@@ -56,23 +57,11 @@ const SLOT_ORDER: readonly RelicSlot[] = [
   "linkRope",
 ];
 
-function setIdsForSlot(
-  build: BuildConfiguration,
-  slot: RelicSlot
-): readonly string[] {
-  if (relicCategory(slot) === "planar") return [build.planarSetId];
+function setIdsForSlot(build: BuildConfiguration): readonly string[] {
+  if (build.category === "planar") return [build.planarSetId];
   return build.cavern.mode === "four-piece"
     ? [build.cavern.setId]
     : build.cavern.setIds;
-}
-
-function mainStatsForSlot(
-  build: BuildConfiguration,
-  slot: RelicSlot
-): readonly string[] {
-  if (slot === "head") return ["HPDelta"];
-  if (slot === "hands") return ["AttackDelta"];
-  return build.preferredMainStats[slot];
 }
 
 export function deriveBuildFilters(
@@ -91,8 +80,10 @@ export function deriveBuildFilters(
       (left, right) => right[1] - left[1] || left[0].localeCompare(right[0])
     )
     .map(([statId]) => statId);
-  return SLOT_ORDER.map((slot) => {
-    const mainStatIds = mainStatsForSlot(build, slot);
+  return SLOT_ORDER.filter(
+    (slot) => relicCategory(slot) === build.category
+  ).map((slot) => {
+    const mainStatIds = buildMainStats(build, slot);
     // A stat is impossible as a substat only when every accepted alternative
     // uses it as the main stat. For example, a CR/CD Body must still consider
     // CD when the actual piece has CR as its main stat (and vice versa).
@@ -109,7 +100,7 @@ export function deriveBuildFilters(
       characterDefinitionId: build.characterDefinitionId,
       scoreProfileId: build.scoreProfileId,
       slot,
-      setIds: setIdsForSlot(build, slot),
+      setIds: setIdsForSlot(build),
       mainStatIds,
       weightedStatIds,
       mustHaveStatIds,

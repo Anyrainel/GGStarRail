@@ -1,10 +1,4 @@
-import {
-  Download,
-  Eye,
-  Filter,
-  ShieldCheck,
-  TriangleAlert,
-} from "lucide-react";
+import { Eye, Filter, ShieldCheck, TriangleAlert } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -12,6 +6,7 @@ import {
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
+import { ScannerManagerConnection } from "@/components/account-data/ScannerManagerConnection";
 import {
   ChoiceChip,
   NumberField,
@@ -55,8 +50,8 @@ import { localizedName } from "@/lib/catalogPresentation";
 import {
   createManagerInstructionPreview,
   type ManagerInstructionPreview,
-  serializeManagerInstructionEnvelope,
 } from "@/lib/managerInstructions";
+import { reconcileManagerResult } from "@/lib/managerResult";
 import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
 import type { RelicSlotId } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
@@ -157,19 +152,6 @@ export function TriageView() {
     } finally {
       setManagerBusy(false);
     }
-  }
-
-  function downloadPreview() {
-    if (!managerPreview) return;
-    const json = serializeManagerInstructionEnvelope(managerPreview.envelope);
-    const url = URL.createObjectURL(
-      new Blob([json], { type: "application/json" })
-    );
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `ggartifact-hsr-manager-${managerPreview.envelope.requestId}.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
   }
 
   return (
@@ -306,19 +288,25 @@ export function TriageView() {
                         ? t("triage.managerPreparing")
                         : t("triage.managerPreview")}
                     </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      disabled={!managerPreview}
-                      onClick={downloadPreview}
-                    >
-                      <Download className="h-4 w-4" aria-hidden />
-                      {t("triage.managerDownload")}
-                    </Button>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3 p-4">
+                <ScannerManagerConnection
+                  envelope={managerPreview?.envelope ?? null}
+                  actionableCount={
+                    managerPreview?.actionability.actionableCount ?? 0
+                  }
+                  onResult={(result, submitted) => {
+                    const workspace = useWorkspaceStore.getState();
+                    if (workspace.account !== account) return false;
+                    workspace.replaceAccount(
+                      reconcileManagerResult(account, submitted, result)
+                    );
+                    setManagerPreview(null);
+                    return true;
+                  }}
+                />
                 <div className="flex items-start gap-3 rounded-lg border border-border bg-background/40 p-3 text-sm">
                   <TriangleAlert
                     className="mt-0.5 h-4 w-4 shrink-0 text-primary"
@@ -331,56 +319,64 @@ export function TriageView() {
                 {managerError && (
                   <StatusBanner message={managerError} tone="error" />
                 )}
-                {managerPreview && (
-                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <PreviewMetric
-                      label={t("triage.managerInstructions")}
-                      value={managerActionability?.instructions.length ?? 0}
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerPreviewOnly")}
-                      value={managerActionability?.previewOnlyCount ?? 0}
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerExecutable")}
-                      value={managerActionability?.actionableCount ?? 0}
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerReasonUnknownBefore")}
-                      value={
-                        managerActionability?.reasonCounts["unknown-before"] ??
-                        0
-                      }
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerReasonEquipped")}
-                      value={managerActionability?.reasonCounts.equipped ?? 0}
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerReasonLocked")}
-                      value={managerActionability?.reasonCounts.locked ?? 0}
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerReasonAmbiguous")}
-                      value={
-                        managerActionability?.reasonCounts[
-                          "ambiguous-matcher"
-                        ] ?? 0
-                      }
-                    />
-                    <PreviewMetric
-                      label={t("triage.managerBlockedLockedDiscard")}
-                      value={managerPreview.omittedInstructionIds.length}
-                    />
-                    <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-4">
-                      {(managerActionability?.instructions.length ?? 0) === 0
-                        ? t("triage.managerNoInstructions")
-                        : (managerActionability?.previewOnlyCount ?? 0) > 0
-                          ? t("triage.managerReasonHelp")
-                          : t("triage.managerFreshEvidence")}
+                {managerPreview &&
+                  managerPreview.actionability.instructions.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("triage.managerNoInstructions")}
                     </p>
-                  </div>
-                )}
+                  )}
+                {managerPreview &&
+                  managerPreview.actionability.instructions.length > 0 && (
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <PreviewMetric
+                        label={t("triage.managerInstructions")}
+                        value={managerActionability?.instructions.length ?? 0}
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerPreviewOnly")}
+                        value={managerActionability?.previewOnlyCount ?? 0}
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerExecutable")}
+                        value={managerActionability?.actionableCount ?? 0}
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerReasonUnknownBefore")}
+                        value={
+                          managerActionability?.reasonCounts[
+                            "unknown-before"
+                          ] ?? 0
+                        }
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerReasonEquipped")}
+                        value={managerActionability?.reasonCounts.equipped ?? 0}
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerReasonLocked")}
+                        value={managerActionability?.reasonCounts.locked ?? 0}
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerReasonAmbiguous")}
+                        value={
+                          managerActionability?.reasonCounts[
+                            "ambiguous-matcher"
+                          ] ?? 0
+                        }
+                      />
+                      <PreviewMetric
+                        label={t("triage.managerBlockedLockedDiscard")}
+                        value={managerPreview.omittedInstructionIds.length}
+                      />
+                      <p className="text-xs leading-5 text-muted-foreground sm:col-span-2 lg:col-span-4">
+                        {(managerActionability?.instructions.length ?? 0) === 0
+                          ? t("triage.managerNoInstructions")
+                          : (managerActionability?.previewOnlyCount ?? 0) > 0
+                            ? t("triage.managerReasonHelp")
+                            : t("triage.managerFreshEvidence")}
+                      </p>
+                    </div>
+                  )}
               </CardContent>
             </Card>
 

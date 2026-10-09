@@ -68,7 +68,7 @@ describe("Fresh workspace actions", () => {
     renderPage(<CharacterBuildView />);
 
     const createButtons = await screen.findAllByRole("button", {
-      name: "Add First Build",
+      name: "Add Cavern build",
     });
     expect(screen.getAllByRole("heading", { name: "March 7th" })).toHaveLength(
       2
@@ -107,13 +107,14 @@ describe("Fresh workspace actions", () => {
     renderPage(<CharacterBuildView />);
 
     const [createButton] = await screen.findAllByRole("button", {
-      name: "Add First Build",
+      name: "Add Cavern build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();
     const bundle = {
       schema: "ggstarrail.build-workspace",
       schemaVersion: 1,
+      characterLightConeIds: {},
       exportedAt: "2026-09-02T00:00:00.000Z",
       builds: state.builds,
       scoreProfiles: state.scoreProfiles,
@@ -157,12 +158,13 @@ describe("Fresh workspace actions", () => {
     const user = userEvent.setup();
     renderPage(<CharacterBuildView />);
     const [createButton] = await screen.findAllByRole("button", {
-      name: "Add First Build",
+      name: "Add Cavern build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();
     const build = state.builds[0];
-    if (!build) throw new Error("Expected a generated build");
+    if (!build || build.category !== "cavern")
+      throw new Error("Expected a generated build");
     const cavernSetId =
       build.cavern.mode === "four-piece"
         ? build.cavern.setId
@@ -170,6 +172,7 @@ describe("Fresh workspace actions", () => {
     const baseBundle = {
       schema: "ggstarrail.build-workspace",
       schemaVersion: 1,
+      characterLightConeIds: {},
       exportedAt: "2026-09-02T00:00:00.000Z",
       builds: [build],
       scoreProfiles: state.scoreProfiles,
@@ -180,7 +183,7 @@ describe("Fresh workspace actions", () => {
         name: "unknown-light-cone",
         value: {
           ...baseBundle,
-          schemaVersion: 2,
+          schemaVersion: 1,
           characterLightConeIds: {
             [build.characterDefinitionId]: ["cone:missing"],
           },
@@ -207,7 +210,7 @@ describe("Fresh workspace actions", () => {
           builds: [
             {
               ...build,
-              cavern: { mode: "four-piece", setId: build.planarSetId },
+              cavern: { mode: "four-piece", setId: "301" },
             },
           ],
         },
@@ -217,7 +220,20 @@ describe("Fresh workspace actions", () => {
         name: "wrong-planar-category",
         value: {
           ...baseBundle,
-          builds: [{ ...build, planarSetId: cavernSetId }],
+          builds: [
+            {
+              id: build.id,
+              name: build.name,
+              characterDefinitionId: build.characterDefinitionId,
+              scoreProfileId: build.scoreProfileId,
+              category: "planar",
+              planarSetId: cavernSetId,
+              preferredMainStats: {
+                planarSphere: ["HPAddedRatio"],
+                linkRope: ["HPAddedRatio"],
+              },
+            },
+          ],
         },
         message: "is not a Planar Ornament set",
       },

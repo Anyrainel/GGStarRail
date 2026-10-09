@@ -10,6 +10,7 @@ import { APP_PATHS } from "@/config/navigation";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
+import { buildDisplayName } from "@/lib/buildPresentation";
 import type { BuildReferences } from "@/lib/buildReferences";
 import { characterCatalogPresentation } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
@@ -23,9 +24,7 @@ interface CharacterBuildCardProps {
   builds: readonly BuildConfiguration[];
   profiles: ReadonlyMap<string, ScoreProfile>;
   references: BuildReferences;
-  onAddBuild: (
-    setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">
-  ) => void;
+  onAddBuild: (category: BuildConfiguration["category"]) => void;
   onBuildChange: (build: BuildConfiguration) => void;
   onProfileChange: (profile: ScoreProfile) => void;
   onDeleteBuild: (build: BuildConfiguration) => void;
@@ -44,26 +43,6 @@ function CharacterBuildCardComponent({
   const { locale, t } = useI18n();
   const duplicateBuild = useWorkspaceStore((state) => state.duplicateBuild);
   const moveBuild = useWorkspaceStore((state) => state.moveBuild);
-  const openAddBuild = () => {
-    const previous = builds.at(-1);
-    const cavernSetId = previous
-      ? previous.cavern.mode === "four-piece"
-        ? previous.cavern.setId
-        : previous.cavern.setIds[0]
-      : references.relicSets.values.find((set) => set.kind === "cavern_relic")
-          ?.id;
-    const planarSetId =
-      previous?.planarSetId ??
-      references.relicSets.values.find((set) => set.kind === "planar_ornament")
-        ?.id;
-    if (!cavernSetId || !planarSetId) {
-      throw new Error("Build creation requires Cavern and Planar set catalogs");
-    }
-    onAddBuild({
-      cavern: { mode: "four-piece", setId: cavernSetId },
-      planarSetId,
-    });
-  };
   const isVeryNarrow = useMediaQuery("(max-width: 560px)");
   const iconSize: ItemIconSize = isVeryNarrow ? "md" : "lg";
   const presentation = characterCatalogPresentation(
@@ -141,73 +120,74 @@ function CharacterBuildCardComponent({
       </CardHeader>
 
       <CardContent className={cn("pb-3", isVeryNarrow ? "px-2" : "px-3")}>
-        <div className="grid grid-cols-1 gap-2 2xl:grid-cols-2">
-          {builds.length === 0 ? (
-            <div className="col-span-full flex justify-center py-2 text-muted-foreground">
-              <Button
-                type="button"
-                variant="outline"
-                className={cn(
-                  "gap-2",
-                  isVeryNarrow ? "h-7 text-xs" : "h-9 text-sm"
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+          {(["cavern", "planar"] as const).map((category) => {
+            const categoryBuilds = builds.filter(
+              (build) => build.category === category
+            );
+            return (
+              <section
+                key={category}
+                className="min-w-0 space-y-2"
+                aria-label={t(
+                  category === "cavern"
+                    ? "build.cavernCards"
+                    : "build.planarCards"
                 )}
-                onClick={openAddBuild}
               >
-                <Plus
-                  className={isVeryNarrow ? "h-3 w-3" : "h-4 w-4"}
-                  aria-hidden="true"
-                />
-                {t("build.addFirstBuild")}
-              </Button>
-            </div>
-          ) : (
-            builds.map((build, index) => {
-              const profile = profiles.get(build.scoreProfileId);
-              if (!profile) return null;
-              return (
-                <BuildCard
-                  key={build.id}
-                  build={build}
-                  profile={profile}
-                  references={references}
-                  onBuildChange={onBuildChange}
-                  onProfileChange={onProfileChange}
-                  onDelete={() => onDeleteBuild(build)}
-                  onDuplicate={() =>
-                    duplicateBuild(
-                      build.id,
-                      t("build.copyName", { name: build.name }).slice(0, 80)
-                    )
-                  }
-                  onMove={(direction) => moveBuild(build.id, direction)}
-                  canMoveUp={index > 0}
-                  canMoveDown={index < builds.length - 1}
-                />
-              );
-            })
-          )}
+                <div className="flex items-center justify-between gap-2 px-1">
+                  <h3 className="text-sm font-semibold">
+                    {t(
+                      category === "cavern"
+                        ? "build.cavernCards"
+                        : "build.planarCards"
+                    )}
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1 text-xs"
+                    onClick={() => onAddBuild(category)}
+                  >
+                    <Plus className="h-3 w-3" aria-hidden />
+                    {t(
+                      category === "cavern"
+                        ? "build.addCavern"
+                        : "build.addPlanar"
+                    )}
+                  </Button>
+                </div>
+                {categoryBuilds.map((build, index) => {
+                  const profile = profiles.get(build.scoreProfileId);
+                  if (!profile) return null;
+                  return (
+                    <BuildCard
+                      key={build.id}
+                      build={build}
+                      profile={profile}
+                      references={references}
+                      onBuildChange={onBuildChange}
+                      onProfileChange={onProfileChange}
+                      onDelete={() => onDeleteBuild(build)}
+                      onDuplicate={() =>
+                        duplicateBuild(
+                          build.id,
+                          t("build.copyName", {
+                            name: buildDisplayName(build, references, locale),
+                          }).slice(0, 80)
+                        )
+                      }
+                      onMove={(direction) => moveBuild(build.id, direction)}
+                      canMoveUp={index > 0}
+                      canMoveDown={index < categoryBuilds.length - 1}
+                    />
+                  );
+                })}
+              </section>
+            );
+          })}
         </div>
-
-        {builds.length > 0 && (
-          <div className="mt-2 flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className={cn(
-                "flex-1 gap-2",
-                isVeryNarrow ? "h-7 text-xs" : "h-9 text-sm"
-              )}
-              onClick={openAddBuild}
-            >
-              <Plus
-                className={isVeryNarrow ? "h-3 w-3" : "h-4 w-4"}
-                aria-hidden="true"
-              />
-              {t("build.addBuild")}
-            </Button>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

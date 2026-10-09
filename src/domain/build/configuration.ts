@@ -1,7 +1,10 @@
+import type { z } from "zod";
 import type { RelicSlot } from "@/domain/account/schemas";
 import {
   type BuildConfiguration,
   BuildConfigurationSchema,
+  type CavernSetPlan,
+  type PreferredMainStatsSchema,
   type ScoreProfile,
   ScoreProfileSchema,
 } from "./schemas";
@@ -67,6 +70,23 @@ const ELEMENT_MAIN_STAT = {
   Wind: "WindAddedRatio",
 } as const satisfies Record<string, string>;
 
+export function buildMainStats(
+  build: BuildConfiguration,
+  slot: RelicSlot
+): readonly string[] {
+  if (slot === "head") return build.category === "cavern" ? ["HPDelta"] : [];
+  if (slot === "hands")
+    return build.category === "cavern" ? ["AttackDelta"] : [];
+  if (build.category === "cavern") {
+    return slot === "body" || slot === "feet"
+      ? build.preferredMainStats[slot]
+      : [];
+  }
+  return slot === "planarSphere" || slot === "linkRope"
+    ? build.preferredMainStats[slot]
+    : [];
+}
+
 function newId(prefix: string): string {
   return `${prefix}:${crypto.randomUUID()}`;
 }
@@ -126,7 +146,7 @@ function preferredMainStats(
   character: CharacterBuildDefinition,
   progression: BuildProgressionTables,
   properties: BuildPropertyCatalog
-): BuildConfiguration["preferredMainStats"] {
+): z.infer<typeof PreferredMainStatsSchema> {
   const weightsByType =
     progression.relic_scoring.main_affix_character_weights.find(
       (entry) => entry.character_id === character.id
@@ -168,22 +188,29 @@ function preferredMainStats(
   };
 }
 
-export function createCharacterBuild(
+type BuildSetPlan =
+  | { category: "cavern"; cavern: CavernSetPlan }
+  | { category: "planar"; planarSetId: string };
+
+export function createCharacterBuild<Plan extends BuildSetPlan>(
   character: CharacterBuildDefinition,
-  setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">,
+  setPlan: Plan,
   properties: BuildPropertyCatalog,
   progression: BuildProgressionTables,
   scoreProfileId: string,
   name: string,
   id = newId("build")
-): BuildConfiguration {
+): Extract<BuildConfiguration, { category: Plan["category"] }> {
+  const stats = preferredMainStats(character, progression, properties);
   return BuildConfigurationSchema.parse({
     id,
     name,
     characterDefinitionId: character.id,
     scoreProfileId,
-    cavern: setPlan.cavern,
-    planarSetId: setPlan.planarSetId,
-    preferredMainStats: preferredMainStats(character, progression, properties),
-  });
+    ...setPlan,
+    preferredMainStats:
+      setPlan.category === "cavern"
+        ? { body: stats.body, feet: stats.feet }
+        : { planarSphere: stats.planarSphere, linkRope: stats.linkRope },
+  }) as Extract<BuildConfiguration, { category: Plan["category"] }>;
 }

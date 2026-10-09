@@ -1,4 +1,5 @@
 import type { Relic, RelicSlot } from "@/domain/account/schemas";
+import { relicCategory } from "@/domain/account/schemas";
 import type { BuildConfiguration, ScoreProfile } from "./schemas";
 
 export type ScoreGrade = "S" | "A" | "B" | "C" | "D";
@@ -95,14 +96,18 @@ function mainStatAllowed(
   relic: Relic,
   build: BuildConfiguration | undefined
 ): boolean {
+  if (build && relicCategory(relic.slot) !== build.category) return false;
   const fixed = FIXED_MAIN_STATS[relic.slot];
   if (fixed) return relic.mainStat.statId === fixed;
   if (!build) return true;
-  if (relic.slot === "body") {
-    return build.preferredMainStats.body.includes(relic.mainStat.statId);
-  }
-  if (relic.slot === "feet") {
-    return build.preferredMainStats.feet.includes(relic.mainStat.statId);
+  if (build.category === "cavern") {
+    if (relic.slot === "body") {
+      return build.preferredMainStats.body.includes(relic.mainStat.statId);
+    }
+    if (relic.slot === "feet") {
+      return build.preferredMainStats.feet.includes(relic.mainStat.statId);
+    }
+    return false;
   }
   if (relic.slot === "planarSphere") {
     return build.preferredMainStats.planarSphere.includes(

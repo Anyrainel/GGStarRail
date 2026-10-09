@@ -69,6 +69,7 @@ describe("Account Character loadouts", () => {
     const build = createCharacterBuild(
       definition,
       {
+        category: "cavern",
         cavern: {
           mode: "four-piece",
           setId: account.relics.find(
@@ -77,11 +78,6 @@ describe("Account Character loadouts", () => {
               relic.slot === "head"
           )!.setId,
         },
-        planarSetId: account.relics.find(
-          (relic) =>
-            relic.equippedCharacterKey === ownedCharacter.key &&
-            relic.slot === "planarSphere"
-        )!.setId,
       },
       references.properties,
       references.progression,
@@ -97,9 +93,25 @@ describe("Account Character loadouts", () => {
       },
     };
     const workspace = useWorkspaceStore.getState();
+    const planar = createCharacterBuild(
+      definition,
+      {
+        category: "planar",
+        planarSetId: account.relics.find(
+          (relic) =>
+            relic.equippedCharacterKey === ownedCharacter.key &&
+            relic.slot === "planarSphere"
+        )!.setId,
+      },
+      references.properties,
+      references.progression,
+      profile.id,
+      "Account planar build",
+      "build:account-planar"
+    );
     workspace.replaceAccount(account);
     workspace.replaceBuildWorkspace({
-      builds: [cardBuild],
+      builds: [cardBuild, planar],
       scoreProfiles: [profile],
       triageRules: workspace.triageRules,
     });
@@ -143,7 +155,9 @@ describe("Account Character loadouts", () => {
     expect(card.querySelectorAll("[data-relic-score]")).toHaveLength(6);
     expect(card.querySelector("[data-aggregate-score]")).toBeVisible();
     expect(
-      within(card).getByText("Scored against Account card build")
+      within(card).getByText(
+        "Scored against Account card build + Account planar build"
+      )
     ).toBeVisible();
     expect(
       within(card).getByRole("link", {

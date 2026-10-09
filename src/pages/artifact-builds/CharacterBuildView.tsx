@@ -177,11 +177,38 @@ export default function CharacterBuildView() {
 
   function addBuild(
     characterId: string,
-    setPlan: Pick<BuildConfiguration, "cavern" | "planarSetId">
+    category: BuildConfiguration["category"]
   ) {
     if (!data) return;
     const definition = data.characters.byId.get(characterId);
     if (!definition) return;
+    const previous = [...builds]
+      .reverse()
+      .find(
+        (build) =>
+          build.characterDefinitionId === characterId &&
+          build.category === category
+      );
+    const setId = data.relicSets.values.find(
+      (set) =>
+        set.kind ===
+        (category === "cavern" ? "cavern_relic" : "planar_ornament")
+    )?.id;
+    if (!setId) throw new Error("Build creation requires a set catalog");
+    const setPlan =
+      category === "cavern"
+        ? {
+            category,
+            cavern:
+              previous?.category === "cavern"
+                ? previous.cavern
+                : { mode: "four-piece" as const, setId },
+          }
+        : {
+            category,
+            planarSetId:
+              previous?.category === "planar" ? previous.planarSetId : setId,
+          };
     const characterName = characterCatalogPresentation(
       definition,
       data.properties,

@@ -42,6 +42,7 @@ beforeAll(async () => {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: account.relics.find(
@@ -50,11 +51,6 @@ beforeAll(async () => {
             relic.slot === "head"
         )!.setId,
       },
-      planarSetId: account.relics.find(
-        (relic) =>
-          relic.equippedCharacterKey === ownedCharacter.key &&
-          relic.slot === "planarSphere"
-      )!.setId,
     },
     references.properties,
     references.progression,
@@ -70,9 +66,25 @@ beforeAll(async () => {
       rarity: definition.rarity,
       maxLevel: definition.max_level,
     }));
+  const planar = createCharacterBuild(
+    character,
+    {
+      category: "planar",
+      planarSetId: account.relics.find(
+        (relic) =>
+          relic.equippedCharacterKey === ownedCharacter.key &&
+          relic.slot === "planarSphere"
+      )!.setId,
+    },
+    references.properties,
+    references.progression,
+    profile.id,
+    "Planar resources",
+    "build:resources-planar"
+  );
   setup = {
     account,
-    builds: [build],
+    builds: [build, planar],
     scoreProfiles: [profile],
     scoringContext: createRelicScoringContext(references),
     relicDefinitions,
@@ -83,6 +95,7 @@ beforeAll(async () => {
 describe("HSR resource suggestions", () => {
   it("labels existing Relic actions with their actual main stat when a build accepts alternatives", () => {
     const build = setup.builds[0]!;
+    if (build.category !== "cavern") throw new Error("Expected Cavern build");
     const suggestions = generateResourceSuggestions({
       ...setup,
       builds: [
@@ -95,14 +108,6 @@ describe("HSR resource suggestions", () => {
             ].reverse(),
             feet: [
               ...(setup.references.properties.relicSlotById.get("FOOT")
-                ?.valid_main_properties ?? []),
-            ].reverse(),
-            planarSphere: [
-              ...(setup.references.properties.relicSlotById.get("NECK")
-                ?.valid_main_properties ?? []),
-            ].reverse(),
-            linkRope: [
-              ...(setup.references.properties.relicSlotById.get("OBJECT")
                 ?.valid_main_properties ?? []),
             ].reverse(),
           },
@@ -200,7 +205,8 @@ describe("HSR resource suggestions", () => {
       throw new Error("Demo account needs two Cavern sets");
     }
     const build = setup.builds[0];
-    if (!build) throw new Error("Resource build missing");
+    if (!build || build.category !== "cavern")
+      throw new Error("Resource build missing");
     const suggestions = generateResourceSuggestions({
       ...setup,
       builds: [

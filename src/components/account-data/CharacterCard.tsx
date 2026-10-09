@@ -18,6 +18,7 @@ import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { type RelicScore, scoreRelic } from "@/domain/build/scoring";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
+import { buildDisplayName } from "@/lib/buildPresentation";
 import {
   type BuildReferences,
   createRelicScoringContext,
@@ -53,8 +54,8 @@ interface CharacterCardProps {
   character: Character;
   lightCone?: LightCone;
   relics: readonly Relic[];
-  build?: BuildConfiguration;
-  profile?: ScoreProfile;
+  builds: readonly BuildConfiguration[];
+  profiles: ReadonlyMap<string, ScoreProfile>;
   references: BuildReferences;
   locale: Locale;
   layout?: CardLayout;
@@ -84,14 +85,20 @@ function summarizeSets(
 
 function scoreLoadout(
   relics: readonly Relic[],
-  build: BuildConfiguration | undefined,
-  profile: ScoreProfile | undefined,
+  builds: readonly BuildConfiguration[],
+  profiles: ReadonlyMap<string, ScoreProfile>,
   references: BuildReferences
 ): ReadonlyMap<string, RelicScore> {
-  if (!build || !profile) return new Map();
   const context = createRelicScoringContext(references);
   const scores = new Map<string, RelicScore>();
   for (const relic of relics) {
+    const build = builds.find(
+      (build) =>
+        build.category === relicCategory(relic.slot) &&
+        profiles.has(build.scoreProfileId)
+    );
+    const profile = build ? profiles.get(build.scoreProfileId) : undefined;
+    if (!build || !profile) continue;
     if (
       !references.relicPieces.byId.has(relic.definitionId) ||
       !references.properties.propertyById.has(relic.mainStat.statId)
@@ -107,8 +114,8 @@ function CharacterCardComponent({
   character,
   lightCone,
   relics,
-  build,
-  profile,
+  builds,
+  profiles,
   references,
   locale,
   layout = DEFAULT_LAYOUT,
@@ -116,6 +123,15 @@ function CharacterCardComponent({
   const { t } = useI18n();
   const { isMobile, isVeryNarrow, isRelicCompact } = layout;
   const compact = isVeryNarrow || isRelicCompact;
+  const targetName = (["cavern", "planar"] as const)
+    .flatMap((category) => {
+      const build = builds.find(
+        (build) =>
+          build.category === category && profiles.has(build.scoreProfileId)
+      );
+      return build ? [buildDisplayName(build, references, locale)] : [];
+    })
+    .join(" + ");
   const definition = references.characters.byId.get(character.definitionId);
   const characterName = definition
     ? characterCatalogName(definition, locale, t("terms.trailblazer"))
@@ -144,8 +160,8 @@ function CharacterCardComponent({
     [references.relicPieces.values]
   );
   const scores = useMemo(
-    () => scoreLoadout(relics, build, profile, references),
-    [build, profile, references, relics]
+    () => scoreLoadout(relics, builds, profiles, references),
+    [builds, profiles, references, relics]
   );
   const averageScore = useMemo(() => {
     if (scores.size === 0) return null;
@@ -386,8 +402,8 @@ function CharacterCardComponent({
             compact ? "pl-2" : "pl-3"
           )}
           title={
-            build
-              ? t("characterLoadout.buildTarget", { name: build.name })
+            targetName
+              ? t("characterLoadout.buildTarget", { name: targetName })
               : t("characterLoadout.scoreUnavailableHelp")
           }
         >
@@ -430,8 +446,8 @@ function CharacterCardComponent({
                   isMobile || compact ? "text-[9px]" : "text-[10px]"
                 )}
               >
-                {build
-                  ? t("characterLoadout.buildTarget", { name: build.name })
+                {targetName
+                  ? t("characterLoadout.buildTarget", { name: targetName })
                   : t("characterLoadout.scoredCount", { count: scores.size })}
               </p>
             </>

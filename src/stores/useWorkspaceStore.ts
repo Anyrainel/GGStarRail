@@ -19,10 +19,6 @@ import type {
   TriageRules,
 } from "@/domain/build/schemas";
 import {
-  migrateWorkspace,
-  WORKSPACE_STORE_VERSION,
-} from "./migration/workspace";
-import {
   DEFAULT_WORKSPACE,
   type PersistedWorkspace,
   PersistedWorkspaceSchema,
@@ -104,7 +100,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           const build = state.builds[index];
           if (!build) return state;
           const siblings = state.builds.flatMap((entry, i) =>
-            entry.characterDefinitionId === build.characterDefinitionId
+            entry.characterDefinitionId === build.characterDefinitionId &&
+            entry.category === build.category
               ? [i]
               : []
           );
@@ -197,7 +194,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: STORAGE_KEYS.workspace,
-      version: WORKSPACE_STORE_VERSION,
+      version: 1,
       partialize: (state) => ({
         schemaVersion: state.schemaVersion,
         characterLightConeIds: state.characterLightConeIds,
@@ -207,7 +204,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         scoreProfiles: state.scoreProfiles,
         triageRules: state.triageRules,
       }),
-      migrate: migrateWorkspace,
+      migrate: () => structuredClone(DEFAULT_WORKSPACE),
       merge: (persistedState, currentState) => {
         const parsed = PersistedWorkspaceSchema.safeParse(persistedState);
         return parsed.success

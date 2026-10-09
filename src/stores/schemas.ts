@@ -12,7 +12,7 @@ import {
 
 export const PersistedWorkspaceSchema = z
   .object({
-    schemaVersion: z.literal(4),
+    schemaVersion: z.literal(1),
     characterLightConeIds: CharacterLightConeChoicesSchema,
     account: AccountSnapshotSchema.nullable(),
     localAchievementCompletion: AchievementCompletionSchema.default({
@@ -59,7 +59,7 @@ export const PersistedWorkspaceSchema = z
 export type PersistedWorkspace = z.infer<typeof PersistedWorkspaceSchema>;
 
 export const DEFAULT_WORKSPACE: PersistedWorkspace = {
-  schemaVersion: 4,
+  schemaVersion: 1,
   characterLightConeIds: {},
   account: null,
   localAchievementCompletion: { completedIds: [] },

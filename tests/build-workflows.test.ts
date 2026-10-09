@@ -48,6 +48,7 @@ async function setupBuild() {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: account.relics.find(
@@ -56,11 +57,6 @@ async function setupBuild() {
             relic.slot === "head"
         )!.setId,
       },
-      planarSetId: account.relics.find(
-        (relic) =>
-          relic.equippedCharacterKey === ownedCharacter.key &&
-          relic.slot === "planarSphere"
-      )!.setId,
     },
     references.properties,
     references.progression,
@@ -78,19 +74,18 @@ describe("end-to-end build workspace domain", () => {
     const unknown = { ...character, id: "unlisted-character" };
     const created = createCharacterBuild(
       unknown,
-      { cavern: build.cavern, planarSetId: build.planarSetId },
+      { category: "cavern", cavern: build.cavern },
       references.properties,
       references.progression,
       profile.id,
       "Custom build"
     );
     expect(created.cavern).toEqual(build.cavern);
-    expect(created.planarSetId).toBe(build.planarSetId);
     expect(created.preferredMainStats.body).toEqual(
       references.properties.relicSlotById.get("BODY")!.valid_main_properties
     );
-    expect(created.preferredMainStats.linkRope).toEqual(
-      references.properties.relicSlotById.get("OBJECT")!.valid_main_properties
+    expect(created.preferredMainStats.feet).toEqual(
+      references.properties.relicSlotById.get("FOOT")!.valid_main_properties
     );
   });
 
@@ -108,7 +103,7 @@ describe("end-to-end build workspace domain", () => {
   it("derives six build filters with profile-driven stat requirements", async () => {
     const { build, profile } = await setupBuild();
     const filters = deriveBuildFilters(build, profile);
-    expect(filters).toHaveLength(6);
+    expect(filters).toHaveLength(4);
     expect(filters.every((filter) => filter.minimumScore === 20)).toBe(true);
     expect(filters[0]?.mainStatIds).toEqual(["HPDelta"]);
     expect(filters[1]?.mainStatIds).toEqual(["AttackDelta"]);

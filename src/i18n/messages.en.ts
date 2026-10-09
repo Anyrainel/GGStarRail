@@ -480,6 +480,13 @@ export const messagesEn = {
   "build.defaultProfileName": "{character} scoring",
   "build.defaultBuildName": "{character} build",
   "build.name": "Build name",
+  "build.cavernCards": "Cavern Relics",
+  "build.planarCards": "Planar Ornaments",
+  "build.addCavern": "Add Cavern build",
+  "build.addPlanar": "Add Planar build",
+  "build.cavernMode": "Cavern set combination",
+  "filters.character": "Character",
+  "filters.noCategoryBuild": "No build configured",
   "build.scoreProfile": "Scoring profile",
   "build.scoreProfileMissing":
     "Create a scoring profile before assigning this build.",
@@ -598,14 +605,40 @@ export const messagesEn = {
   "triage.reviewThreshold": "Review at or above",
   "triage.protectLocked": "Protect locked Relics",
   "triage.protectEquipped": "Protect equipped Relics",
-  "triage.managerTitle": "GOODScanner manager preview",
+  "manager.port": "Port",
+  "manager.connect": "Connect",
+  "manager.disconnect": "Disconnect",
+  "manager.stop": "Stop task",
+  "manager.apply": "Apply to game",
+  "manager.disconnected": "GGScanner · connection off",
+  "manager.connectError":
+    "Could not connect. Start the Star Rail manager in GGScanner and allow local network access in your browser.",
+  "manager.busyError":
+    "The manager is already running a task. Wait for it to finish.",
+  "manager.wrongGame":
+    "The connected manager is in Genshin mode. Switch GGScanner to Star Rail.",
+  "manager.requestError":
+    "The manager rejected this request. Reconnect and prepare a new preview.",
+  "manager.responseError":
+    "The manager returned an incompatible response. Update GGScanner and reconnect.",
+  "manager.details": "Error details",
+  "manager.result":
+    "{verified} verified · {skipped} skipped · {review} need review",
+  "manager.reviewRequired":
+    "Check these operations in the game before sending another request. The recovery record remains in GGScanner.",
+  "manager.alreadyDesired": "Already in the desired state",
+  "manager.notFound": "No matching Relic",
+  "manager.equipmentUnknown": "Equipped state unknown",
+  "manager.stateChanged": "Prior state changed",
+  "manager.skipped": "Skipped",
+  "manager.accountChanged":
+    "The account changed during this task. Game results are shown, but the current account was left unchanged.",
+  "triage.managerTitle": "GGScanner manager",
   "triage.managerPreview": "Prepare preview",
   "triage.managerPreparing": "Preparing…",
-  "triage.managerDownload": "Download instructions",
   "triage.managerBoundary":
-    "GGArtifact only creates a review file; it never changes the game. GOODScanner must rescan and match exactly one visible Relic before acting. Locked-before-discard candidates are counted in this preview but omitted from the download: unlocking and discard marking require separate reviewed runs. Salvage, equip, delete, and unlock commands are never exported.",
-  "triage.managerError":
-    "The manager preview could not be created. No file was downloaded.",
+    "Applies lock and discard marks only. Equipped, ambiguous, or changed pieces are skipped. Locked pieces are never marked for discard; nothing is salvaged automatically.",
+  "triage.managerError": "The manager preview could not be created.",
   "triage.managerInstructions": "Instructions",
   "triage.managerPreviewOnly": "Preview only",
   "triage.managerExecutable": "Actionable",
@@ -614,7 +647,7 @@ export const messagesEn = {
   "triage.managerReasonLocked": "Locked before discard",
   "triage.managerReasonAmbiguous": "Ambiguous matchers",
   "triage.managerReasonHelp":
-    "Preview-only reason counts can overlap. Locked-before-discard candidates are omitted from the download even when locked-piece protection is off. The download remains a review file; GOODScanner decides actionability only after a fresh visible-item rescan.",
+    "Reason counts may overlap. GGScanner rechecks each piece in the game before applying changes.",
   "triage.managerNoInstructions":
     "No lock or discard-mark changes are proposed by the current triage results.",
   "triage.managerUnknownBefore":

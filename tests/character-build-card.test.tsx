@@ -37,15 +37,9 @@ describe("CharacterBuildCard", () => {
     ).toBeNull();
   });
 
-  it("creates a 4+2 build immediately without a set-selection dialog", async () => {
+  it("adds each category independently without a set-selection dialog", async () => {
     const references = await loadBuildReferences();
     const character = references.characters.values[0]!;
-    const cavern = references.relicSets.values.find(
-      (set) => set.kind === "cavern_relic"
-    )!;
-    const planar = references.relicSets.values.find(
-      (set) => set.kind === "planar_ornament"
-    )!;
     const onAddBuild = vi.fn();
     const user = userEvent.setup();
     render(
@@ -64,11 +58,10 @@ describe("CharacterBuildCard", () => {
         </MemoryRouter>
       </I18nProvider>
     );
-    await user.click(screen.getByRole("button", { name: "Add First Build" }));
+    await user.click(screen.getByRole("button", { name: "Add Cavern build" }));
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(onAddBuild).toHaveBeenCalledExactlyOnceWith({
-      cavern: { mode: "four-piece", setId: cavern.id },
-      planarSetId: planar.id,
-    });
+    expect(onAddBuild).toHaveBeenCalledExactlyOnceWith("cavern");
+    await user.click(screen.getByRole("button", { name: "Add Planar build" }));
+    expect(onAddBuild).toHaveBeenLastCalledWith("planar");
   });
 });

@@ -38,8 +38,11 @@ function assignedSets(
   recommendation: BuildLoadoutResult
 ): ReadonlyMap<RelicSlot, string> {
   const assigned = new Map<RelicSlot, string>();
-  assigned.set("planarSphere", build.planarSetId);
-  assigned.set("linkRope", build.planarSetId);
+  if (build.category === "planar") {
+    assigned.set("planarSphere", build.planarSetId);
+    assigned.set("linkRope", build.planarSetId);
+    return assigned;
+  }
 
   if (build.cavern.mode === "four-piece") {
     for (const slot of CAVERN_SLOTS) assigned.set(slot, build.cavern.setId);

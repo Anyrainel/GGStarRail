@@ -23,15 +23,13 @@ async function prepareCard() {
   const build = createCharacterBuild(
     character,
     {
+      category: "cavern",
       cavern: {
         mode: "four-piece",
         setId: references.relicSets.values.find(
           (set) => set.kind === "cavern_relic"
         )!.id,
       },
-      planarSetId: references.relicSets.values.find(
-        (set) => set.kind === "planar_ornament"
-      )!.id,
     },
     references.properties,
     references.progression,
@@ -89,7 +87,7 @@ describe("BuildCard", () => {
     });
   });
 
-  it("uses ItemIcons for the 4+2 set plan and only shows variable main-stat slots", async () => {
+  it("shows only Cavern sets and Body/Feet main stats on a Cavern card", async () => {
     const { build, profile, references } = await prepareCard();
     const view = render(
       <I18nProvider>
@@ -106,30 +104,22 @@ describe("BuildCard", () => {
 
     const card = view.container.querySelector("[data-build-card]");
     expect(card).not.toBeNull();
-    expect(card?.querySelectorAll("[data-build-slot]")).toHaveLength(4);
+    expect(card?.querySelectorAll("[data-build-slot]")).toHaveLength(2);
 
     const cavernTrigger = screen.getByRole("button", {
       name: /Cavern 4-piece set:/,
     });
-    const planarTrigger = screen.getByRole("button", {
-      name: /Planar 2-piece set:/,
-    });
+    expect(
+      screen.queryByRole("button", { name: /Planar 2-piece set:/ })
+    ).toBeNull();
     const cavernIcon = cavernTrigger.querySelector(
       '[data-item-icon-kind="relic-set"]'
     );
-    const planarIcon = planarTrigger.querySelector(
-      '[data-item-icon-kind="relic-set"]'
-    );
     expect(cavernIcon).not.toBeNull();
-    expect(planarIcon).not.toBeNull();
     expect(cavernIcon).toHaveAttribute("data-item-icon-kind", "relic-set");
     expect(within(cavernIcon as HTMLElement).getByText("4")).toHaveAttribute(
       "data-item-badge",
       "4"
-    );
-    expect(within(planarIcon as HTMLElement).getByText("2")).toHaveAttribute(
-      "data-item-badge",
-      "2"
     );
 
     const cavernSetId =
@@ -146,7 +136,7 @@ describe("BuildCard", () => {
       String(expectedCavernRarity)
     );
 
-    for (const slot of ["body", "feet", "planarSphere", "linkRope"]) {
+    for (const slot of ["body", "feet"]) {
       const slotNode = card?.querySelector(`[data-build-slot="${slot}"]`);
       expect(slotNode).not.toBeNull();
       expect(

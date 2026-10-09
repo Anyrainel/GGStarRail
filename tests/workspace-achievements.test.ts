@@ -45,43 +45,6 @@ describe("workspace achievement completion", () => {
     ).toEqual([]);
   });
 
-  it("migrates a released v3 account workspace without moving account progress into anonymous tracking", async () => {
-    const account = makeAccountSnapshot();
-    account.achievementCompletion = {
-      completedIds: [101, 102],
-      locallyModifiedAt: "2026-09-04T00:00:00.000Z",
-    };
-    const old = {
-      schemaVersion: 3,
-      account,
-      builds: [],
-      scoreProfiles: [],
-      triageRules: structuredClone(DEFAULT_WORKSPACE.triageRules),
-    };
-    localStorage.setItem(
-      STORAGE_KEYS.workspace,
-      JSON.stringify({ version: 3, state: old })
-    );
-    await useWorkspaceStore.persist.rehydrate();
-    expect(useWorkspaceStore.getState().account).toEqual(account);
-    expect(useWorkspaceStore.getState().localAchievementCompletion).toEqual({
-      completedIds: [],
-    });
-    const parsed = parseBackup(
-      JSON.stringify({
-        product: "GGStarRail",
-        kind: "ggstarrail.backup",
-        schemaVersion: 1,
-        createdAt: "2026-09-18T00:00:00.000Z",
-        payload: old,
-      })
-    );
-    expect(parsed.payload.account).toEqual(account);
-    expect(parsed.payload.localAchievementCompletion).toEqual({
-      completedIds: [],
-    });
-  });
-
   it("keeps anonymous progress separate from imported accounts and build imports", () => {
     useWorkspaceStore.getState().setSeriesAchievementStatus([301], 301, true);
     const account = makeAccountSnapshot();

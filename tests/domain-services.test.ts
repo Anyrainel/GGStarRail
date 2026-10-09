@@ -119,13 +119,11 @@ describe("HSR build services", () => {
       name: "Build",
       characterDefinitionId: "character:1",
       scoreProfileId: profile.id,
+      category: "cavern",
       cavern: { mode: "four-piece", setId: "relic-set:1" },
-      planarSetId: "planar-set:1",
       preferredMainStats: {
         body: ["crit-rate"],
         feet: ["hp-percent"],
-        planarSphere: ["hp-percent"],
-        linkRope: ["hp-percent"],
       },
     };
     const result = scoreRelic(
