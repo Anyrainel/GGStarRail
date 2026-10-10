@@ -27,6 +27,7 @@ export default defineCharacter("1111", (k) => {
   // Enemy HP is not modeled; endgame enemies reach the cap.
   const bleed = k.status({
     id: "bleed",
+    family: "bleed",
     origin: "skill",
     debuff: true,
     duration: { turns: k.param("02", 5) },

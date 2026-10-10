@@ -6,6 +6,7 @@ export default defineCharacter("1002", (k) => {
   // Enemy SPD is fixed in the engine; the Slow matters for its presence.
   const slow = k.status({
     id: "torrent-slow",
+    family: "slow",
     origin: "skill",
     debuff: true,
     duration: { turns: k.param("02", 3) },

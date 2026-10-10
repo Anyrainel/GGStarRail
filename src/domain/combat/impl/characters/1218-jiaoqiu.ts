@@ -30,6 +30,7 @@ export default defineCharacter("1218", (k) => {
   // same in-game debuff, so it is not flagged as a second debuff.
   const ashenRoastBurn = k.status({
     id: "ashen-roast-burn",
+    family: "burn",
     origin: "talent",
     duration: { turns: roastTurns },
     modifiers: [{ stat: "vulnerability", value: k.param("04", 2) - perStack }],

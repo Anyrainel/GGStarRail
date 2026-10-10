@@ -7,6 +7,7 @@ export default defineCharacter("1004", (k) => {
   // the enemy as Slowed for the Talent.
   const slow = k.status({
     id: "edge-of-the-void-slow",
+    family: "slow",
     origin: "skill",
     debuff: true,
     duration: { turns: k.param("02", 4) },
@@ -14,6 +15,7 @@ export default defineCharacter("1004", (k) => {
   });
   const imprisoned = k.status({
     id: "synthetic-black-hole-imprisonment",
+    family: "imprisonment",
     origin: "ultimate",
     debuff: true,
     // "Imprisoned for 1 turn" has no placeholder.

@@ -25,6 +25,7 @@ export default defineCharacter("1103", (k) => {
   const skillShockChance = k.param("02", 3) + (k.a(1) ? k.traceParam(1, 1) : 0);
   const shock = k.status({
     id: "shock",
+    family: "shock",
     origin: "skill",
     debuff: true,
     duration: { turns: shockTurns },

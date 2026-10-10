@@ -12,6 +12,7 @@ export default defineCharacter("1210", (k) => {
   const burnDuration = { turns: k.param("02", 5) };
   const burn = k.status({
     id: "burn",
+    family: "burn",
     origin: "skill",
     debuff: true,
     duration: burnDuration,
@@ -29,6 +30,7 @@ export default defineCharacter("1210", (k) => {
   const boostedBurn = k.e(2)
     ? k.status({
         id: "burn-e2",
+        family: "burn",
         origin: "skill",
         debuff: true,
         duration: burnDuration,

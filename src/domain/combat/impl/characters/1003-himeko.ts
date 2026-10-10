@@ -18,6 +18,7 @@ export default defineCharacter("1003", (k) => {
 
   const burn = k.status({
     id: "burn",
+    family: "burn",
     origin: "a2",
     debuff: true,
     duration: { turns: k.traceParam(1, 2) },

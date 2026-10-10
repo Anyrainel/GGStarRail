@@ -5,6 +5,7 @@ import { defineCharacter } from "../../kit/character";
 export default defineCharacter("1108", (k) => {
   const windShear = k.status({
     id: "wind-shear",
+    family: "windShear",
     origin: "talent",
     debuff: true,
     duration: {

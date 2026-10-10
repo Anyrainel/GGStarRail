@@ -11,6 +11,7 @@ export default defineCharacter("1109", (k) => {
   // "Burn caused by Skill"; E4 applies the same Burn, so E2 extends both.
   const burn = k.status({
     id: "burn",
+    family: "burn",
     origin: "skill",
     debuff: true,
     duration: { turns: k.param("02", 3) + (k.e(2) ? k.rankParam(2, 1) : 0) },

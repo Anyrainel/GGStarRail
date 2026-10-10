@@ -23,12 +23,17 @@
 - id: jiaoqiu-burn-family
   entity: "1218"
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Ashen Roast "is also considered Burned", but the engine has no shared DoT
     family, so other kits' Burn checks cannot see it.
-  detail: "Same gap as welt-slow-family: statuses need a family/category (Burn, Shock, Bleed, Wind Shear, Slow, Imprisonment)."
+  detail: >
+    Ashen Roast's Burn status declares `family: "burn"`. The same pass added
+    families to the DoTs, Slows, and Imprisonment of Dan Heng, Himeko, Welt,
+    Kafka, Serval, Sampo, Hook, Luka, Guinaifen, and Hysilens. Misha's and
+    Yanqing's Freezes, and Black Swan's Arcana under Epiphany, still need
+    kit changes.
 - id: jiaoqiu-a6-reinforcements
   entity: "1218"
   rule: U8

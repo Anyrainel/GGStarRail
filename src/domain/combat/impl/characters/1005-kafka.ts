@@ -6,6 +6,7 @@ export default defineCharacter("1005", (k) => {
   const shockChance = k.param("03", 2) + (k.a(3) ? k.traceParam(3, 1) : 0);
   const shock = k.status({
     id: "shock",
+    family: "shock",
     origin: "ultimate",
     debuff: true,
     duration: { turns: k.param("03", 3) + (k.e(6) ? k.rankParam(6, 2) : 0) },

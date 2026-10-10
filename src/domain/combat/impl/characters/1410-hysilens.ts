@@ -2,6 +2,7 @@ import { type BattleApi, type EnemyView, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef, StatusDef } from "../../kit/model";
 import type { CombatType } from "../../model/stats";
+import type { StatusFamily } from "../../model/tags";
 
 const ATTACKING = "hysilens:attacking";
 const HIT_THIS_ATTACK = "hysilens:hit";
@@ -15,32 +16,62 @@ export default defineCharacter("1410", (k) => {
   // endgame enemies reach the cap.
   const states: readonly {
     id: string;
+    family: StatusFamily;
     combatType: CombatType;
     main: number;
   }[] = [
-    { id: "wind-shear", combatType: "Wind", main: k.param("04", 2) },
-    { id: "bleed", combatType: "Physical", main: k.param("04", 4) },
-    { id: "burn", combatType: "Fire", main: k.param("04", 2) },
-    { id: "shock", combatType: "Thunder", main: k.param("04", 2) },
+    {
+      id: "wind-shear",
+      family: "windShear",
+      combatType: "Wind",
+      main: k.param("04", 2),
+    },
+    {
+      id: "bleed",
+      family: "bleed",
+      combatType: "Physical",
+      main: k.param("04", 4),
+    },
+    { id: "burn", family: "burn", combatType: "Fire", main: k.param("04", 2) },
+    {
+      id: "shock",
+      family: "shock",
+      combatType: "Thunder",
+      main: k.param("04", 2),
+    },
   ];
   const talentDot = (
     id: string,
     origin: "talent" | "e1",
+    family: StatusFamily,
     combatType: CombatType,
     main: number
   ): StatusDef =>
     k.status({
       id,
       origin,
+      family,
       debuff: true,
       duration: { turns: k.param("04", 5) },
       dot: { hit: { shape: "single", main, kind: "dot", combatType } },
     });
   const dots = states.map((state) => ({
-    status: talentDot(state.id, "talent", state.combatType, state.main),
+    status: talentDot(
+      state.id,
+      "talent",
+      state.family,
+      state.combatType,
+      state.main
+    ),
     // E1: a second instance of the same state that coexists with the first.
     extra: k.e(1)
-      ? talentDot(`${state.id}-e1`, "e1", state.combatType, state.main)
+      ? talentDot(
+          `${state.id}-e1`,
+          "e1",
+          state.family,
+          state.combatType,
+          state.main
+        )
       : null,
   }));
 
