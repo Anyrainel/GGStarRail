@@ -11,18 +11,26 @@
     is kept and (3,1) hands converge to Hidden Hand. This rule sets Hidden
     Hand odds (about 80% at turn start after a tossed (3,1) hand plus four
     draws) and needs in-game confirmation.
-  detail: ""
+  detail: >
+    Not settled. The Talent only says she "can hold up to 4 tiles at one
+    time" (ZH 最多持有4张琼玉牌), and fribbels (Qingque.ts) models no hand. Needs an
+    in-game check: draw with a 3+1 hand and see which tile leaves.
 - id: qingque-skill-hidden-hand
   entity: "1201"
   rule: C3
-  status: open
+  status: wont-do
   category: verify
   summary: >
     Hidden Hand is entered as soon as Skill draws complete four tiles of one
     suit, so "Cherry on Top!" follows in the same turn, although the Talent
     text only names the turn start. Confirm that the Skill path enters Hidden
     Hand immediately.
-  detail: ""
+  detail: >
+    The kit is right. The Talent says that in Hidden Hand "Qingque cannot
+    use her Skill again" (ZH 无法再次施放战技), which assumes Hidden Hand can start
+    after a Skill in the same turn. fribbels' default rotation (Qingque.ts
+    comboTurnAbilities START_SKILL, END_BASIC with basicEnhanced on) also
+    plays Skill and then "Cherry on Top!" in one turn.
 - id: qingque-e2-draw-count
   entity: "1201"
   rule: U10
@@ -32,7 +40,10 @@
     E2 regenerates 1 Energy per Draw Tile trigger: one per ally turn start and
     one per Skill (which draws 2 tiles). Confirm whether the Skill counts once
     or once per tile.
-  detail: ""
+  detail: >
+    Not settled. EN "Every time Draw Tile is triggered" (ZH 青雀每次触发抽牌时) does
+    not say whether the Skill's 2-tile draw counts as one trigger. fribbels
+    does not model Energy.
 - id: qingque-e4-copy-type
   entity: "1201"
   rule: U4
@@ -44,21 +55,31 @@
     Follow-Up tag, no Toughness Reduction, main target only, at the expected
     chance 1 - 0.76^(Skills used this turn). Confirm its DMG type, Toughness,
     and whether it also hits adjacent targets after "Cherry on Top!".
-  detail: ""
+  detail: >
+    Not settled. fribbels (Qingque.ts) models E4 as a standard Follow-Up ATK
+    hit: Follow-Up tags, 10/20 Toughness, Basic ATK or Enhanced Basic ATK
+    multiplier, single target. The kit instead copies the hit as Basic ATK
+    DMG with no Toughness. EN "launches 1 Follow-Up ATK on the same target,
+    dealing Quantum DMG equal to 100% of Basic ATK DMG" (ZH 对该目标造成...)
+    settles the single target, but not the DMG type or the Toughness.
 - id: qingque-a6-expected-spd
   entity: "1201"
   rule: U5
-  status: open
+  status: wont-do
   category: approximation
   summary: >
     A6 SPD +10% after Enhanced Basic ATK is applied at the turn's expected
     Hidden Hand chance (fractional stacks) instead of only on the branch that
     used "Cherry on Top!", because the timeline cannot branch.
-  detail: ""
+  detail: >
+    This is the U9 construct: a chance-based buff on an ally is a status
+    whose stacks equal the chance, and SPD statuses with fractional stacks
+    move turn order in expectation. The timeline cannot branch, so nothing
+    more exact exists.
 - id: qingque-weighted-turn
   entity: "1201"
   rule: U9
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     The engine runs one ability per turn and ignores AbilityDef.endsTurn, and
@@ -69,20 +90,24 @@
     turn ally trigger (e.g. Kafka's follow-up after an ally Basic ATK) fires
     only on the first weighted branch and inherits its small weight.
   detail: >
-    Suggested engine changes: honor endsTurn (let the policy pick again after
-    a non-ending action) and budget limitPerTurn/limitPerAction by cumulative
-    weight (fire with min(weight, remaining budget)).
+    Made obsolete by engine-pass-wave1. Limits now count weight, so
+    limitPerTurn is shared across the weighted branches and the last one is
+    scaled to what remains, and endsTurn false exists. Queuing each random
+    outcome with its probability is the U9 construct for outcomes that
+    change the action, so the celestialJade pseudo-action stays.
 - id: qingque-e4-report-merge
   entity: "1201"
   rule: C1
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     Hit groups ignore abilityId, so ctx.deal hits with the same tags and
     modifiers as the action's own hits (the E4 copy of Basic ATK) are merged
     into that ability's line of the damage report and never show as
     "e4:1201".
-  detail: ""
+  detail: >
+    Fixed by engine-pass-wave1: breakdown groups key on abilityId. The E4
+    deal passes origin "e4", so it gets its own row, e4:1201.
 - id: argenti-90-ultimate
   entity: "1302"
   rule: C1
@@ -93,18 +118,34 @@
     Ultimate is that ability; the 90-Energy variant is defined as
     "ultimateLesser" but can never be chosen (e.g. near the end of a fight or
     when Energy cannot reach 180).
-  detail: ""
+  detail: >
+    Blocked on engine-policy-battle-end. The engine now casts Ultimate
+    variants: an Ultimate policy can return "ultimateLesser", and its
+    energyCost of 90 is honoured. What is missing is when to use it. Per
+    Energy the 180-Energy version always deals more (kit comment), so the
+    90-Energy version only pays when Argenti cannot reach 180 Energy before
+    the battle ends. Once the policy can see the battle end, return
+    "ultimateLesser" when Energy is 90 or more and the time left is too
+    short to reach 180; otherwise wait for "ultimate".
 - id: argenti-talent-timing
   entity: "1302"
   rule: C2
-  status: open
+  status: actionable
   category: approximation
   summary: >
     Talent Energy and Apotheosis stacks are granted after each Basic ATK,
     Skill, or Ultimate resolves (one per distinct enemy hit), so stacks gained
     by the Ultimate's AoE part do not raise the CRIT Rate of its later bounce
     hits.
-  detail: ""
+  detail: >
+    Grant the Talent in afterHit instead of after. After each HitDef, call
+    sublimeObject with the number of enemies that HitDef hit: index 0 of
+    Basic ATK gives 1, index 0 of the Skill and of both Ultimates gives all
+    enemies, and the 180-Energy Ultimate's bounce HitDef (index 1) gives
+    nothing, because its targets were already counted. Text: "For every
+    enemy hit ... grants him a stack of Apotheosis" (ZH
+    每击中1个敌方目标...获得1层【升格】). The stacks from the AoE part then raise the CRIT
+    Rate of the 6 bounce instances that follow. Energy totals do not change.
 - id: jade-collector-target
   entity: "1314"
   rule: C3
@@ -115,7 +156,10 @@
     (Destruction, The Hunt, Erudition, Nihility, Elation), highest SPD first,
     and to Jade only without other Characters. Players may choose a different
     target; there is no way to set it.
-  detail: ""
+  detail: >
+    Blocked on engine-ally-option-vocabulary. Once a teammate option exists,
+    read the Debt Collector from it, and keep the current heuristic as the
+    default (damage-dealing Path, then highest SPD).
 - id: jade-vow-refresh
   entity: "1314"
   rule: U6
@@ -124,7 +168,10 @@
   summary: >
     Recasting the Ultimate resets the remaining enhanced Talent Follow-Up ATKs
     to 2 instead of adding 2. Confirm whether unused enhancements carry over.
-  detail: ""
+  detail: >
+    Not settled. EN "This enhancement can take effect 2 time(s)" (ZH
+    强化效果可生效2次) does not say whether a recast adds to unused enhancements.
+    fribbels only has an on/off enhanced Follow-Up ATK.
 - id: jade-bounce-hit-count
   entity: "1314"
   rule: U9
@@ -134,11 +181,18 @@
     Charge and Debt Collector Additional DMG count every enemy with a nonzero
     expected hit, so a Bounce attack counts each enemy once even when fewer
     bounces than enemies would leave some unhit.
-  detail: ""
+  detail: >
+    No exact construct. A Bounce placement reaches the hit listener as one
+    event per enemy with weight bounces / enemies, and the listener cannot
+    tell it from an AoE placement. So it cannot compute the chance that an
+    enemy is hit at least once, 1 - (1 - 1/n)^bounces. Exact handling needs
+    the hit event to carry its shape and bounce count, or actionEnd
+    targetsHit to carry a per-enemy hit chance. Only Bounce attacks by Jade
+    or a Debt Collector are affected.
 - id: rappa-ignore-weakness
   entity: "1317"
   rule: U2
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Enhanced Basic ATK reduces Toughness of enemies without Imaginary Weakness
@@ -146,17 +200,28 @@
     Weakness, both breaking with the Imaginary effect. The engine only reduces
     Toughness of enemies weak to the hit's Combat Type, so these reductions
     (and the Super Break from A4 on such enemies) are missing.
-  detail: ""
+  detail: >
+    Use toughnessWithoutWeakness (engine-pass-wave1). The three Enhanced
+    Basic ATK HitDefs take toughnessWithoutWeakness: k.param("18", 4), which
+    is 50% ("Attacking enemies that don't have Imaginary Weakness can also
+    reduce Toughness ... equal to 50% of the original"). The Talent's Break
+    DMG hit takes toughnessWithoutWeakness: 1 ("This DMG can ignore Weakness
+    Type to reduce 2 Toughness"). Both break with Rappa's own Imaginary
+    type, which the engine already uses. A4's Super Break on Broken enemies
+    without the Weakness then follows from the reduced Toughness.
 - id: rappa-a6-atk-scaling
   entity: "1317"
   rule: U7
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     Damage evaluation ignores `scaling` on incoming modifiers, so A6's extra
     Break DMG taken (+1% per 100 ATK over 2400, up to +8%) is dropped and only
     the base 2% applies. The kit already declares the applier-ATK scaling.
-  detail: ""
+  detail: >
+    Fixed by engine-pass-wave1, which evaluates stat-scaled incoming
+    modifiers. The kit already declares the applier-ATK scaling on
+    withered-leaf.
 - id: rappa-elite-enemy
   entity: "1317"
   rule: U8
@@ -166,17 +231,21 @@
     Enemy tiers are not modeled. A2 (extra Charge and 10 Energy when an elite
     or higher enemy is broken) treats the centre enemy, the scenario's main
     target, as the only elite.
-  detail: ""
+  detail: >
+    Blocked on engine-enemy-tier. Once enemy tiers exist, apply A2 only when
+    the broken enemy is elite-level or higher.
 - id: rappa-extra-turn-delay
   entity: "1317"
   rule: U11
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     An Ultimate cast after a turn queues its extra turn until after the next
     unit's turn: the timeline shows a teammate acting between Rappa's
     Ultimate and her "immediate" Sealform extra turn.
-  detail: ""
+  detail: >
+    Fixed by engine-pass-wave1: an extra turn granted by an Ultimate now
+    runs before the next unit's turn.
 - id: rappa-enhanced-toughness-split
   entity: "1317"
   rule: U1
@@ -187,11 +256,14 @@
     adjacent). The kit splits them 10/10/5 (main) and 5/5/5 (adjacent, third
     hit to every enemy); E2's +50% applies to the 10s. Confirm the per-hit
     split.
-  detail: ""
+  detail: >
+    Not settled. The facts give only totals (25 main, 15 adjacent), and
+    fribbels (Rappa.ts) also uses only the total (25 + 2 + Charge). Needs
+    per-hit data.
 - id: jing-yuan-lord-spd
   entity: "1204"
   rule: C5
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Summons keep a fixed engine SPD, so Lightning-Lord's +10 SPD per extra
@@ -199,29 +271,31 @@
     remaining action gauge with advanceAction (by old/new SPD) whenever its
     Hits Per Action change.
   detail: >
-    The rescale needs the summon's remaining gauge, which the API does not
-    expose. The kit tracks it from battle time recorded by its own turn,
-    Ultimate, and Lightning-Lord policies (PolicyView has `time`, BattleApi
-    does not) and keeps the summon handle returned by ctx.summon at
-    battleStart (summons are not in ctx.allies). Test timelines match the
-    hand-computed action values. Fix: let fixed-SPD summons read spdFlat from
-    their statuses (memosprites already do); the kit would then apply a
-    stacking SPD status to Lightning-Lord and drop the closure state.
+    Since engine-pass-wave1, summons read SPD statuses. Declare a stacking
+    status with spdFlat k.param("04", 3) per stack and maxStacks maxHits -
+    baseHits. Keep its stacks equal to hits - baseHits with
+    ctx.setStatusStacks on Lightning-Lord whenever HITS changes (Skill,
+    Ultimate) and when it resets after the Lord's attack. Find the summon
+    with ctx.findSummon(ctx.self, lightningLord.id) instead of the closure
+    handle. Then drop the closure state (now, gauge, gaugeAt, lord) and the
+    advanceAction rescale, because turn order keeps the remaining distance
+    when SPD changes.
 - id: himeko-a4-burned-share
   entity: "1003"
   rule: U2
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     A4 (Skill DMG +20% against Burned enemies) needs a target-status
     condition. The kit applies it as a self DMG Boost weighted by the Burned
     share of the Skill's multipliers, counting only Himeko's own Burn.
   detail: >
-    Overestimates: the Burn status exists deterministically in the timeline
-    while its 50% base chance is only applied at evaluation, and this boost
-    ignores that chance. Burn from Fire Weakness Break is not counted. Needs a
-    HitFilter condition on a target status family (Burn) that carries the
-    debuff's landing chance.
+    Replace the magma share status with k.stat("a4", { stat: "dmgBoost",
+    value: k.traceParam(2, 1), filter: { tags: ["skill"], targetFamilies:
+    ["burn"] } }) when A4 is unlocked, and drop the before/after sync.
+    targetFamilies checks each target and sees every Burn: Break Burn, Ashen
+    Roast, and other kits' Burns. The filter still ignores the Burn's
+    landing chance; engine-debuff-landing-chance tracks that.
 - id: himeko-e6-toughness
   entity: "1003"
   rule: U1
@@ -231,48 +305,59 @@
     The facts give no Toughness reduction for E6's two extra Ultimate
     instances (random enemy, 40% of the original DMG); they are modeled
     without any.
-  detail: ""
+  detail: >
+    Still missing. The facts for 100303 give each=20 for the AoE part only,
+    and fribbels (Himeko.ts) gives the E6 instances no Toughness either.
 - id: herta-a6-frozen
   entity: "1013"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     A6 (Ultimate DMG +20% against Frozen enemies) is not modeled. Frozen comes
     from Ice Weakness Break, whose state kits cannot query, and DMG Boost has
     no target-status condition.
-  detail: ""
+  detail: >
+    Add if (k.a(3)) k.stat("a6", { stat: "dmgBoost", value: k.traceParam(3,
+    1), filter: { tags: ["ultimate"], targetFamilies: ["frozen"] } }) and
+    remove the "not modeled" comment. Weakness Break Frozen carries the
+    frozen family, and so do kit Freezes that declare it (March 7th,
+    Gepard).
 - id: serval-shock-sources
   entity: "1103"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     "Shocked" (Talent Additional DMG, E6) should include Shock from other
     Characters (Kafka) and from Lightning Weakness Break; kits can only test
     their own status definitions, so only Serval's Shock counts.
   detail: >
-    Effects gated on the Shock's presence also ignore its landing chance:
-    ctx.deal has no chance, so the Talent's Additional DMG is dealt in full
-    while the Shock DoT itself is weighted by the chance. Needs status
-    families on enemies and a chance-carrying deal or condition.
+    Read "Shocked" as enemy.hasFamily("shock") for the Talent's Additional
+    DMG targets, so Kafka's Shock, Lightning Break Shock, and Serval's own
+    Shock all count. The Ultimate's extension stays on Serval's own Shock
+    (see serval-shock-extend). The landing-chance part (the Additional DMG
+    is dealt in full on a base-chance Shock) is tracked by
+    engine-debuff-landing-chance, which lists this Talent.
 - id: serval-e6-shocked-share
   entity: "1103"
   rule: U2
-  status: open
+  status: actionable
   category: approximation
   summary: >
     E6 (DMG +30% against Shocked enemies) is a self DMG Boost weighted by the
     Shocked share of each attack's multipliers, plus an unconditional DoT DMG
     Boost (her Shock DoT only hits Shocked enemies).
   detail: >
-    The total is exact when the targets share their other modifiers, but the
-    bonus is spread over every target of the attack. A target-status HitFilter
-    would make it exact.
+    Replace songRocks and the unconditional DoT boost with k.stat("e6", {
+    stat: "dmgBoost", value: k.rankParam(6, 1), filter: { targetFamilies:
+    ["shock"] } }). Each hit (direct, Additional, and her Shock ticks) then
+    qualifies on its own target, so the per-attack share weighting goes
+    away.
 - id: serval-shock-extend
   entity: "1103"
   rule: U5
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     The Ultimate extends remaining Shock duration by 2 turns, but the API
@@ -280,8 +365,11 @@
     turns in a per-enemy counter and re-applies Shock with `turns` set to the
     remaining turns plus 2.
   detail: >
-    Re-applying emits statusApplied, so other kits' "when a debuff is
-    applied" listeners see the extension as a new application.
+    Use the status lifecycle API from 61c14f6. For each enemy holding
+    Serval's Shock, call ctx.extendStatus(enemy, shock, k.param("03", 2)).
+    Drop the SHOCK_TURNS counter, its turnEnd listener, and the
+    re-application, which emitted statusApplied. E4's new Shock on enemies
+    that are not Shocked stays an applyStatus.
 - id: serval-e2-energy
   entity: "1103"
   rule: U10
@@ -290,7 +378,10 @@
   summary: >
     E2 (4 Energy each time the Talent deals Additional DMG) is read as once
     per Talent trigger, not once per Shocked enemy hit. Confirm in game.
-  detail: ""
+  detail: >
+    Not settled. EN "Every time Serval's Talent is triggered to deal
+    Additional DMG" (ZH 每触发1次天赋的附加伤害) does not say whether hitting several
+    Shocked enemies counts as one trigger. fribbels does not model Energy.
 - id: serval-e1-toughness
   entity: "1103"
   rule: U1
@@ -299,11 +390,13 @@
   summary: >
     The facts give no Toughness reduction for E1's extra hit (60% of Basic ATK
     DMG to a random adjacent enemy); it is modeled without any.
-  detail: ""
+  detail: >
+    Still missing. The facts list only Basic ATK's 10 (110301), and fribbels
+    (Serval.ts) gives the E1 hit no Toughness either.
 - id: the-herta-a4-condition
   entity: "1401"
   rule: U8
-  status: open
+  status: wont-do
   category: verify
   summary: >
     A4 "Message From Beyond the Veil" is read as one battle-entry check: with
@@ -311,7 +404,11 @@
     +80%, "Aloofly Honest" counting at least 3 targets, and the post-attack
     Interpretation stacks). Confirm whether the last two clauses also need
     the 2-Erudition condition.
-  detail: ""
+  detail: >
+    The kit is right. ZH puts every clause in one sentence under the same
+    condition: 进入战斗时，若队伍中的「智识」命途角色大于等于2名，使我方全体暴击伤害提高80%，
+    行迹【冷漠的诚实】计算击中目标数时至少计算3个目标，攻击后对...施加. EN joins the second clause with
+    "And".
 - id: the-herta-elite-target
   entity: "1401"
   rule: U8
@@ -323,11 +420,15 @@
     Interpretation stacks, and the Ultimate's rearrangement swaps the highest
     stack count onto it. Interpretation transfer on enemy defeat is not
     modeled (no kills).
-  detail: ""
+  detail: >
+    Blocked on engine-enemy-tier. Once enemy tiers exist, give the
+    wave-start 25 stacks and the Ultimate's highest stack count to the
+    elite-level or higher enemy instead of the centre one. Interpretation
+    transfer on defeat needs engine-kill-triggers.
 - id: anaxa-weakness-duration
   entity: "1405"
   rule: U5
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Talent Weakness implants last 3 turns and "Sublimation" Weaknesses last
@@ -336,13 +437,21 @@
     "Qualitative Disclosure" never lapses once reached and A2's "no enemy in
     Qualitative Disclosure" Energy stops after the first Ultimate.
   detail: >
-    Needs a timed implant (duration, countdown) or a removeWeakness call.
-    The implanted Type is the first missing one in a fixed order instead of
-    a random missing Type.
+    Use timed implants and removeWeakness (engine-pass-wave1). Talent and E2
+    implants: ctx.implantWeakness(enemy, type, { turns: k.param("04", 2) })
+    (3 turns; a re-implant refreshes the timer). When no Type is missing,
+    the Talent still picks a random held Type, so refresh one with the same
+    turns. Sublimation: implant the missing Types and record per enemy which
+    Types only Sublimation added. On statusRemoved with status: sublimation
+    (it expires at the enemy's turn start), call removeWeakness for those
+    Types unless a Talent implant has refreshed them since. Re-evaluate
+    Qualitative Disclosure in both directions (apply at 5 or more Types,
+    remove below) in the hit listener, at Anaxa's actionStart, and at her
+    turnStart before A2's Energy check.
 - id: anaxa-disclosure-dmg
   entity: "1405"
   rule: U3
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     "Anaxa deals 30% increased DMG to targets afflicted with Qualitative
@@ -350,55 +459,83 @@
     the hit target. The kit holds a DMG Boost status on Anaxa synced to her
     action's main target (re-checked after each hit on it); Bounce and AoE
     targets are assumed to share the main target's state.
-  detail: ""
+  detail: >
+    Replace disclosureDmg and the actionTarget sync with k.stat("talent", {
+    stat: "dmgBoost", value: k.param("04", 1), filter: { targetStatuses:
+    [disclosure.id] } }). Every Bounce and AoE hit then reads its own
+    target's state.
 - id: anaxa-a6-final-weaknesses
   entity: "1405"
   rule: U2
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     A6 (ignore 4% DEF per Weakness Type on the target) uses one
     targetWeakness-filtered modifier per Type. Damage evaluation reads the
     enemy's Weakness set as it is after the battle, not at the hit, so early
     hits count Weaknesses implanted later.
-  detail: "Fix: snapshot target Weaknesses in the HitRecord."
+  detail: >
+    Fixed by engine-pass-wave1: targetWeakness filters now read the Weakness
+    set snapshotted on each hit.
 - id: anaxa-skill-energy-per-hit
   entity: "1405"
   rule: U1
-  status: open
+  status: wont-do
   category: verify
   summary: >
     Facts give the Skill (Bounce) 6 Energy, read as per instance like other
     Bounce Skills (Welt 10, Sampo/Asta 6): 5 instances regenerate 30. The
     Talent's additional Skill is assumed to regenerate the same 30.
-  detail: ""
+  detail: >
+    The kit is right. Reading SPBase per instance makes every Bounce Skill
+    total the standard Skill's 30 Energy: Anaxa 5 x 6, Sampo 5 x 6, Asta 5 x
+    6, and Welt 3 x 10 (the same reading as welt-bounce-energy and
+    sampo-bounce-energy). The Talent's additional Skill is the same Skill
+    and regenerates the same.
 - id: rin-tohsaka-facts
   entity: "1508"
   rule: U1
-  status: open
-  category: needs-data
+  status: actionable
+  category: bug
   summary: >
     The pinned TurnBasedGameData revision has no facts for Rin Tohsaka
     (1508xx). Assumed: Basic ATK 10 Toughness, Skill 20, "Second Magic
     Experiment" 10 per enemy on its AoE part and none per random instance,
     Ultimate 20 on every target, Joint Follow-Up ATK 10 per enemy (Rin's
     part only) with 10 Energy; default Energy/Skill Points otherwise.
-  detail: ""
+  detail: >
+    The pinned facts now include 1508xx, so apply them. Basic ATK 10
+    (150801) and Skill 20 (150802) match the assumptions. The Ultimate
+    (150803) is 30 on the designated target and 20 on the others, where the
+    kit gives 20 to all; use one AoE HitDef with main and each instead of
+    blast plus a deal. The Joint Follow-Up ATK (150805) is 20 per enemy with
+    10 Energy, where the kit has 10 Toughness. Second Magic Experiment
+    (150809) is 20 per enemy on its AoE part and 2 per random instance (kit:
+    10 and 0), with 30 Energy and SP-cost 0: set skillPoints: 0, since only
+    the conversion down to 2 consumes Skill Points, and drop its skillPoints
+    >= 1 check from the turn policy. fribbels (RinTohsaka.ts) uses the same
+    values: 20 plus 2 per bounce, Ultimate 30, Follow-Up 20. The 10 Energy
+    in the 150804 Talent facts belongs to no action; ignore it.
 - id: rin-tohsaka-sp-cap
   entity: "1508"
   rule: U10
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     A2 raises the Skill Point cap by 2 while Rin is on the field, but the cap
     is a fixed battle option (5) that kits cannot change. The Talent's "7 or
     more Skill Points" route to "Second Magic Experiment" is therefore never
     reachable, and surplus Skill Points above 5 are lost.
-  detail: "Archer's A2 needs the same capability."
+  detail: >
+    With A2, call ctx.setMaxSkillPoints(ctx.maxSkillPoints + k.traceParam(1,
+    1)) at battleStart ("While Rin Tohsaka is on the field, additionally
+    increases the upper limit of Skill Points by 2"). This makes the
+    Talent's 7-or-more Skill Points route reachable. Remove the "not
+    modeled" comment. Archer's A2 needs the same change in its own tracker.
 - id: rin-tohsaka-sp-events
   entity: "1508"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     There is no event for Skill Point consumption or recovery. The Talent
@@ -406,29 +543,44 @@
     credits the change to the unit acting there, so changes made by later
     listeners can be credited to the next actor, opposite changes within one
     window cancel out, and recovery lost at the cap does not count.
-  detail: "Needs a skillPointsChanged event carrying the unit and the signed amount."
+  detail: >
+    Replace the SEEN_SKILL_POINTS polling (four listeners plus the manual
+    sync in enhancedSkill) with k.on("skillPointsChanged", "talent", {
+    subject: "any" }, ...). The handler gains |event.delta| Gem Energy and
+    gives the CRIT DMG buff to event.unit (its owner for summons;
+    selfCritDmg when it is Rin). delta is measured after the cap, so
+    recovery lost at the cap does not count.
 - id: rin-tohsaka-conversion-talent
   entity: "1508"
   rule: U8
-  status: open
+  status: wont-do
   category: verify
   summary: >
     Skill Points consumed by "Second Magic Experiment" (down to 2) are read as
     also triggering the Talent: each grants 2 Gem Energy from the Skill plus 1
     from the Talent, and the Talent's CRIT DMG boost. Confirm whether the
     conversion counts as consuming Skill Points for the Talent.
-  detail: ""
+  detail: >
+    The kit is right. The Skill "consumes Skill Points down to 2" (ZH
+    将战技点消耗至2点) with the same verb as the Talent's "When an ally target
+    consumes or recovers Skill Points" (ZH 我方目标消耗或恢复战技点时). With
+    skillPointsChanged (rin-tohsaka-sp-events), the conversion reaches the
+    Talent without the manual sync.
 - id: rin-tohsaka-circuit-count
   entity: "1508"
   rule: U8
-  status: open
+  status: wont-do
   category: approximation
   summary: >
     "Caladbolg II has been actively used 5 times during the current Circuit
     Connection" is approximated by Archer Skill actions within one of his
     turns, since Archer's Circuit Connection state belongs to his kit. Revisit
     once Archer (1015) is implemented.
-  detail: ""
+  detail: >
+    Archer (1015) is implemented. His Skills in Circuit Connection chain
+    inside one turn (queued until 5 casts or no Skill Points left), and the
+    state ends with that chain. Counting Archer's Skills per Archer turn
+    therefore equals counting active uses in the current Circuit Connection.
 - id: himeko-nova-companions
   entity: "1510"
   rule: C1
@@ -441,7 +593,11 @@
     The extra Assist Skills launched by Special Effects (2 per battle, reset
     by the Ultimate; E1 +1 and its Verdict/Decimation reductions) are not
     modeled, so that damage is missing.
-  detail: ""
+  detail: >
+    Still missing. The reference data names "Companion Protocol: Verdict"
+    and "Decimation" only in the E1 text. Neither the dossier nor the
+    generated data has the Special Effect text or a Trailblaze Companions
+    list.
 - id: himeko-nova-ally-assist
   entity: "1510"
   rule: U8
@@ -454,7 +610,10 @@
     extra turn returns the action (Trailblaze Companions, or anyone at E2).
     Other allies below E2 never use it, because trading their own action
     cannot be expressed from this kit.
-  detail: ""
+  detail: >
+    Blocked on engine-ally-turn-takeover. Once an ally's turn can be spent
+    on another kit's action, allies that are not Companions and are below E2
+    can trade their action for an Assist Skill.
 - id: himeko-nova-assist-energy
   entity: "1510"
   rule: U10
@@ -465,7 +624,11 @@
     for her own Assist Skill; an ally's Assist Skill gives that ally the
     Talent's 4 Energy and gives Himeko none. The use model (per character vs
     one shared pool) also needs confirmation.
-  detail: ""
+  detail: >
+    Not settled. The Talent gives the ally 4 Energy ("regenerates 4 Energy
+    for them") and the facts give the Assist Skill 18 Energy, but no text
+    says whether Himeko gets the 18 when an ally uses it, or whether uses
+    are per character or one shared pool.
 - id: himeko-nova-talent-buffs
   entity: "1510"
   rule: U3
@@ -475,67 +638,84 @@
     The Talent's CRIT DMG +80% and All-Type RES PEN +20%, and E4's RES PEN for
     all allies (+10% more for Himeko), are modeled as permanent. The simple
     description ties them to Assist Skill use; confirm their duration.
-  detail: ""
+  detail: >
+    Not settled. ZH 使用助战技视为姬子•启行施放了战技，姬子•启行获得全属性抗性穿透提高20%、暴击伤害提高80% reads as
+    a result of using Assist Skill but gives no duration, and E4's "when
+    Himeko • Nova gains this effect" also implies the buff is gained. If it
+    is gained on Assist Skill with no duration, it lasts once gained, so the
+    readings differ only before the first Assist Skill. fribbels gates both
+    buffs on an assistSkillBuff toggle.
 - id: himeko-nova-ignore-weakness
   entity: "1510"
   rule: U2
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     The Talent lets Himeko reduce Toughness regardless of Weakness Type and
     break with the Fire effect. The engine only reduces Toughness of enemies
     weak to the hit's Combat Type, so against non-Fire-weak enemies her
     Toughness reduction and Break DMG are missing.
-  detail: ""
+  detail: >
+    Add toughnessWithoutWeakness: 1 to every Himeko • Nova HitDef that has
+    Toughness: Basic ATK, Hyperluminal Particle Beam, Orbital Annihilation
+    Pulse, and both Assist Skill variants, including the allies' allyAssist,
+    which counts as her Skill. Talent: "When attacking, can ignore Weakness
+    Types to reduce enemy Toughness", breaking with Fire, her own type.
 - id: himeko-nova-assist-tag
   entity: "1510"
   rule: U4
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Assist Skill DMG (AttackType "Assist") has no damage tag. Both Assist
     abilities are Skill-kind actions ("considered as Himeko using her Skill")
     with no tags; E2 (x130%) and E6 (+75%) use a status held only while an
     Assist Skill resolves, and other entities cannot target Assist DMG.
-  detail: ""
+  detail: >
+    The assist tag exists, and both Assist abilities already use onlyTags:
+    ["assist"]. Replace the assistDmg status held during Assist Skills with
+    permanent filtered modifiers. E2: dmgMultiplier of k.rankParam(2, 1) - 1
+    with filter: { tags: ["assist"] } (the Ultimate part already has its
+    own). E6: dmgBoost of k.rankParam(6, 3) with filter: { tags: ["assist"]
+    }. Then drop startAssist and endAssist.
 - id: himeko-fua-hit-split
   entity: "1003"
   rule: C2
-  status: open
-  category: verify
+  status: actionable
+  category: bug
   summary: >
     fribbels splits the Talent Follow-Up ATK into 4 damage instances
     (20/20/20/40% of the 140% multiplier); our kit deals it as one AoE
     instance. Which instance count matches the game?
   detail: >
-    fribbels uses the split only to weight Ashblazing Grand Duke stacks.
-    Neither the EN text ("performs 1 Follow-Up ATK and deals Fire DMG equal
-    to 140% of her ATK to all enemies") nor the ZH text gives an instance
-    count, and the facts give only totals (Toughness each=10, Energy 10), so
-    the text supports neither side. It matters for per-instance effects: the
-    Ashblazing 4-piece listener adds a stack per instance and target, so one
-    instance yields 1 stack per enemy hit where four would yield up to 4
-    (cap 8). Needs per-hit DMG/Toughness ratios (compare dhil-hit-splits).
-    Multipliers, Toughness, Burn, A4/A6/E1/E2 zones and defaults agree.
+    Settled by fribbels (Himeko.ts hitMultiByTargets): the Follow-Up ATK is
+    4 instances weighted 20/20/20/40%. The text and facts give only totals,
+    and fribbels' Ashblazing splits are per-instance ratios from the game
+    data. Deal the Follow-Up ATK as 4 AoE HitDefs of 0.2, 0.2, 0.2, and 0.4
+    x k.param("04", 1), with the 10 Toughness per enemy split the same way
+    (2/2/2/4). That split is an assumption: Toughness follows each
+    instance's DMG ratio, as for Luka's punches. Burn stays once per attack
+    (A2: "After using an attack").
 - id: jade-fua-hit-split
   entity: "1314"
   rule: C2
-  status: open
-  category: verify
+  status: actionable
+  category: bug
   summary: >
     fribbels splits the Talent Follow-Up ATK into 4 equal instances, and the
     Ultimate-enhanced one into 5 (10/10/10/10/60%); our kit deals both as one
     AoE instance (the enhancement is a multiplierBoost). Which instance
     counts match the game?
   detail: >
-    The EN text ("launch 1 instance of Follow-Up ATK, dealing Quantum DMG
-    equal to 120% of Jade's ATK to all enemies"; Ultimate "increasing its DMG
-    multiplier by 80%") and the ZH text ("发动1次追加攻击") name one attack, not
-    its damage instances, and the facts give only totals (Toughness each=10,
-    Energy 10), so the text supports neither side. fribbels uses the split
-    for Ashblazing Grand Duke weighting; in our engine one instance gives 1
-    Ashblazing stack per enemy instead of 4 or 5. Multipliers, the additive
-    80%, Toughness, Pawned Asset, A6, and E1/E2/E4/E6 agree.
+    Settled by fribbels (Jade.ts): the Talent Follow-Up ATK is 4 equal
+    instances, and the Ultimate-enhanced one is 5 instances weighted
+    10/10/10/10/60% of the enhanced total. Make hits a function. Without
+    Vow: 4 AoE HitDefs of 0.25 x k.param("04", 5). With Vow: 5 HitDefs of
+    0.1, 0.1, 0.1, 0.1, and 0.6 x (k.param("04", 5) + k.param("03", 1)),
+    which removes the need for the multiplierBoost status. Split the 10
+    Toughness per enemy in the same ratios (assumed to follow the DMG
+    ratio). Charge and the Debt Collector logic count enemies, not
+    instances, so they do not change.
 - id: the-herta-interpretation-per-hit
   entity: "1401"
   rule: U2
@@ -548,16 +728,12 @@
     that hit the primary target (and 4% per stack to each instance on other
     targets). Which matches the game?
   detail: >
-    At 42 stacks with 2 Erudition characters (L10), our primary-target total
-    is 3 x (80% + 672%) + (40% + 672%) = 2968%, against fribbels'
-    3 x 80% + 40% + 672% = 952%. EN "the multiplier for the DMG dealt
-    increases, with each stack granting an increase of 8%/4% on the primary
-    target/other targets" and ZH "造成的伤害倍率提高，每层对主目标/其他目标提高"
-    say neither "per instance" nor "once". Read as raising the DMG multiplier
-    (translator rule U2, multiplierBoost per hit), the text leans toward our
-    kit, but it is not explicit; confirm in game. Side note: fribbels gives
-    the Skill 20 and the Enhanced Skill 25 main-target Toughness, while the
-    facts (15 and 20) match our kit.
+    Not settled, and the impact is large: at 42 stacks with 2 Erudition
+    characters, the primary-target total is 2968% in our kit against 952% in
+    fribbels. Neither EN nor ZH says per instance or once. A web search
+    found guides quoting 752% (80% + 672%) for one primary-target instance
+    at max stacks, which does not say how many instances get the bonus.
+    Needs in-game numbers from one Enhanced Skill at a known stack count.
 - id: the-herta-a2-e1-threshold
   entity: "1401"
   rule: U8
@@ -568,29 +744,28 @@
     50% of stacks toward it); our kit requires 42 actual stacks on the
     primary target. Does E1's counted bonus reach the A2 check?
   detail: >
-    A2 EN "if the primary target's Interpretation stack reaches 42" (ZH
-    "若主目标的【解读】层数达到42") names the target's stack count, while E1 only
-    changes how "the Enhanced Skill calculates the number of Interpretation
-    stacks" (ZH "强化战技计算【解读】层数时"), so the text leans toward our kit.
-    The zones agree in effect: fribbels uses Skill DMG Boost, our kit Ice DMG
-    Boost lasting only for that attack.
+    Not settled. The text leans toward the kit, because A2 names the
+    target's stack count and E1 only changes how the Enhanced Skill
+    calculates stacks, but it does not rule out fribbels' reading. Needs an
+    in-game check at E1 with 28 to 41 stacks.
 - id: anaxa-skill-bounce-toughness
   entity: "1405"
   rule: U1
-  status: open
-  category: verify
+  status: actionable
+  category: bug
   summary: >
     fribbels gives the Skill 10 Toughness for the designated hit and 5 for
     each of the 4 extra instances (30 in total on one target); our kit gives
     every instance 10 (50 in total). Which matches the game?
   detail: >
-    The facts list only "toughness main=10" for the Bounce Skill and the
-    EN/ZH text gives no Toughness, so neither decides. fribbels applies the
-    same 10 + 5 per extra instance to the other 6-Energy Bounce Skills
-    (Sampo, Asta) and 10 + 10 to Welt (10 Energy), which suggests main=10 is
-    the designated hit only. The answer also applies to the Talent's
-    additional Skill. Multipliers, the per-enemy Skill DMG Boost, A4, A6, E1,
-    E2, E4, and E6 agree.
+    Settled by fribbels (Anaxa.ts skillToughness = 10 + addedSkillHits * 5):
+    10 for the designated instance and 5 for each extra instance. The facts'
+    main=10 then describes the designated hit. fribbels uses the same split
+    for Sampo and Asta and keeps 10 per bounce only for Welt, which points
+    to per-character data rather than a default. Keep the single even Bounce
+    HitDef with toughness: { each: 6 }, that is (10 + 4 x 5) / 5 per
+    instance, which is exact in expectation because the 5 instances spread
+    evenly. The Talent's additional Skill uses the same hits.
 - id: rappa-talent-super-break
   entity: "1317"
   rule: U2
@@ -602,15 +777,10 @@
     ATK hits (the Talent hit has only the "break" tag, outside A4's "basic"
     filter). Which matches the game?
   detail: >
-    A4 EN "after Rappa uses Enhanced Basic ATK to deal DMG to a Weakness
-    Broken enemy target, converts the Toughness Reduction from this instance
-    of DMG" (ZH "将本次伤害的削韧值转化为1次60%的超击破伤害") does not say whether
-    the Talent's additional Break DMG launched with the third hit belongs to
-    "this instance", so the text supports neither side. At 10 Charge it adds
-    12 Toughness per enemy to the Enhanced Basic ATK's 25 (main). Side note:
-    fribbels' Enhanced Basic ATK multiplier (200%, 232% boosted) contradicts
-    the text (100% x 2 + 100% = 300%, 324% boosted, on the main target),
-    which our kit follows.
+    Not settled. A4 converts "the Toughness Reduction from this instance of
+    DMG" (ZH 本次伤害的削韧值), and the text does not say whether the Talent's Break
+    DMG launched with the third hit belongs to that instance. Needs an
+    in-game check of the Super Break numbers with Charge.
 - id: himeko-nova-companion-buffs
   entity: "1510"
   rule: C1
@@ -623,10 +793,17 @@
     the boosted Skill level); our kit has no Special Effect. Do the Special
     Effects grant these buffs?
   detail: >
-    The dossier has no Special Effect text: the Assist Skill text (EN/ZH)
-    only says Himeko "additionally gains 1 of the Special Effects" depending
-    on which Trailblaze Companions character uses it, so the values cannot be
-    confirmed here. This adds to himeko-nova-companions, which tracks the
-    missing data and the extra Assist Skills but not these buffs. Side note:
-    fribbels gives the Ultimate 20 Toughness; the facts (each=48) match our
-    kit.
+    Not settled: the data has no Special Effect text (see
+    himeko-nova-companions).
+- id: jade-ally-target-event
+  entity: "1314"
+  rule: C3
+  status: actionable
+  category: approximation
+  summary: >
+    Jade's Skill declares target "ally", but the turn policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (Sacerdos' Relived Ordeal, Wavestrider Captain, Dreamlit Actor) cannot see it.
+  detail: >
+    Return { ability: "skill", target } from the turn policy with the ally the
+    kit already picks (jade-collector-target), and use ctx.target inside the ability. Filed by Light Cone and Relic set triage: equipment reads "an ability on one ally" as event.abilityTarget === "ally" with event.target the ally (61c14f6).

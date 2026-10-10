@@ -384,3 +384,328 @@
     (Evey 50%, Summer Songbirds 70%). Flat HP parts and the memosprite's own
     Max HP buffs scale with the owner's HP instead.
   detail: ""
+- id: engine-debuff-landing-chance
+  entity: engine
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    A debuff's landing chance only scales its own modifiers and DoT at
+    evaluation. Presence checks (has, hasFamily, debuffCount, target filters),
+    procs gated on them, stack counts, and Weakness implants treat a
+    base-chance application as landed with all its stacks, and repeated
+    applications keep the strongest chance instead of combining them as
+    1 - (1 - p1)(1 - p2)...
+  detail: >
+    Kit changes waiting on this: Welt (1004, welt-chance-gated) Talent
+    Additional DMG and E2 Energy on Slowed targets; Serval (1103) Talent
+    Additional DMG on Shocked targets; Himeko (1003) A4 and Guinaifen (1210)
+    A6 and Firekiss on Burned targets; Jiaoqiu (1218) E1; Acheron (1308)
+    Talent and E1 (acheron-talent-window); Black Swan (1307) Arcana thresholds
+    and reset (black-swan-arcana-chance); Sampo (1108) capped Wind Shear
+    stacks (sampo-bounce-stacks); Silver Wolf (1006) Skill Weakness implant
+    (85% base chance) and random Bugs as expected presence; Hysilens (1410)
+    Zone triggers per DoT instance; Misha (1312) and Yanqing (1209) Freezes,
+    which keep the chance in stacks (Misha's repeated attempts per Ultimate
+    need combined chances); Dan Heng (1002) Slow presence; It's Showtime
+    (21041) Trick; Pioneer Diver (117) doubled effects. One approach: let
+    hits, procs, and filters name the gating debuff or family so evaluation
+    scales them by its landing chance, and combine repeated applications.
+- id: engine-enemy-effect-res
+  entity: engine
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy Effect RES is a scenario constant, so enemy statuses that lower it
+    do not change landing chances: Black Swan E4 (Epiphany, -10%), Silver Wolf
+    E2 (-20% on entering combat), Guinaifen E1 (Skill, -10%), and Dr. Ratio A4
+    (-10%).
+  detail: >
+    Landing chances need to read the target's Effect RES including the
+    incoming status modifiers present when the debuff is applied (weighted by
+    the reducing debuff's own landing chance). Kit items: black-swan-e4-effect-res,
+    silver-wolf-e2-effect-res, guinaifen-e1-effect-res, dr-ratio-effect-res-debuff.
+- id: engine-dot-flat-plus-stacks
+  entity: engine
+  rule: U6
+  status: open
+  category: engine-gap
+  summary: >
+    A DoT's multiplier is per stack only. Black Swan's Arcana deals #1 + #3 x
+    stacks, so the kit splits it into a stacking DoT and a flat companion DoT,
+    which ticks and detonates as a second DoT instance (a second dotTick for
+    per-DoT triggers such as Hysilens' Zone).
+  detail: >
+    A DotDef with a flat part plus a per-stack part would let Black Swan
+    (1307, black-swan-arcana-split) use one Arcana status.
+- id: engine-weakness-ignore-modifier
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Toughness reduction against enemies without the matching Weakness is a
+    HitDef property (toughnessWithoutWeakness), so a status cannot give it to
+    its holder's hits. Fugue's Foxian Prayer lets its holder reduce Toughness
+    at 50% against such enemies, not stacking with other Weakness-ignoring
+    effects.
+  detail: >
+    A holder modifier carrying the fraction, where the larger of it and the
+    hit's own value applies, would let Fugue (1225, fugue-weakness-ignore)
+    give Foxian Prayer k.param("02", 6) (50%).
+- id: engine-secondary-toughness
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies have one Toughness bar. Fugue's Cloudflame Luster adds 40% of Max
+    Toughness that can only be reduced while the enemy is Weakness Broken and
+    deals Weakness Break DMG again when it reaches 0, so her second Break DMG
+    instance is missing.
+  detail: >
+    Needs a second Toughness pool on enemies that a kit can set, reduced only
+    while Broken, and breaking again with Break DMG when depleted. Affects
+    Fugue (1225, fugue-cloudflame-luster).
+- id: engine-status-applied-action
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    statusApplied does not say whether a debuff was applied during an ability
+    use, or which one. Acheron's Talent (once per ability use by any unit, the
+    Knot going to the debuffed target with the most Knots) opens a window at
+    ally actionStart and closes it at enemy turnStart, so it misses debuffs
+    from earlier-slot actionStart listeners and cannot see every target one
+    ability debuffed.
+  detail: >
+    Carry the ongoing action (actor and a per-action serial, or none outside
+    an ability) on statusApplied. Affects Acheron (1308, acheron-talent-window,
+    acheron-knot-placement).
+- id: engine-weakness-implanted-event
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    implantWeakness emits no event, so kits cannot react to Weaknesses that
+    other units implant. The Dahlia's A6 (SPD +30% for the implanting ally;
+    after a Fire ally character's attack that implanted, a fixed 20 Fire
+    Toughness Reduction on each implanted target and Energy) reacts only to
+    her own Wilt, and Never Forget Her Flame infers implants from Weakness
+    changes during the wearer's action.
+  detail: >
+    Emit a weaknessImplanted event (implanter, enemy, Combat Type, ongoing
+    action) for every implant call, including refreshes. Affects The Dahlia
+    (1321, dahlia-weakness-implant, dahlia-a6-spd-recipient) and Never Forget
+    Her Flame (23050, never-forget-her-flame-implant-event).
+- id: engine-ally-tag-rewrite
+  entity: engine
+  rule: U4
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot add damage tags to other units' abilities or hits. Mortenax
+    Blade's E2 ("When an ally character uses Ultimate to deal DMG, it is
+    considered as having launched Follow-Up ATK") only gives allies' Ultimate
+    DMG its own +75% bonus; other Follow-Up effects and "after a Follow-Up
+    ATK" triggers do not see those Ultimates.
+  detail: >
+    A team-level tag rule (allies' Ultimate actions and hits also carry
+    followUp) applied when actions start and hits are recorded. Affects
+    Mortenax Blade (1507, mortenax-blade-e2-ult-follow-up).
+- id: engine-policy-battle-end
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    PolicyView has time and cycle but not when the battle ends, so policies
+    cannot spend resources before the end. Argenti's 90-Energy Ultimate only
+    pays off when 180 Energy cannot be reached before the end, and Mortenax
+    Blade's choice to hold Fornax Ex Corpore depends on the time left.
+  detail: >
+    Expose the scenario's end (time or cycles left) on PolicyView. Affects
+    Argenti (1302, argenti-90-ultimate) and Mortenax Blade (1507,
+    mortenax-blade-rotation).
+- id: engine-break-dmg-super-break
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    U2 maps "Break DMG +X%" to the break tag, which also covers Super Break
+    DMG; fribbels keeps Break and Super Break DMG separate. Confirm whether
+    Break DMG bonuses reach Super Break DMG.
+  detail: >
+    Iron Cavalry Against the Scourge (119) supports U2: its 4-piece gives
+    "Break DMG" 10% DEF ignore and says Super Break DMG "additionally ignores"
+    15% (ZH 超击破伤害额外无视), which reads as Super Break being a kind of Break
+    DMG. Affects every break-tagged bonus in Super Break teams, first Fugue's
+    E4 (1225, fugue-e4-super-break).
+- id: engine-action-targets
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    actionStart names only the main target, so "when X attacks, debuff the
+    attacked enemies" effects that land before the damage reach the other
+    targets of a Blast or AoE attack only after their first hit.
+  detail: >
+    List the enemies an action will hit on actionStart (from the ability's hit
+    shapes). Affects Fugue's Foxian Prayer DEF reduction (1225,
+    fugue-def-timing: ZH 每次施放攻击时 ... 使受到攻击的敌方目标防御力降低).
+- id: engine-momentary-stat-read
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Kits read stats only through panelStat (the steady panel), which leaves
+    out timed statuses and conditional (scaling) modifiers. Heal amounts and
+    healing tallies miss Outgoing Healing buffs, and stat-based triggers miss
+    momentary CRIT Rate or Elation.
+  detail: >
+    Blocks Final Victor (21037) and Sleep Like the Dead (23012) CRIT Rate
+    reads, Punklorde Stage Zero (325)'s Elation latch, Giant Tree of Rapt
+    Brooding (320)'s SPD tiers, and Outgoing Healing statuses in heal amounts
+    and Hyacine's tally: The Story's Next Page (21054), Cornucopia (20001),
+    Post-Op Conversation (21000), Hey, Over Here (22001), Perfect Timing
+    (21014, scaling). Battle.momentaryStat already sums the panel and
+    unfiltered statuses (without scaling); a recorded kit read that also
+    includes conditional modifiers would cover these.
+- id: engine-applier-momentary-stats
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Applier-scaled modifiers and debuff landing chances read the applier's
+    steady panel, so the applier's timed statuses never count: Cadenza's ATK
+    for Robin's Concerto, and the Effect Hit Rate of Void and In the Name of
+    the World for landing chances.
+  detail: >
+    Blocks Flowing Nightglow (23026), Void (20004), and In the Name of the
+    World (23004). Needs the applier's statuses captured when the status is
+    applied (or at each hit) for scaling and landing chances.
+- id: engine-super-break-event
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Super Break instances are recorded in applyToughness without an event, so
+    "after dealing Break DMG" triggers miss Super Break DMG.
+  detail: >
+    Blocks Shadowed by Night (21047) and Whereabouts Should Dreams Rest
+    (23025). Needs a hit (or break-damage) event for Super Break instances,
+    limited to attackers that convert Toughness into Super Break DMG.
+- id: engine-skill-point-overflow
+  entity: engine
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    skillPointsChanged reports gains after the cap, so Skill Points recovered
+    at the limit are invisible to effects that count them "including Skill
+    Points that exceed the limit".
+  detail: "Blocks Earthly Escapade (23021). Report the uncapped amount (or the overflow) on gains."
+- id: engine-ultimate-energy-spent
+  entity: engine
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Ultimate events do not report the Energy consumed, so kits assume the
+    wearer's max Energy: wrong for Ultimates with another cost (Argenti's
+    90-Energy variant, Yunli's 120) or paid from a counter (Phainon's
+    Coreflame).
+  detail: "Blocks Into the Unreachable Veil (23037) and I Am As You Behold (23062). Add the Energy paid to the Ultimate's actionStart/actionEnd."
+- id: engine-def-reduced-state
+  entity: engine
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    No target filter or UnitView check exists for the generic "DEF reduction
+    state" (any status carrying defReduction).
+  detail: >
+    Blocks Boundless Choreo (21044) and Before the Tutorial Mission Starts
+    (22000), which use on-by-default toggles, and Divine-Querying Master
+    Smith (132), which mirrors DEF-reducing statuses with a marker. A filter
+    on incoming stats held by the target (or a defReduced family) replaces
+    them.
+- id: engine-incoming-attacker-filter
+  entity: engine
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    Incoming modifiers on an enemy apply to every attacker; "receives
+    increased DMG from the wearer" needs a filter on the attacker (or the
+    applier) for incoming modifiers.
+  detail: >
+    Blocks Whereabouts Should Dreams Rest (23025), whose Routed is held as a
+    Break-tagged dmgMultiplier on the wearer and multiplies with other
+    Vulnerability. Boothill's Standoff (boothill-standoff-vulnerability,
+    hunt.yaml) has the same need.
+- id: engine-bounce-instances
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Bounce hits are recorded as one weighted hit per enemy, so a debuff
+    applied by an early bounce cannot reach later bounces of the same attack.
+  detail: "Blocks Inherently Unjust Destiny (23023) on Aventurine's Follow-Up ATK."
+- id: engine-unbuffed-damage
+  entity: engine
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    No damage kind ignores the attacker's buffs while keeping enemy DEF, RES,
+    Vulnerability, and the Toughness multiplier (`fixed` also skips DEF and
+    RES).
+  detail: "Blocks Time Waits for No One (23013): 'not affected by other buffs'."
+- id: engine-target-dot-count
+  entity: engine
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    Hit filters cannot count the DoTs on the target ("for every DoT the enemy
+    target is afflicted with").
+  detail: "Blocks Prisoner in Deep Confinement (116). A minTargetDots filter (or a DoT count on the hit) counting each DoT status once."
+- id: engine-prebattle-panel
+  entity: engine
+  rule: E3
+  status: open
+  category: engine-gap
+  summary: >
+    "Before entering battle" stats read the steady panel, which also holds
+    unconditional in-battle kit modifiers: Castorice's A4 SPD +40% makes her
+    panel SPD 125.4 against a pre-battle 87.4.
+  detail: >
+    Blocks Poet of Mourning Collapse (124) and Diviner of Distant Reach (130).
+    Needs a pre-battle panel (base, Traces, Light Cone, Relics and set
+    properties, without kit effects) readable by scaling.
+- id: engine-hp-event-triggers
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    hpChanged fires only when HP actually changes and always with weight 1:
+    heals on full-HP allies (and costs at 1 HP) trigger nothing, and a
+    weighted cost or heal triggers listeners as a full occurrence.
+  detail: >
+    Affects "provides healing" triggers in Night of Fright (23017) and Warrior
+    Goddess of Sun and Thunder (125), and Time Waits for No One (23013), which
+    cannot record overhealing. A heal event with the requested amount and the
+    trigger's weight would cover them. Equipment kits keep hitByEnemy (aggro
+    weight) for "when attacked", since hpChanged with hpCause enemy fires for
+    every ally on every enemy attack.
