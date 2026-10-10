@@ -1,6 +1,12 @@
 import { BREAK_EFFECT_USES_TOUGHNESS } from "../battle/breakEffects";
 import type { CombatLog, HitRecord } from "../battle/log";
-import type { AppliedModifier, CombatUnit, EnemyUnit } from "../battle/units";
+import type {
+  AppliedModifier,
+  CombatUnit,
+  EnemyUnit,
+  PendingStatus,
+  TargetChances,
+} from "../battle/units";
 import type { StatScaling } from "../kit/model";
 import { scaledValue } from "../kit/scaling";
 import {
@@ -62,13 +68,73 @@ interface ScalingModifier {
   holderId: string;
   applierId: string;
   /** Applies only as far as base-chance target statuses landed. */
-  gate?: HitFilter;
+  gate?: Gate;
 }
 
 interface ConstantModifier {
   stat: CombatStat;
   value: number;
-  gate?: HitFilter;
+  gate?: Gate;
+}
+
+/**
+ * A target-state filter reduced to the base-chance statuses (indices into
+ * the sample's `targetChances.pending`) that decide it.
+ */
+interface Gate {
+  /** Statuses any of which satisfies a status/family condition. */
+  readonly any: readonly number[] | null;
+  readonly debuffs: { needed: number; from: readonly number[] } | null;
+  readonly dots: { needed: number; from: readonly number[] } | null;
+}
+
+function compileGate(filter: HitFilter, chances: TargetChances): Gate {
+  const names = [
+    ...(filter.targetStatuses ?? []),
+    ...(filter.targetFamilies ?? []).map((family) => `family:${family}`),
+  ];
+  const indices = (match: (status: PendingStatus) => boolean) =>
+    chances.pending.flatMap((status, index) => (match(status) ? [index] : []));
+  return {
+    any:
+      names.length > 0 && !names.some((name) => chances.certain.includes(name))
+        ? indices((status) =>
+            status.entries.some((entry) => names.includes(entry))
+          )
+        : null,
+    debuffs:
+      filter.minTargetDebuffs === undefined
+        ? null
+        : {
+            needed: filter.minTargetDebuffs - chances.certainDebuffs,
+            from: indices((status) => status.debuff),
+          },
+    dots:
+      filter.minTargetDots === undefined
+        ? null
+        : {
+            needed: filter.minTargetDots - chances.certainDots,
+            from: indices((status) => status.dot),
+          },
+  };
+}
+
+/** Probability that a gate passes, given each pending status's landing. */
+function gateChance(gate: Gate, landed: readonly number[]): number {
+  let probability = 1;
+  if (gate.any) {
+    let missed = 1;
+    for (const index of gate.any) missed *= 1 - (landed[index] ?? 0);
+    probability *= 1 - missed;
+  }
+  for (const count of [gate.debuffs, gate.dots]) {
+    if (!count) continue;
+    probability *= atLeast(
+      count.needed,
+      count.from.map((index) => landed[index] ?? 0)
+    );
+  }
+  return probability;
 }
 
 /**
@@ -236,8 +302,8 @@ export class DamageModel {
       if (!modifierApplies(def.stat, def.filter, hit)) continue;
       // Passes only thanks to statuses that may not have landed.
       const gate =
-        certain !== hit && !modifierApplies(def.stat, def.filter, certain)
-          ? def.filter
+        chances && def.filter && !modifierApplies(def.stat, def.filter, certain)
+          ? compileGate(def.filter, chances)
           : undefined;
       if (def.scaling) {
         scaling.push({
@@ -381,19 +447,12 @@ export class DamageModel {
     return vector;
   }
 
-  /**
-   * Probability that a gated modifier applies: its target-state filter
-   * passes only if base-chance statuses landed (independent per status).
-   */
-  private gateChance(
-    filter: HitFilter,
-    record: HitRecord,
-    panels: UnitPanels
-  ): number {
-    const chances = record.targetChances;
-    const target = this.enemies.get(record.targetId);
-    if (!chances || !target) return 1;
-    const landed = chances.pending.map((status) =>
+  /** Landing chance of each base-chance status on the group's target. */
+  private pendingLanding(group: HitGroup, panels: UnitPanels): number[] {
+    const chances = group.sample.targetChances;
+    const target = this.enemies.get(group.sample.targetId);
+    if (!chances || !target) return [];
+    return chances.pending.map((status) =>
       this.landingChance(
         panels,
         status.base,
@@ -402,44 +461,19 @@ export class DamageModel {
         status.bonus
       )
     );
-    let probability = 1;
-    const names = [
-      ...(filter.targetStatuses ?? []),
-      ...(filter.targetFamilies ?? []).map((family) => `family:${family}`),
-    ];
-    if (
-      names.length > 0 &&
-      !names.some((name) => chances.certain.includes(name))
-    ) {
-      let missed = 1;
-      chances.pending.forEach((status, index) => {
-        if (status.entries.some((entry) => names.includes(entry))) {
-          missed *= 1 - (landed[index] ?? 0);
-        }
-      });
-      probability *= 1 - missed;
-    }
-    if (filter.minTargetDebuffs !== undefined) {
-      probability *= atLeast(
-        filter.minTargetDebuffs - chances.certainDebuffs,
-        landed.filter((_, index) => chances.pending[index]?.debuff)
-      );
-    }
-    if (filter.minTargetDots !== undefined) {
-      probability *= atLeast(
-        filter.minTargetDots - chances.certainDots,
-        landed.filter((_, index) => chances.pending[index]?.dot)
-      );
-    }
-    return probability;
   }
 
   /** Attacker stats for a group under the given panels. */
   groupStats(group: HitGroup, panels: UnitPanels): StatVector {
     const vector = this.panelOf(panels, group.statUnitId).slice();
+    let landed: number[] | null = null;
+    const share = (gate: Gate | undefined) => {
+      if (!gate) return 1;
+      landed ??= this.pendingLanding(group, panels);
+      return gateChance(gate, landed);
+    };
     for (const { stat, value, gate } of group.constant) {
-      const share = gate ? this.gateChance(gate, group.sample, panels) : 1;
-      combineStat(vector, stat, value * share);
+      combineStat(vector, stat, value * share(gate));
     }
     if (group.scaling.length === 0) return vector;
     const phaseOne = vector.slice();
@@ -457,13 +491,11 @@ export class DamageModel {
         sourceUnit,
         modifier.scaling
       );
-      const share = modifier.gate
-        ? this.gateChance(modifier.gate, group.sample, panels)
-        : 1;
       combineStat(
         vector,
         modifier.stat,
-        (modifier.value + scaledValue(input, modifier.scaling)) * share
+        (modifier.value + scaledValue(input, modifier.scaling)) *
+          share(modifier.gate)
       );
     }
     return vector;

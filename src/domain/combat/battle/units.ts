@@ -447,12 +447,19 @@ export class CombatUnit implements UnitView {
     if (stat === "spd") return this.speed;
     this.statReads.add(stat);
     const vector = this.panel.slice();
+    const final = stat === "hp" || stat === "atk" || stat === "def";
+    const relevant = (candidate: CombatStat) =>
+      final
+        ? candidate === `${stat}Pct` ||
+          candidate === `${stat}Flat` ||
+          candidate === `${stat}Base`
+        : candidate === stat;
     const add = (
       def: ModifierDef,
       scale: number,
       applier: CombatUnit | null
     ) => {
-      if (INCOMING_STATS.has(def.stat)) return;
+      if (!relevant(def.stat) || INCOMING_STATS.has(def.stat)) return;
       if (def.filter && !(hit && modifierApplies(def.stat, def.filter, hit)))
         return;
       let value = (def.value ?? 0) * scale;
@@ -467,10 +474,14 @@ export class CombatUnit implements UnitView {
       }
       combineStat(vector, def.stat, value);
     };
-    const kept = this.keptUniques();
+    let kept: Map<string, StatusInstance> | null = null;
     for (const status of this.statuses.values()) {
       if (status.stacks <= 0) continue;
-      if (status.def.unique && kept.get(status.def.id) !== status) continue;
+      if (!status.def.modifiers?.some((def) => relevant(def.stat))) continue;
+      if (status.def.unique) {
+        kept ??= this.keptUniques();
+        if (kept.get(status.def.id) !== status) continue;
+      }
       for (const modifier of status.modifiers()) {
         add(modifier.def, modifier.scale, status.applier);
       }
@@ -482,9 +493,7 @@ export class CombatUnit implements UnitView {
         modifier.applierId === this.id ? this : null
       );
     }
-    return stat === "hp" || stat === "atk" || stat === "def"
-      ? finalStat(vector, stat)
-      : readStat(vector, stat);
+    return final ? finalStat(vector, stat) : readStat(vector, stat);
   }
 
   debuffCount(): number {
