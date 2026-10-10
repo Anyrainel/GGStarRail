@@ -108,6 +108,11 @@ export interface StatusDef {
    * holder skip its turn. A base-chance application skips in expectation.
    */
   skipsTurn?: boolean;
+  /**
+   * Taunt: an enemy holding this status attacks only the status's applier
+   * (with its landing chance; otherwise it targets by aggro).
+   */
+  taunt?: boolean;
 }
 
 /**

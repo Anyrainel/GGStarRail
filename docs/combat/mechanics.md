@@ -149,7 +149,10 @@ several partial triggers add up to at most the limit.
 - ERR multiplies Energy except "fixed" sources.
 - Enemy attacks give Energy to the ally hit. The engine distributes one
   single-target attack per enemy turn by aggro weight. Base aggro: Preservation
-  150, Destruction 125, The Hunt and Erudition 75, others 100 [GD].
+  150, Destruction 125, The Hunt and Erudition 75, others 100 [GD]. Aggro
+  modifiers scale it (base × (1 + aggroPct)); a Taunt sends the enemy's
+  attack to the taunter with its landing chance; Departed allies are never
+  targeted.
 - Kills are not simulated.
 - The Skill Point cap can change (`setMaxSkillPoints`); every change is
   reported as `skillPointsChanged` after clamping.

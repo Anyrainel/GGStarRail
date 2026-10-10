@@ -732,6 +732,59 @@ describe("combat engine features", () => {
     expect(enemy.resistanceAgainst("Imaginary")).toBe(enemy.resistance);
   });
 
+  it("redirects enemy attacks with aggro, Taunt, and Departed", () => {
+    const hits = (setup: "none" | "aggro" | "taunt" | "departed") => {
+      let hunterHits = 0;
+      run(
+        (k) => {
+          basic(k);
+          k.on("hitByEnemy", "talent", {}, (ctx: BattleApi) => {
+            hunterHits += ctx.weight;
+          });
+          k.policy({ turn: () => "basic", ultimate: () => false });
+        },
+        {
+          support: (k) => {
+            const lure = k.status({
+              id: "lure",
+              origin: "talent",
+              modifiers: [{ stat: "aggroPct", value: 9 }],
+            });
+            const taunt = k.status({
+              id: "taunt",
+              origin: "talent",
+              debuff: true,
+              taunt: true,
+            });
+            basic(k);
+            k.on(
+              "battleStart",
+              "talent",
+              { subject: "any" },
+              (ctx: BattleApi) => {
+                if (setup === "aggro") ctx.applyStatus(ctx.self, lure);
+                if (setup === "taunt") {
+                  for (const enemy of ctx.enemies) {
+                    ctx.applyStatus(enemy, taunt);
+                  }
+                }
+                if (setup === "departed") ctx.setDeparted(ctx.self, true);
+              }
+            );
+            k.policy({ turn: () => "basic", ultimate: () => false });
+          },
+          cycles: 2,
+        }
+      );
+      return hunterHits;
+    };
+    const base = hits("none");
+    expect(base).toBeGreaterThan(0);
+    expect(hits("aggro")).toBeLessThan(base);
+    expect(hits("taunt")).toBeCloseTo(0, 9);
+    expect(hits("departed")).toBeGreaterThan(base);
+  });
+
   it("designates an ally through a user option", () => {
     const chosen = (override?: string) => {
       let picked: string | null = null;

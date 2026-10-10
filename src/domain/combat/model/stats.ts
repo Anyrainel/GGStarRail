@@ -32,6 +32,8 @@ export const COMBAT_STATS = [
   "energyRegen",
   "outgoingHealing",
   "elation",
+  /** Chance of being targeted, as a % of base aggro (Taunt-like buffs). */
+  "aggroPct",
   // Outgoing damage modifiers, read from the attacker.
   "dmgBoost",
   "resPen",

@@ -103,8 +103,9 @@ const s = k.status({
   modifiers: [{ stat: "dmgBoost", value: 0.8 }],
   debuff: true,                   // enemy-held
   unique: true,                   // copies from other appliers do not stack
-  family: "shock",                // burn | shock | bleed | windShear | frozen | entanglement | imprisonment | slow
+  family: "shock",                // burn | shock | bleed | windShear | frozen | entanglement | imprisonment | slow | shield
   skipsTurn: true,                // control: the holder skips its turn (with base chance: in expectation)
+  taunt: true,                    // on an enemy: it attacks only this status's applier
   dot: { hit: { shape: "single", main: 2.9, kind: "dot" } },
 });
 ctx.applyStatus(unit, s, { stacks?, setStacks?, turns?, baseChance? });
@@ -180,7 +181,7 @@ ctx.applyStatus / setStatusStacks / removeStatus / consumeStacks
 ctx.extendStatus(unit, status, turns) / unit.remainingTurns(status, applier?)
 ctx.consumeHp(unit, share) → consumed / heal(unit, share) → restored / setHp(unit, share) / unit.hpRatio
 ctx.gainEnergy(unit, n, { fixed? }) → overflow / setEnergy / gainSkillPoints(n) / setMaxSkillPoints(n)
-ctx.advanceAction(unit, f) / delayAction / grantExtraTurn(unit) / setInActionOrder(unit, b)
+ctx.advanceAction(unit, f) / delayAction / grantExtraTurn(unit) / setInActionOrder(unit, b) / setDeparted(unit, b)
 ctx.queueAction(unit, abilityId, { target?, weight? })   // follow-ups after the current action
 ctx.deal(hit, { targets?, tags?, attacker?, abilityId?, abilityKind?, origin?, weight? })
 ctx.detonateDots(enemy, ratio, { filter? })

@@ -60,6 +60,8 @@ export const STATUS_FAMILIES = [
   "entanglement",
   "imprisonment",
   "slow",
+  /** Shields on allies, from any source ("while Shielded"). */
+  "shield",
   /** Derived: any status that lowers its holder's DEF. */
   "defReduced",
 ] as const;

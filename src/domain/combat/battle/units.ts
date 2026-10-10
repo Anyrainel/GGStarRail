@@ -170,6 +170,8 @@ export class CombatUnit implements UnitView {
   countdown = false;
   /** Base aggro (Path-dependent); enemies target allies proportionally. */
   aggro = 100;
+  /** Departed from the field: not in the Action Order nor targeted. */
+  departed = false;
   /**
    * Elemental DMG Boost from Relics, kept apart from the panel because it
    * only reaches hits of its Combat Type and varies with equipment.
@@ -217,6 +219,13 @@ export class CombatUnit implements UnitView {
 
   get hpRatio(): number {
     return this.hp;
+  }
+
+  /** Aggro with statuses and auras ("chance of being attacked +X%"). */
+  currentAggro(): number {
+    const pct =
+      readStat(this.panel, "aggroPct") + this.statusStat("aggroPct", true);
+    return this.aggro * Math.max(0, 1 + pct);
   }
 
   get actionGauge(): number {

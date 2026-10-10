@@ -235,9 +235,16 @@ Decide in this order:
 
 ### U12. Effects that are not modelled
 
-Skip these silently: shields, damage reduction taken by allies, Crowd Control
-resistance, aggro changes, and Technique effects. **[TRACK]** (`engine-gap`)
-if any of them converts into a modelled stat or trigger.
+Skip these silently: Shield amounts, damage reduction taken by allies, Crowd
+Control resistance, and Technique effects. **[TRACK]** (`engine-gap`) if any
+of them converts into a modelled stat or trigger.
+
+- Shields: apply a status with `family: "shield"` (and the Shield's
+  duration) to each shielded ally, so "while Shielded" effects see every
+  source through `hasFamily("shield")`. Shield HP is not modelled.
+- Aggro: "more/less likely to be attacked" → an `aggroPct` modifier;
+  Taunt → a status on the enemy with `taunt: true` applied by the taunter;
+  "leaves the field" → `ctx.setDeparted(unit, true)`.
 
 HP is simulated as a share of Max HP per ally (expected value, never below
 1%), so model every HP change and read HP rather than adding options:

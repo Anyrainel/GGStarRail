@@ -25,6 +25,8 @@ export interface UnitView {
   readonly maxEnergy: number;
   /** Current HP as a share of Max HP (expected value, never below 1%). */
   readonly hpRatio: number;
+  /** Left the field: out of the Action Order and not targeted. */
+  readonly departed: boolean;
   /** A countdown or marker summon (Concerto, Supreme Stance), not a summon. */
   readonly countdown: boolean;
   readonly speed: number;
@@ -170,6 +172,11 @@ export interface BattleApi {
   grantExtraTurn(unit: UnitView): void;
   /** Leave or rejoin the Action Order (e.g. during a channel). */
   setInActionOrder(unit: UnitView, inOrder: boolean): void;
+  /**
+   * Departed ("leaves the field"): out of the Action Order and never
+   * targeted by enemies until it returns.
+   */
+  setDeparted(unit: UnitView, departed: boolean): void;
 
   /** Queue an ability of `unit` right after the current action. */
   queueAction(

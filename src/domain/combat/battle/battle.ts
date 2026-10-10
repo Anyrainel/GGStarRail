@@ -364,13 +364,27 @@ export class Battle {
   }
 
   private enemyAttack(enemy: EnemyUnit, weight: number): void {
-    const targets = this.allies.filter((ally) => ally.kind === "character");
-    const aggro = targets.map((ally) => Math.max(0, ally.aggro));
+    const targets = this.allies.filter(
+      (ally) => ally.kind === "character" && !ally.departed
+    );
+    const aggro = targets.map((ally) => Math.max(0, ally.currentAggro()));
     const total = aggro.reduce((sum, value) => sum + value, 0);
     if (total <= 0) return;
+    // Taunts: the share they cover goes to their appliers.
+    const taunted = new Map<CombatUnit, number>();
+    let free = 1;
+    for (const status of enemy.statuses.values()) {
+      if (!status.def.taunt || status.stacks <= 0) continue;
+      if (!targets.includes(status.applier)) continue;
+      const chance = Math.min(1, status.baseChance ?? 1) * free;
+      taunted.set(status.applier, (taunted.get(status.applier) ?? 0) + chance);
+      free -= chance;
+    }
     this.emit({ type: "enemyAttack", unit: enemy, weight }, null);
     targets.forEach((ally, index) => {
-      const share = ((aggro[index] ?? 0) / total) * weight;
+      const share =
+        (((aggro[index] ?? 0) / total) * free + (taunted.get(ally) ?? 0)) *
+        weight;
       if (share <= 0) return;
       this.gainEnergy(
         ally,
@@ -1463,6 +1477,14 @@ export class Battle {
         const target = asUnit(unit);
         target.inActionOrder = inOrder;
         if (inOrder) target.distance = Math.min(target.distance, ACTION_GAUGE);
+      },
+      setDeparted: (unit, departed) => {
+        const target = asUnit(unit);
+        target.departed = departed;
+        target.inActionOrder = !departed;
+        if (!departed) {
+          target.distance = Math.min(target.distance, ACTION_GAUGE);
+        }
       },
       queueAction: (unit, abilityId, options = {}) => {
         battle.queue.push({
