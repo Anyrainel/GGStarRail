@@ -375,7 +375,7 @@ export class Battle {
         { type: "hitByEnemy", unit: ally, target: enemy, weight: share },
         null
       );
-      this.changeHp(ally, -this.options.enemyAttackHp * share, "enemy", enemy);
+      this.changeHp(ally, -this.options.enemyAttackHp, share, "enemy", enemy);
     });
   }
 
@@ -1341,15 +1341,16 @@ export class Battle {
         if (instance.stacks <= 0) battle.removeStatusInstance(unit, instance);
       },
       consumeHp: (unit, share) =>
-        -battle.changeHp(asUnit(unit), -share * weight, "consume", self),
+        -battle.changeHp(asUnit(unit), -share, weight, "consume", self),
       heal: (unit, share) =>
-        battle.changeHp(asUnit(unit), share * weight, "heal", self),
+        battle.changeHp(asUnit(unit), share, weight, "heal", self),
       setHp: (unit, share) => {
         const target = asUnit(unit);
-        const delta = (share - target.hp) * weight;
+        const delta = share - target.hp;
         return battle.changeHp(
           target,
           delta,
+          weight,
           delta < 0 ? "consume" : "heal",
           self
         );
@@ -1519,27 +1520,31 @@ export class Battle {
   }
 
   /**
-   * Changes HP by a share of Max HP within [1%, 100%] and reports the change
-   * actually made. HP is an expected value: weighted changes scale it.
+   * Changes HP by `delta` (a share of Max HP) with probability `weight`,
+   * within [1%, 100%], and returns the expected change actually made. The
+   * event reports the change per occurrence with that weight. Heals are
+   * reported even on a full-HP target ("after healing an ally").
    */
   changeHp(
     unit: CombatUnit,
     delta: number,
+    weight: number,
     cause: HpCause,
     source: CombatUnit
   ): number {
+    if (weight <= 0) return 0;
     const before = unit.hp;
-    unit.hp = Math.min(1, Math.max(HP_FLOOR, before + delta));
+    unit.hp = Math.min(1, Math.max(HP_FLOOR, before + delta * weight));
     const change = unit.hp - before;
-    if (Math.abs(change) > 1e-12) {
+    if (Math.abs(change) > 1e-12 || cause === "heal") {
       this.emit(
         {
           type: "hpChanged",
           unit,
           source,
-          delta: change,
+          delta: change / weight,
           hpCause: cause,
-          weight: 1,
+          weight,
         },
         source
       );

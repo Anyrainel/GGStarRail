@@ -589,6 +589,9 @@ describe("combat engine features", () => {
             ctx.consumeHp(ctx.self, 5);
           },
         });
+        k.on("battleStart", "talent", { subject: "any" }, (ctx: BattleApi) => {
+          ctx.heal(ctx.self, 0.2);
+        });
         k.on("hpChanged", "talent", {}, (_ctx, event) => {
           changes.push({
             cause: event.hpCause,
@@ -609,6 +612,8 @@ describe("combat engine features", () => {
       true
     );
     expect(changes.some((change) => change.hp === 0.01)).toBe(true);
+    // A heal at full HP is still reported ("after healing an ally").
+    expect(changes[0]).toEqual({ cause: "heal", delta: 0, hp: 1 });
   });
 
   it("reports ability targets, status removal, and summon lifecycle", () => {

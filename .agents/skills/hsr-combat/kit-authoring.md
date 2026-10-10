@@ -220,7 +220,7 @@ isEnemy(view)                                               // narrow event targ
 | `dotTick` | enemy | `status`; `detonation` tells detonations from turn-start ticks |
 | `teamResourceChanged` | changer | `resource`, `delta` |
 | `skillPointsChanged` | unit that caused it | `delta` (+ gained, − spent), after the cap |
-| `hpChanged` | unit whose HP changed | `delta` (share of Max HP), `hpCause` (`consume`, `heal`, `enemy`), `source` |
+| `hpChanged` | unit whose HP changed | `delta` (share of Max HP per occurrence; `weight` is its probability), `hpCause` (`consume`, `heal`, `enemy`), `source`; heals fire even at full HP |
 | `ahaInstantStart` / `ahaInstantEnd` | Aha | Elation |
 
 "After X attacks" → `actionEnd` with `attack: true`. "When X uses" →
