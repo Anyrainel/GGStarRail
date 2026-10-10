@@ -49,8 +49,10 @@ new timeline is simulated only when a timeline input changes.
 Rules that keep this valid:
 
 - Debuff landing chances are resolved at evaluation from the applier's Effect
-  Hit Rate, never during the battle. Enemy SPD debuffs use their base chance
-  for turn order.
+  Hit Rate, never during the battle. The battle only records the Effect Hit
+  Rate the applier had from statuses and team auras when it applied the
+  debuff; the panel part comes from the panels being scored. Enemy SPD
+  debuffs use their base chance for turn order.
 - Kits read stats only through `panelStat`, and the engine through
   `momentaryStat`. Both record the stat in `unit.statReads`. `TeamObjective`
   adds every recorded stat to its timeline cache key, so a policy comparing

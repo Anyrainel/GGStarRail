@@ -843,6 +843,60 @@ describe("combat engine features", () => {
     }
   });
 
+  it("counts the applier's timed Effect Hit Rate in landing chances", () => {
+    const { result } = run(
+      (k) => {
+        const focus = k.status({
+          id: "focus",
+          origin: "talent",
+          modifiers: [{ stat: "effectHitRate", value: 0.5 }],
+        });
+        const mark = k.status({ id: "mark", origin: "skill", debuff: true });
+        k.stat("talent", {
+          stat: "dmgBoost",
+          value: 1,
+          filter: { targetStatuses: ["mark"] },
+        });
+        k.on("battleStart", "talent", { subject: "any" }, (ctx: BattleApi) =>
+          ctx.applyStatus(ctx.self, focus)
+        );
+        k.ability({
+          id: "basic",
+          kind: "basic",
+          hits: [{ shape: "single", main: 1 }],
+          after: (ctx) => {
+            if (ctx.target && isEnemy(ctx.target)) {
+              ctx.applyStatus(ctx.target, mark, { baseChance: 0.5 });
+            }
+          },
+        });
+        k.policy({ turn: () => "basic", ultimate: () => false });
+      },
+      { cycles: 2, enemies: 1 }
+    );
+    const panels = unitPanels(result.team.units());
+    const gated = result.model.groups.filter((group) =>
+      group.constant.some((entry) => entry.gate)
+    );
+    expect(gated.length).toBeGreaterThan(0);
+    for (const group of gated) {
+      const boost =
+        readStat(result.model.groupStats(group, panels), "dmgBoost") -
+        readStat(
+          result.model.groupStats(
+            {
+              ...group,
+              constant: group.constant.filter((entry) => !entry.gate),
+            },
+            panels
+          ),
+          "dmgBoost"
+        );
+      // 50% × (1 + 50% timed EHR) × (1 − 30% Effect RES) = 52.5%.
+      expect(boost).toBeCloseTo(0.525, 6);
+    }
+  });
+
   it("designates an ally through a user option", () => {
     const chosen = (override?: string) => {
       let picked: string | null = null;

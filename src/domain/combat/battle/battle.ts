@@ -1208,6 +1208,10 @@ export class Battle {
     const clockUnit =
       (def.duration?.clock ?? "holder") === "holder" ? holder : applier;
     const duringOwnTurn = this.currentActor === clockUnit;
+    // Timed Effect Hit Rate buffs count when the debuff is applied; the
+    // panel part is read at evaluation, so Relics stay out of the timeline.
+    const ehrBonus =
+      baseChance === null ? 0 : applier.statUnit.buffStat("effectHitRate");
     if (existing) {
       existing.refresh(options);
       if (existing.baseChance !== null) {
@@ -1215,6 +1219,7 @@ export class Battle {
           baseChance === null
             ? null
             : Math.max(existing.baseChance, baseChance);
+        existing.ehrBonus = Math.max(existing.ehrBonus, ehrBonus);
       }
       existing.skipNextTurnEnd = duringOwnTurn;
     } else {
@@ -1232,6 +1237,7 @@ export class Battle {
         baseChance
       );
       instance.skipNextTurnEnd = duringOwnTurn;
+      instance.ehrBonus = ehrBonus;
       holder.statuses.set(key, instance);
     }
     this.emit(

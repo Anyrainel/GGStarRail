@@ -58,6 +58,11 @@ export interface AppliedModifier {
 export interface DebuffChance {
   readonly base: number;
   readonly applierId: string;
+  /**
+   * The applier's Effect Hit Rate from statuses and team auras when the
+   * debuff was applied; its panel Effect Hit Rate is read at evaluation.
+   */
+  readonly bonus: number;
 }
 
 /**
@@ -109,6 +114,9 @@ export class StatusInstance {
   private cached: readonly AppliedModifier[] | null = null;
   private cachedScale = Number.NaN;
   private cachedChance: number | null = null;
+  private cachedBonus = 0;
+  /** Applier's status Effect Hit Rate at application (see DebuffChance). */
+  ehrBonus = 0;
 
   constructor(
     readonly def: StatusDef,
@@ -138,7 +146,11 @@ export class StatusInstance {
   get chance(): DebuffChance | null {
     return this.baseChance === null
       ? null
-      : { base: this.baseChance, applierId: this.applier.statUnit.id };
+      : {
+          base: this.baseChance,
+          applierId: this.applier.statUnit.id,
+          bonus: this.ehrBonus,
+        };
   }
 
   /**
@@ -150,12 +162,14 @@ export class StatusInstance {
     if (
       this.cached &&
       this.cachedScale === scale &&
-      this.cachedChance === this.baseChance
+      this.cachedChance === this.baseChance &&
+      this.cachedBonus === this.ehrBonus
     ) {
       return this.cached;
     }
     this.cachedScale = scale;
     this.cachedChance = this.baseChance;
+    this.cachedBonus = this.ehrBonus;
     const chance = this.chance;
     this.cached = (this.def.modifiers ?? []).map((def) =>
       appliedModifier(
@@ -290,6 +304,14 @@ export class CombatUnit implements UnitView {
    * modifiers. A debuff applied with a base chance counts with that chance
    * (Effect Hit Rate is not read here, so timelines never depend on it).
    */
+  /**
+   * A stat from statuses and team auras only (no panel), without recording
+   * a read: for values that evaluation adds to the panel it reads itself.
+   */
+  buffStat(stat: CombatStat): number {
+    return this.statusStat(stat, true);
+  }
+
   private statusStat(stat: CombatStat, withTeamAuras: boolean): number {
     let total = 0;
     const kept = this.keptUniques();

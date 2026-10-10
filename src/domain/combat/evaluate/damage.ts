@@ -115,6 +115,8 @@ interface ChanceModifier {
   /** Null when the modifier always applies. */
   base: number | null;
   applierId: string;
+  /** The applier's status Effect Hit Rate when the debuff was applied. */
+  bonus: number;
   scaling?: StatScaling;
 }
 
@@ -158,7 +160,7 @@ function groupKey(record: HitRecord): string {
     record.targetChances?.pending
       .map(
         (status) =>
-          `${status.applierId}:${status.base}:${status.debuff ? 1 : 0}${status.dot ? 1 : 0}:${status.entries.join("+")}`
+          `${status.applierId}:${status.base}+${status.bonus}:${status.debuff ? 1 : 0}${status.dot ? 1 : 0}:${status.entries.join("+")}`
       )
       .join(";") ?? "",
     hit.stat ?? "atk",
@@ -169,7 +171,9 @@ function groupKey(record: HitRecord): string {
     record.breakEffect ?? "",
     record.maxToughness ?? "",
     record.punchline ?? "",
-    record.chance ? `${record.chance.base}@${record.chance.applierId}` : "",
+    record.chance
+      ? `${record.chance.base}@${record.chance.applierId}+${record.chance.bonus}`
+      : "",
     modifierKey(record.attackerModifiers),
     modifierKey(record.scalingModifiers ?? []),
     modifierKey(record.targetModifiers),
@@ -294,6 +298,7 @@ export class DamageModel {
           value,
           base: modifier.chance?.base ?? null,
           applierId: modifier.chance?.applierId ?? modifier.applierId,
+          bonus: modifier.chance?.bonus ?? 0,
           ...(def.scaling
             ? {
                 scaling: {
@@ -340,12 +345,11 @@ export class DamageModel {
     panels: UnitPanels,
     base: number,
     applierId: string,
-    target: EnemyUnit
+    target: EnemyUnit,
+    bonus = 0
   ): number {
-    const effectHitRate = readStat(
-      this.panelOf(panels, applierId),
-      "effectHitRate"
-    );
+    const effectHitRate =
+      readStat(this.panelOf(panels, applierId), "effectHitRate") + bonus;
     return effectHitChance(base, effectHitRate, target.effectResistance);
   }
 
@@ -390,7 +394,13 @@ export class DamageModel {
     const target = this.enemies.get(record.targetId);
     if (!chances || !target) return 1;
     const landed = chances.pending.map((status) =>
-      this.landingChance(panels, status.base, status.applierId, target)
+      this.landingChance(
+        panels,
+        status.base,
+        status.applierId,
+        target,
+        status.bonus
+      )
     );
     let probability = 1;
     const names = [
@@ -490,7 +500,8 @@ export class DamageModel {
           panels,
           modifier.base,
           modifier.applierId,
-          target
+          target,
+          modifier.bonus
         );
       }
       if (modifier.stat === "dmgMitigation") {
@@ -504,7 +515,8 @@ export class DamageModel {
           panels,
           record.chance.base,
           record.chance.applierId,
-          target
+          target,
+          record.chance.bonus
         )
       : 1;
     const defShred = incoming.defReduction + readStat(stats, "defIgnore");
