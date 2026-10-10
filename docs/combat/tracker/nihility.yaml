@@ -521,3 +521,181 @@
     Bleed (24% of enemy Max HP, capped at 338% of ATK) always deals the ATK cap
     because enemy HP is not modeled; low-HP enemies would take less.
   detail: "Hysilens' Talent Bleed uses its cap the same way."
+- id: welt-ult-hit-count
+  entity: "1004"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels (WeltB1) splits the Ultimate into 2 hits (10%/90%), so the
+    Talent's Additional DMG procs twice per Slowed enemy; our kit deals the
+    Ultimate as one AoE hit, so the Talent procs once. Which hit count matches
+    the game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (WeltB1.ts; Welt.ts is a Basic ATK-only
+    stub). WeltB1 is the Novaflare-enhanced kit (Talent 100%, Weightless), so
+    its other values do not apply here, but the Ultimate's hit split likely
+    carries over. The text supports a per-hit trigger (EN "When hitting an
+    enemy that is already Slowed"; ZH 击中处于减速状态的敌方目标时，额外造成1次),
+    and the kit fires it on every hit event; the facts give no hit split for
+    100403.
+- id: pela-a6-scope
+  entity: "1106"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    fribbels limits Wipe Out's +20% to Basic ATK, Skill, and Ultimate DMG
+    (E6's Additional DMG excluded) and grants it to the dispelling Skill
+    itself; our kit gives an unfiltered DMG Boost to the next attack after the
+    Skill, so E6's Additional DMG in that attack also gets it. Which matches
+    the text?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Pela.ts). EN "increases the DMG dealt by
+    the next attack by 20%"; ZH 下一次攻击造成的伤害提高20%. "Next attack"
+    supports our timing (fribbels' toggle is a static approximation). Whether
+    Additional DMG triggered by that attack counts as DMG dealt by the attack
+    is not stated; it only matters at E6 with the dispel option on.
+- id: sampo-skill-bounce-toughness
+  entity: "1108"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    fribbels gives the Skill 10 Toughness for the first hit and 5 for each
+    extra bounce (30 on one target at E0, 35 at E1); our kit applies 10 to
+    every hit (50 at E0, 60 at E1). Which per-hit value matches the game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Sampo.ts). Neither EN nor ZH text states
+    Toughness. Facts give one value for 110802 (raw ShowStanceList [30, 0, 0]
+    = 10, shape Bounce), identical to Welt's 100402 and Asta's 100902, so the
+    table cannot tell the first hit from the bounces. fribbels keeps 10 per
+    bounce for Welt but 5 per extra bounce for Sampo, Asta, Misha, and
+    Mortenax Blade, which suggests a datamined split. Same question as
+    misha-ult-bounce-toughness in destruction.yaml.
+- id: sampo-ult-hit-count
+  entity: "1108"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels splits the Ultimate into 4 hits of 25%; our kit deals it as one
+    AoE hit, so the per-hit Talent rolls Wind Shear once per enemy instead of
+    up to four times. Which hit count matches the game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Sampo.ts, Ultimate Ashblazing hit split).
+    The Talent triggers per hit (EN "Sampo's attacks have a 65% base chance to
+    inflict Wind Shear"; ZH 桑博击中敌方目标后有65%的基础概率使目标陷入风化状态),
+    and the kit applies it on every hit event. Facts give no hit split for
+    110803. With 4 hits, each Ultimate could add up to 4 Wind Shear stacks per
+    enemy.
+- id: luka-a6-extra-toughness
+  entity: "1111"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels keeps Sky-Shatter Fist at 20 Toughness when A6 adds extra Direct
+    Punch hits; our kit gives each expected extra punch a punch's share of
+    Toughness (about 24.3 in total with A6). Do A6's extra hits reduce
+    Toughness?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Luka.ts). The text does not say (EN
+    "every hit of Direct Punch has a 50% fixed chance for Luka to use 1
+    additional hit"; ZH 额外施放1段攻击). Facts give 20 for 111108 without A6.
+    Related to luka-enhanced-basic-split (the per-hit split itself).
+- id: fugue-e4-super-break
+  entity: "1225"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    fribbels applies E4's "Break DMG +20%" to Weakness Break DMG only; our
+    kit's `break` filter also reaches Super Break DMG (which carries the break
+    tag), the Prayer holder's main damage with Fugue. Which matches the text?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Fugue.ts, DamageTag.BREAK). EN "increases
+    their Break DMG dealt by 20%"; ZH 造成的击破伤害提高20%. U2 maps "Break DMG
+    +X%" to tags ["break"], which covers Super Break; fribbels separates the
+    two throughout (e.g. Iron Cavalry). The text does not settle whether Super
+    Break counts as Break DMG; an engine-wide answer belongs with
+    engine-super-break-zones.
+- id: acheron-knotless-burst
+  entity: "1308"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    fribbels gives every Rainblade a 15% AoE Crimson Knot burst even when it
+    removes no Knot (3 x 15% plus 15% per Knot); our kit deals the burst only
+    when the Rainblade removes at least one Knot. Which matches the text?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Acheron.ts). EN "When Crimson Knot is
+    removed, immediately deals Lightning DMG equal to 15% ... For every stack
+    of Crimson Knot removed, this DMG Multiplier is additionally increased, up
+    to a maximum of 60%"; ZH 消去【集真赤】时，立即对敌方全体造成...最多提高至60%.
+    The text supports our kit (no removal, no burst). Both give 3 x 60% with 9
+    or more Knots on the target; with 3 Knots fribbels gives 90% of bursts and
+    our kit 60%. Toughness side: acheron-ult-toughness.
+- id: acheron-e6-talent-res
+  entity: "1308"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    fribbels applies the Talent's All-Type RES -20% to every Ultimate-typed
+    hit, so at E6 Basic ATK and Skill (considered Ultimate DMG) also get it;
+    our kit applies it only while the Ultimate is in progress. Which matches
+    the text?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Acheron.ts, RES_PEN on DamageTag.ULT). EN
+    "During the Ultimate, ... reduces all enemies' All-Type RES by 20%,
+    lasting until the end of the Ultimate"; ZH 终结技期间...持续至终结技结束.
+    The text supports our kit: E6 changes the DMG type, not when the Ultimate
+    is active. E6's own +20% Ultimate RES PEN reaches Basic ATK and Skill in
+    both.
+- id: dahlia-ult-toughness
+  entity: "1321"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    fribbels gives the Ultimate 30 Toughness and the full 300% on the main
+    target whatever the enemy count; our kit uses 20 Toughness on every enemy
+    and splits 300% evenly across all enemies. Which matches the game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (TheDahlia.ts). Facts for 132103 (raw
+    ShowStanceList [0, 60, 0]) give 20 to each enemy, so the data supports our
+    kit. EN "300% of The Dahlia's ATK, which is distributed evenly across all
+    enemies" supports the split; fribbels evaluates one target. Both add A6's
+    fixed 20 Fire Toughness Reduction afterwards (see dahlia-fixed-toughness).
+- id: dahlia-a6-spd-recipient
+  entity: "1321"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    fribbels gives A6's SPD +30% to the ally who implants the Weakness
+    (Firefly, Boothill, Phainon, Anaxa, Silver Wolf, and The Dahlia herself
+    for Wilt); our kit only ever buffs The Dahlia, after her own Wilt. Whose
+    SPD does A6 increase?
+  detail: >
+    Crosscheck vs fribbels 2140153 (TheDahlia.ts, IMPLANT_CHARACTERS). EN
+    "When an ally target adds Weakness to an enemy target, increases SPD by
+    30%"; ZH 我方目标为敌方目标添加弱点时，速度提高30% names no recipient, and
+    the implanting ally is the nearest subject. The Energy part (a Fire ally
+    character's attack) has the same ambiguity. Both readings agree for Wilt;
+    ally implants are not modeled (dahlia-weakness-implant).
+- id: cipher-skill-atk-scaling
+  entity: "1406"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    fribbels scales the Skill's ATK +30% with Skill level (33% at Lv. 12);
+    our kit reads Skill #5, which is 30% at every level. Which matches the
+    game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Cipher.ts, skill(e, 0.30, 0.33)).
+    AvatarSkillConfig ParamList for 140602 gives #5 = 0.3 at Lv. 1-15, so the
+    data supports our kit; E5 does not raise it.

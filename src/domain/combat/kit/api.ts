@@ -288,8 +288,13 @@ export interface AbilityDef {
   /** Display origin; default derived from `kind`. */
   origin?: EffectOrigin;
   target?: AbilityTarget;
-  /** Replaces the default tags for `kind`. */
+  /**
+   * Tags added to the defaults of `kind` ("this DMG is considered Ultimate
+   * DMG"), as on hits.
+   */
   tags?: readonly DamageTag[];
+  /** Replaces the tags entirely ("this DMG is not considered Skill DMG"). */
+  onlyTags?: readonly DamageTag[];
   /** Static hits, or hits computed after `before` from battle state. */
   hits?: readonly HitDef[] | ((ctx: ActionContext) => readonly HitDef[]);
   /** Whether the ability attacks; default: it has static hits. */

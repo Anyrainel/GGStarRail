@@ -192,3 +192,31 @@
     Dahlia's Dance Partner, Jade's Debt Collector) are heuristics; there is no
     option type for choosing a teammate.
   detail: ""
+- id: engine-control-turn-start-dmg
+  entity: engine
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Kit Freezes deal Additional DMG at the Frozen enemy's turn start, but a
+    status can only carry periodic damage as a `dot` (tagged DoT, detonated,
+    emits dotTick). March 7th and Gepard deal it from turnStart weighted by
+    the base chance, so Effect Hit Rate and Effect RES do not scale it.
+  detail: >
+    Needs non-DoT periodic damage on a status (Additional DMG tags) resolved
+    with the status's evaluated landing chance. E1 March 7th's Energy per
+    Frozen target uses the same base-chance weight, consistent with the
+    engine's turn skip.
+- id: engine-shield-state
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    There is no shared "Shielded" state: March 7th's Counter and Aventurine's
+    E6 see only their own shield markers, so Shields from other kits (Gepard's
+    Ultimate, Fortified Wager for March 7th) do not count and Shields broken
+    by enemy hits never drop.
+  detail: >
+    A generic shield family (or flag) that kits apply alongside their own
+    statuses would let "Shielded ally" checks see every source.

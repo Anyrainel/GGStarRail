@@ -69,3 +69,33 @@
     Enhanced Basic ATK instance on the main target; confirm it is not a
     separate damage instance.
   detail: ""
+- id: march-7th-taunt-counters
+  entity: "1001"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    The Skill's taunt is not modelled (engine-aggro-modifiers), so Counters
+    fire on the shielded ally's base aggro share. The Skill shields March 7th
+    herself (highest base aggro), and E2's lowest-HP battle-start Shield (all
+    allies at full HP) is assumed to land on her.
+  detail: ""
+- id: fu-xuan-e6-hp-tally
+  entity: "1208"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    E6's HP-loss tally is the toggle e6-hp-loss-tally-capped (default on: the
+    tally is at its 120% Max HP cap at every Ultimate, +240% Max HP per
+    target); HP loss is not simulated.
+  detail: ""
+- id: gepard-talent-killing-blow
+  entity: "1104"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The Talent's revive drives A4 (Energy to 100%) and E6 (immediate action),
+    but killing blows are not simulated (engine-hp-model), so neither fires.
+  detail: ""

@@ -103,8 +103,9 @@ or DoT is unfiltered. This is the most common mistake: check every
 | Memosprite DMG | `memosprite` (added automatically to memosprite abilities) |
 | Elation DMG / Elation Skill | `elation` (Elation Skill abilities default to it) |
 | Joint ATK | `joint` plus the ability type |
-| "This DMG is considered X DMG" | add `X` via `tags` |
+| "This DMG is considered X DMG" | add `X` via `tags` (ability or hit; both add to the defaults) |
 | "This DMG is not considered X DMG" | `onlyTags` without `X` |
+| Assist Skill DMG (Himeko • Nova) | `assist` |
 
 ### U5. Durations
 

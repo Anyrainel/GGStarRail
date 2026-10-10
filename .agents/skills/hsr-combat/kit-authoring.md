@@ -126,7 +126,9 @@ k.ability({
   // or hits computed after `before` from battle state:
   // hits: (ctx) => [{ shape: "bounce", each: 0.5, bounces: 3 + ctx.self.stacks(charge) }],
   attack?: boolean,                       // default: has hits
-  energy?, skillPoints?, energyCost?, tags?,
+  tags?: ["ultimate"],                    // added to the kind's default tags
+  onlyTags?: [],                          // replaces them ("not considered Skill DMG")
+  energy?, skillPoints?, energyCost?,
   resource?: { counter, amount },         // Ultimate paid from a counter, not Energy
   castOutsideActionOrder?: boolean,       // Ultimate usable while Departed
   endsTurn?: false,                       // "does not end the turn": the turn continues

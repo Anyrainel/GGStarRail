@@ -507,7 +507,12 @@ export class Battle {
     const targetsHit = new Set<EnemyUnit>();
     this.targetsHit = targetsHit;
     this.changeSkillPoints(skillPoints * weight, unit);
-    const tags = ability.tags ?? DEFAULT_ABILITY_TAGS[ability.kind];
+    const tags = ability.onlyTags ?? [
+      ...new Set([
+        ...DEFAULT_ABILITY_TAGS[ability.kind],
+        ...(ability.tags ?? []),
+      ]),
+    ];
     const context = this.actionContext(unit, ability, target, weight);
     const attack =
       ability.attack ??

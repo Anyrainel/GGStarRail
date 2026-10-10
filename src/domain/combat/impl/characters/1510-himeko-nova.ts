@@ -160,7 +160,7 @@ export default defineCharacter("1510", (k) => {
 
   // "Using Assist Skill is considered as Himeko • Nova using her Skill": both
   // variants are her Skill-kind actions, but their DMG is Assist Skill DMG
-  // (not Skill DMG), hence no tags. Facts: Toughness 10 for the AoE part and
+  // (not Skill DMG), hence only `assist`. Facts: Toughness 10 for the AoE part and
   // 5 per random instance; Energy 18 for her own use (others get the
   // Talent's Energy instead).
   const startAssist = (ctx: ActionContext) => {
@@ -182,7 +182,7 @@ export default defineCharacter("1510", (k) => {
   k.ability({
     id: "assistSkill",
     kind: "skill",
-    tags: [],
+    onlyTags: ["assist"],
     skillPoints: 0,
     energy: 18,
     before: (ctx) => {
@@ -203,7 +203,7 @@ export default defineCharacter("1510", (k) => {
   k.ability({
     id: "allyAssist",
     kind: "skill",
-    tags: [],
+    onlyTags: ["assist"],
     skillPoints: 0,
     energy: 0,
     before: startAssist,
