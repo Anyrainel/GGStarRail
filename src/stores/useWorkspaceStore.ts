@@ -18,10 +18,12 @@ import type {
   ScoreProfile,
   TriageRules,
 } from "@/domain/build/schemas";
+import { migrateWorkspaceStore } from "./migration/workspace";
 import {
   DEFAULT_WORKSPACE,
   type PersistedWorkspace,
   PersistedWorkspaceSchema,
+  WORKSPACE_SCHEMA_VERSION,
 } from "./schemas";
 
 interface WorkspaceActions {
@@ -194,7 +196,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: STORAGE_KEYS.workspace,
-      version: 1,
+      version: WORKSPACE_SCHEMA_VERSION,
       partialize: (state) => ({
         schemaVersion: state.schemaVersion,
         characterLightConeIds: state.characterLightConeIds,
@@ -204,7 +206,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         scoreProfiles: state.scoreProfiles,
         triageRules: state.triageRules,
       }),
-      migrate: () => structuredClone(DEFAULT_WORKSPACE),
+      migrate: migrateWorkspaceStore,
       merge: (persistedState, currentState) => {
         const parsed = PersistedWorkspaceSchema.safeParse(persistedState);
         return parsed.success

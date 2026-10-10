@@ -131,7 +131,7 @@ describe("GOODScanner HSR import compatibility", () => {
 
     const parsed = await parseVersionedScannerExport(scannerV2Fixture);
     expect(parsed.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       source: {
         sourceVersion: "goodscanner-hsr-experimental-v2",
       },
@@ -151,7 +151,7 @@ describe("GOODScanner HSR import compatibility", () => {
     const merged = applyAccountImport(current, draft.account, "merge");
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       characters: [],
       lightCones: [],
       relics: [],
@@ -409,7 +409,7 @@ describe("GOODScanner HSR import compatibility", () => {
       new Date("2026-09-02T12:00:00.000Z")
     );
 
-    expect(draft.account.schemaVersion).toBe(3);
+    expect(draft.account.schemaVersion).toBe(4);
     expect(draft.account.source.coverage).toEqual({
       characters: "unknown",
       lightCones: "unknown",
@@ -460,7 +460,7 @@ describe("GOODScanner HSR import compatibility", () => {
     );
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:local",
       source: {
         provider: "scanner-export",
@@ -698,7 +698,7 @@ describe("GOODScanner HSR import compatibility", () => {
     const draft = await parseVersionedScannerExport(nativeScannerV1Fixture);
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:legacy",
       source: {
         coverage: {
@@ -715,6 +715,53 @@ describe("GOODScanner HSR import compatibility", () => {
           discarded: null,
         }),
       ],
+    });
+  });
+
+  it("migrates native account v3 interoperable trace keys to catalog point IDs", async () => {
+    const account = makeAccountSnapshot();
+    const [character] = account.characters;
+    if (!character) throw new Error("Missing fixture Character");
+    const draft = await parseVersionedScannerExport({
+      format: "ggstarrail-scanner-export",
+      schemaVersion: 1,
+      sourceApp: { name: "GGStarRail", version: "1" },
+      exportedAt: "2026-09-02T12:00:00.000Z",
+      account: {
+        ...account,
+        schemaVersion: 3,
+        lightCones: [],
+        relics: [],
+        characters: [
+          {
+            key: character.key,
+            definitionId: "1402",
+            pathId: "Memory",
+            combatTypeId: "Thunder",
+            level: 80,
+            ascension: 6,
+            eidolon: 0,
+            relicKeys: [],
+            traces: {
+              "skill:ult": 10,
+              "memosprite:talent": 6,
+              "trace:ability_2": 1,
+              "trace:stat_7": 0,
+              "source:abilityVersion": 1,
+              "1402420": 3,
+            },
+          },
+        ],
+      },
+    });
+
+    expect(draft.account.schemaVersion).toBe(4);
+    expect(draft.account.characters[0]?.traces).toEqual({
+      "1402003": 10,
+      "1402302": 6,
+      "1402102": 1,
+      "1402207": 0,
+      "1402420": 3,
     });
   });
 
@@ -1057,10 +1104,7 @@ describe("interoperable HSR scanner v4 imports", () => {
       },
     };
     const draft = await parseVersionedScannerExport(input);
-    expect(draft.account.characters[0]?.traces["skill:skill"]).toBe(10);
-    expect(
-      draft.account.characters[0]?.traces["source:abilityVersion"]
-    ).toBeUndefined();
+    expect(draft.account.characters[0]?.traces["1101002"]).toBe(10);
     expect(draft.account.relics[0]?.substats).toContainEqual({
       statId: "CriticalChanceBase",
       value: 5.1,
@@ -1204,7 +1248,7 @@ describe("interoperable HSR scanner v4 imports", () => {
     );
 
     expect(first.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:v4:hsr-scanner",
       uid: "601869216",
       source: {
@@ -1224,9 +1268,8 @@ describe("interoperable HSR scanner v4 imports", () => {
       definitionId: "1101",
       pathId: "Shaman",
       traces: {
-        "skill:basic": 6,
-        "trace:ability_1": 1,
-        "source:abilityVersion": 0,
+        "1101001": 6,
+        "1101101": 1,
       },
       lightConeKey: first.account.lightCones[0]?.key,
       relicKeys: [first.account.relics[0]?.key],

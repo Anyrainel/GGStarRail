@@ -21,7 +21,7 @@ export function makeRelic(overrides: Partial<Relic> = {}): Relic {
 
 export function makeAccountSnapshot(): AccountSnapshot {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: "profile:local",
     uid: "600000001",
     region: "prod_official_usa",
@@ -36,7 +36,7 @@ export function makeAccountSnapshot(): AccountSnapshot {
         level: 80,
         ascension: 6,
         eidolon: 6,
-        traces: { skill: 10 },
+        traces: { "8007002": 10 },
         lightConeKey: "light-cone:1",
         relicKeys: ["relic:1"],
       },

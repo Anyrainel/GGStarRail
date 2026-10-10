@@ -49,8 +49,7 @@ Zustand persist. Check `package.json` for the current command definitions.
 ## Page Map
 
 Use `src/config/navigation.ts` for paths, `src/app/routeRegistry.ts` for page
-labels, and `src/App.tsx` for the actual route components. The `artifact-builds`
-directory name is used by the current HSR build UI; it is not a Genshin engine.
+labels, and `src/App.tsx` for the actual route components.
 
 | Page | Route | Implementation |
 | --- | --- | --- |
@@ -59,8 +58,8 @@ directory name is used by the current HSR build UI; it is not a Genshin engine.
 | Inventory | `/account-data/inventory` | `src/pages/account-data/InventoryView.tsx` |
 | Resources | `/account-data/resources` | `src/pages/account-data/ResourceView.tsx` |
 | Relic Triage | `/account-data/triage` | `src/pages/account-data/TriageView.tsx` |
-| Character Builds | `/builds/configure` | `src/pages/artifact-builds/CharacterBuildView.tsx` |
-| Relic Filters | `/builds/filters` | `src/pages/artifact-builds/ArtifactBuildsView.tsx` |
+| Character Builds | `/builds/configure` | `src/pages/builds/CharacterBuildView.tsx` |
+| Relic Filters | `/builds/filters` | `src/pages/builds/RelicFiltersView.tsx` |
 | Character Priority | `/tier-list/characters` | `src/pages/tier-list/CharacterTierListView.tsx` |
 | Light Cone Priority | `/tier-list/light-cones` | `src/pages/tier-list/LightConeTierListView.tsx` |
 | Relic Priority | `/tier-list/relics` | `src/pages/tier-list/RelicTierListView.tsx` |

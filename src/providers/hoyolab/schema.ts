@@ -5,7 +5,7 @@ import {
   type LightCone,
   type Relic,
   type RelicSlot,
-  StableIdSchema,
+  TracePointIdSchema,
 } from "@/domain/account/schemas";
 import { assertNoSensitiveFields } from "@/lib/security";
 import {
@@ -312,7 +312,7 @@ export function normalizeHoYoLabAvatarInfo(
     const traces = Object.fromEntries(
       avatar.skills.flatMap((skill) => {
         const key = String(skill.point_id);
-        return StableIdSchema.safeParse(key).success
+        return TracePointIdSchema.safeParse(key).success
           ? [[key, skill.level] as const]
           : [];
       })
@@ -386,7 +386,7 @@ export function normalizeHoYoLabAvatarInfo(
 
   const warningList = [...warnings];
   const account = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: accountProfileKey(request.uid),
     uid: request.uid,
     region: server,

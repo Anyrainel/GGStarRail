@@ -7,12 +7,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { StatSelect } from "@/components/artifact-builds/StatSelect";
 import {
   NumberField,
   TextField,
   ToggleField,
 } from "@/components/builds/BuildControls";
+import { StatSelect } from "@/components/builds/StatSelect";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { Button } from "@/components/ui/button";
 import {

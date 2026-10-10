@@ -1,3 +1,4 @@
+import { decimalToAccountStat } from "@/domain/stats";
 import type {
   MainAffixDefinition,
   PropertyDefinition,
@@ -50,8 +51,7 @@ export function generatedRelicMainStatDisplayValues(
     );
   }
 
-  const exact =
-    property.value_kind === "ratio" ? generatedValue * 100 : generatedValue;
+  const exact = decimalToAccountStat(generatedValue, property.value_kind);
   return {
     exact,
     normalized: Number(exact.toFixed(3)),
