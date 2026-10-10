@@ -2,7 +2,7 @@
 - id: fleet-of-the-ageless-aura-dedupe
   entity: "302"
   rule: U13
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     Equipment team auras from several wearers are deduplicated in
@@ -12,36 +12,45 @@
     SPD / Effect RES threshold; Penacony auras restricted to different
     Combat Types (312) collapse into one, dropping the second wearer's.
   detail: >
-    The dedupe key should include the aura's combatTypes/paths restriction,
-    and scaled auras should keep the strongest value per evaluated panel
-    (or keep all copies and take the maximum when evaluating).
+    Fixed in engine 61c14f6: equipment team auras compare scaled values,
+    and auras limited to different Combat Types or Paths are no longer
+    merged.
 - id: hunter-of-glacial-forest-ultimate-timing
   entity: "104"
   rule: U8
-  status: open
-  category: verify
+  status: actionable
+  category: bug
   summary: >
     Hunter of Glacial Forest's 4-piece CRIT DMG is applied when the Ultimate
     ends (EN "After the wearer uses their Ultimate"), so it does not boost
     the triggering Ultimate. The ZH text reads "when" (施放终结技时), which
     would include it.
   detail: >
-    Community notes agree with EN (the triggering Ultimate is not boosted);
-    confirm in game. If ZH is right, switch the listener to actionStart.
+    Settled: the source-language text reads 'when the wearer uses their
+    Ultimate' (当装备者施放终结技时), and fribbels applies the 25% CRIT DMG to all
+    of the wearer's damage, the Ultimate included (default on). Switch the
+    listener to actionStart so the triggering Ultimate is boosted.
 - id: guard-of-wuthering-snow-own-hp
   entity: "106"
   rule: U12
-  status: open
-  category: approximation
+  status: actionable
+  category: bug
   summary: >
     Guard of Wuthering Snow's 4-piece turn-start Energy needs the wearer at
     or below 50% HP. HP is not simulated, so it is one off-by-default toggle
     (selfHpBelow) that applies to every turn start of the battle.
-  detail: "An engine HP model (engine-hp-model) would let it follow the wearer's HP."
+  detail: >
+    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
+    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
+    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
+    hitByEnemy (weight = aggro share), because hpChanged with hpCause
+    enemy fires for every ally on every enemy attack. Remove the low-hp
+    toggle. At the wearer's turn start, if self.hpRatio ≤ #1,
+    ctx.heal(self, #2) and regenerate #3 Energy.
 - id: longevous-disciple-hp-consumed
   entity: "113"
   rule: U12
-  status: open
+  status: actionable
   category: approximation
   summary: >
     Longevous Disciple's 4-piece stacks on HP consumption are assumed at the
@@ -50,12 +59,21 @@
     enabled). HP consumed by allies (e.g. Jingliu's Enhanced Skill) is not
     modelled.
   detail: >
-    Same assumption table as The Unreachable Side (23009). An HP model with
-    consume events (engine-hp-model) would make it exact.
+    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
+    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
+    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
+    hitByEnemy (weight = aggro share), because hpChanged with hpCause
+    enemy fires for every ally on every enemy attack. Remove the
+    own-hp-consumed toggle and the per-wearer table. Gain a stack from
+    hitByEnemy (stacks = weight) as now and from each hpChanged (subject
+    self, hpCause consume), whoever consumed it ('by an ally or
+    themselves': the wearer's own costs, Castorice's Skills, Jingliu's
+    Spectral Transmigration attacks, Long May Rainbows Adorn the Sky).
+    Needs those kits to call consumeHp.
 - id: messenger-traversing-hackerspace-ally-ultimate
   entity: "114"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     "Uses their Ultimate on an ally" cannot be read from events: actionStart
@@ -63,19 +81,31 @@
     plain `true` policy report the main enemy as target. The kit counts an
     Ultimate that deals no DMG or aims at an ally.
   detail: >
-    Exposing the ability's `target` (enemy/ally/allies/self) on
-    actionStart/actionEnd would make it exact. Watchmaker (118) uses the
-    same proxy.
+    Convention (ally target): an ability's ally target is read from
+    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
+    self; 'on one ally (target/character)' (我方单体) = ally, with
+    event.target the ally; 'on all allies' = allies; 'on themselves' =
+    self. Kits keep no inference from statuses, non-attacking Ultimates,
+    or turn choices. Trigger on the wearer's Ultimate with abilityTarget
+    ally, allies, or self; drop the no-DMG and ally-target proxy.
 - id: watchmaker-ally-ultimate
   entity: "118"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Watchmaker's "uses their Ultimate on an ally" uses the same proxy as
     Messenger (an Ultimate that deals no DMG or aims at an ally), because
     events do not carry the ability's target type.
-  detail: "See messenger-traversing-hackerspace-ally-ultimate."
+  detail: >
+    Convention (ally target): an ability's ally target is read from
+    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
+    self; 'on one ally (target/character)' (我方单体) = ally, with
+    event.target the ally; 'on all allies' = allies; 'on themselves' =
+    self. Kits keep no inference from statuses, non-attacking Ultimates,
+    or turn choices. Trigger on the wearer's Ultimate with abilityTarget
+    ally, allies, or self; drop the no-DMG and ally-target proxy (as
+    messenger-traversing-hackerspace-ally-ultimate).
 - id: prisoner-in-deep-confinement-dot-count
   entity: "116"
   rule: U14
@@ -87,10 +117,11 @@
     the first DoT counts (6%), recognized by a Burn/Shock/Bleed/Wind Shear
     family, so DoT teams are undervalued by up to 12% DEF ignore.
   detail: >
-    Needs a hit filter such as `minTargetDots` (or a DoT count on
-    HitDescriptor), counting each DoT status once. Note that several
-    Character DoTs (Kafka's Shock, Black Swan's Arcana) declare no family
-    today, so only Weakness Break DoTs are recognized on Kafka teams.
+    Blocked on engine-target-dot-count. Then ignore #1 DEF per DoT on the
+    target, up to #2 DoTs. Meanwhile Character DoTs declare families
+    (Kafka and Serval Shock, Sampo Wind Shear, Luka Bleed, Himeko, Hook,
+    Guinaifen, and Jiaoqiu Burn, Hysilens's DoTs), so the first-DoT check
+    sees them; Black Swan's Arcana still has none.
 - id: pioneer-diver-debuff-chance
   entity: "117"
   rule: U9
@@ -100,11 +131,13 @@
     Pioneer Diver's doubled 4-piece effects trigger on every debuff the
     wearer applies, whatever its landing chance: statusApplied events do not
     carry the base chance, so a failed roll still doubles the effects.
-  detail: ""
+  detail: >
+    Blocked on engine-debuff-landing-chance. Then double the effects with
+    the landing chance of the triggering debuff.
 - id: bananamusement-summon-detection
   entity: "318"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Kits cannot list a unit's summons or tell summoned targets (Numby,
@@ -114,8 +147,13 @@
     the summon's first attack (Topaz, Jing Yuan) and summons that never attack
     (Souldragon outside its enhanced state) miss the 32% CRIT DMG.
   detail: >
-    Exact with a UnitView flag for summoned targets, or a BattleApi call that
-    lists a unit's active summons and memosprites.
+    Track the wearer's memosprites and summons with summoned/departed
+    (61c14f6, subject selfOrMemosprite), leaving out Action Order
+    countdowns by definition ID as Sunday's SUMMON_IDS does (numby,
+    lightning-lord, fuyuan, souldragon are summons; the '-countdown' IDs
+    are not). The 32% applies from the moment one is summoned until none
+    is left; drop the 'after its first attack' rule and the boundary
+    polling.
 - id: bananamusement-memosprite-crit-dmg
   entity: "318"
   rule: U3
@@ -127,7 +165,10 @@
     memosprite's own statuses), as the engine copies the wearer's equipment
     modifiers to memosprites. Confirm in game whether Garmentmaker and other
     memosprites receive it.
-  detail: ""
+  detail: >
+    Not settled; the same question as engine-memosprite-buff-inheritance.
+    The text names only the wearer; fribbels applies the 32% to the
+    wearer's action stats.
 - id: giant-tree-healing-panel
   entity: "320"
   rule: E3
@@ -140,8 +181,10 @@
     never raises Little Ica's damage; the same 20% as a Relic stat raises
     Hyacine's damage by about 11% at 180 SPD.
   detail: >
-    Needs a stat read that includes the unit's conditional (scaling)
-    modifiers per loadout, or a tally evaluated per loadout.
+    Blocked on engine-momentary-stat-read (a read that includes
+    conditional scaling modifiers). Convention (Outgoing Healing): keep
+    the tiers; they reach heal amounts and Hyacine's tally once those
+    reads include them.
 - id: tengoku-sp-scope
   entity: "324"
   rule: U10
@@ -152,7 +195,10 @@
     Points consumed by any ally during one turn of any unit (reset at every
     turn start). Confirm whether teammates' consumption counts or only the
     wearer's, and whether it must happen in the wearer's own turn.
-  detail: ""
+  detail: >
+    Not settled: the text names no consumer (若在同一回合内消耗...战技点) and fribbels
+    uses an off-by-default toggle. Dazzled by a Flowery World counts only
+    the wearer's consumption because its text is about the wearer.
 - id: punklorde-elation-latch
   entity: "325"
   rule: E3
@@ -163,7 +209,10 @@
     `atLeast`, so they hold from battle start or never. Momentary Elation
     buffs that reach 40%/80% once in combat, which latch the bonus for the
     rest of the battle in game, are not counted.
-  detail: ""
+  detail: >
+    Blocked on engine-momentary-stat-read. Then latch each tier, as a
+    battle-long status, the first time the wearer's Elation with statuses
+    reaches #2 or #3.
 - id: fallen-star-companions
   entity: "327"
   rule: U8
@@ -175,11 +224,13 @@
     Dan Heng, Dan Heng • Imbibitor Lunae, Dan Heng • Permansor Terrae,
     Himeko, Himeko • Nova, and Welt (see himeko-nova-companions in
     erudition.yaml).
-  detail: ""
+  detail: >
+    Still missing from the reference data; see himeko-nova-companions
+    (erudition.yaml).
 - id: sacerdos-relived-ordeal-ally-target
   entity: "121"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Sacerdos' Relived Ordeal triggers only when a Skill or Ultimate event names
@@ -188,14 +239,20 @@
     Trailblazer • Elation, Robin • Summeretto) report the main enemy, so they
     grant no CRIT DMG stacks.
   detail: >
-    Same gap as messenger-traversing-hackerspace-ally-ultimate: events need
-    the ability's target type and the ally actually chosen. Two wearers'
-    stacks share the cap through `unique` (the stronger copy applies), which
-    undercounts when each wearer has given one stack.
+    Convention (ally target): an ability's ally target is read from
+    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
+    self; 'on one ally (target/character)' (我方单体) = ally, with
+    event.target the ally; 'on all allies' = allies; 'on themselves' =
+    self. Kits keep no inference from statuses, non-attacking Ultimates,
+    or turn choices. Trigger on Skills and Ultimates with abilityTarget
+    === 'ally' and give the stack to event.target. Character kits whose
+    single-ally abilities do not name the ally are filed as
+    <name>-ally-target-event items. Two wearers keep the stronger copy
+    (unique); whether their stacks pool in game is unverified.
 - id: wavestrider-captain-ally-target
   entity: "126"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Wavestrider Captain gains Help only from another ally's ability whose
@@ -203,20 +260,33 @@
     Ultimates aimed by kit heuristics and abilities aimed at all allies
     (e.g. Robin's Ultimate) grant no Help.
   detail: >
-    Needs the ability's target type and chosen ally on actionStart (see
-    messenger-traversing-hackerspace-ally-ultimate). Also confirm in game
-    whether all-ally abilities count as targeting the wearer.
+    Convention (ally target): an ability's ally target is read from
+    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
+    self; 'on one ally (target/character)' (我方单体) = ally, with
+    event.target the ally; 'on all allies' = allies; 'on themselves' =
+    self. Kits keep no inference from statuses, non-attacking Ultimates,
+    or turn choices. Gain 1 Help from another ally's action with
+    abilityTarget === 'ally' and event.target the wearer, or with
+    abilityTarget === 'allies' (an all-ally ability also targets the
+    wearer; unconfirmed in game).
 - id: dreamlit-actor-ally-target
   entity: "133"
   rule: U8
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Dreamlit Actor triggers only when the wearer's Skill or Ultimate event
     names another ally as target (a turn choice with an ally target). Elation
     supports that pick their ally inside the ability (Pearl, Trailblazer •
     Elation, Robin • Summeretto Ultimates) never trigger it.
-  detail: "See messenger-traversing-hackerspace-ally-ultimate."
+  detail: >
+    Convention (ally target): an ability's ally target is read from
+    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
+    self; 'on one ally (target/character)' (我方单体) = ally, with
+    event.target the ally; 'on all allies' = allies; 'on themselves' =
+    self. Kits keep no inference from statuses, non-attacking Ultimates,
+    or turn choices. Trigger on Skills and Ultimates with abilityTarget
+    === 'ally' and event.target an ally other than the wearer.
 - id: poet-of-mourning-collapse-prebattle-spd
   entity: "124"
   rule: E3
@@ -229,19 +299,31 @@
     is 125.4 and Poet gives no CRIT Rate, although her pre-battle SPD is 87.4.
     Diviner of Distant Reach (130) reads SPD the same way.
   detail: >
-    A pre-battle panel (base, Traces, Light Cone, Relics and set properties,
-    without kit effects) readable by scaling would make both sets exact.
+    Blocked on engine-prebattle-panel. Then read the pre-battle SPD for
+    both tiers (also Diviner of Distant Reach, 130).
 - id: warrior-goddess-heal-trigger
   entity: "125"
   rule: U12
-  status: open
+  status: actionable
   category: engine-gap
   summary: >
     Healing is not simulated, so Gentle Rain (wearer SPD, all allies' CRIT
     DMG) is an on-by-default "active" option held for the whole battle
     instead of a 2-turn state gained when the wearer or its memosprite heals
     another ally (once per turn).
-  detail: "Heal events (engine-hp-model) would let it follow the wearer's heals."
+  detail: >
+    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
+    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
+    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
+    hitByEnemy (weight = aggro share), because hpChanged with hpCause
+    enemy fires for every ally on every enemy attack. Remove the
+    gentle-rain option and the permanent stats. Gain Gentle Rain (#3
+    turns, limitPerTurn 1) on hpChanged with hpCause heal, source the
+    wearer or its memosprite, and a healed unit other than the source;
+    while it is held, the wearer's SPD +#1 and all allies' CRIT DMG +#2
+    (statuses on the wearer's clock, unique across wearers). Heals on
+    full-HP allies emit no event (engine-hp-event-triggers). Needs the
+    healer kits to call ctx.heal.
 - id: self-enshrouded-recluse-shield-state
   entity: "128"
   rule: U12
@@ -251,7 +333,9 @@
     Shields are not simulated, so the CRIT DMG for allies holding the
     wearer's Shield is an on-by-default "active" option applied to all allies
     for the whole battle.
-  detail: "A shared Shielded state (engine-shield-state) would let it follow the wearer's Shields."
+  detail: >
+    Blocked on engine-shield-state. Then give the CRIT DMG to allies
+    holding the wearer's Shield and drop the option.
 - id: divine-querying-master-smith-def-reduced
   entity: "132"
   rule: U14
@@ -264,8 +348,8 @@
     before every action, which the CRIT DMG filter reads. Comburent triggers
     with certainty even when the DEF reduction was applied with a base chance.
   detail: >
-    A filter on incoming stats held by the target (or a "defReduced"
-    family) would replace the marker.
+    Blocked on engine-def-reduced-state. Meanwhile statusRemoved (61c14f6)
+    can replace the resync before every action.
 - id: hero-of-triumphant-song-joint-atk
   entity: "123"
   rule: U8
@@ -275,4 +359,6 @@
     Hero of Triumphant Song's CRIT DMG triggers when the memosprite starts an
     attack of its own. Memosprite parts of the owner's Joint ATKs (Aglaea's
     Enhanced Basic ATK) do not trigger it.
-  detail: "Confirm in game whether a Joint ATK counts as the memosprite attacking."
+  detail: >
+    Not settled: fribbels applies the CRIT DMG to the wearer and
+    memosprite through a toggle and does not distinguish Joint ATKs.
