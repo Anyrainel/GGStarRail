@@ -305,3 +305,54 @@
     attack; other enemies receive it once a hit lands on them, so the first
     hit on each of them is not reduced.
   detail: ""
+- id: void-ehr-landing
+  entity: "20004"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Void's battle-start Effect Hit Rate is a 3-turn status on the wearer, but
+    debuff landing chances read the applier's steady panel, so it raises no
+    landing chance and has no effect on damage.
+  detail: "Landing chances would need the applier's Effect Hit Rate at application time, including timed statuses."
+- id: resolution-shines-ensnare-reroll
+  entity: "21015"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    An Ensnare on the target counts as "already Ensnared" whatever its landing
+    chance, so a failed roll is not retried by the wearer's later hits while
+    the expected-value status is on. At S1-S4 (60-90% base chance) this
+    understates how often the DEF reduction is up; S5 (100%) is exact.
+  detail: ""
+- id: its-showtime-trick-landing
+  entity: "21041"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Trick is gained for every debuff application, including base-chance
+    debuffs the enemy would resist, because landing chances are only resolved
+    at evaluation; low Effect Hit Rate overstates the stacks.
+  detail: ""
+- id: boundless-choreo-def-reduced
+  entity: "21044"
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    The engine cannot test whether a target's DEF is reduced, so the CRIT DMG
+    bonus is an on-by-default toggle covering every target; with it off, only
+    Slowed targets (status family) count.
+  detail: "A target filter and UnitView check for any status carrying defReduction would replace the toggle (also before-the-tutorial-def-reduced)."
+- id: before-the-tutorial-def-reduced
+  entity: "22000"
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    Energy for attacking DEF-reduced enemies is an on-by-default toggle that
+    triggers on every attack, because the engine cannot test whether a
+    target's DEF is reduced.
+  detail: "Same gap as boundless-choreo-def-reduced."
