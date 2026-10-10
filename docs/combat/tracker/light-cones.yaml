@@ -356,3 +356,106 @@
     triggers on every attack, because the engine cannot test whether a
     target's DEF is reduced.
   detail: "Same gap as boundless-choreo-def-reduced."
+- id: the-unreachable-side-own-hp
+  entity: "23009"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    The wearer's own HP consumption is an option assumed at the start of the
+    ability kinds that consume HP: on by default for Blade (Basic ATK, Skill,
+    Ultimate), Arlan and Mydei (Skill), off for other wearers. Mydei's
+    Godslayer Be God (Charge, not HP) and Blade's plain Basic ATK still count.
+  detail: >
+    Checked on Blade: Forest of Swords and the Ultimate carry the buff; the
+    Follow-Up ATK only does after enemy hits (aggro-weighted hitByEnemy). An
+    HP model with consume events (engine-hp-model) would replace the per-wearer
+    table in the kit.
+- id: i-shall-be-my-own-sword-teammate-hp
+  entity: "23014"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Teammates' HP loss is an option (on by default for Jingliu) that grants
+    one Eclipse stack per teammate at the start of every wearer attack, so
+    Jingliu's Skills outside Spectral Transmigration also get full stacks.
+    HP loss from other sources (teammates' own HP costs, Castorice) is not
+    seen.
+  detail: >
+    Enemy hits on teammates add aggro-weighted fractional stacks; the 3-stack
+    DEF ignore applies only once the expected count reaches 3. Needs an
+    HP-loss event per unit (engine-hp-model).
+- id: whereabouts-should-dreams-rest-routed-scope
+  entity: "23025"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    Routed's "receive increased Break DMG from the wearer" needs an incoming
+    modifier scoped to one attacker. The wearer holds it as a Break-tagged
+    `dmgMultiplier` against Routed targets, so it multiplies with other
+    Vulnerability instead of adding to it.
+  detail: "Same gap as boothill-standoff-vulnerability (HitFilter on the attacker or applier for incoming modifiers)."
+- id: whereabouts-should-dreams-rest-super-break
+  entity: "23025"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Routed is inflicted on the wearer's Weakness Breaks and Break DoT ticks or
+    detonations; Super Break DMG emits no event, so the wearer's Super Break
+    on an enemy broken by a teammate does not inflict it.
+  detail: "Needs a hit (or break-damage) event for Super Break instances recorded in applyToughness, as for shadowed-by-night-super-break."
+- id: dance-at-sunset-aggro
+  entity: "23030"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    "Greatly increases the wearer's chance of getting attacked" is not
+    modeled, but it converts into more hitByEnemy triggers (Yunli's Counters,
+    Energy from enemy hits).
+  detail: "Needs aggro modifiers (engine-aggro-modifiers)."
+- id: flame-of-blood-blaze-my-path-hp-cost
+  entity: "23039"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The HP consumed on Skill and Ultimate (6% Max HP) does not feed the
+    wearer's HP-loss mechanics (Mydei's Charge, Blade's Charge and tally).
+    The wearer is assumed to have enough HP, so the extra DMG applies
+    whenever 6% of Max HP exceeds 500.
+  detail: "Needs a shared HP model with consume events (engine-hp-model)."
+- id: thus-burns-the-dawn-transformation-turns
+  entity: "23044"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    Blazing Sun is removed at the wearer's turn start. Phainon's
+    transformation runs as queued actions without turn starts, so it lasts
+    for the whole transformation. Confirm that the transformation's extra
+    turns do not remove it in game.
+  detail: ""
+- id: i-am-as-you-behold-energy-cost
+  entity: "23062"
+  rule: U10
+  status: open
+  category: approximation
+  summary: >
+    Energy consumed by the Ultimate is read as the wearer's max Energy.
+    Ultimates with another cost (Yunli's 120, Phainon's Coreflame) get the
+    wrong Ultimate DMG bonus.
+  detail: "An actionStart field (or UnitView value) with the Energy paid for the Ultimate would make it exact."
+- id: i-am-as-you-behold-late-memosprites
+  entity: "23062"
+  rule: U3
+  status: open
+  category: approximation
+  summary: >
+    King's Entertainment's ally CRIT DMG is a status applied to every ally at
+    battle start and on each Ultimate, so a memosprite summoned in between
+    lacks it until the next Ultimate.
+  detail: "A team modifier conditioned on a status of its provider would model the aura exactly."
