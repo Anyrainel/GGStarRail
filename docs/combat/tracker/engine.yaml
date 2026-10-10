@@ -77,12 +77,14 @@
 - id: engine-kill-triggers
   entity: engine
   rule: U8
-  status: open
+  status: wont-do
   category: engine-gap
   summary: >
     Enemy HP and kills are not simulated; "upon defeating an enemy" effects
     are user options.
-  detail: ""
+  detail: >
+    By design: enemy HP depends on equipment, and the timeline must not, so
+    kills stay user options (enemyDefeated) with the U8 defaults.
 - id: engine-pass-wave1
   entity: engine
   rule: U8
@@ -120,23 +122,26 @@
 - id: engine-hp-model
   entity: engine
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     HP is not simulated. Blade, Arlan, Jingliu, Mydei, Clara and others use
     toggles or counters for HP thresholds, HP lost, and healing triggers.
   detail: >
-    A minimal per-unit HP fraction (consume, heal, set) with a threshold
-    crossing event and heal events would replace most of these workarounds.
+    HP is an expected share of Max HP per ally: ctx.consumeHp/setHp/heal,
+    unit.hpRatio, and hpChanged (per occurrence with weight); enemy attacks
+    remove 10% split by aggro (e553888, dd13fa1).
 - id: engine-aggro-modifiers
   entity: engine
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Aggro cannot be modified (Taunt, aggro increases), and Departed units are
     still targeted by enemy attacks.
-  detail: ""
+  detail: >
+    aggroPct scales targeting, taunt: true statuses redirect an enemy's attack
+    to the taunter, and setDeparted removes a unit from targeting (e7054f4).
 - id: engine-enemy-tier
   entity: engine
   rule: U8
@@ -176,22 +181,26 @@
 - id: engine-energy-received-event
   entity: engine
   rule: U10
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     No event for Energy received from a teammate (Phainon) or for Energy
     overflow from other sources than the kit's own gainEnergy calls.
-  detail: ""
+  detail: >
+    energyGained reports Energy received with its source and overflow per
+    occurrence (85ed2c2).
 - id: engine-ally-option-vocabulary
   entity: engine
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Single-ally designations (March 7th's Shifu, Fugue's Prayer target, The
     Dahlia's Dance Partner, Jade's Debt Collector) are heuristics; there is no
     option type for choosing a teammate.
-  detail: ""
+  detail: >
+    k.ally(id, origin, pick) declares a user-designated teammate stored by
+    Character ID, with a dropdown in the member options (d4ce79f).
 - id: engine-control-turn-start-dmg
   entity: engine
   rule: U9
@@ -210,7 +219,7 @@
 - id: engine-shield-state
   entity: engine
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     There is no shared "Shielded" state: March 7th's Counter and Aventurine's
@@ -218,8 +227,8 @@
     Ultimate, Fortified Wager for March 7th) do not count and Shields broken
     by enemy hits never drop.
   detail: >
-    A generic shield family (or flag) that kits apply alongside their own
-    statuses would let "Shielded ally" checks see every source.
+    A shield status family lets Shielded checks see every source (e7054f4).
+    Shield HP and breaking are not modelled.
 - id: engine-scaled-spd-turn-order
   entity: engine
   rule: U7
@@ -238,13 +247,15 @@
 - id: engine-status-lifecycle
   entity: engine
   rule: U5
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     No event fires when a status expires or is removed, and a kit cannot read
     or extend a status's remaining turns ("extends Invigoration by 1 turn",
     "when Invigoration ends"); Bailu tracks Invigoration with counters.
-  detail: ""
+  detail: >
+    statusRemoved fires on expiry, removal, and running out of stacks; kits
+    read remainingTurns and call extendStatus (61c14f6).
 - id: engine-play-override-turn-choice
   entity: engine
   rule: C3
@@ -397,20 +408,10 @@
     applications keep the strongest chance instead of combining them as
     1 - (1 - p1)(1 - p2)...
   detail: >
-    Kit changes waiting on this: Welt (1004, welt-chance-gated) Talent
-    Additional DMG and E2 Energy on Slowed targets; Serval (1103) Talent
-    Additional DMG on Shocked targets; Himeko (1003) A4 and Guinaifen (1210)
-    A6 and Firekiss on Burned targets; Jiaoqiu (1218) E1; Acheron (1308)
-    Talent and E1 (acheron-talent-window); Black Swan (1307) Arcana thresholds
-    and reset (black-swan-arcana-chance); Sampo (1108) capped Wind Shear
-    stacks (sampo-bounce-stacks); Silver Wolf (1006) Skill Weakness implant
-    (85% base chance) and random Bugs as expected presence; Hysilens (1410)
-    Zone triggers per DoT instance; Misha (1312) and Yanqing (1209) Freezes,
-    which keep the chance in stacks (Misha's repeated attempts per Ultimate
-    need combined chances); Dan Heng (1002) Slow presence; It's Showtime
-    (21041) Trick; Pioneer Diver (117) doubled effects. One approach: let
-    hits, procs, and filters name the gating debuff or family so evaluation
-    scales them by its landing chance, and combine repeated applications.
+    Target-state filters (statuses, families, debuff and DoT counts) are
+    scaled by the landing chance of base-chance statuses at evaluation, and
+    ctx.deal(..., { gatedBy }) hits inherit it (a8b52aa). Battle-time presence
+    checks (has, hasFamily, stacks) still treat base-chance debuffs as landed.
 - id: engine-enemy-effect-res
   entity: engine
   rule: U2
@@ -471,7 +472,7 @@
 - id: engine-status-applied-action
   entity: engine
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     statusApplied does not say whether a debuff was applied during an ability
@@ -481,13 +482,12 @@
     from earlier-slot actionStart listeners and cannot see every target one
     ability debuffed.
   detail: >
-    Carry the ongoing action (actor and a per-action serial, or none outside
-    an ability) on statusApplied. Affects Acheron (1308, acheron-talent-window,
-    acheron-knot-placement).
+    statusApplied carries abilityId/abilityKind of the ability being executed
+    (85ed2c2).
 - id: engine-weakness-implanted-event
   entity: engine
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     implantWeakness emits no event, so kits cannot react to Weaknesses that
@@ -497,10 +497,8 @@
     her own Wilt, and Never Forget Her Flame infers implants from Weakness
     changes during the wearer's action.
   detail: >
-    Emit a weaknessImplanted event (implanter, enemy, Combat Type, ongoing
-    action) for every implant call, including refreshes. Affects The Dahlia
-    (1321, dahlia-weakness-implant, dahlia-a6-spd-recipient) and Never Forget
-    Her Flame (23050, never-forget-her-flame-implant-event).
+    weaknessImplanted fires with the implanter and Combat Type when the
+    Weakness is new (85ed2c2). Refreshing an existing implant is not reported.
 - id: engine-ally-tag-rewrite
   entity: engine
   rule: U4
@@ -519,7 +517,7 @@
 - id: engine-policy-battle-end
   entity: engine
   rule: C3
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     PolicyView has time and cycle but not when the battle ends, so policies
@@ -527,9 +525,7 @@
     pays off when 180 Energy cannot be reached before the end, and Mortenax
     Blade's choice to hold Fornax Ex Corpore depends on the time left.
   detail: >
-    Expose the scenario's end (time or cycles left) on PolicyView. Affects
-    Argenti (1302, argenti-90-ultimate) and Mortenax Blade (1507,
-    mortenax-blade-rotation).
+    PolicyView and BattleApi expose endTime (85ed2c2).
 - id: engine-break-dmg-super-break
   entity: engine
   rule: U2
@@ -561,7 +557,7 @@
 - id: engine-momentary-stat-read
   entity: engine
   rule: U7
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Kits read stats only through panelStat (the steady panel), which leaves
@@ -569,18 +565,13 @@
     healing tallies miss Outgoing Healing buffs, and stat-based triggers miss
     momentary CRIT Rate or Elation.
   detail: >
-    Blocks Final Victor (21037) and Sleep Like the Dead (23012) CRIT Rate
-    reads, Punklorde Stage Zero (325)'s Elation latch, Giant Tree of Rapt
-    Brooding (320)'s SPD tiers, and Outgoing Healing statuses in heal amounts
-    and Hyacine's tally: The Story's Next Page (21054), Cornucopia (20001),
-    Post-Op Conversation (21000), Hey, Over Here (22001), Perfect Timing
-    (21014, scaling). Battle.momentaryStat already sums the panel and
-    unfiltered statuses (without scaling); a recorded kit read that also
-    includes conditional modifiers would cover these.
+    unit.currentStat reads a stat with current statuses and permanent
+    modifiers, scaling ones included, and filtered ones for a given hit;
+    recorded like panelStat (85ed2c2, a8b52aa).
 - id: engine-applier-momentary-stats
   entity: engine
   rule: U7
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Applier-scaled modifiers and debuff landing chances read the applier's
@@ -588,56 +579,55 @@
     for Robin's Concerto, and the Effect Hit Rate of Void and In the Name of
     the World for landing chances.
   detail: >
-    Blocks Flowing Nightglow (23026), Void (20004), and In the Name of the
-    World (23004). Needs the applier's statuses captured when the status is
-    applied (or at each hit) for scaling and landing chances.
+    Debuff landing chances add the applier's status and aura Effect Hit Rate
+    recorded at application (c4be32a). Applier-scaled modifiers still read the
+    steady panel; Cadenza's ATK for Concerto remains open as a kit item.
 - id: engine-super-break-event
   entity: engine
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Super Break instances are recorded in applyToughness without an event, so
     "after dealing Break DMG" triggers miss Super Break DMG.
   detail: >
-    Blocks Shadowed by Night (21047) and Whereabouts Should Dreams Rest
-    (23025). Needs a hit (or break-damage) event for Super Break instances,
-    limited to attackers that convert Toughness into Super Break DMG.
+    breakDamage fires for Break DMG and for Super Break DMG when the breaker
+    has a conversion for that hit (85ed2c2, a8b52aa).
 - id: engine-skill-point-overflow
   entity: engine
   rule: U10
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     skillPointsChanged reports gains after the cap, so Skill Points recovered
     at the limit are invisible to effects that count them "including Skill
     Points that exceed the limit".
-  detail: "Blocks Earthly Escapade (23021). Report the uncapped amount (or the overflow) on gains."
+  detail: >
+    skillPointsChanged carries overflow for Skill Points recovered beyond the
+    cap (85ed2c2).
 - id: engine-ultimate-energy-spent
   entity: engine
   rule: U10
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Ultimate events do not report the Energy consumed, so kits assume the
     wearer's max Energy: wrong for Ultimates with another cost (Argenti's
     90-Energy variant, Yunli's 120) or paid from a counter (Phainon's
     Coreflame).
-  detail: "Blocks Into the Unreachable Veil (23037) and I Am As You Behold (23062). Add the Energy paid to the Ultimate's actionStart/actionEnd."
+  detail: >
+    Ultimate actionStart/actionEnd carry energySpent (85ed2c2).
 - id: engine-def-reduced-state
   entity: engine
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     No target filter or UnitView check exists for the generic "DEF reduction
     state" (any status carrying defReduction).
   detail: >
-    Blocks Boundless Choreo (21044) and Before the Tutorial Mission Starts
-    (22000), which use on-by-default toggles, and Divine-Querying Master
-    Smith (132), which mirrors DEF-reducing statuses with a marker. A filter
-    on incoming stats held by the target (or a defReduced family) replaces
-    them.
+    The derived defReduced family covers any status lowering DEF, for
+    targetFamilies and hasFamily (85ed2c2).
 - id: engine-incoming-attacker-filter
   entity: engine
   rule: U3
@@ -674,12 +664,13 @@
 - id: engine-target-dot-count
   entity: engine
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Hit filters cannot count the DoTs on the target ("for every DoT the enemy
     target is afflicted with").
-  detail: "Blocks Prisoner in Deep Confinement (116). A minTargetDots filter (or a DoT count on the hit) counting each DoT status once."
+  detail: >
+    HitFilter.minTargetDots counts DoTs on the target at the hit (85ed2c2).
 - id: engine-prebattle-panel
   entity: engine
   rule: E3
@@ -696,19 +687,15 @@
 - id: engine-hp-event-triggers
   entity: engine
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     hpChanged fires only when HP actually changes and always with weight 1:
     heals on full-HP allies (and costs at 1 HP) trigger nothing, and a
     weighted cost or heal triggers listeners as a full occurrence.
   detail: >
-    Affects "provides healing" triggers in Night of Fright (23017) and Warrior
-    Goddess of Sun and Thunder (125), and Time Waits for No One (23013), which
-    cannot record overhealing. A heal event with the requested amount and the
-    trigger's weight would cover them. Equipment kits keep hitByEnemy (aggro
-    weight) for "when attacked", since hpChanged with hpCause enemy fires for
-    every ally on every enemy attack.
+    hpChanged reports the change per occurrence with its probability as
+    weight, and heals fire even at full HP (dd13fa1).
 - id: engine-break-recovery-hook
   entity: engine
   rule: U11
@@ -726,7 +713,7 @@
 - id: engine-summon-kind
   entity: engine
   rule: C5
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     SummonDef cannot mark an in-game summon (Lightning-Lord, Numby, Fuyuan,
@@ -734,9 +721,8 @@
     Supreme Stance, Infinite Fury), so effects on "their summon" hard-code
     summon IDs.
   detail: >
-    A flag on SummonDef (and UnitView) for summons versus countdowns, plus a
-    way to list an ally's summons, would let Sunday (1313, sunday-summon-ids)
-    drop SUMMON_IDS.
+    SummonDef countdown: true marks countdowns and markers; UnitView.countdown
+    exposes it (85ed2c2).
 - id: engine-queued-action-options
   entity: engine
   rule: C3
@@ -865,7 +851,7 @@
 - id: engine-implant-weakness-res
   entity: engine
   rule: U14
-  status: open
+  status: completed
   category: verify
   summary: >
     An implanted Weakness moves the enemy to the weak-type RES, and damage
@@ -874,20 +860,12 @@
     with each hit, so expired timed implants lose the lower RES for every hit
     and permanent ones give it to hits made before the implant.
   detail: >
-    To verify: whether an implant lowers RES at all. Silver Wolf's Skill
-    lowers the implanted type's RES in a separate clause, which suggests the
-    implant itself does not. Either way, RES should come from the hit's
-    recorded targetWeaknesses. The pinned AvatarStatusConfig also lists
-    Firefly's, Boothill's, and Phainon's implants as Debuff statuses, so they
-    should count for per-debuff effects while present. Affects Firefly (1310,
-    firefly-weakness-implant), Archer (1015, archer-e2-weakness-duration),
-    Boothill (1315, boothill-weakness-duration), Phainon (1408,
-    phainon-territory-weakness), and the other implanting kits (Silver Wolf
-    1006, Silver Wolf LV.999 1506, The Dahlia 1321, Anaxa 1405).
+    RES comes from the enemy's native Weaknesses only; implanted Weaknesses
+    count for Toughness and filters (ea11bf6).
 - id: engine-break-damage-no-conversion
   entity: engine
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     breakDamage reports Super Break DMG for every Toughness reduction on a
@@ -896,12 +874,8 @@
     dealing Break DMG" listeners over-trigger unless they check the
     conversion themselves.
   detail: >
-    Emit the superBreak breakDamage event (and record the hit) only when
-    the attacker's conversion (superBreakDmg, filters and scaling included)
-    applies to that hit. Shadowed by Night (21047) works around it by
-    requiring currentStat('superBreakDmg') > 0, which misses filtered and
-    scaling conversions; Whereabouts Should Dreams Rest (23025) listens to
-    the same event.
+    Super Break breakDamage events require a superBreakDmg conversion matching
+    the hit, read with currentStat including scaling modifiers (a8b52aa).
 - id: engine-before-break-event
   entity: engine
   rule: U3
