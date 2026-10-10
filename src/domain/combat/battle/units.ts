@@ -216,7 +216,12 @@ export class CombatUnit implements UnitView {
   }
 
   get speed(): number {
-    if (this.speedFunction) return this.speedFunction();
+    if (this.speedFunction) {
+      // Aha: SPD from the Elation team, plus statuses applied to Aha.
+      const pct = this.statusStat("spdPct", false);
+      const flat = this.statusStat("spdFlat", false);
+      return Math.max(1, this.speedFunction() * (1 + pct) + flat);
+    }
     if (this.fixedSpeed !== null) {
       // Summons, countdowns, and enemies ignore team auras, but statuses
       // applied to them (SPD buffs on a summon, Slow on an enemy) apply.

@@ -276,3 +276,62 @@
     themselves, or "when dealing Elation DMG" filters (Yao Guang E1's DEF
     ignore) miss them.
   detail: "Adding the tag automatically for kind elation would remove the convention."
+- id: engine-elation-banger-events
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    No event reports a unit gaining Certified Banger or one expiring, and Aha
+    Instant bangers always last 2 turns. Evanescia's Talent/A2/A6
+    conversions, Evanescia E6 and Aventurine • Waveflair's Talent (+1 turn),
+    and Yao Guang A6 need them.
+  detail: >
+    Evanescia reads Aha grants through ahaInstantStart/End and mirrors the
+    2-turn expiry in counters; grants from other kits (Trailblazer's Ultimate,
+    Aventurine • Waveflair's A4) are invisible to her. Gain/expiry events with
+    holder and value, plus a per-holder duration bonus, would cover all cases.
+- id: engine-memosprite-team-auras-twice
+  entity: engine
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    Memosprites receive team auras twice: registerServants copies the owner's
+    conditional modifiers (which already hold the team auras) and
+    onUnitCreated applies the team auras again. Robin's Talent CRIT DMG shows
+    twice on Garmentmaker, Netherwing, and Little Ica; team spdFlat auras
+    also add to a memosprite's SPD on top of its owner-ratio SPD.
+  detail: "Seen in scratch runs of 1402/1407/1409 with Robin (unit.conditional of the memosprite vs its owner)."
+- id: engine-memosprite-spd-pct
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    A memosprite's SPD (owner ratio + flat) ignores spdPct statuses on it, so
+    "SPD +X%" buffs on all ally targets (Robin E2, Hyacine E2) miss
+    memosprites. Castorice's A4 (+100% Netherwing SPD) is converted to flat
+    SPD from its 165 base.
+  detail: ""
+- id: engine-memosprite-spd-scaling
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Stat scaling on a memosprite reads its owner's panel, so `scaling: { stat:
+    "spd" }` never sees the memosprite's own SPD. Aglaea's A2 (ATK from both
+    SPDs) and E6 (Joint ATK DMG by each unit's SPD) sync status stacks from
+    unit.speed instead.
+  detail: ""
+- id: engine-stat-owner-statuses
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    `statOwner: "owner"` reads the owner's panel without its statuses, so
+    Netherwing's hits on Castorice's Max HP miss Max HP buffs on her (Hyacine's
+    After Rain, Castorice-targeted HP buffs).
+  detail: ""

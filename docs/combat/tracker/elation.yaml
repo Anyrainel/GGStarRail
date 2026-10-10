@@ -124,3 +124,143 @@
     else the first other Character. No option type exists for choosing a
     teammate (engine-ally-option-vocabulary).
   detail: ""
+- id: trailblazer-elation-ult-punchline
+  entity: "8009"
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    The Ultimate makes the designated ally use their Elation Skill with a fixed
+    20 Punchline. A queued Elation Skill from another kit reads the team's
+    Punchline instead; only a self-designated Ultimate uses the fixed amount.
+  detail: >
+    ahaExtraTurn does not fit (it runs every participant and grants Certified
+    Banger). Needs queueAction with a Punchline override for Elation hits.
+- id: trailblazer-elation-ult-target
+  entity: "8009"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    The Ultimate's designated ally is the first Elation teammate, else the
+    first damage dealer, else a Nihility teammate, else the first teammate
+    (engine-ally-option-vocabulary). "Has an Elation Skill" is read as the
+    Elation Path.
+  detail: ""
+- id: trailblazer-elation-readings
+  entity: "8009"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    The Talent's Skill Elation DMG checks Certified Banger before the Skill's
+    own 20 Certified Banger (the gain follows the DMG in the text). A6's +2
+    Certified Banger accumulates once per ally Elation Skill until the next
+    Skill.
+  detail: ""
+- id: evanescia-banger-conversions
+  entity: "1505"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    The Talent's Certified Banger to Energy conversion, A2, and A6 only see the
+    kit's own grants and Aha Instant grants (read from ahaInstantStart/End).
+    A6 mirrors the 2-turn expiry of teammates' Aha bangers in counters;
+    teammates' kit-granted bangers and Certified Banger from other kits
+    (Trailblazer's Ultimate) are missed (engine-elation-banger-events).
+  detail: >
+    E6's +1 turn applies to the kit's own grants only; Aha Instant bangers
+    last 2 turns. Participant ID order is team slot order.
+- id: evanescia-energy-sources
+  entity: "1505"
+  rule: U10
+  status: open
+  category: approximation
+  summary: >
+    The Talent's Energy to Certified Banger conversion and the Master Fox
+    accumulation only see Energy the kit regenerates itself (ability Energy is
+    set to 0 and regenerated in `after` with the facts values, plus Master Fox,
+    E6, and conversions). Energy from enemy hits and teammates is missed
+    (engine-energy-received-event).
+  detail: ""
+- id: evanescia-readings
+  entity: "1505"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: the Ultimate's 28% Elation DMG hits once per bounce
+    instance; A4's Vulnerability lands before Master Fox's hits; A2 copies 50%
+    of the teammate's Certified Banger without removing it; the 100-point cap
+    applies only to Certified Banger converted into Energy.
+  detail: ""
+- id: silver-wolf-lv999-elation-attack
+  entity: "1506"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    The Aha Instant always uses "elationSkill", so one ability serves both
+    variants: Pro-Gamer Move deals no DMG while Honkai-DMG Demo attacks.
+    `attack` is static, so the kit marks it as not an attack and "after an
+    ally attacks" effects miss Honkai-DMG Demo.
+  detail: "An Elation Skill variant mechanism, or a per-use attack flag, would fix it."
+- id: silver-wolf-lv999-loot-box
+  entity: "1506"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    The Zone's Top Loot Box chance is tracked as its expected value (mean
+    field) and reset to 100% on each Godmode entry (assumption). Each random
+    effect has a 1/3 share; Big Flipping Sword's 20% True DMG is folded into
+    the multiplier. The Enhanced Basic ATK's 3 boxes are certain and leave
+    the chance unchanged.
+  detail: >
+    E2 extra turns from chance-weighted Hidden MMR gains are granted at the
+    next whole gain or at the end of an Enhanced Basic ATK.
+- id: silver-wolf-lv999-enhanced-toughness
+  entity: "1506"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    Enhanced Basic ATK facts give 10/10 Toughness for 100 bounces and a Final
+    Hit; the kit reads 10 in total spread over the bounces and 10 per enemy
+    for the Final Hit.
+  detail: ""
+- id: silver-wolf-lv999-readings
+  entity: "1506"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: E4 counts the Punchline plus 5 times it (6P); the
+    Enhanced Basic ATK is a Basic ATK for the Talent's 40% Elation DMG (to
+    every enemy); Hidden MMR CRIT DMG is 2 x (CRIT Rate - 100%), which also
+    converts CRIT Rate above 100% from other sources; E2's "extends all buffs
+    by 1 turn" is not modeled (no API to extend statuses).
+  detail: ""
+- id: aventurine-waveflair-aha-spd
+  entity: "1513"
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    A4 (only Elation Character) raises Aha's SPD by 25 per teammate attack
+    until the Aha Instant ends. Aha's SPD is computed from Elation allies and
+    ignores statuses, so this is not modeled.
+  detail: ""
+- id: aventurine-waveflair-readings
+  entity: "1513"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: A4's second sentence (2 Certified Banger, 1
+    Punchline, Aha SPD per teammate attack) applies only when he is the only
+    Elation Character; All In's Fervor instances take 5 Toughness like its
+    other bounces; the Talent's +1 turn reaches Aha Instant bangers in game
+    but not in the engine (engine-elation-banger-events).
+  detail: ""
