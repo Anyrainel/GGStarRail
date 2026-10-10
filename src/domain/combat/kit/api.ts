@@ -30,6 +30,8 @@ export interface UnitView {
   /** Stacks of a status on this unit (0 when absent). */
   stacks(status: StatusDef, applier?: UnitView): number;
   has(status: StatusDef, applier?: UnitView): boolean;
+  /** Turns left on a status; null when it has no duration or is absent. */
+  remainingTurns(status: StatusDef, applier?: UnitView): number | null;
   /** Whether any status of the family is on this unit, from any source. */
   hasFamily(family: StatusFamily): boolean;
   /** Debuffs currently on this unit. */
@@ -124,6 +126,8 @@ export interface BattleApi {
   ): void;
   removeStatus(target: UnitView, status: StatusDef): void;
   consumeStacks(target: UnitView, status: StatusDef, stacks: number): void;
+  /** Adds turns to every instance of a timed status on the target. */
+  extendStatus(target: UnitView, status: StatusDef, turns: number): void;
   /**
    * Set the stacks of an existing status without a new application: its
    * duration, landing chance, and `statusApplied` listeners are untouched.
@@ -221,6 +225,9 @@ export type BattleEventType =
   | "enemyAttack"
   | "hitByEnemy"
   | "statusApplied"
+  | "statusRemoved"
+  | "summoned"
+  | "departed"
   | "dotTick"
   | "teamResourceChanged"
   | "skillPointsChanged"
@@ -234,6 +241,11 @@ export interface BattleEvent {
   readonly target?: UnitView;
   readonly abilityId?: string;
   readonly abilityKind?: AbilityKind;
+  /**
+   * `actionStart`/`actionEnd`: what the ability is aimed at, as declared.
+   * `ally` is one ally; `target` is that ally when the policy named one.
+   */
+  readonly abilityTarget?: AbilityTarget;
   readonly tags?: readonly DamageTag[];
   readonly status?: StatusDef;
   /** Whether the action dealt damage to enemies (counts as an attack). */

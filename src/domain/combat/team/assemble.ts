@@ -28,6 +28,7 @@ import {
   type WearerInfo,
 } from "../kit/equipment";
 import type { KitRegistry } from "../kit/registry";
+import { scaledValue } from "../kit/scaling";
 import {
   ascensionForLevel,
   type CharacterData,
@@ -530,19 +531,41 @@ export function assembleTeam(
     }
   });
   // Equipment auras of the same Light Cone or set from several wearers do
-  // not stack ("effects of the same type cannot stack"): keep the strongest.
+  // not stack ("effects of the same type cannot stack"): keep the strongest
+  // under the assembled panels. Auras limited to different Combat Types or
+  // Paths reach different allies, so they are kept apart.
   const strongest = new Map<
     string,
     { modifier: TeamModifier; source: EffectSource }
   >();
+  const auraStrength = ({ modifier, source }: (typeof teamModifiers)[0]) => {
+    let value = Math.abs(modifier.value ?? 0);
+    if (modifier.scaling) {
+      const provider = members.find(
+        (member) => member.unit.id === source.providerId
+      )?.unit;
+      if (provider) {
+        value += Math.abs(
+          scaledValue(provider.scalingInput(modifier.scaling), modifier.scaling)
+        );
+      }
+    }
+    return value;
+  };
   for (const entry of teamModifiers) {
     if (entry.source.type === "character") continue;
-    const key = `${entry.source.type}:${entry.source.id}:${entry.modifier.stat}:${JSON.stringify(entry.modifier.filter ?? {})}`;
+    const { modifier } = entry;
+    const key = [
+      entry.source.type,
+      entry.source.id,
+      modifier.stat,
+      JSON.stringify(modifier.filter ?? {}),
+      modifier.scope,
+      modifier.combatTypes?.join("+") ?? "",
+      modifier.paths?.join("+") ?? "",
+    ].join(":");
     const current = strongest.get(key);
-    if (
-      !current ||
-      (entry.modifier.value ?? 0) > (current.modifier.value ?? 0)
-    ) {
+    if (!current || auraStrength(entry) > auraStrength(current) + 1e-12) {
       strongest.set(key, entry);
     }
   }

@@ -525,4 +525,109 @@ describe("combat engine features", () => {
     };
     expect(memoTurns(true)).toBeGreaterThan(memoTurns(false));
   });
+
+  it("keeps the strongest copy of a non-stacking status", () => {
+    const hymn = (k: CharacterKitBuilder, value: number) =>
+      k.status({
+        id: "hymn",
+        origin: "talent",
+        unique: true,
+        modifiers: [{ stat: "dmgBoost", value }],
+      });
+    const { result } = run(
+      (k) => {
+        const weak = hymn(k, 0.1);
+        basic(k);
+        k.on("battleStart", "talent", { subject: "any" }, (ctx: BattleApi) =>
+          ctx.applyStatus(ctx.self, weak)
+        );
+        k.policy({ turn: () => "basic", ultimate: () => false });
+      },
+      {
+        support: (k) => {
+          const strong = hymn(k, 0.3);
+          basic(k);
+          k.on(
+            "battleStart",
+            "talent",
+            { subject: "any" },
+            (ctx: BattleApi) => {
+              const hunter = ctx.allies.find((unit) => unit !== ctx.self);
+              if (hunter) ctx.applyStatus(hunter, strong);
+            }
+          );
+          k.policy({ turn: () => "basic", ultimate: () => false });
+        },
+        cycles: 1,
+      }
+    );
+    const boosts = result.model.groups.flatMap((group) =>
+      group.constant
+        .filter((entry) => entry.stat === "dmgBoost")
+        .map((entry) => entry.value)
+    );
+    // Only the Hunter holds the hymn; the weaker copy came first.
+    expect(boosts.length).toBeGreaterThan(0);
+    expect(boosts.every((value) => value === 0.3)).toBe(true);
+  });
+
+  it("reports ability targets, status removal, and summon lifecycle", () => {
+    const seen: string[] = [];
+    run(
+      (k) => {
+        const guard = k.status({
+          id: "guard",
+          origin: "skill",
+          duration: { turns: 1 },
+        });
+        basic(k);
+        k.ability({
+          id: "skill",
+          kind: "skill",
+          target: "ally",
+          after: (ctx) => {
+            ctx.applyStatus(ctx.self, guard);
+            ctx.extendStatus(ctx.self, guard, 1);
+            seen.push(`turns:${ctx.self.remainingTurns(guard)}`);
+            ctx.summon(ctx.self, "memo");
+          },
+        });
+        k.memosprite({
+          servantId: "memo",
+          speed: { flat: 100 },
+          abilities: [
+            {
+              id: "claw",
+              kind: "memospriteSkill",
+              hits: [{ shape: "single", main: 1 }],
+              after: (ctx) => ctx.dismiss(ctx.self),
+            },
+          ],
+        });
+        k.on("actionStart", "skill", {}, (_ctx, event) => {
+          seen.push(`target:${event.abilityId}:${event.abilityTarget}`);
+        });
+        k.on("statusRemoved", "skill", {}, (_ctx, event) => {
+          seen.push(`removed:${event.status?.id}`);
+        });
+        k.on("summoned", "talent", { subject: "memosprite" }, () => {
+          seen.push("summoned");
+        });
+        k.on("departed", "talent", { subject: "memosprite" }, () => {
+          seen.push("departed");
+        });
+        k.policy({
+          turn: (view) => (view.cycle === 0 ? "skill" : "basic"),
+          ultimate: () => false,
+        });
+      },
+      { cycles: 3 }
+    );
+    expect(seen).toContain("target:skill:ally");
+    expect(seen).toContain("target:basic:enemy");
+    expect(seen).toContain("turns:2");
+    expect(seen).toContain("removed:guard");
+    expect(seen.indexOf("summoned")).toBeLessThan(seen.indexOf("departed"));
+    expect(seen.indexOf("summoned")).toBeGreaterThanOrEqual(0);
+  });
 });

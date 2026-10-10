@@ -404,9 +404,7 @@ export class Battle {
         return;
       }
       status.remaining -= 1;
-      if (status.remaining <= 0) {
-        holder.statuses.delete(holder.statusKey(status.def, status.applier));
-      }
+      if (status.remaining <= 0) this.removeStatusInstance(holder, status);
     };
     for (const status of [...unit.statuses.values()]) {
       const duration = status.def.duration;
@@ -540,6 +538,7 @@ export class Battle {
       (typeof ability.hits === "function" || (ability.hits?.length ?? 0) > 0);
     const enemyTarget =
       target?.kind === "enemy" ? (target as EnemyUnit) : this.mainTarget;
+    const abilityTarget = ability.target ?? (attack ? "enemy" : "none");
     this.emit(
       {
         type: "actionStart",
@@ -547,6 +546,7 @@ export class Battle {
         target: target ?? undefined,
         abilityId: ability.id,
         abilityKind: ability.kind,
+        abilityTarget,
         tags,
         attack,
         weight,
@@ -579,6 +579,7 @@ export class Battle {
         target: target ?? undefined,
         abilityId: ability.id,
         abilityKind: ability.kind,
+        abilityTarget,
         tags,
         attack,
         targetsHit: [...targetsHit],
@@ -1312,8 +1313,9 @@ export class Battle {
         battle.applyStatusInternal(asUnit(target), status, self, options),
       removeStatus: (target, status) => {
         const unit = asUnit(target);
-        for (const [key, instance] of unit.statuses) {
-          if (instance.def === status) unit.statuses.delete(key);
+        for (const instance of [...unit.statuses.values()]) {
+          if (instance.def === status)
+            battle.removeStatusInstance(unit, instance);
         }
       },
       setStatusStacks: (target, status, stacks) => {
@@ -1322,18 +1324,19 @@ export class Battle {
         if (!instance) return;
         const max = status.maxStacks ?? 1;
         instance.stacks = Math.min(max, Math.max(0, stacks));
-        if (instance.stacks <= 0) {
-          unit.statuses.delete(unit.statusKey(instance.def, instance.applier));
-        }
+        if (instance.stacks <= 0) battle.removeStatusInstance(unit, instance);
       },
       consumeStacks: (target, status, stacks) => {
-        const instance = asUnit(target).findStatus(status);
+        const unit = asUnit(target);
+        const instance = unit.findStatus(status);
         if (!instance) return;
         instance.stacks = Math.max(0, instance.stacks - stacks);
-        if (instance.stacks <= 0) {
-          asUnit(target).statuses.delete(
-            asUnit(target).statusKey(instance.def, instance.applier)
-          );
+        if (instance.stacks <= 0) battle.removeStatusInstance(unit, instance);
+      },
+      extendStatus: (target, status, turns) => {
+        for (const instance of asUnit(target).statuses.values()) {
+          if (instance.def === status && instance.remaining !== null)
+            instance.remaining += turns;
         }
       },
       gainEnergy: (unit, amount, options) =>
@@ -1486,9 +1489,29 @@ export class Battle {
         if (allyIndex >= 0 && target.kind !== "character") {
           battle.allies.splice(allyIndex, 1);
         }
-        if (target.kind !== "character") battle.retired.push(target);
+        if (target.kind !== "character") {
+          battle.retired.push(target);
+          battle.emit({ type: "departed", unit: target, weight: 1 }, target);
+        }
       },
     };
+  }
+
+  /** Removes a status and reports it (expiry, removal, or no stacks left). */
+  removeStatusInstance(holder: CombatUnit, instance: StatusInstance): void {
+    const key = holder.statusKey(instance.def, instance.applier);
+    if (holder.statuses.get(key) !== instance) return;
+    holder.statuses.delete(key);
+    this.emit(
+      {
+        type: "statusRemoved",
+        unit: instance.applier,
+        target: holder,
+        status: instance.def,
+        weight: 1,
+      },
+      instance.applier
+    );
   }
 
   summon(owner: CombatUnit, servantId: string): CombatUnit {
@@ -1513,6 +1536,7 @@ export class Battle {
     this.onUnitCreated?.(unit);
     if (unit.kind === "memosprite") this.allies.push(unit);
     else this.summons.push(unit);
+    this.emit({ type: "summoned", unit, weight: 1 }, unit);
     return unit;
   }
 }

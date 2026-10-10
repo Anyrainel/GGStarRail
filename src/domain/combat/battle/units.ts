@@ -251,8 +251,10 @@ export class CombatUnit implements UnitView {
    */
   private statusStat(stat: CombatStat, withTeamAuras: boolean): number {
     let total = 0;
+    const kept = this.keptUniques();
     for (const status of this.statuses.values()) {
       if (status.stacks <= 0) continue;
+      if (status.def.unique && kept.get(status.def.id) !== status) continue;
       const chance = Math.min(1, status.baseChance ?? 1);
       for (const modifier of status.modifiers()) {
         const { def } = modifier;
@@ -297,6 +299,10 @@ export class CombatUnit implements UnitView {
 
   has(def: StatusDef, applier?: UnitView): boolean {
     return this.stacks(def, applier) > 0;
+  }
+
+  remainingTurns(def: StatusDef, applier?: UnitView): number | null {
+    return this.findStatus(def, applier)?.remaining ?? null;
   }
 
   hasFamily(family: StatusFamily): boolean {
@@ -352,22 +358,45 @@ export class CombatUnit implements UnitView {
     return total;
   }
 
+  /**
+   * For each `unique` status ID, the copy that applies: the largest total
+   * of its modifier values (stacks, landing chance, and scaling included),
+   * then the first applied.
+   */
+  private keptUniques(): Map<string, StatusInstance> {
+    const kept = new Map<string, StatusInstance>();
+    const strength = (status: StatusInstance) => {
+      let total = 0;
+      for (const { def } of status.modifiers()) {
+        let value = Math.abs(def.value ?? 0);
+        if (def.scaling) {
+          const source =
+            def.scaling.source === "applier" ? status.applier : this;
+          value += Math.abs(
+            scaledValue(source.scalingInput(def.scaling), def.scaling)
+          );
+        }
+        total += value;
+      }
+      return total * status.stacks * Math.min(1, status.baseChance ?? 1);
+    };
+    for (const status of this.statuses.values()) {
+      if (!status.def.unique || status.stacks <= 0) continue;
+      const current = kept.get(status.def.id);
+      if (!current || strength(status) > strength(current) + 1e-12) {
+        kept.set(status.def.id, status);
+      }
+    }
+    return kept;
+  }
+
   /** Modifiers from statuses currently on this unit (snapshot). */
   statusModifiers(side: "outgoing" | "incoming"): AppliedModifier[] {
     const result: AppliedModifier[] = [];
-    const strongestUnique = new Map<string, StatusInstance>();
-    for (const status of this.statuses.values()) {
-      if (!status.def.unique || status.stacks <= 0) continue;
-      const current = strongestUnique.get(status.def.id);
-      if (!current || status.stacks > current.stacks) {
-        strongestUnique.set(status.def.id, status);
-      }
-    }
+    const kept = this.keptUniques();
     for (const status of this.statuses.values()) {
       if (status.stacks <= 0) continue;
-      if (status.def.unique && strongestUnique.get(status.def.id) !== status) {
-        continue;
-      }
+      if (status.def.unique && kept.get(status.def.id) !== status) continue;
       for (const modifier of status.modifiers()) {
         if (INCOMING_STATS.has(modifier.def.stat) === (side === "incoming")) {
           result.push(modifier);

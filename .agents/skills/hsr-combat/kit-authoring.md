@@ -172,6 +172,7 @@ k.ability({
 ctx.self / ctx.allies / ctx.enemies / ctx.target / ctx.mainTarget / ctx.weight
 ctx.skillPoints / ctx.maxSkillPoints / ctx.cycle / ctx.time          // live values
 ctx.applyStatus / setStatusStacks / removeStatus / consumeStacks
+ctx.extendStatus(unit, status, turns) / unit.remainingTurns(status, applier?)
 ctx.gainEnergy(unit, n, { fixed? }) → overflow / setEnergy / gainSkillPoints(n) / setMaxSkillPoints(n)
 ctx.advanceAction(unit, f) / delayAction / grantExtraTurn(unit) / setInActionOrder(unit, b)
 ctx.queueAction(unit, abilityId, { target?, weight? })   // follow-ups after the current action
@@ -208,11 +209,13 @@ isEnemy(view)                                               // narrow event targ
 |---|---|---|
 | `battleStart` | first ally | use `subject: "any"` |
 | `turnStart` / `turnEnd` | acting unit | extra turns included |
-| `actionStart` / `actionEnd` | acting unit | `abilityId`, `abilityKind`, `tags`, `target`, `attack`; `actionEnd` adds `targetsHit` |
+| `actionStart` / `actionEnd` | acting unit | `abilityId`, `abilityKind`, `abilityTarget`, `tags`, `target`, `attack`; `actionEnd` adds `targetsHit` |
 | `hit` | attacker | once per damage instance and target |
 | `weaknessBreak` | breaker | `target` is the enemy |
 | `enemyAttack` / `hitByEnemy` | enemy / ally hit | `weight` is the aggro share |
 | `statusApplied` | applier | `target`, `status` |
+| `statusRemoved` | applier | `target`, `status`; expiry, removal, or no stacks left |
+| `summoned` / `departed` | the memosprite or summon | use `subject: "memosprite"` or `"selfOrMemosprite"` for the owner's |
 | `dotTick` | enemy | `status`; `detonation` tells detonations from turn-start ticks |
 | `teamResourceChanged` | changer | `resource`, `delta` |
 | `skillPointsChanged` | unit that caused it | `delta` (+ gained, − spent), after the cap |
@@ -225,6 +228,11 @@ conditions in `when: (event, self) => boolean` rather than returning early
 from the handler: `when` runs before limits, so an event that does not
 qualify does not use up "once per turn". `turnStart`/`turnEnd` carry
 `extraTurn`.
+
+"Uses an ability on one ally" → `when: (event) => event.abilityTarget ===
+"ally"`, with `event.target` as that ally when the policy names one; declare
+`target` on every ability that aims at allies (`ally`, `allies`, `self`).
+"When X ends" → `statusRemoved` with `status: x`.
 
 ### Weights
 
