@@ -10,17 +10,24 @@ import {
   TriageRulesSchema,
 } from "@/domain/build/schemas";
 
+/** Workspace fields whose shape is shared by every supported store version. */
+export const WORKSPACE_USER_FIELDS = {
+  characterLightConeIds: CharacterLightConeChoicesSchema,
+  localAchievementCompletion: AchievementCompletionSchema.default({
+    completedIds: [],
+  }),
+  builds: z.array(BuildConfigurationSchema),
+  scoreProfiles: z.array(ScoreProfileSchema),
+  triageRules: TriageRulesSchema,
+} as const;
+
+export const WORKSPACE_SCHEMA_VERSION = 2;
+
 export const PersistedWorkspaceSchema = z
   .object({
-    schemaVersion: z.literal(1),
-    characterLightConeIds: CharacterLightConeChoicesSchema,
+    schemaVersion: z.literal(WORKSPACE_SCHEMA_VERSION),
     account: AccountSnapshotSchema.nullable(),
-    localAchievementCompletion: AchievementCompletionSchema.default({
-      completedIds: [],
-    }),
-    builds: z.array(BuildConfigurationSchema),
-    scoreProfiles: z.array(ScoreProfileSchema),
-    triageRules: TriageRulesSchema,
+    ...WORKSPACE_USER_FIELDS,
   })
   .strict()
   .superRefine((value, context) => {
@@ -59,7 +66,7 @@ export const PersistedWorkspaceSchema = z
 export type PersistedWorkspace = z.infer<typeof PersistedWorkspaceSchema>;
 
 export const DEFAULT_WORKSPACE: PersistedWorkspace = {
-  schemaVersion: 1,
+  schemaVersion: WORKSPACE_SCHEMA_VERSION,
   characterLightConeIds: {},
   account: null,
   localAchievementCompletion: { completedIds: [] },

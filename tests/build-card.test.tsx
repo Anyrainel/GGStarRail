@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { BuildCard } from "@/components/artifact-builds/BuildCard";
+import { BuildCard } from "@/components/builds/BuildCard";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,

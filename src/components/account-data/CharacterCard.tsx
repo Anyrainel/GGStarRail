@@ -10,12 +10,12 @@ import {
   type Character,
   type LightCone,
   type Relic,
-  type RelicSlot,
   relicCategory,
 } from "@/domain/account/schemas";
 import { BUILD_SLOT_ORDER } from "@/domain/build/evaluation";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { type RelicScore, scoreRelic } from "@/domain/build/scoring";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
 import { buildDisplayName } from "@/lib/buildPresentation";
@@ -26,16 +26,6 @@ import {
 import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
 import { createRelicSetRarityMap } from "@/lib/relicRarity";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/reference/types";
-
-const DOMAIN_SLOT_TO_CATALOG = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<RelicSlot, RelicSlotId>;
 
 /** Computed once by CharacterView so every card shares the same density. */
 export interface CardLayout {
@@ -463,7 +453,7 @@ function CharacterCardComponent({
           {BUILD_SLOT_ORDER.map((slot) => {
             const relic = relicBySlot.get(slot);
             const slotDefinition = references.properties.relicSlotById.get(
-              DOMAIN_SLOT_TO_CATALOG[slot]
+              CATALOG_RELIC_SLOT[slot]
             );
             const slotName = localizedName(slotDefinition?.name, locale, slot);
             if (!relic) {

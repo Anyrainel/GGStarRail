@@ -1,5 +1,6 @@
-import type { Relic, RelicSlot } from "@/domain/account/schemas";
+import type { Relic } from "@/domain/account/schemas";
 import { relicCategory } from "@/domain/account/schemas";
+import { accountStatToDecimal, FIXED_MAIN_STAT } from "@/domain/stats";
 import type { BuildConfiguration, ScoreProfile } from "./schemas";
 
 export type ScoreGrade = "S" | "A" | "B" | "C" | "D";
@@ -50,20 +51,10 @@ export interface RelicScoringContext {
   }[];
 }
 
-type ScoringProperty =
-  RelicScoringContext["properties"] extends ReadonlyMap<string, infer T>
-    ? T
-    : never;
-
 type ScoringRelicPiece =
   RelicScoringContext["relicPieces"] extends ReadonlyMap<string, infer T>
     ? T
     : never;
-
-const FIXED_MAIN_STATS: Partial<Record<RelicSlot, string>> = {
-  head: "HPDelta",
-  hands: "AttackDelta",
-};
 
 function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
@@ -71,14 +62,6 @@ function clamp(value: number, minimum: number, maximum: number): number {
 
 function roundScore(value: number): number {
   return Number(value.toFixed(2));
-}
-
-/** Account ratios use percentage points while generated affixes use decimals. */
-export function toGeneratedStatValue(
-  value: number,
-  property: ScoringProperty
-): number {
-  return property.value_kind === "ratio" ? value / 100 : value;
 }
 
 export function gradeScore(
@@ -97,7 +80,10 @@ function mainStatAllowed(
   build: BuildConfiguration | undefined
 ): boolean {
   if (build && relicCategory(relic.slot) !== build.category) return false;
-  const fixed = FIXED_MAIN_STATS[relic.slot];
+  const fixed =
+    relic.slot === "head" || relic.slot === "hands"
+      ? FIXED_MAIN_STAT[relic.slot]
+      : undefined;
   if (fixed) return relic.mainStat.statId === fixed;
   if (!build) return true;
   if (build.category === "cavern") {
@@ -182,7 +168,10 @@ function normalizedSubstatRolls(
   );
   const maximumRoll = affix?.roll_values.at(-1);
   if (!property || !maximumRoll || maximumRoll <= 0) return 0;
-  return Math.max(0, toGeneratedStatValue(value, property) / maximumRoll);
+  return Math.max(
+    0,
+    accountStatToDecimal(value, property.value_kind) / maximumRoll
+  );
 }
 
 export function scoreRelic(

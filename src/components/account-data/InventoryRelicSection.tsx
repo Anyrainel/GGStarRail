@@ -19,6 +19,7 @@ import {
   type RelicSlot,
   relicCategory,
 } from "@/domain/account/schemas";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import {
@@ -29,7 +30,6 @@ import {
 import type {
   PropertyCatalog,
   RelicPieceDefinition,
-  RelicSlotId,
 } from "@/providers/reference/types";
 
 type EquipmentGroup = "equipped" | "unequipped";
@@ -42,15 +42,6 @@ type RelicStatus =
   | "discarded"
   | "not-discarded"
   | "unknown-discard";
-
-const DOMAIN_SLOT_TO_CATALOG = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<RelicSlot, RelicSlotId>;
 
 const SLOT_ORDER: Record<RelicSlot, number> = {
   head: 0,
@@ -157,9 +148,8 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
         .map((domainSlot) => ({
           value: domainSlot,
           label: localizedName(
-            data?.properties.relicSlotById.get(
-              DOMAIN_SLOT_TO_CATALOG[domainSlot]
-            )?.name,
+            data?.properties.relicSlotById.get(CATALOG_RELIC_SLOT[domainSlot])
+              ?.name,
             locale,
             domainSlot
           ),
@@ -326,7 +316,7 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
               relic.setId
             );
             const slotDefinition = data.properties.relicSlotById.get(
-              DOMAIN_SLOT_TO_CATALOG[relic.slot]
+              CATALOG_RELIC_SLOT[relic.slot]
             );
             return (
               <Card key={relic.key} className="overflow-hidden">

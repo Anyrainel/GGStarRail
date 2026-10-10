@@ -1,4 +1,8 @@
 import type { RelicSlot } from "@/domain/account/schemas";
+import {
+  decimalToAccountStat,
+  RELIC_SLOT_BY_CATALOG_SLOT,
+} from "@/domain/stats";
 import type {
   CharacterStatScaling,
   LightConeStatScaling,
@@ -6,25 +10,15 @@ import type {
   RelicSlotId,
 } from "@/providers/reference/types";
 
-const CATALOG_SLOT_TO_ACCOUNT = {
-  HEAD: "head",
-  HAND: "hands",
-  BODY: "body",
-  FOOT: "feet",
-  NECK: "planarSphere",
-  OBJECT: "linkRope",
-} as const satisfies Record<RelicSlotId, RelicSlot>;
-
 export function accountRelicSlot(slot: RelicSlotId): RelicSlot {
-  return CATALOG_SLOT_TO_ACCOUNT[slot];
+  return RELIC_SLOT_BY_CATALOG_SLOT[slot];
 }
 
 export function accountStatValue(
   property: PropertyDefinition,
   sourceValue: number
 ): number {
-  const value =
-    property.value_kind === "ratio" ? sourceValue * 100 : sourceValue;
+  const value = decimalToAccountStat(sourceValue, property.value_kind);
   return Number(value.toFixed(3));
 }
 

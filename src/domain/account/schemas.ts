@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  ABILITY_TRACE_SUFFIX,
+  bonusAbilityTraceId,
+  STAT_BONUS_COUNT,
+  statBonusTraceId,
+} from "./traces";
 
 export const StableIdSchema = z
   .string()
@@ -84,6 +90,8 @@ export const AchievementCompletionSchema = z
   })
   .strict();
 
+export const TracePointIdSchema = z.string().regex(/^[1-9]\d{3,11}$/);
+
 export const CharacterSchema = z
   .object({
     key: StableIdSchema,
@@ -93,11 +101,23 @@ export const CharacterSchema = z
     level: z.number().int().min(1).max(100),
     ascension: z.number().int().min(0).max(8),
     eidolon: z.number().int().min(0).max(6),
-    traces: z.record(StableIdSchema, z.number().int().nonnegative()),
+    /** Catalog trace point ID to level; see `./traces`. */
+    traces: z.record(TracePointIdSchema, z.number().int().nonnegative()),
     lightConeKey: StableIdSchema.optional(),
     relicKeys: z.array(StableIdSchema),
   })
   .strict();
+
+/**
+ * Account snapshots v1-v3 accepted any stable trace key. The interoperable v4
+ * scanner adapter stored its own vocabulary there: `skill:basic|skill|ult|
+ * talent`, `memosprite:skill|talent`, `trace:ability_1..3`, `trace:stat_1..10`
+ * (1 unlocked, 0 locked), and `source:abilityVersion`. Other sources used
+ * catalog point IDs.
+ */
+const LegacyCharacterSchema = CharacterSchema.extend({
+  traces: z.record(StableIdSchema, z.number().int().nonnegative()),
+});
 
 export const LightConeSchema = z
   .object({
@@ -368,18 +388,33 @@ const AccountSnapshotFields = {
   source: ImportReceiptSchema,
 } as const;
 
+const LegacyAccountSnapshotFields = {
+  ...AccountSnapshotFields,
+  characters: z.array(LegacyCharacterSchema),
+} as const;
+
 /** Canonical account shape before achievement completion was added. */
 export const AccountSnapshotV2Schema = z
   .object({
     schemaVersion: z.literal(2),
-    ...AccountSnapshotFields,
+    ...LegacyAccountSnapshotFields,
+  })
+  .strict()
+  .superRefine(validateAccountEquipmentIntegrity);
+
+/** Account shape before trace keys were canonical catalog point IDs. */
+export const AccountSnapshotV3Schema = z
+  .object({
+    schemaVersion: z.literal(3),
+    ...LegacyAccountSnapshotFields,
+    achievementCompletion: AchievementCompletionSchema.optional(),
   })
   .strict()
   .superRefine(validateAccountEquipmentIntegrity);
 
 export const AccountSnapshotSchema = z
   .object({
-    schemaVersion: z.literal(3),
+    schemaVersion: z.literal(4),
     ...AccountSnapshotFields,
     achievementCompletion: AchievementCompletionSchema.optional(),
   })
@@ -398,7 +433,7 @@ export const AccountSnapshotV1Schema = z
     region: z.string().min(1).max(32).optional(),
     nickname: z.string().min(1).max(64).optional(),
     trailblazeLevel: z.number().int().min(1).max(100).optional(),
-    characters: z.array(CharacterSchema),
+    characters: z.array(LegacyCharacterSchema),
     lightCones: z.array(LightConeSchema.extend({ locked: z.boolean() })),
     relics: z.array(
       RelicBaseSchema.omit({ discarded: true })
@@ -425,6 +460,7 @@ export type RelicSlot = z.infer<typeof RelicSlotSchema>;
 export type RelicCategory = z.infer<typeof RelicCategorySchema>;
 export type AccountSnapshot = z.infer<typeof AccountSnapshotSchema>;
 export type AccountSnapshotV2 = z.infer<typeof AccountSnapshotV2Schema>;
+export type AccountSnapshotV3 = z.infer<typeof AccountSnapshotV3Schema>;
 export type AchievementCompletion = z.infer<typeof AchievementCompletionSchema>;
 export type ImportCoverage = z.infer<typeof ImportCoverageSchema>;
 
@@ -439,6 +475,43 @@ function uniqueByInstanceKey<T extends { key: string }>(
   });
 }
 
+const LEGACY_ABILITY_TRACE_SUFFIX: Readonly<Record<string, string>> = {
+  "skill:basic": ABILITY_TRACE_SUFFIX.basic,
+  "skill:skill": ABILITY_TRACE_SUFFIX.skill,
+  "skill:ult": ABILITY_TRACE_SUFFIX.ultimate,
+  "skill:talent": ABILITY_TRACE_SUFFIX.talent,
+  "memosprite:skill": ABILITY_TRACE_SUFFIX.memospriteSkill,
+  "memosprite:talent": ABILITY_TRACE_SUFFIX.memospriteTalent,
+};
+
+function legacyTracePointId(characterId: string, key: string): string | null {
+  if (TracePointIdSchema.safeParse(key).success) return key;
+  const suffix = LEGACY_ABILITY_TRACE_SUFFIX[key];
+  if (suffix) return `${characterId}${suffix}`;
+  const bonusAbility = /^trace:ability_([1-3])$/.exec(key);
+  if (bonusAbility) {
+    return bonusAbilityTraceId(characterId, Number(bonusAbility[1]));
+  }
+  const statBonus = /^trace:stat_(\d{1,2})$/.exec(key);
+  const statIndex = Number(statBonus?.[1]);
+  if (statBonus && statIndex >= 1 && statIndex <= STAT_BONUS_COUNT) {
+    return statBonusTraceId(characterId, statIndex);
+  }
+  // Source metadata such as `source:abilityVersion` is not a trace.
+  return null;
+}
+
+function canonicalLegacyTraces(
+  character: z.infer<typeof LegacyCharacterSchema>
+): Character {
+  const traces: Record<string, number> = {};
+  for (const [key, level] of Object.entries(character.traces)) {
+    const pointId = legacyTracePointId(character.definitionId, key);
+    if (pointId !== null) traces[pointId] = level;
+  }
+  return { ...character, traces };
+}
+
 function normalizeLegacyEquipment(
   input: z.infer<typeof AccountSnapshotV1Schema>
 ): Pick<AccountSnapshot, "characters" | "lightCones" | "relics"> {
@@ -448,7 +521,7 @@ function normalizeLegacyEquipment(
       relicKeys: _legacyRelics,
       ...character
     }) => ({
-      ...character,
+      ...canonicalLegacyTraces({ ...character, relicKeys: [] }),
       relicKeys: [],
     })
   );
@@ -502,7 +575,7 @@ export function migrateAccountSnapshotV1(
   const equipment = normalizeLegacyEquipment(input);
   return AccountSnapshotSchema.parse({
     ...input,
-    schemaVersion: 3,
+    schemaVersion: 4,
     ...equipment,
     source: {
       ...input.source,
@@ -528,9 +601,16 @@ export function migrateAccountSnapshotV1(
 export function migrateAccountSnapshotV2(
   input: AccountSnapshotV2
 ): AccountSnapshot {
+  return migrateAccountSnapshotV3({ ...input, schemaVersion: 3 });
+}
+
+export function migrateAccountSnapshotV3(
+  input: AccountSnapshotV3
+): AccountSnapshot {
   return AccountSnapshotSchema.parse({
     ...input,
-    schemaVersion: 3,
+    schemaVersion: 4,
+    characters: input.characters.map(canonicalLegacyTraces),
   });
 }
 

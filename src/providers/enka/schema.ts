@@ -5,6 +5,7 @@ import {
   type LightCone,
   type Relic,
   type RelicSlot,
+  TracePointIdSchema,
 } from "@/domain/account/schemas";
 import { assertNoSensitiveFields } from "@/lib/security";
 import {
@@ -300,10 +301,9 @@ export function normalizeEnkaHsrShowcase(
       ascension: avatar.promotion,
       eidolon: avatar.rank,
       traces: Object.fromEntries(
-        avatar.skillTreeList.map((trace) => [
-          String(trace.pointId),
-          trace.level,
-        ])
+        avatar.skillTreeList
+          .map((trace) => [String(trace.pointId), trace.level] as const)
+          .filter(([pointId]) => TracePointIdSchema.safeParse(pointId).success)
       ),
       relicKeys: [],
     };
@@ -356,7 +356,7 @@ export function normalizeEnkaHsrShowcase(
 
   const warningList = [...warnings];
   const account = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: accountProfileKey(uid),
     uid,
     region: parsed.region ?? expectedServer ?? undefined,

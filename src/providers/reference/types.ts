@@ -2,6 +2,7 @@ import type {
   BundleSchemaVersion,
   RuntimeReferenceManifest,
 } from "@/domain/provenance";
+import type { CatalogRelicSlotId } from "@/domain/stats";
 
 export interface SourceText {
   value: string;
@@ -420,7 +421,7 @@ export interface RelicSetDefinition {
   bonuses: readonly RelicSetBonus[];
 }
 
-export type RelicSlotId = "HEAD" | "HAND" | "BODY" | "FOOT" | "NECK" | "OBJECT";
+export type RelicSlotId = CatalogRelicSlotId;
 
 export interface RelicPieceDefinition {
   id: string;

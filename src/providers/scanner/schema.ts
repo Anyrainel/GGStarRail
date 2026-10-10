@@ -4,6 +4,7 @@ import {
   AccountSnapshotSchema,
   AccountSnapshotV1Schema,
   AccountSnapshotV2Schema,
+  AccountSnapshotV3Schema,
   AchievementCaptureRevisionSchema,
   type AchievementCompletion,
   AchievementCompletionSchema,
@@ -12,6 +13,7 @@ import {
   ImportCoverageSchema,
   migrateAccountSnapshotV1,
   migrateAccountSnapshotV2,
+  migrateAccountSnapshotV3,
   type RelicSlot,
   StableIdSchema,
 } from "@/domain/account/schemas";
@@ -53,6 +55,7 @@ const NativeScannerExportSchema = z
     exportedAt: z.string().datetime(),
     account: z.union([
       AccountSnapshotSchema,
+      AccountSnapshotV3Schema,
       AccountSnapshotV2Schema,
       AccountSnapshotV1Schema,
     ]),
@@ -504,7 +507,9 @@ export function parseScannerExport(input: unknown): AccountImportDraft {
       ? migrateAccountSnapshotV1(parsed.account)
       : parsed.account.schemaVersion === 2
         ? migrateAccountSnapshotV2(parsed.account)
-        : parsed.account;
+        : parsed.account.schemaVersion === 3
+          ? migrateAccountSnapshotV3(parsed.account)
+          : parsed.account;
   return {
     account,
     warnings: account.source.warnings,
@@ -770,7 +775,7 @@ export function parseGoodScannerExperimentalExport(
   }
 
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: "scanner:local",
     characters,
     lightCones,

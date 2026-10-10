@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { CharacterBuildCard } from "@/components/artifact-builds/CharacterBuildCard";
+import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { loadBuildReferences } from "@/lib/buildReferences";
 
