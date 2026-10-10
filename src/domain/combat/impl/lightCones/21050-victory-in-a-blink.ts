@@ -1,8 +1,9 @@
-import { isEnemy } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /** Victory In a Blink — Remembrance. CRIT DMG is applied from catalog properties. */
 export default defineLightCone("21050", (k) => {
+  // Applied once to the ally targets present: a memosprite summoned during
+  // the 3 turns does not get it.
   const finalHit = k.status({
     id: "victory-in-a-blink-dmg",
     origin: "lightCone",
@@ -10,15 +11,16 @@ export default defineLightCone("21050", (k) => {
     duration: { turns: k.s(3) },
     modifiers: [{ stat: "dmgBoost", value: k.s(2) }],
   });
-  // An ability on an ally target: one aimed at an ally (Mem's Support,
-  // Demiurge's Ode) or one that does not attack enemies.
+  // "On an ally target" (对我方目标): one ally, all allies, or itself.
   k.on(
     "actionStart",
     "lightCone",
     {
       subject: "memosprite",
       when: (event) =>
-        (event.target !== undefined && !isEnemy(event.target)) || !event.attack,
+        event.abilityTarget === "ally" ||
+        event.abilityTarget === "allies" ||
+        event.abilityTarget === "self",
     },
     (ctx) => {
       for (const ally of ctx.allies) ctx.applyStatus(ally, finalHit);

@@ -10,8 +10,7 @@ export default defineLightCone("21052", (k) => {
     value: k.s(2),
     filter: { attackerKinds: ["memosprite"] },
   });
-  // The wearer's part follows the memosprite's presence, checked at every
-  // turn and action boundary (there is no summon or dismissal event).
+  // The wearer's part follows the memosprite's presence.
   const comeTrain = k.status({
     id: "sweat-now-cry-less-dmg",
     origin: "lightCone",
@@ -27,13 +26,6 @@ export default defineLightCone("21052", (k) => {
       ctx.removeStatus(ctx.self, comeTrain);
     }
   };
-  k.on("battleStart", "lightCone", { subject: "any" }, sync);
-  for (const event of [
-    "turnStart",
-    "turnEnd",
-    "actionStart",
-    "actionEnd",
-  ] as const) {
-    k.on(event, "lightCone", { subject: "any" }, sync);
-  }
+  k.on("summoned", "lightCone", { subject: "memosprite" }, sync);
+  k.on("departed", "lightCone", { subject: "memosprite" }, sync);
 });

@@ -2,12 +2,6 @@ import { defineLightCone } from "../../kit/equipment";
 
 /** Flames Afar — Destruction. */
 export default defineLightCone("21038", (k) => {
-  // HP is not simulated. When on, the wearer is assumed to lose or consume
-  // more than #1 of its Max HP at once at the start of each of its actions
-  // while the effect is off cooldown (HP costs precede the DMG). The heal is
-  // not modeled.
-  const hpLoss = k.toggle("hp-loss", "lightCone", "active", true);
-  if (!hpLoss) return;
   const deflagration = k.status({
     id: "deflagration",
     origin: "lightCone",
@@ -19,12 +13,21 @@ export default defineLightCone("21038", (k) => {
     origin: "lightCone",
     duration: { turns: k.s(5) },
   });
+  // Only HP consumption is listened to: an enemy attack removes 10% of Max
+  // HP split by aggro, so "HP lost during one attack" never exceeds #1.
   k.on(
-    "actionStart",
+    "hpChanged",
     "lightCone",
-    { when: (_, self) => !self.has(cooldown) },
+    {
+      when: (event, self) =>
+        event.hpCause === "consume" &&
+        -(event.delta ?? 0) > k.s(1) + 1e-9 &&
+        !self.has(cooldown),
+    },
     (ctx) => {
-      ctx.applyStatus(ctx.self, deflagration);
+      const boost = 1 + ctx.self.currentStat("outgoingHealing");
+      ctx.heal(ctx.self, k.s(3) * boost);
+      ctx.applyStatus(ctx.self, deflagration, { stacks: ctx.weight });
       ctx.applyStatus(ctx.self, cooldown);
     }
   );

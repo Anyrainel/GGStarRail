@@ -1,4 +1,3 @@
-import type { BattleApi } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /** Reminiscence — Remembrance. */
@@ -13,22 +12,8 @@ export default defineLightCone("20022", (k) => {
     ctx.applyStatus(ctx.self, commemoration);
     ctx.applyStatus(event.unit, commemoration);
   });
-  // A memosprite that disappears takes its own stacks with it (it returns
-  // as a new unit). There is no dismissal event, so the wearer's stacks are
-  // removed at the next turn or action boundary without a memosprite.
-  const clear = (ctx: BattleApi) => {
-    if (!ctx.self.has(commemoration)) return;
-    const present = ctx.allies.some(
-      (unit) => unit.kind === "memosprite" && unit.owner === ctx.self
-    );
-    if (!present) ctx.removeStatus(ctx.self, commemoration);
-  };
-  for (const event of [
-    "turnStart",
-    "turnEnd",
-    "actionStart",
-    "actionEnd",
-  ] as const) {
-    k.on(event, "lightCone", { subject: "any" }, clear);
-  }
+  k.on("departed", "lightCone", { subject: "memosprite" }, (ctx, event) => {
+    ctx.removeStatus(ctx.self, commemoration);
+    ctx.removeStatus(event.unit, commemoration);
+  });
 });
