@@ -1,10 +1,7 @@
 import type { BattleApi, UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 
-/**
- * Counter holding A4 overflow Energy. Gilgamesh's kit (1509) adds to it when
- * his Joint ATK Energy would exceed Saber's max, since the engine caps Energy.
- */
+/** A4 overflow Energy, from every Energy gain beyond Saber's max. */
 const OVERFLOW = "overflow-energy";
 const RESONANCE = "core-resonance";
 const CONSUMING = "core-resonance-consuming";
@@ -12,12 +9,8 @@ const ULTIMATES = "ultimates-used";
 /** Core Resonance has no stated cap; statuses mirroring it must not clip it. */
 const UNCAPPED = 999;
 
-// Energy and Toughness come from AvatarSkillConfigLD (collab table), which the
-// dossier does not read: Basic 20, Skill 30, Ultimate 5 (cost 360),
-// Enhanced Basic 30 (+1 SP).
-const BASIC_ENERGY = 20;
+// Facts (AvatarSkillConfigLD): Skill 30 Energy, Enhanced Basic 30 (+1 SP).
 const SKILL_ENERGY = 30;
-const ULTIMATE_ENERGY = 5;
 const ENHANCED_BASIC_ENERGY = 30;
 
 /** Saber — Destruction, Wind. */
@@ -107,23 +100,6 @@ export default defineCharacter("1014", (k) => {
     });
   }
 
-  /**
-   * Regenerates Energy, keeping what exceeds max Energy as A4 overflow. The
-   * ERR scale is estimated from the panel (momentary ERR buffs are ignored).
-   */
-  const regenerate = (ctx: BattleApi, amount: number, fixed: boolean) => {
-    const self = ctx.self;
-    const scale = fixed ? 1 : 1 + self.panelStat("energyRegen");
-    const excess = Math.max(
-      0,
-      self.energy + amount * scale * ctx.weight - self.maxEnergy
-    );
-    ctx.gainEnergy(self, amount, { fixed });
-    if (excess > 0 && overflowCap > 0 && ctx.weight > 0) {
-      ctx.addCounter(self, OVERFLOW, excess / ctx.weight, overflowCap);
-    }
-  };
-
   const gainResonance = (ctx: BattleApi, amount: number) => {
     ctx.addCounter(ctx.self, RESONANCE, amount);
     if (k.a(3)) ctx.applyStatus(ctx.self, crownResonance, { stacks: amount });
@@ -138,7 +114,7 @@ export default defineCharacter("1014", (k) => {
   const skillFillsEnergy = (self: UnitView) => {
     const resonance = self.counter(RESONANCE);
     if (resonance <= 0) return false;
-    const skillEnergy = SKILL_ENERGY * (1 + self.panelStat("energyRegen"));
+    const skillEnergy = SKILL_ENERGY * (1 + self.currentStat("energyRegen"));
     return (
       self.energy + skillEnergy + resonance * resonanceEnergy >=
       self.maxEnergy - 1e-9
@@ -152,6 +128,15 @@ export default defineCharacter("1014", (k) => {
         ctx.setEnergy(ctx.self, max * k.traceParam(2, 2));
       }
     });
+    // Any Energy beyond max: her abilities, enemy hits, Gilgamesh's Joint
+    // ATK, and other kits.
+    k.on(
+      "energyGained",
+      "a4",
+      { when: (event) => (event.overflow ?? 0) > 0 },
+      (ctx, event) =>
+        ctx.addCounter(ctx.self, OVERFLOW, event.overflow ?? 0, overflowCap)
+    );
   }
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
     gainResonance(ctx, k.param("04", 8));
@@ -183,17 +168,13 @@ export default defineCharacter("1014", (k) => {
     k.on("turnEnd", "a2", { subject: "any" }, releaseManaBurst);
   }
 
-  // Ability Energy is regenerated in `after` (energy: 0) so that any excess
-  // reaches the A4 overflow instead of being capped by the engine.
   k.ability({
     id: "basic",
     kind: "basic",
-    energy: 0,
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
     after: (ctx) => {
-      regenerate(ctx, BASIC_ENERGY, false);
       if (k.e(1)) gainResonance(ctx, k.rankParam(1, 2));
     },
   });
@@ -201,7 +182,6 @@ export default defineCharacter("1014", (k) => {
   k.ability({
     id: "skill",
     kind: "skill",
-    energy: 0,
     hits: [
       {
         shape: "blast",
@@ -221,14 +201,14 @@ export default defineCharacter("1014", (k) => {
         gainResonance(ctx, k.param("02", 3));
       }
     },
+    // The Skill's own Energy follows `after`; the total is the same.
     after: (ctx) => {
-      regenerate(ctx, SKILL_ENERGY, false);
       if (ctx.self.counter(CONSUMING) > 0) {
         const consumed = ctx.self.counter(RESONANCE);
         ctx.removeStatus(ctx.self, resonanceBoost);
         ctx.setCounter(ctx.self, RESONANCE, 0);
         ctx.setCounter(ctx.self, CONSUMING, 0);
-        regenerate(ctx, consumed * resonanceEnergy, true);
+        ctx.gainEnergy(ctx.self, consumed * resonanceEnergy, { fixed: true });
       }
       if (k.e(1)) gainResonance(ctx, k.rankParam(1, 2));
     },
@@ -237,16 +217,15 @@ export default defineCharacter("1014", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    energy: 0,
     hits: [
       { shape: "aoe", each: k.param("03", 1), toughness: { each: 40 } },
-      // Facts list 20 for the non-AoE role; as with other bounce skills it
-      // is read as per instance (tracked: saber-ultimate-toughness).
+      // The ability config splits the first stance slot (20) over the #3
+      // random instances (_S03_Stance_Ratio = 1 / #3).
       {
         shape: "bounce",
         each: k.param("03", 2),
         bounces: k.param("03", 3),
-        toughness: { each: 20 },
+        toughness: { each: 20 / k.param("03", 3) },
       },
     ],
     after: (ctx) => {
@@ -254,17 +233,16 @@ export default defineCharacter("1014", (k) => {
       if (k.a(2)) {
         const stored = Math.min(ctx.self.counter(OVERFLOW), overflowCap);
         ctx.setCounter(ctx.self, OVERFLOW, 0);
-        if (stored > 0) regenerate(ctx, stored, true);
+        if (stored > 0) ctx.gainEnergy(ctx.self, stored, { fixed: true });
       }
       if (k.e(4)) ctx.applyStatus(ctx.self, sixteenWinters);
       if (k.e(6)) {
         ctx.addCounter(ctx.self, ULTIMATES, 1);
         // Ultimates 1, 4, 7, ...: the first, then once per 3 more.
         if ((ctx.self.counter(ULTIMATES) - 1) % k.rankParam(6, 2) === 0) {
-          regenerate(ctx, k.rankParam(6, 3), true);
+          ctx.gainEnergy(ctx.self, k.rankParam(6, 3), { fixed: true });
         }
       }
-      regenerate(ctx, ULTIMATE_ENERGY, false);
     },
   });
 
@@ -274,7 +252,7 @@ export default defineCharacter("1014", (k) => {
     k.ability({
       id,
       kind: "basic",
-      energy: 0,
+      energy: ENHANCED_BASIC_ENERGY,
       hits: [
         { shape: "aoe", each: k.param("08", 1), toughness: { each: 20 } },
         ...(extra === null ? [] : [{ shape: "aoe" as const, each: extra }]),
@@ -284,7 +262,6 @@ export default defineCharacter("1014", (k) => {
         gainResonance(ctx, k.param("08", 2));
       },
       after: (ctx) => {
-        regenerate(ctx, ENHANCED_BASIC_ENERGY, false);
         if (k.e(1)) gainResonance(ctx, k.rankParam(1, 2));
         if (k.a(1)) ctx.applyStatus(ctx.self, manaBurst);
       },

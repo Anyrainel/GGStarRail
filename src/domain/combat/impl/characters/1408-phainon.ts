@@ -1,4 +1,4 @@
-import type { BattleApi, PolicyView, UnitView } from "../../kit/api";
+import { type BattleApi, isEnemy, type PolicyView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef, ModifierDef } from "../../kit/model";
 
@@ -81,17 +81,52 @@ export default defineCharacter("1408", (k) => {
     modifiers: [{ stat: "spdPct", value: k.param("05", 6) }],
   });
 
-  // A4 heal/Shield trigger: healing and Shields are not simulated, so it is
-  // assumed always active when the team has an Abundance or Preservation ally.
   if (k.a(2)) {
-    const sustained = k.toggle(
-      "a4-healed-or-shielded",
+    // A4: healing or a Shield from a teammate, once per turn.
+    const bideInFlames = k.status({
+      id: "a4-bide-in-flames",
+      origin: "a4",
+      duration: { turns: k.traceParam(2, 2) },
+      modifiers: [{ stat: "dmgBoost", value: k.traceParam(2, 1) }],
+    });
+    const bide = (ctx: BattleApi) =>
+      ctx.applyStatus(ctx.self, bideInFlames, { stacks: ctx.weight });
+    k.on(
+      "hpChanged",
       "a4",
-      "active",
-      k.countPath("Priest") + k.countPath("Knight") > 0
+      {
+        limitPerTurn: 1,
+        when: (event, self) =>
+          event.hpCause === "heal" &&
+          event.source !== undefined &&
+          event.source !== self &&
+          !isEnemy(event.source),
+      },
+      bide
     );
-    if (sustained)
-      k.stat("a4", { stat: "dmgBoost", value: k.traceParam(2, 1) });
+    k.on(
+      "statusApplied",
+      "a4",
+      {
+        subject: "otherAlly",
+        limitPerTurn: 1,
+        when: (event, self) =>
+          event.target === self && event.status?.family === "shield",
+      },
+      bide
+    );
+    // Energy Regeneration from a teammate (enemy hits and his own excluded).
+    k.on(
+      "energyGained",
+      "a4",
+      {
+        when: (event, self) =>
+          event.source !== undefined &&
+          event.source !== self &&
+          !isEnemy(event.source),
+      },
+      (ctx) => gainCoreflame(ctx, k.traceParam(2, 3) * ctx.weight)
+    );
   }
 
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
@@ -102,16 +137,16 @@ export default defineCharacter("1408", (k) => {
   });
 
   // Talent: targeted by an enemy attack (aggro share) or by a teammate's
-  // ability. Ally-targeted abilities carry no target in the engine, so a
-  // teammate's non-attacking Skill/Ultimate/memosprite Skill counts.
+  // ability aimed at Phainon (one ally named as him, or all allies).
   k.on("hitByEnemy", "talent", {}, (ctx) => gainCoreflame(ctx, ctx.weight));
   k.on(
-    "actionEnd",
+    "actionStart",
     "talent",
     {
       subject: "otherAlly",
-      abilityKinds: ["skill", "ultimate", "memospriteSkill"],
-      attack: false,
+      when: (event, self) =>
+        event.abilityTarget === "allies" ||
+        (event.abilityTarget === "ally" && event.target === self),
     },
     (ctx) => {
       gainCoreflame(ctx, ctx.weight);
@@ -119,17 +154,21 @@ export default defineCharacter("1408", (k) => {
     }
   );
 
-  // A4 Energy part: Phainon's engine Energy is kept at 0, so Energy found
-  // after a teammate's action came from that teammate's ability.
-  k.on("actionEnd", "a4", { subject: "otherAlly" }, (ctx) => {
-    if (ctx.self.energy > 1e-9 && k.a(2)) {
-      gainCoreflame(ctx, k.traceParam(2, 3) * ctx.weight);
-    }
-    ctx.setEnergy(ctx.self, 0);
-  });
+  // Coreflame replaces his Energy: the engine bar is kept empty.
   const clearEnergy = (ctx: BattleApi) => ctx.setEnergy(ctx.self, 0);
-  k.on("actionEnd", "a4", {}, clearEnergy);
+  k.on("actionEnd", "a4", { subject: "ally" }, clearEnergy);
   k.on("turnEnd", "a4", { subject: "enemy" }, clearEnergy);
+
+  // Khaslana: "After using an attack, restores HP equal to #7 of his Max HP."
+  k.on(
+    "actionEnd",
+    "talent",
+    { attack: true, when: (_event, self) => self.has(khaslana) },
+    (ctx) => {
+      const boost = 1 + ctx.self.currentStat("outgoingHealing");
+      ctx.heal(ctx.self, k.param("05", 7) * boost);
+    }
+  );
 
   k.ability({
     id: "basic",
@@ -220,8 +259,6 @@ export default defineCharacter("1408", (k) => {
     );
   };
 
-  const isDeparted = (unit: UnitView) => unit.counter("1408:departed") > 0;
-
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -241,13 +278,17 @@ export default defineCharacter("1408", (k) => {
       ctx.applyStatus(ctx.self, khaslana);
       if (k.e(1)) ctx.applyStatus(ctx.self, e1CritDmg);
       for (const ally of ctx.allies) {
-        if (ally === ctx.self || !ally.inActionOrder) continue;
+        if (ally === ctx.self || ally.departed) continue;
         ctx.setCounter(ally, "1408:departed", 1);
-        ctx.setInActionOrder(ally, false);
+        ctx.setDeparted(ally, true);
       }
-      // Weaknesses cannot be removed when the Territory ends (tracker
-      // phainon-territory-weakness).
-      for (const enemy of ctx.enemies) ctx.implantWeakness(enemy, "Physical");
+      // The Territory's Physical Weakness is removed when it ends, only where
+      // it was not native.
+      for (const enemy of ctx.enemies) {
+        if (enemy.weaknesses.has("Physical")) continue;
+        ctx.setCounter(enemy, "1408:implanted", 1);
+        ctx.implantWeakness(enemy, "Physical");
+      }
     },
     after: (ctx) => nextKhaslanaTurn(ctx),
   });
@@ -275,9 +316,8 @@ export default defineCharacter("1408", (k) => {
     },
   });
 
-  // Enemies' forced actions are not simulated: each adds a Soulscorch stack.
-  // Facts list Toughness 10 (first slot) and 5 (AoE slot); as for Stardeath,
-  // the first slot is read per random instance (tracker phainon-toughness-split).
+  // Enemies' forced actions are not simulated: each adds a Soulscorch stack,
+  // and the Counter follows the Edict at once.
   k.ability({
     id: "soulscorch",
     kind: "skill",
@@ -294,6 +334,19 @@ export default defineCharacter("1408", (k) => {
         setStacks: soulscorchStacks(enemies),
       });
     },
+    after: (ctx) => {
+      ctx.queueAction(ctx.self, "soulscorchCounter");
+      nextKhaslanaTurn(ctx);
+    },
+  });
+
+  // The Counter is its own Follow-Up ATK (ability config: Insert), also
+  // Skill DMG. Facts: Toughness 10 (first slot) per random instance and 5
+  // (AoE slot) per enemy.
+  k.ability({
+    id: "soulscorchCounter",
+    kind: "followUp",
+    tags: ["skill"],
     hits: [
       { shape: "aoe", each: k.param("09", 1), toughness: { each: 5 } },
       {
@@ -303,10 +356,7 @@ export default defineCharacter("1408", (k) => {
         toughness: { each: 10 },
       },
     ],
-    after: (ctx) => {
-      ctx.removeStatus(ctx.self, soulscorch);
-      nextKhaslanaTurn(ctx);
-    },
+    after: (ctx) => ctx.removeStatus(ctx.self, soulscorch),
   });
 
   // One variant per Scourge consumed (1-4), since the instance count varies.
@@ -358,11 +408,16 @@ export default defineCharacter("1408", (k) => {
       ctx.setCounter(ctx.self, "scourge", 0);
       ctx.setCounter(ctx.self, "khaslana-turn", 0);
       for (const ally of ctx.allies) {
-        if (isDeparted(ally)) {
+        if (ally.counter("1408:departed") > 0) {
           ctx.setCounter(ally, "1408:departed", 0);
-          ctx.setInActionOrder(ally, true);
+          ctx.setDeparted(ally, false);
         }
         ctx.applyStatus(ally, allySpeed);
+      }
+      for (const enemy of ctx.enemies) {
+        if (enemy.counter("1408:implanted") <= 0) continue;
+        ctx.setCounter(enemy, "1408:implanted", 0);
+        ctx.removeWeakness(enemy, "Physical");
       }
       if (k.a(1)) gainCoreflame(ctx, k.traceParam(1, 1));
       if (k.a(3)) ctx.applyStatus(ctx.self, shineWithValor);

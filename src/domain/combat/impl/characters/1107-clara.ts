@@ -24,6 +24,15 @@ export default defineCharacter("1107", (k) => {
     });
   }
 
+  // "Greatly increased chances of being attacked" (#1 = 5, read as +500%
+  // aggro) for #3 turns; Marks of Counter, Counters, and hit Energy follow.
+  const promise = k.status({
+    id: "promise-not-command",
+    origin: "ultimate",
+    duration: { turns: k.param("03", 3) },
+    modifiers: [{ stat: "aggroPct", value: k.param("03", 1) }],
+  });
+
   const e2Atk = k.status({
     id: "e2-atk",
     origin: "e2",
@@ -65,9 +74,9 @@ export default defineCharacter("1107", (k) => {
     id: "ultimate",
     kind: "ultimate",
     target: "self",
-    // DMG reduction and the higher chance to be attacked (aggro) are not
-    // modeled; see the tracker.
+    // The DMG reduction is not modeled.
     after: (ctx) => {
+      ctx.applyStatus(ctx.self, promise);
       ctx.setCounter(
         ctx.self,
         CHARGES,

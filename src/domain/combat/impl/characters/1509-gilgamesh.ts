@@ -3,8 +3,6 @@ import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
 
 const SABER_ID = "1014";
-/** Saber's A4 overflow-Energy counter (see 1014-saber.ts). */
-const SABER_OVERFLOW = "overflow-energy";
 const TALLY = "attack-tally";
 const JOINT_QUEUED = "joint-queued";
 /** Interest has no stated cap. */
@@ -12,6 +10,9 @@ const UNCAPPED = 999;
 
 /** Gilgamesh — Destruction, Lightning. */
 export default defineCharacter("1509", (k) => {
+  // The tally and the Joint ATK need Saber (the ability config only launches
+  // it while Saber is on the field).
+  const withSaber = k.team.some((member) => member.characterId === SABER_ID);
   const interest = k.status({
     id: "interest",
     origin: "talent",
@@ -160,10 +161,12 @@ export default defineCharacter("1509", (k) => {
       ctx.applyStatus(ctx.self, kingsBurden);
       if (k.a(1)) {
         gainInterest(ctx, k.traceParam(1, 1));
-        // Energy consumed is read as the ally's max Energy (its Ultimate cost).
-        ctx.gainEnergy(ctx.self, event.unit.maxEnergy * k.traceParam(1, 2), {
-          fixed: true,
-        });
+        const spent = event.energySpent ?? 0;
+        if (spent > 0) {
+          ctx.gainEnergy(ctx.self, spent * k.traceParam(1, 2), {
+            fixed: true,
+          });
+        }
       }
       if (k.e(6)) ctx.applyStatus(ctx.self, goldenRule);
     }
@@ -171,34 +174,41 @@ export default defineCharacter("1509", (k) => {
 
   // Talent 2: attacks by Gilgamesh or Saber fill the tally; the Joint ATK
   // follows the attack that reaches it.
-  k.on(
-    "actionEnd",
-    "talent",
-    { subject: "ally", attack: true },
-    (ctx, event) => {
-      const own = event.unit === ctx.self;
-      if (!own && event.unit.definitionId !== SABER_ID) return;
-      if (own && event.abilityId === "followUp") return;
-      ctx.addCounter(ctx.self, TALLY, 1);
-      if (
-        ctx.self.counter(TALLY) >= k.param("05", 5) &&
-        ctx.self.counter(JOINT_QUEUED) === 0
-      ) {
-        ctx.setCounter(ctx.self, JOINT_QUEUED, 1);
-        ctx.queueAction(ctx.self, "followUp");
+  if (withSaber) {
+    k.on(
+      "actionEnd",
+      "talent",
+      {
+        subject: "ally",
+        attack: true,
+        when: (event, self) =>
+          event.unit === self
+            ? event.abilityId !== "followUp"
+            : event.unit.definitionId === SABER_ID,
+      },
+      (ctx) => {
+        ctx.addCounter(ctx.self, TALLY, 1);
+        if (
+          ctx.self.counter(TALLY) >= k.param("05", 5) &&
+          ctx.self.counter(JOINT_QUEUED) === 0
+        ) {
+          ctx.setCounter(ctx.self, JOINT_QUEUED, 1);
+          ctx.queueAction(ctx.self, "followUp");
+        }
       }
-    }
-  );
+    );
 
-  k.on(
-    "actionEnd",
-    "talent",
-    { subject: "otherAlly", abilityKinds: ["ultimate"] },
-    (ctx, event) => {
-      if (event.unit.definitionId !== SABER_ID) return;
-      ctx.removeStatus(event.unit, jointUltimate);
-    }
-  );
+    k.on(
+      "actionEnd",
+      "talent",
+      {
+        subject: "otherAlly",
+        abilityKinds: ["ultimate"],
+        when: (event) => event.unit.definitionId === SABER_ID,
+      },
+      (ctx, event) => ctx.removeStatus(event.unit, jointUltimate)
+    );
+  }
 
   k.ability({
     id: "basic",
@@ -208,8 +218,7 @@ export default defineCharacter("1509", (k) => {
     ],
   });
 
-  // Toughness/Energy/SP from AvatarSkillConfigLD (collab table, not read by
-  // the dossier): the Skill costs no Skill Point (BPNeed -1).
+  // Facts (AvatarSkillConfigLD): the Skill costs no Skill Point.
   k.ability({
     id: "skill",
     kind: "skill",
@@ -258,8 +267,8 @@ export default defineCharacter("1509", (k) => {
     },
   });
 
-  // Joint Follow-Up ATK. Facts: 10 Energy, 20 AoE Toughness (assigned to
-  // Gilgamesh's part; the split between the two parts is not in the data).
+  // Joint Follow-Up ATK. Facts: 10 Energy, 20 AoE Toughness, all on
+  // Gilgamesh's part (Saber's part has no StanceValue in the ability config).
   k.ability({
     id: "followUp",
     kind: "followUp",
@@ -281,16 +290,8 @@ export default defineCharacter("1509", (k) => {
       }
       gainInterest(ctx, k.param("05", 3));
       if (saber) {
-        const amount = k.param("05", 4);
-        const excess = Math.max(
-          0,
-          saber.energy + amount * ctx.weight - saber.maxEnergy
-        );
-        ctx.gainEnergy(saber, amount, { fixed: true });
-        // Saber's kit caps and restores this on her Ultimate (A4).
-        if (excess > 0 && ctx.weight > 0) {
-          ctx.addCounter(saber, SABER_OVERFLOW, excess / ctx.weight);
-        }
+        // Saber's A4 keeps the overflow (her energyGained listener).
+        ctx.gainEnergy(saber, k.param("05", 4), { fixed: true });
         ctx.applyStatus(saber, jointUltimate);
       }
       ctx.setCounter(ctx.self, TALLY, 0);

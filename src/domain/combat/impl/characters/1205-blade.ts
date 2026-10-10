@@ -1,32 +1,14 @@
 import type { BattleApi } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { HitDef, ModifierDef } from "../../kit/model";
+import type { ModifierDef } from "../../kit/model";
+
+const CHARGE = "charge";
+const TALLY = "hp-tally";
 
 /** Blade — Destruction, Wind. */
 export default defineCharacter("1205", (k) => {
-  // HP is not simulated. Blade is played with a sustain, so the defaults
-  // assume healing keeps him above 50% HP when he casts his Ultimate and that
-  // the HP-loss tally (Skill, Forest of Swords, enemy hits, the Ultimate's own
-  // HP reset) has reached its cap by then. With the tally toggle off, only
-  // his own HP consumption since the last Ultimate counts.
-  const ultAboveHalf = k.toggle(
-    "ult-above-half-hp",
-    "ultimate",
-    "selfHpAbove",
-    true,
-    0.5
-  );
-  const tallyCapped = k.toggle(
-    "hp-loss-tally-capped",
-    "ultimate",
-    "active",
-    true
-  );
-
   const tallyCap = k.param("03", 7);
   const maxCharge = k.e(6) ? 4 : 5; // E6: "reduced to 4" (no placeholder)
-  const skillCost = k.param("02", 1);
-  const forestCost = k.param("08", 1);
 
   const hellscapeModifiers: ModifierDef[] = [
     { stat: "dmgBoost", value: k.param("02", 4) },
@@ -60,30 +42,80 @@ export default defineCharacter("1205", (k) => {
   }
 
   const gainCharge = (ctx: BattleApi) => {
-    ctx.addCounter(ctx.self, "charge", 1);
-    const charge = ctx.self.counter("charge");
+    ctx.addCounter(ctx.self, CHARGE, 1);
+    const charge = ctx.self.counter(CHARGE);
     if (charge < maxCharge - 1e-9) return;
     // Enemy hits add aggro-weighted Charge; the threshold crossing itself is
     // certain, so the Follow-Up ATK is queued at full weight.
-    ctx.setCounter(ctx.self, "charge", charge - maxCharge);
+    ctx.setCounter(ctx.self, CHARGE, charge - maxCharge);
     ctx.queueAction(ctx.self, "followUp", { weight: 1 / ctx.weight });
   };
 
-  /** Own HP consumption: Charge, the tally, and the first drop to 50% (E4). */
-  const consumeHp = (ctx: BattleApi, fraction: number) => {
-    gainCharge(ctx);
-    ctx.addCounter(ctx.self, "hp-tally", fraction, tallyCap);
-    ctx.addCounter(ctx.self, "hp-consumed", fraction);
-    // Approximation: from full HP, his own consumption first crosses 50%.
-    if (
-      e4 &&
-      ctx.self.counter("e4-first-drop") === 0 &&
-      ctx.self.counter("hp-consumed") >= 0.5 - 1e-9
-    ) {
-      ctx.setCounter(ctx.self, "e4-first-drop", 1);
-      ctx.applyStatus(ctx.self, e4);
-    }
+  /** Heals Blade by `share` of Max HP plus `flat` HP (his own healing). */
+  const healSelf = (ctx: BattleApi, share: number, flat = 0) => {
+    const maxHp = ctx.self.currentStat("hp");
+    if (maxHp <= 0) return;
+    const boost = 1 + ctx.self.currentStat("outgoingHealing");
+    ctx.heal(ctx.self, (share + flat / maxHp) * boost);
   };
+
+  // HP consumed by Blade or by allies (Jingliu) gives Charge; enemy DMG gives
+  // it through hitByEnemy (at most 1 per attack).
+  k.on(
+    "hpChanged",
+    "talent",
+    { when: (event) => event.hpCause === "consume" },
+    (ctx) => gainCharge(ctx)
+  );
+  k.on("hitByEnemy", "talent", {}, (ctx) => gainCharge(ctx));
+
+  // The tally sums every HP loss, the Ultimate's own HP reset included.
+  k.on(
+    "hpChanged",
+    "ultimate",
+    { when: (event) => (event.delta ?? 0) < 0 },
+    (ctx, event) =>
+      ctx.addCounter(ctx.self, TALLY, -(event.delta ?? 0), tallyCap)
+  );
+
+  if (e4) {
+    // "Drops from above 50% to 50% or lower"; a partial (weighted) crossing
+    // gives a partial stack.
+    k.on(
+      "hpChanged",
+      "e4",
+      {
+        when: (event, self) => {
+          const after = self.hpRatio;
+          const before = after - (event.delta ?? 0) * event.weight;
+          return before > 0.5 + 1e-9 && after <= 0.5 + 1e-9;
+        },
+      },
+      (ctx, event) => ctx.applyStatus(ctx.self, e4, { stacks: event.weight })
+    );
+  }
+
+  if (k.a(1)) {
+    // Healing received at 50% HP or lower: the restored share (not capped at
+    // Max HP when it is reported) is raised by #1.
+    let boosting = false;
+    k.on(
+      "hpChanged",
+      "a2",
+      {
+        when: (event, self) =>
+          !boosting &&
+          event.hpCause === "heal" &&
+          (event.delta ?? 0) > 0 &&
+          self.hpRatio - (event.delta ?? 0) * event.weight <= 0.5 + 1e-9,
+      },
+      (ctx, event) => {
+        boosting = true;
+        ctx.heal(ctx.self, (event.delta ?? 0) * k.traceParam(1, 1));
+        boosting = false;
+      }
+    );
+  }
 
   k.ability({
     id: "basic",
@@ -93,32 +125,34 @@ export default defineCharacter("1205", (k) => {
     ],
   });
 
+  // The Skill does not end the turn, so the turn it is used in counts toward
+  // Hellscape's duration (Skill + 3 Forest of Swords). The engine skips the
+  // applying turn's countdown, hence one turn fewer here.
   k.ability({
     id: "skill",
     kind: "skill",
     target: "self",
     energy: 0,
+    endsTurn: false,
     usable: (view) => !view.self.has(hellscape),
     after: (ctx) => {
-      consumeHp(ctx, skillCost);
-      // The Skill does not end the turn, so the turn it is used in counts
-      // toward Hellscape's duration (Skill + 3 Forest of Swords). The engine
-      // skips the applying turn's countdown, hence one turn fewer here.
+      ctx.consumeHp(ctx.self, k.param("02", 1));
       ctx.applyStatus(ctx.self, hellscape, {
         turns: k.param("02", 2) - 1,
       });
-      ctx.queueAction(ctx.self, "enhancedBasic");
     },
   });
 
-  // ATK and Max HP parts of one instance are separate HitDefs (one stat per
-  // HitDef); only the HP part carries Toughness.
+  // ATK and Max HP parts of one instance are separate HitDefs; the ATK part
+  // is silent so per-hit effects fire once, and the HP part carries Toughness.
   k.ability({
     id: "enhancedBasic",
     kind: "basic",
     energy: 30,
     skillPoints: 0,
-    before: (ctx) => consumeHp(ctx, forestCost),
+    before: (ctx) => {
+      ctx.consumeHp(ctx.self, k.param("08", 1));
+    },
     hits: [
       {
         shape: "blast",
@@ -131,41 +165,44 @@ export default defineCharacter("1205", (k) => {
         shape: "blast",
         main: k.param("08", 2),
         adjacent: k.param("08", 3),
+        silent: true,
       },
     ],
+    after: (ctx) => {
+      if (k.a(2) && ctx.targetsHit().some((enemy) => enemy.broken)) {
+        healSelf(ctx, k.traceParam(2, 1), k.traceParam(2, 2));
+      }
+    },
   });
 
   const tallyMain = k.param("03", 5) + (k.e(1) ? k.rankParam(1, 1) : 0); // E1: main target only
-  const ultHp: HitDef = {
-    shape: "blast",
-    stat: "hp",
-    main: 0,
-    adjacent: 0,
-    toughness: { main: 20, adjacent: 20 },
-  };
-  // The tally is in units of Max HP, so it adds to the HP multiplier.
-  const setTally = (tally: number) => {
-    ultHp.main = k.param("03", 2) + tallyMain * tally;
-    ultHp.adjacent = k.param("03", 4) + k.param("03", 6) * tally;
-  };
-  setTally(tallyCap);
 
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     before: (ctx) => {
-      if (ultAboveHalf) {
-        // Setting HP from above 50% down to 50% consumes HP.
-        gainCharge(ctx);
-        if (e4) ctx.applyStatus(ctx.self, e4);
-      }
-      if (!tallyCapped) setTally(ctx.self.counter("hp-tally"));
+      ctx.setHp(ctx.self, 0.5);
     },
-    hits: [
-      ultHp,
-      { shape: "blast", main: k.param("03", 1), adjacent: k.param("03", 3) },
-    ],
-    after: (ctx) => ctx.setCounter(ctx.self, "hp-tally", 0),
+    // The tally is in units of Max HP, so it adds to the HP multiplier.
+    hits: (ctx) => {
+      const tally = Math.min(ctx.self.counter(TALLY), tallyCap);
+      return [
+        {
+          shape: "blast",
+          stat: "hp",
+          main: k.param("03", 2) + tallyMain * tally,
+          adjacent: k.param("03", 4) + k.param("03", 6) * tally,
+          toughness: { main: 20, adjacent: 20 },
+        },
+        {
+          shape: "blast",
+          main: k.param("03", 1),
+          adjacent: k.param("03", 3),
+          silent: true,
+        },
+      ];
+    },
+    after: (ctx) => ctx.setCounter(ctx.self, TALLY, 0),
   });
 
   k.ability({
@@ -179,15 +216,13 @@ export default defineCharacter("1205", (k) => {
         each: k.param("04", 4) + (k.e(6) ? k.rankParam(6, 1) : 0),
         toughness: { each: 10 },
       },
-      { shape: "aoe", each: k.param("04", 2) },
+      { shape: "aoe", each: k.param("04", 2), silent: true },
     ],
+    after: (ctx) => healSelf(ctx, k.param("04", 3)),
   });
 
-  // "A max of 1 Charge stack can be gained every time he is attacked."
-  k.on("hitByEnemy", "talent", {}, (ctx) => gainCharge(ctx));
-
-  // Hellscape every turn: Skill (which continues into Forest of Swords) when
-  // it is down, otherwise Forest of Swords; Basic ATK only without SP.
+  // Hellscape every turn: Skill (the turn continues into Forest of Swords)
+  // when it is down, otherwise Forest of Swords; Basic ATK only without SP.
   k.policy({
     turn: (view) =>
       view.self.has(hellscape)

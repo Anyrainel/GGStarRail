@@ -1,9 +1,4 @@
-import {
-  type ActionContext,
-  type EnemyView,
-  isEnemy,
-  type UnitView,
-} from "../../kit/api";
+import { type ActionContext, type EnemyView, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 
 /** Hook — Destruction, Fire. */
@@ -20,31 +15,22 @@ export default defineCharacter("1109", (k) => {
 
   const enhancedReady = k.status({ id: "enhanced-skill", origin: "ultimate" });
 
-  // E1 and E6 only cover some hits of an action, so these statuses exist
-  // only while the matching damage is dealt.
+  // E1 covers the whole Enhanced Skill, so it exists only during that action.
   const e1Boost = k.status({
     id: "e1-enhanced-skill",
     origin: "e1",
     modifiers: k.e(1) ? [{ stat: "dmgBoost", value: k.rankParam(1, 1) }] : [],
   });
-  const e6Boost = k.status({
-    id: "e6-burned-target",
-    origin: "e6",
-    modifiers: k.e(6) ? [{ stat: "dmgBoost", value: k.rankParam(6, 1) }] : [],
-  });
   if (k.e(6)) {
-    // Hook's only DoT is her Burn, which always sits on a Burned enemy.
+    // Any Burn, from any source (Fire Weakness Break included).
     k.stat("e6", {
       stat: "dmgBoost",
       value: k.rankParam(6, 1),
-      filter: { tags: ["dot"] },
+      filter: { targetFamilies: ["burn"] },
     });
   }
 
-  // Only Hook's own Burn is visible to the kit: Burn from Weakness Break or
-  // other Characters does not arm the Talent or E6 (tracked engine gap).
-  const burned = (target: UnitView | null | undefined): target is EnemyView =>
-    isEnemy(target) && target.has(burn);
+  const burned = (enemy: EnemyView) => enemy.hasFamily("burn");
 
   const adjacentTo = (ctx: ActionContext, target: EnemyView): EnemyView[] => {
     const index = ctx.enemies.indexOf(target);
@@ -53,33 +39,40 @@ export default defineCharacter("1109", (k) => {
     );
   };
 
-  // "When attacking a target afflicted with Burn": checked before the attack
-  // lands, on the designated target. E4 spreads Burn around "the designated
-  // enemy target", so the Talent is read as one trigger per attack.
-  const ARMED = "talent-armed";
-  const armTalent = (ctx: ActionContext) => {
-    const armed = burned(ctx.target);
-    ctx.setCounter(ctx.self, ARMED, armed ? 1 : 0);
-    if (k.e(6) && armed) ctx.applyStatus(ctx.self, e6Boost);
-  };
-  const resolveTalent = (ctx: ActionContext) => {
-    ctx.removeStatus(ctx.self, e6Boost);
-    const target = ctx.target;
-    if (ctx.self.counter(ARMED) < 1 || !isEnemy(target)) return;
-    ctx.setCounter(ctx.self, ARMED, 0);
-    if (k.e(6)) ctx.applyStatus(ctx.self, e6Boost);
-    ctx.deal(
-      { shape: "single", main: k.param("04", 1), onlyTags: ["additional"] },
-      { targets: [target], origin: "talent" }
-    );
-    ctx.removeStatus(ctx.self, e6Boost);
-    ctx.gainEnergy(ctx.self, k.param("04", 2));
-    if (k.e(4)) {
-      for (const enemy of adjacentTo(ctx, target)) {
-        ctx.applyStatus(enemy, burn, { baseChance: k.rankParam(4, 1) });
+  /**
+   * Talent, once per attack after its hits land (ability config): checked on
+   * the designated target, or for the Enhanced Skill on one random Burned
+   * enemy among those it hit. Additional DMG and E4 follow each candidate
+   * with its chance; Energy and A2's heal come once.
+   */
+  const resolveTalent = (ctx: ActionContext, candidates: EnemyView[]) => {
+    const chosen = candidates.filter(burned);
+    if (chosen.length === 0) return;
+    const share = 1 / chosen.length;
+    const e4Chance = new Map<EnemyView, number>();
+    for (const enemy of chosen) {
+      ctx.deal(
+        { shape: "single", main: k.param("04", 1), onlyTags: ["additional"] },
+        { targets: [enemy], origin: "talent", weight: share }
+      );
+      if (!k.e(4)) continue;
+      for (const neighbour of adjacentTo(ctx, enemy)) {
+        e4Chance.set(neighbour, (e4Chance.get(neighbour) ?? 0) + share);
       }
     }
+    ctx.gainEnergy(ctx.self, k.param("04", 2));
+    if (k.a(1)) {
+      const boost = 1 + ctx.self.currentStat("outgoingHealing");
+      ctx.heal(ctx.self, k.traceParam(1, 1) * boost);
+    }
+    for (const [enemy, chance] of e4Chance) {
+      ctx.applyStatus(enemy, burn, {
+        baseChance: k.rankParam(4, 1) * Math.min(1, chance),
+      });
+    }
   };
+  const designated = (ctx: ActionContext): EnemyView[] =>
+    isEnemy(ctx.target) ? [ctx.target] : [];
 
   k.ability({
     id: "basic",
@@ -87,22 +80,21 @@ export default defineCharacter("1109", (k) => {
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
-    before: armTalent,
-    after: resolveTalent,
+    after: (ctx) => resolveTalent(ctx, designated(ctx)),
   });
 
+  // The Skill's own Burn lands after the Talent's check.
   k.ability({
     id: "skill",
     kind: "skill",
     hits: [
       { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
     ],
-    before: armTalent,
     after: (ctx) => {
+      resolveTalent(ctx, designated(ctx));
       if (isEnemy(ctx.target)) {
         ctx.applyStatus(ctx.target, burn, { baseChance: k.param("02", 2) });
       }
-      resolveTalent(ctx);
     },
   });
 
@@ -110,40 +102,23 @@ export default defineCharacter("1109", (k) => {
     id: "enhancedSkill",
     kind: "skill",
     hits: [
-      { shape: "single", main: k.param("09", 1), toughness: { main: 20 } },
+      {
+        shape: "blast",
+        main: k.param("09", 1),
+        adjacent: k.param("09", 5),
+        toughness: { main: 20, adjacent: 10 },
+      },
     ],
     before: (ctx) => {
       ctx.removeStatus(ctx.self, enhancedReady);
       if (k.e(1)) ctx.applyStatus(ctx.self, e1Boost);
-      armTalent(ctx);
     },
     after: (ctx) => {
-      ctx.removeStatus(ctx.self, e6Boost);
-      const target = ctx.target;
-      if (isEnemy(target)) {
-        // Adjacent hits are dealt one by one so E6 follows each one's Burn.
-        for (const enemy of adjacentTo(ctx, target)) {
-          const bonus = k.e(6) && burned(enemy);
-          if (bonus) ctx.applyStatus(ctx.self, e6Boost);
-          ctx.deal(
-            {
-              shape: "single",
-              main: k.param("09", 5),
-              toughness: { main: 10 },
-            },
-            {
-              targets: [enemy],
-              tags: ["skill"],
-              abilityKind: "skill",
-              origin: "skill",
-            }
-          );
-          if (bonus) ctx.removeStatus(ctx.self, e6Boost);
-        }
-        ctx.applyStatus(target, burn, { baseChance: k.param("09", 2) });
-      }
       ctx.removeStatus(ctx.self, e1Boost);
-      resolveTalent(ctx);
+      resolveTalent(ctx, [...ctx.targetsHit()]);
+      if (isEnemy(ctx.target)) {
+        ctx.applyStatus(ctx.target, burn, { baseChance: k.param("09", 2) });
+      }
     },
   });
 
@@ -153,9 +128,8 @@ export default defineCharacter("1109", (k) => {
     hits: [
       { shape: "single", main: k.param("03", 1), toughness: { main: 30 } },
     ],
-    before: armTalent,
     after: (ctx) => {
-      resolveTalent(ctx);
+      resolveTalent(ctx, designated(ctx));
       ctx.applyStatus(ctx.self, enhancedReady);
       if (k.a(3)) {
         ctx.advanceAction(ctx.self, k.traceParam(3, 2));

@@ -17,10 +17,13 @@ export default defineCharacter("1312", (k) => {
   // Stacks hold the expected chance that this Freeze is active: the engine
   // has no landing chance for non-DoT turn-start damage or "vs Frozen"
   // filters, so both read this probability (see tracker misha-freeze-chance).
+  // The same chance is its base chance, with which the enemy skips its turn.
   const freeze = k.status({
     id: "freeze",
     origin: "ultimate",
     debuff: true,
+    family: "frozen",
+    skipsTurn: true,
     duration: { turns: 1 },
     maxStacks: 1,
   });
@@ -81,7 +84,7 @@ export default defineCharacter("1312", (k) => {
     const chance = Math.min(1, base);
     const before = enemy.stacks(freeze, ctx.self);
     const after = 1 - (1 - before) * (1 - share * chance);
-    ctx.applyStatus(enemy, freeze, { setStacks: after });
+    ctx.applyStatus(enemy, freeze, { setStacks: after, baseChance: after });
     const broken = enemy.has(BREAK_EFFECT_STATUS.frozen) ? 1 : 0;
     return 1 - (1 - broken) * (1 - before) * (1 - chance);
   };
@@ -185,7 +188,8 @@ export default defineCharacter("1312", (k) => {
               shape: "bounce",
               each: perHit,
               bounces: share,
-              toughness: { each: 10 },
+              // Later hits use half the first slot (Arg01_StanceRatio 0.5).
+              toughness: { each: 5 },
             },
             {
               targets: [enemy],
@@ -201,8 +205,7 @@ export default defineCharacter("1312", (k) => {
     },
   });
 
-  // Frozen: Ice Additional DMG at the start of the enemy's turn. The engine
-  // does not skip the turn of a kit-applied Freeze (tracker misha-freeze-skip).
+  // Frozen: Ice Additional DMG at the start of the enemy's turn.
   k.on("turnStart", "ultimate", { subject: "enemy" }, (ctx, event) => {
     const enemy = event.unit;
     if (!isEnemy(enemy)) return;
@@ -224,21 +227,16 @@ export default defineCharacter("1312", (k) => {
     k.on("turnEnd", "e6", {}, (ctx) => ctx.removeStatus(ctx.self, e6Boost));
   }
 
-  // Talent: Skill Points consumed by any ally, read from the team's SP total
-  // (no consumption event exists; see tracker misha-sp-tracking).
-  k.on("battleStart", "talent", { subject: "any" }, (ctx) =>
-    ctx.setCounter(ctx.self, "sp-seen", ctx.skillPoints)
+  // Talent: Skill Points consumed by any ally (delta is already the
+  // expected change; the event weight is 1).
+  k.on(
+    "skillPointsChanged",
+    "talent",
+    { subject: "ally", when: (event) => (event.delta ?? 0) < 0 },
+    (ctx, event) => {
+      const consumed = -(event.delta ?? 0);
+      addHits(ctx, consumed * k.param("04", 2));
+      ctx.gainEnergy(ctx.self, consumed * k.param("04", 1));
+    }
   );
-  k.on("actionStart", "talent", { subject: "ally" }, (ctx) => {
-    const consumed = ctx.self.counter("sp-seen") - ctx.skillPoints;
-    ctx.setCounter(ctx.self, "sp-seen", ctx.skillPoints);
-    if (consumed <= 1e-9) return;
-    addHits(ctx, consumed * k.param("04", 2));
-    // gainEnergy scales by the action's weight; `consumed` already does.
-    ctx.gainEnergy(ctx.self, (consumed * k.param("04", 1)) / ctx.weight);
-  });
-  const syncSkillPoints = (ctx: BattleApi) =>
-    ctx.setCounter(ctx.self, "sp-seen", ctx.skillPoints);
-  k.on("actionEnd", "talent", { subject: "ally" }, syncSkillPoints);
-  k.on("turnStart", "talent", { subject: "any" }, syncSkillPoints);
 });

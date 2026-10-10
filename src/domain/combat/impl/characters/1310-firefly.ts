@@ -123,6 +123,12 @@ export default defineCharacter("1310", (k) => {
     });
   }
 
+  // A2: Complete Combustion attacks reduce Toughness without Fire Weakness.
+  const withoutWeakness = k.a(1) ? k.traceParam(1, 1) : 0;
+
+  const healSelf = (ctx: BattleApi, share: number) =>
+    ctx.heal(ctx.self, share * (1 + ctx.self.currentStat("outgoingHealing")));
+
   const startEnhanced = (ctx: ActionContext) => {
     ctx.applyStatus(ctx.self, enhancedAttack);
     for (const enemy of ctx.enemies) ctx.applyStatus(enemy, breakTaken);
@@ -147,15 +153,18 @@ export default defineCharacter("1310", (k) => {
     hits: [
       { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
     ],
-    before: (ctx) =>
+    before: (ctx) => {
+      ctx.consumeHp(ctx.self, k.param("02", 2));
       ctx.gainEnergy(ctx.self, k.param("02", 3) * ctx.self.maxEnergy, {
         fixed: true,
-      }),
+      });
+    },
     after: (ctx) => ctx.advanceAction(ctx.self, k.param("02", 4)),
   });
 
   const countdown = k.summon({
     id: "complete-combustion-countdown",
+    countdown: true,
     speed: k.param("03", 4),
     policy: () => "end",
     abilities: [
@@ -189,9 +198,17 @@ export default defineCharacter("1310", (k) => {
     kind: "basic",
     energy: 0,
     hits: [
-      { shape: "single", main: k.param("08", 1), toughness: { main: 15 } },
+      {
+        shape: "single",
+        main: k.param("08", 1),
+        toughness: { main: 15 },
+        toughnessWithoutWeakness: withoutWeakness,
+      },
     ],
-    before: startEnhanced,
+    before: (ctx) => {
+      healSelf(ctx, k.param("08", 2));
+      startEnhanced(ctx);
+    },
     after: endEnhanced,
   });
 
@@ -208,11 +225,18 @@ export default defineCharacter("1310", (k) => {
     energy: 0,
     skillPoints: k.e(1) ? 0 : -1,
     hits: [
-      { shape: "single", main: k.param("09", 1), toughness: { main: 30 } },
+      {
+        shape: "single",
+        main: k.param("09", 1),
+        toughness: { main: 30 },
+        toughnessWithoutWeakness: withoutWeakness,
+      },
     ],
     before: (ctx) => {
-      // The implanted Weakness has no duration in the engine (tracked).
-      if (isEnemy(ctx.target)) ctx.implantWeakness(ctx.target, "Fire");
+      healSelf(ctx, k.param("09", 3));
+      if (isEnemy(ctx.target)) {
+        ctx.implantWeakness(ctx.target, "Fire", { turns: k.param("09", 4) });
+      }
       startEnhanced(ctx);
       if (k.e(1)) ctx.applyStatus(ctx.self, e1DefIgnore);
       ctx.applyStatus(ctx.self, deathstarMain);
@@ -228,6 +252,7 @@ export default defineCharacter("1310", (k) => {
             shape: "aoe",
             each: k.param("09", 2),
             toughness: { each: 15 },
+            toughnessWithoutWeakness: withoutWeakness,
           },
           {
             targets: adjacent,

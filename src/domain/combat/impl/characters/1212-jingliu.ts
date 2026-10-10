@@ -187,15 +187,16 @@ export default defineCharacter("1212", (k) => {
     },
   });
 
-  // Each attack in Spectral Transmigration consumes teammates' HP (Max HP
-  // from their steady panel; memosprites are not teammates) and converts it
-  // into ATK until the attack ends.
+  // Each attack in Spectral Transmigration consumes teammates' HP (down to
+  // the engine's HP floor; memosprites are not teammates) and converts the
+  // HP actually consumed into ATK until the attack ends.
   k.on("actionStart", "talent", { attack: true }, (ctx) => {
-    if (!ctx.self.has(transmigration)) return;
+    if (!ctx.self.has(transmigration) || ctx.weight <= 0) return;
     let consumed = 0;
     for (const ally of ctx.allies) {
       if (ally === ctx.self || ally.kind !== "character") continue;
-      consumed += k.param("04", 2) * ally.panelStat("hp");
+      const share = ctx.consumeHp(ally, k.param("04", 2)) / ctx.weight;
+      consumed += share * ally.panelStat("hp");
     }
     const baseAtk = ctx.self.panelStat("atkBase");
     if (baseAtk <= 0) return;

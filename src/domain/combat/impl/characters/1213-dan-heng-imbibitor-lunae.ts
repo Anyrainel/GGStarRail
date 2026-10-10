@@ -1,34 +1,35 @@
-import { type ActionContext, type BattleApi, isEnemy } from "../../kit/api";
+import type { ActionContext, BattleApi } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
 
+interface Part {
+  total: number;
+  toughness: number;
+  /** Share of the total per hit (0 where the hit skips this role). */
+  ratios: readonly number[];
+}
+
 /**
- * Splits an n-hit attack into one HitDef per hit. Per-hit ratios are not in
- * the reference data, so DMG and Toughness are split evenly (needs-data).
- * `adjacent` starts at hit `from` (1-based) and is split over the rest.
+ * One HitDef per hit, from the per-hit ratios of the ability config
+ * (Avatar_DanHengIL_00_Ability.json); DMG and Toughness split alike.
  */
-function perHit(
-  count: number,
-  main: { total: number; toughness: number },
-  adjacent?: { from: number; total: number; toughness: number }
-): HitDef[] {
-  const adjacentHits = adjacent ? count - adjacent.from + 1 : 0;
-  return Array.from({ length: count }, (_, index) => {
-    const hasAdjacent = adjacent !== undefined && index + 1 >= adjacent.from;
-    return hasAdjacent
+function split(main: Part, adjacent?: Part): HitDef[] {
+  return main.ratios.map((ratio, index) => {
+    const adjacentRatio = adjacent?.ratios[index] ?? 0;
+    return adjacent && adjacentRatio > 0
       ? {
           shape: "blast",
-          main: main.total / count,
-          adjacent: adjacent.total / adjacentHits,
+          main: main.total * ratio,
+          adjacent: adjacent.total * adjacentRatio,
           toughness: {
-            main: main.toughness / count,
-            adjacent: adjacent.toughness / adjacentHits,
+            main: main.toughness * ratio,
+            adjacent: adjacent.toughness * adjacentRatio,
           },
         }
       : {
           shape: "single",
-          main: main.total / count,
-          toughness: { main: main.toughness / count },
+          main: main.total * ratio,
+          toughness: { main: main.toughness * ratio },
         };
   });
 }
@@ -89,40 +90,18 @@ export default defineCharacter("1213", (k) => {
     ctx.gainSkillPoints(-(cost - squama));
   };
 
-  // Stacks gained "after each hit" (and Outroar "before every hit" from the
-  // 4th) must land between hits. Hit events fire once per target, so the
-  // action's hit boundaries are counted in events from its targets.
-  let hitEnds: number[] = [];
-  let hitEvents = 0;
-  let outroarHits = false;
-  const planHits = (
-    ctx: ActionContext,
-    hits: readonly HitDef[],
-    outroarFrom4th: boolean
-  ) => {
-    const index = isEnemy(ctx.target) ? ctx.enemies.indexOf(ctx.target) : -1;
-    const neighbours =
-      index < 0
-        ? 0
-        : (ctx.enemies[index - 1] ? 1 : 0) + (ctx.enemies[index + 1] ? 1 : 0);
-    let events = 0;
-    hitEnds = hits.map((hit) => {
-      events += hit.shape === "blast" ? 1 + neighbours : 1;
-      return events;
-    });
-    hitEvents = 0;
-    outroarHits = outroarFrom4th;
-  };
-  k.on("hit", "talent", { abilityKinds: ["basic", "ultimate"] }, (ctx) => {
-    hitEvents += 1;
-    const hit = hitEnds.indexOf(hitEvents);
-    if (hit < 0) return;
-    ctx.applyStatus(ctx.self, righteousHeart, { stacks: heartPerHit });
-    // Hit index is 0-based: after the 3rd hit, before the 4th onward.
-    if (outroarHits && hit >= 2 && hit < hitEnds.length - 1) {
-      ctx.applyStatus(ctx.self, outroar);
-    }
-  });
+  /**
+   * Righteous Heart after each hit; with Outroar, 1 stack before every hit
+   * from the 4th (after hits 3 to n − 1, 0-based 2 to n − 2).
+   */
+  const afterHit =
+    (count: number, outroarFrom4th: boolean) =>
+    (ctx: ActionContext, index: number) => {
+      ctx.applyStatus(ctx.self, righteousHeart, { stacks: heartPerHit });
+      if (outroarFrom4th && index >= 2 && index < count - 1) {
+        ctx.applyStatus(ctx.self, outroar);
+      }
+    };
   k.on("turnEnd", "talent", {}, (ctx) => {
     ctx.removeStatus(ctx.self, righteousHeart);
     if (!k.e(4)) ctx.removeStatus(ctx.self, outroar);
@@ -147,7 +126,6 @@ export default defineCharacter("1213", (k) => {
       energy,
       before: (ctx) => {
         spend(ctx, cost);
-        planHits(ctx, hits, options.outroar);
         if (leap && reignReturned) {
           const stacks = ctx.self.counter("reign-returned");
           if (stacks > 0) {
@@ -156,6 +134,7 @@ export default defineCharacter("1213", (k) => {
         }
       },
       hits,
+      afterHit: afterHit(hits.length, options.outroar),
       after: (ctx) => {
         if (leap && reignReturned) {
           ctx.removeStatus(ctx.self, reignReturned);
@@ -165,29 +144,40 @@ export default defineCharacter("1213", (k) => {
     });
   };
 
-  const basicHits = perHit(2, { total: k.param("01", 1), toughness: 10 });
+  const basicHits = split({
+    total: k.param("01", 1),
+    toughness: 10,
+    ratios: [0.3, 0.7],
+  });
   k.ability({
     id: "basic",
     kind: "basic",
-    before: (ctx) => planHits(ctx, basicHits, false),
     hits: basicHits,
+    afterHit: afterHit(basicHits.length, false),
   });
 
   enhanced(
     "transcendence",
     1,
     30,
-    perHit(3, { total: k.param("08", 1), toughness: 20 }),
+    split({
+      total: k.param("08", 1),
+      toughness: 20,
+      ratios: [0.33, 0.33, 0.34],
+    }),
     { outroar: false, leap: false }
   );
   enhanced(
     "divineSpear",
     2,
     35,
-    perHit(
-      5,
-      { total: k.param("10", 1), toughness: 30 },
-      { from: 4, total: k.param("10", 2), toughness: 10 }
+    split(
+      {
+        total: k.param("10", 1),
+        toughness: 30,
+        ratios: [0.2, 0.2, 0.2, 0.2, 0.2],
+      },
+      { total: k.param("10", 2), toughness: 10, ratios: [0, 0, 0, 0.5, 0.5] }
     ),
     { outroar: true, leap: false }
   );
@@ -195,24 +185,30 @@ export default defineCharacter("1213", (k) => {
     "fulgurantLeap",
     3,
     40,
-    perHit(
-      7,
-      { total: k.param("12", 1), toughness: 40 },
-      { from: 4, total: k.param("12", 2), toughness: 20 }
+    split(
+      {
+        total: k.param("12", 1),
+        toughness: 40,
+        ratios: [0.142, 0.142, 0.142, 0.142, 0.142, 0.142, 0.148],
+      },
+      {
+        total: k.param("12", 2),
+        toughness: 20,
+        ratios: [0, 0, 0, 0.25, 0.25, 0.25, 0.25],
+      }
     ),
     { outroar: true, leap: true }
   );
 
-  const ultimateHits = perHit(
-    3,
-    { total: k.param("03", 1), toughness: 20 },
-    { from: 1, total: k.param("03", 2), toughness: 20 }
+  const ultimateHits = split(
+    { total: k.param("03", 1), toughness: 20, ratios: [0.3, 0.3, 0.4] },
+    { total: k.param("03", 2), toughness: 20, ratios: [0.3, 0.3, 0.4] }
   );
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    before: (ctx) => planHits(ctx, ultimateHits, false),
     hits: ultimateHits,
+    afterHit: afterHit(ultimateHits.length, false),
     after: (ctx) => {
       // E2: "1 extra Squama Sacrosancta" and "advances by 100%" (no placeholders).
       const squama = k.param("03", 3) + (k.e(2) ? 1 : 0);

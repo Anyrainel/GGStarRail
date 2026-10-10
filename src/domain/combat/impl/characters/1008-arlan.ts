@@ -1,15 +1,13 @@
 import type { BattleApi } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { HitDef } from "../../kit/model";
+import type { StatusDef } from "../../kit/model";
 
 /** Arlan — Destruction, Lightning. */
 export default defineCharacter("1008", (k) => {
-  // HP is not simulated. Arlan is played without healing, so his HP is
-  // tracked from full at battle start and only his Skill changes it (down to
-  // 1 HP); enemy DMG and healing are not modeled.
   const lowHp = 0.5; // E1/E6: "50%" (no placeholder)
 
-  // Missing HP fraction as stacks: "up to a maximum of 72%" at 0 HP left.
+  // Missing HP fraction as stacks: "up to a maximum of 72%" at 0 HP left
+  // (linear, per the ability config).
   const painAndAnger = k.status({
     id: "pain-and-anger",
     origin: "talent",
@@ -43,15 +41,25 @@ export default defineCharacter("1008", (k) => {
       })
     : null;
 
-  const consumeHp = (ctx: BattleApi, fraction: number) => {
-    const missing = Math.min(1, ctx.self.counter("hp-missing") + fraction);
-    ctx.setCounter(ctx.self, "hp-missing", missing);
-    ctx.applyStatus(ctx.self, painAndAnger, { setStacks: missing });
-    if (missing >= 1 - lowHp - 1e-9) {
-      if (e1) ctx.applyStatus(ctx.self, e1);
-      if (e6) ctx.applyStatus(ctx.self, e6);
-    }
+  const toggle = (ctx: BattleApi, status: StatusDef | null, on: boolean) => {
+    if (!status) return;
+    if (on) ctx.applyStatus(ctx.self, status);
+    else ctx.removeStatus(ctx.self, status);
   };
+  /** Talent, E1, and E6 follow his HP: enemy DMG, the Skill, and heals. */
+  const syncHp = (ctx: BattleApi) => {
+    const missing = 1 - ctx.self.hpRatio;
+    if (ctx.self.has(painAndAnger)) {
+      ctx.setStatusStacks(ctx.self, painAndAnger, missing);
+    } else if (missing > 0) {
+      ctx.applyStatus(ctx.self, painAndAnger, { setStacks: missing });
+    }
+    const low = ctx.self.hpRatio <= lowHp + 1e-9;
+    toggle(ctx, e1, low);
+    toggle(ctx, e6, low);
+  };
+  k.on("battleStart", "talent", { subject: "any" }, syncHp);
+  k.on("hpChanged", "talent", {}, syncHp);
 
   k.ability({
     id: "basic",
@@ -66,27 +74,26 @@ export default defineCharacter("1008", (k) => {
     id: "skill",
     kind: "skill",
     skillPoints: 0,
-    before: (ctx) => consumeHp(ctx, k.param("02", 1)),
+    before: (ctx) => {
+      ctx.consumeHp(ctx.self, k.param("02", 1));
+    },
     hits: [
       { shape: "single", main: k.param("02", 2), toughness: { main: 20 } },
     ],
   });
 
-  const ultHit: HitDef = {
-    shape: "blast",
-    main: k.param("03", 1),
-    adjacent: k.param("03", 2),
-    toughness: { main: 20, adjacent: 20 },
-  };
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    before: (ctx) => {
-      // E6 at 50% HP or lower: adjacent multiplier raised to the main one.
-      ultHit.adjacent =
-        e6 && ctx.self.has(e6) ? k.param("03", 1) : k.param("03", 2);
-    },
-    hits: [ultHit],
+    // E6 at 50% HP or lower: adjacent multiplier raised to the main one.
+    hits: (ctx) => [
+      {
+        shape: "blast",
+        main: k.param("03", 1),
+        adjacent: e6 && ctx.self.has(e6) ? k.param("03", 1) : k.param("03", 2),
+        toughness: { main: 20, adjacent: 20 },
+      },
+    ],
   });
 
   // The Skill costs no Skill Points, so it is used every turn.

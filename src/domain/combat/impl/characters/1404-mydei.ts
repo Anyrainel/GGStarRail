@@ -1,6 +1,13 @@
-import type { BattleApi } from "../../kit/api";
+import { type ActionContext, type BattleApi, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
+
+const CHARGE = "charge";
+/** A6 bonuses fixed at battle start, as ratios per Charge or heal. */
+const A6_CHARGE = "a6-charge-ratio";
+const A6_HEAL = "a6-heal-boost";
+/** The engine's HP floor (1%), standing in for a killing blow. */
+const HP_FLOOR = 0.01;
 
 /** Mydei — Destruction, Imaginary. */
 export default defineCharacter("1404", (k) => {
@@ -9,21 +16,6 @@ export default defineCharacter("1404", (k) => {
   const vendettaCharge = 100;
   const godslayerAt = k.e(6) ? k.rankParam(6, 1) : k.param("04", 3);
   const godslayerCost = k.e(6) ? k.rankParam(6, 1) : k.param("11", 3);
-
-  // HP is not simulated, so the kit tracks Mydei's HP as a fraction of Max HP
-  // ("hp" counter, kept when Vendetta raises Max HP) to derive Charge.
-  // Assumptions (tracker mydei-hp-model): each enemy attack on Mydei costs 10%
-  // Max HP, and with a sustain ally his HP is topped up to 80% at the start
-  // of his turns.
-  const enemyHitHp = 0.1;
-  const sustainFloor = 0.8;
-  const sustained = k.toggle(
-    "sustained",
-    "talent",
-    "selfHpAbove",
-    true,
-    sustainFloor
-  );
 
   const vendettaModifiers: ModifierDef[] = [
     {
@@ -41,72 +33,60 @@ export default defineCharacter("1404", (k) => {
     modifiers: vendettaModifiers,
   });
 
+  // Ultimate: Taunts the target and adjacent targets.
+  const taunt = k.status({
+    id: "throne-of-bones-taunt",
+    origin: "ultimate",
+    debuff: true,
+    taunt: true,
+    duration: { turns: k.param("03", 4) },
+  });
+
+  const a6Step = 100; // "for every 100 excess HP" (no placeholder)
   if (k.a(3)) {
     // "When battle starts": evaluated on Max HP without Vendetta's bonus,
     // which is a scaling modifier and never feeds another conversion.
-    const step = 100;
     k.stat("a6", {
       stat: "critRate",
       scaling: {
         source: "holder",
         stat: "hp",
         threshold: k.traceParam(3, 1),
-        step,
+        step: a6Step,
         ratio: k.traceParam(3, 3),
-        cap: (k.traceParam(3, 2) / step) * k.traceParam(3, 3),
+        cap: (k.traceParam(3, 2) / a6Step) * k.traceParam(3, 3),
       },
     });
   }
 
   const inVendetta = (ctx: BattleApi) => ctx.self.has(vendetta);
-  const hp = (ctx: BattleApi) => ctx.self.counter("hp");
 
   const addCharge = (ctx: BattleApi, amount: number) => {
-    if (ctx.self.counter("godslayer-active") > 0) return;
-    const next = Math.min(maxCharge, ctx.self.counter("charge") + amount);
-    ctx.setCounter(ctx.self, "charge", next);
+    if (ctx.self.counter("godslayer-active") > 0 || amount <= 0) return;
+    ctx.addCounter(ctx.self, CHARGE, amount, maxCharge);
   };
 
-  /** Healing received; E2 converts part of it to Charge during Vendetta. */
-  const heal = (ctx: BattleApi, amount: number) => {
-    ctx.setCounter(ctx.self, "hp", Math.min(1, hp(ctx) + amount));
-    // ZH scopes the conversion to Vendetta (【血仇】状态期间，…且接受治疗后…);
-    // EN puts it in a separate sentence.
-    if (!k.e(2) || !inVendetta(ctx)) return;
-    const tally = ctx.self.counter("e2-tally");
+  /** E2: healing received during Vendetta, as a share of Max HP. */
+  const convertHeal = (ctx: BattleApi, share: number) => {
+    if (!k.e(2) || !inVendetta(ctx) || share <= 0) return;
     const converted = Math.min(
-      k.rankParam(2, 3) - tally,
-      amount * 100 * k.rankParam(2, 2)
+      k.rankParam(2, 3) - ctx.self.counter("e2-tally"),
+      share * 100 * k.rankParam(2, 2)
     );
     if (converted <= 0) return;
-    ctx.setCounter(ctx.self, "e2-tally", tally + converted);
+    ctx.addCounter(ctx.self, "e2-tally", converted);
     addCharge(ctx, converted);
   };
 
-  /** HP lost as a fraction of Max HP: 1 Charge per 1%. */
-  const loseHp = (ctx: BattleApi, amount: number, chargeRatio = 1) => {
-    addCharge(ctx, amount * 100 * chargeRatio);
-    const left = hp(ctx) - amount;
-    if (left > 0) {
-      ctx.setCounter(ctx.self, "hp", left);
-      return;
-    }
-    if (!inVendetta(ctx)) {
-      // Being knocked down is not simulated.
-      ctx.setCounter(ctx.self, "hp", 0.01);
-      return;
-    }
-    // Killing blow during Vendetta: Charge is cleared and HP restored; A2
-    // keeps Vendetta up to #1 times per battle.
-    ctx.setCounter(ctx.self, "charge", 0);
-    ctx.setCounter(ctx.self, "hp", 0);
-    const saves = ctx.self.counter("a2-saves");
-    if (k.a(1) && saves < k.traceParam(1, 1)) {
-      ctx.setCounter(ctx.self, "a2-saves", saves + 1);
-    } else {
-      ctx.removeStatus(ctx.self, vendetta);
-    }
-    heal(ctx, k.param("04", 4));
+  /**
+   * Mydei's own healing. The E2 listener converts what is restored; the
+   * part beyond Max HP (not reported) is converted here.
+   */
+  const healSelf = (ctx: BattleApi, share: number) => {
+    const amount = share * (1 + ctx.self.currentStat("outgoingHealing"));
+    const restored =
+      ctx.weight > 0 ? ctx.heal(ctx.self, amount) / ctx.weight : 0;
+    convertHeal(ctx, amount - restored);
   };
 
   /**
@@ -115,20 +95,20 @@ export default defineCharacter("1404", (k) => {
    * follows the current one.
    */
   const checkCharge = (ctx: BattleApi, allowGodslayer = true) => {
-    if (!inVendetta(ctx) && ctx.self.counter("charge") >= vendettaCharge) {
+    if (!inVendetta(ctx) && ctx.self.counter(CHARGE) >= vendettaCharge) {
       ctx.setCounter(
         ctx.self,
-        "charge",
-        ctx.self.counter("charge") - vendettaCharge
+        CHARGE,
+        ctx.self.counter(CHARGE) - vendettaCharge
       );
       ctx.applyStatus(ctx.self, vendetta);
-      heal(ctx, k.param("04", 1));
+      healSelf(ctx, k.param("04", 1));
       ctx.advanceAction(ctx.self, 1);
     }
     if (
       allowGodslayer &&
       inVendetta(ctx) &&
-      ctx.self.counter("charge") >= godslayerAt - 1e-9 &&
+      ctx.self.counter(CHARGE) >= godslayerAt - 1e-9 &&
       ctx.self.counter("godslayer-pending") === 0
     ) {
       ctx.setCounter(ctx.self, "godslayer-pending", 1);
@@ -136,37 +116,117 @@ export default defineCharacter("1404", (k) => {
     }
   };
 
-  // A6 Charge ratio from enemy DMG at its cap (Max HP 8000): timelines may
-  // only depend on SPD and Energy Regeneration (optimizer timeline cache).
-  const enemyChargeRatio =
-    1 + (k.a(3) ? (k.traceParam(3, 2) / 100) * k.traceParam(3, 4) : 0);
-
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
-    ctx.setCounter(ctx.self, "hp", 1);
+    if (k.a(3)) {
+      const excess = Math.min(
+        k.traceParam(3, 2),
+        Math.max(0, ctx.self.panelStat("hp") - k.traceParam(3, 1))
+      );
+      const steps = Math.floor(excess / a6Step + 1e-9);
+      ctx.setCounter(ctx.self, A6_CHARGE, steps * k.traceParam(3, 4));
+      ctx.setCounter(ctx.self, A6_HEAL, steps * k.traceParam(3, 5));
+    }
     // E6: enters Vendetta on entering battle (no heal or advance stated).
     if (k.e(6)) ctx.applyStatus(ctx.self, vendetta);
   });
 
-  k.on("turnStart", "talent", {}, (ctx) => {
-    if (sustained && hp(ctx) < sustainFloor) {
-      heal(ctx, sustainFloor - hp(ctx));
+  // 1 Charge per 1% of HP lost, from any cause; A6 raises the ratio for
+  // enemy DMG. The event weight makes it an expected value.
+  k.on(
+    "hpChanged",
+    "talent",
+    { when: (event) => (event.delta ?? 0) < 0 },
+    (ctx, event) => {
+      const ratio =
+        event.hpCause === "enemy" ? 1 + ctx.self.counter(A6_CHARGE) : 1;
+      addCharge(ctx, -(event.delta ?? 0) * 100 * ratio);
     }
-    checkCharge(ctx, false);
-  });
+  );
 
-  k.on("hitByEnemy", "talent", {}, (ctx) => {
-    // ctx.weight is this unit's share of the enemy attack.
-    loseHp(ctx, enemyHitHp * ctx.weight, enemyChargeRatio);
-    if (k.e(4) && inVendetta(ctx)) heal(ctx, k.rankParam(4, 1) * ctx.weight);
-  });
-  // Thresholds crossed during an enemy turn resolve at its end (weight 1).
+  // Killing blows are not simulated (allies stay at 1% HP or more): an enemy
+  // hit that leaves him at the floor during Vendetta stands in for one. It
+  // clears Charge and restores HP; A2 keeps Vendetta up to #1 times.
+  k.on(
+    "hpChanged",
+    "talent",
+    {
+      when: (event, self) =>
+        event.hpCause === "enemy" && self.hpRatio <= HP_FLOOR + 1e-9,
+    },
+    (ctx) => {
+      if (!inVendetta(ctx) || ctx.weight <= 0) return;
+      ctx.setCounter(ctx.self, CHARGE, 0);
+      const saves = ctx.self.counter("a2-saves");
+      if (k.a(1) && saves < k.traceParam(1, 1)) {
+        ctx.setCounter(ctx.self, "a2-saves", saves + 1);
+      } else {
+        ctx.removeStatus(ctx.self, vendetta);
+      }
+      // The floor was reached for certain: restore at full weight.
+      healSelf(ctx, k.param("04", 4) / ctx.weight);
+    }
+  );
+
+  if (k.e(4)) {
+    // After being attacked during Vendetta (with Mydei's share of the attack).
+    k.on(
+      "hpChanged",
+      "e4",
+      { when: (event) => event.hpCause === "enemy" },
+      (ctx) => {
+        if (inVendetta(ctx)) healSelf(ctx, k.rankParam(4, 1));
+      }
+    );
+  }
+
+  // A6 heal boost and E2 conversion of every heal Mydei receives.
+  let boosting = false;
+  k.on(
+    "hpChanged",
+    "a6",
+    {
+      when: (event, self) =>
+        !boosting &&
+        event.hpCause === "heal" &&
+        (event.delta ?? 0) > 0 &&
+        self.counter(A6_HEAL) > 0,
+    },
+    (ctx, event) => {
+      boosting = true;
+      ctx.heal(ctx.self, (event.delta ?? 0) * ctx.self.counter(A6_HEAL));
+      boosting = false;
+    }
+  );
+  if (k.e(2)) {
+    k.on(
+      "hpChanged",
+      "e2",
+      { when: (event) => event.hpCause === "heal" },
+      (ctx, event) => convertHeal(ctx, event.delta ?? 0)
+    );
+  }
+
+  k.on("turnStart", "talent", {}, (ctx) => checkCharge(ctx, false));
+  // Thresholds crossed during other units' actions resolve at their end
+  // (weight 1).
   k.on("turnEnd", "talent", { subject: "enemy" }, (ctx) => {
     ctx.setCounter(ctx.self, "e2-tally", 0);
     checkCharge(ctx);
   });
+  k.on(
+    "actionEnd",
+    "talent",
+    { subject: "otherAlly", when: (event) => event.weight >= 1 - 1e-9 },
+    (ctx) => checkCharge(ctx)
+  );
   k.on("actionEnd", "e2", { subject: "ally" }, (ctx) =>
     ctx.setCounter(ctx.self, "e2-tally", 0)
   );
+
+  const consumeCurrent = (ctx: ActionContext, ratio: number) => {
+    ctx.consumeHp(ctx.self, ctx.self.hpRatio * ratio);
+    checkCharge(ctx);
+  };
 
   k.ability({
     id: "basic",
@@ -185,10 +245,7 @@ export default defineCharacter("1404", (k) => {
     id: "skill",
     kind: "skill",
     skillPoints: 0,
-    before: (ctx) => {
-      loseHp(ctx, hp(ctx) * k.param("02", 3));
-      checkCharge(ctx);
-    },
+    before: (ctx) => consumeCurrent(ctx, k.param("02", 3)),
     hits: [
       {
         shape: "blast",
@@ -204,10 +261,7 @@ export default defineCharacter("1404", (k) => {
     id: "kingslayer",
     kind: "skill",
     skillPoints: 0,
-    before: (ctx) => {
-      loseHp(ctx, hp(ctx) * k.param("09", 3));
-      checkCharge(ctx);
-    },
+    before: (ctx) => consumeCurrent(ctx, k.param("09", 3)),
     hits: [
       {
         shape: "blast",
@@ -228,8 +282,8 @@ export default defineCharacter("1404", (k) => {
       ctx.setCounter(ctx.self, "godslayer-pending", 0);
       ctx.setCounter(
         ctx.self,
-        "charge",
-        Math.max(0, ctx.self.counter("charge") - godslayerCost)
+        CHARGE,
+        Math.max(0, ctx.self.counter(CHARGE) - godslayerCost)
       );
       ctx.setCounter(ctx.self, "godslayer-active", 1);
     },
@@ -259,7 +313,7 @@ export default defineCharacter("1404", (k) => {
     id: "ultimate",
     kind: "ultimate",
     before: (ctx) => {
-      heal(ctx, k.param("03", 3));
+      healSelf(ctx, k.param("03", 3));
       addCharge(ctx, k.param("03", 5));
       checkCharge(ctx);
     },
@@ -272,6 +326,18 @@ export default defineCharacter("1404", (k) => {
         toughness: { main: 20, adjacent: 20 },
       },
     ],
+    after: (ctx) => {
+      const target = ctx.target;
+      if (!isEnemy(target)) return;
+      const index = ctx.enemies.indexOf(target);
+      for (const enemy of [
+        ctx.enemies[index - 1],
+        target,
+        ctx.enemies[index + 1],
+      ]) {
+        if (enemy) ctx.applyStatus(enemy, taunt);
+      }
+    },
   });
 
   // Skill costs no Skill Points (facts); Vendetta turns auto-cast Kingslayer,

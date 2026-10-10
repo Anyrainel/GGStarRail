@@ -1,12 +1,30 @@
-import { type AbilityDef, type BattleApi, isEnemy } from "../../kit/api";
+import {
+  type AbilityDef,
+  type ActionContext,
+  type BattleApi,
+  isEnemy,
+} from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
 
+const HANDLED = "parry-handled-attack";
+const SLASHED = "a2-slash-used";
+/** Random-target branches of one Intuit Counter still to resolve. */
+const BRANCHES = "intuit-branches";
+const PRIOR_SUNDER = "prior-true-sunder";
+
 /** Yunli — Destruction, Physical. */
 export default defineCharacter("1221", (k) => {
-  // Parry ends with the next ally or enemy turn (listeners below). Its Taunt
-  // and the A4 DMG reduction are not modeled; see the tracker.
+  // Parry ends with the next ally or enemy turn (listeners below). The A4
+  // DMG reduction is not modeled.
   const parry = k.status({ id: "parry", origin: "ultimate" });
+  // Taunt on every enemy while Parry lasts: their attacks target Yunli.
+  const taunt = k.status({
+    id: "parry-taunt",
+    origin: "ultimate",
+    debuff: true,
+    taunt: true,
+  });
   // "Increases the CRIT DMG dealt by Yunli's next Counter."
   const nextCounterCritDmg = k.status({
     id: "next-counter-crit-dmg",
@@ -74,6 +92,14 @@ export default defineCharacter("1221", (k) => {
         toughness: { main: 20, adjacent: 10 },
       },
     ],
+    before: (ctx) => {
+      const maxHp = ctx.self.currentStat("hp");
+      if (maxHp <= 0) return;
+      const amount =
+        (k.param("02", 3) * ctx.self.currentStat("atk") + k.param("02", 4)) *
+        (1 + ctx.self.currentStat("outgoingHealing"));
+      ctx.heal(ctx.self, amount / maxHp);
+    },
   });
 
   k.ability({
@@ -85,16 +111,24 @@ export default defineCharacter("1221", (k) => {
     after: (ctx) => {
       ctx.applyStatus(ctx.self, parry);
       ctx.applyStatus(ctx.self, nextCounterCritDmg);
+      for (const enemy of ctx.enemies) ctx.applyStatus(enemy, taunt);
     },
   });
 
-  const counterStart = (ctx: BattleApi) => {
-    if (k.a(3)) ctx.applyStatus(ctx.self, trueSunder);
-  };
-  const counterEnd = (ctx: BattleApi) => {
-    ctx.removeStatus(ctx.self, nextCounterCritDmg);
+  const endParry = (ctx: BattleApi) => {
+    ctx.removeStatus(ctx.self, parry);
+    for (const enemy of ctx.enemies) ctx.removeStatus(enemy, taunt);
   };
 
+  // A6 at full strength for the Counter's own (already weighted) hits.
+  const counterStart = (ctx: ActionContext) => {
+    if (!k.a(3)) return;
+    ctx.setCounter(ctx.self, PRIOR_SUNDER, ctx.self.stacks(trueSunder));
+    ctx.applyStatus(ctx.self, trueSunder);
+  };
+
+  // Talent Counter, with Yunli's aggro share of the attack as its weight:
+  // afterwards A6 is held with the chance that some Counter happened.
   k.ability({
     id: "counter",
     kind: "followUp",
@@ -108,11 +142,18 @@ export default defineCharacter("1221", (k) => {
       },
     ],
     before: counterStart,
-    after: counterEnd,
+    after: (ctx) => {
+      ctx.removeStatus(ctx.self, nextCounterCritDmg);
+      if (k.a(3)) {
+        const prior = ctx.self.counter(PRIOR_SUNDER);
+        const chance = 1 - (1 - prior) * (1 - Math.min(1, ctx.weight));
+        ctx.setStatusStacks(ctx.self, trueSunder, chance);
+      }
+    },
   });
 
-  // Slash/Cull Energy and the Toughness of Cull's extra instances are not in
-  // the facts (tracked as needs-data): none is assumed.
+  // Slash and Cull regenerate no Energy (ability config: no ModifySP); Cull's
+  // extra instances reduce 5 Toughness each (20 x 0.25).
   const intuit: HitDef = {
     shape: "blast",
     main: k.param("03", 1),
@@ -126,7 +167,12 @@ export default defineCharacter("1221", (k) => {
     hits,
     before: counterStart,
     after: (ctx) => {
-      counterEnd(ctx);
+      // Each branch resolves its weight's share (addCounter is weighted).
+      ctx.addCounter(ctx.self, BRANCHES, -1);
+      if (ctx.self.counter(BRANCHES) <= 1e-9) {
+        ctx.setCounter(ctx.self, BRANCHES, 0);
+        ctx.removeStatus(ctx.self, nextCounterCritDmg);
+      }
       if (k.e(4)) ctx.applyStatus(ctx.self, e4EffectRes);
     },
   });
@@ -138,23 +184,24 @@ export default defineCharacter("1221", (k) => {
         shape: "bounce",
         each: k.param("03", 7),
         bounces: k.param("03", 4) + (k.e(1) ? k.rankParam(1, 2) : 0),
+        toughness: { each: 5 },
       },
     ])
   );
 
   const talentEnergy = k.param("04", 3);
-  const HANDLED = "parry-handled-attack";
 
-  // Under Taunt every enemy attack targets Yunli, so any enemy attack while
-  // Parry is active is countered with Cull. E6 (any enemy ability triggers
-  // Cull) adds nothing here because every enemy action is an attack.
+  // Under Taunt every enemy attack targets Yunli and is countered with Cull.
+  // E6 (any enemy ability triggers Cull) adds nothing here because every
+  // enemy action is an attack.
   k.on("enemyAttack", "ultimate", { subject: "enemy" }, (ctx, event) => {
     const attacker = event.unit;
     const parried = ctx.self.has(parry) && isEnemy(attacker);
     ctx.setCounter(ctx.self, HANDLED, parried ? 1 : 0);
     if (!parried) return;
-    ctx.removeStatus(ctx.self, parry);
+    endParry(ctx);
     ctx.gainEnergy(ctx.self, talentEnergy);
+    ctx.setCounter(ctx.self, BRANCHES, ctx.weight);
     ctx.queueAction(ctx.self, "intuitCull", { target: attacker });
   });
 
@@ -166,24 +213,42 @@ export default defineCharacter("1221", (k) => {
     ctx.queueAction(ctx.self, "counter", { target: attacker });
   });
 
-  // No Counter during Parry: Slash on a random enemy (the engine's main
-  // target), replaced by Cull after a Slash with A2.
-  const SLASHED = "a2-slash-used";
+  // No Counter during Parry: Slash on a random enemy (each enemy as a
+  // weighted branch), replaced by Cull after a Slash with A2.
   const parryExpires = (ctx: BattleApi) => {
-    ctx.removeStatus(ctx.self, parry);
+    endParry(ctx);
     const cull = k.a(1) && ctx.self.counter(SLASHED) >= 1;
     if (k.a(1)) ctx.setCounter(ctx.self, SLASHED, cull ? 0 : 1);
-    ctx.queueAction(ctx.self, cull ? "intuitCull" : "intuitSlash");
+    const enemies = ctx.enemies;
+    ctx.setCounter(ctx.self, BRANCHES, 1);
+    for (const enemy of enemies) {
+      ctx.queueAction(ctx.self, cull ? "intuitCull" : "intuitSlash", {
+        target: enemy,
+        weight: 1 / enemies.length,
+      });
+    }
   };
   // An ally turn cannot attack Yunli, so Parry is known to expire unused as
   // soon as it starts; queuing then runs Slash at the end of that turn.
-  k.on("turnStart", "ultimate", { subject: "ally" }, (ctx, event) => {
-    if (event.unit.kind === "summon" || !ctx.self.has(parry)) return;
-    parryExpires(ctx);
-  });
+  k.on(
+    "turnStart",
+    "ultimate",
+    {
+      subject: "ally",
+      when: (event, self) => event.unit.kind !== "summon" && self.has(parry),
+    },
+    (ctx) => parryExpires(ctx)
+  );
   // An enemy turn without an attack (e.g. Frozen). The queued Slash runs
   // with the next queue flush, one turn late.
-  k.on("turnEnd", "ultimate", { subject: "enemy" }, (ctx) => {
-    if (ctx.self.has(parry)) parryExpires(ctx);
-  });
+  k.on(
+    "turnEnd",
+    "ultimate",
+    { subject: "enemy", when: (_event, self) => self.has(parry) },
+    (ctx) => parryExpires(ctx)
+  );
+
+  // Ultimate right before an enemy turn, so that enemy's attack meets Parry
+  // and is answered with Cull.
+  k.policy({ ultimate: (view) => isEnemy(view.upcoming) });
 });

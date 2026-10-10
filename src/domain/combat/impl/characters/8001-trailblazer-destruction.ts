@@ -1,4 +1,4 @@
-import { isEnemy } from "../../kit/api";
+import type { ActionContext, PolicyView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
 
@@ -16,23 +16,19 @@ export default defineCharacter("8001", (k) => {
     modifiers: pickoffModifiers,
   });
 
-  // A6 only boosts DMG to the designated target. It is applied before the
-  // hits and dropped after the first damage instance, which the engine always
-  // resolves on the main target before adjacent ones.
+  // A6: DMG to the designated target only, while the Skill or RIP Home Run
+  // is being used.
   const fightingWill = k.status({
     id: "fighting-will",
     origin: "a6",
-    modifiers: [{ stat: "dmgBoost", value: k.traceParam(3, 1) }],
+    modifiers: [
+      {
+        stat: "dmgBoost",
+        value: k.traceParam(3, 1),
+        filter: { targetRoles: ["main"] },
+      },
+    ],
   });
-  if (k.a(3)) {
-    k.on("hit", "a6", { subject: "self" }, (ctx) => {
-      if (ctx.self.has(fightingWill)) ctx.removeStatus(ctx.self, fightingWill);
-    });
-  }
-
-  // Ultimate mode is the player's choice; the engine casts one Ultimate, so
-  // it is an option. RIP Home Run is the default for multi-enemy fights.
-  const ripHomeRun = k.toggle("rip-home-run", "ultimate", "active", true);
 
   // Kills are not simulated: when enabled, every Ultimate defeats an enemy.
   const e1Kill =
@@ -49,22 +45,36 @@ export default defineCharacter("8001", (k) => {
     );
   }
 
-  if (k.e(4)) {
-    // Approximation: the designated target's Weakness Broken state at the
-    // start of the action decides the CRIT Rate for every target hit.
-    const destructingGlance = k.status({
-      id: "destructing-glance",
-      origin: "e4",
-      modifiers: [{ stat: "critRate", value: k.rankParam(4, 1) }],
-    });
-    k.on("actionStart", "e4", { subject: "self", attack: true }, (ctx, e) => {
-      if (isEnemy(e.target) && e.target.broken) {
-        ctx.applyStatus(ctx.self, destructingGlance);
+  if (k.e(2)) {
+    // ZH: after an attack, if an enemy hit has a Physical Weakness.
+    k.on(
+      "actionEnd",
+      "e2",
+      {
+        attack: true,
+        when: (event) =>
+          (event.targetsHit ?? []).some((enemy) =>
+            enemy.weaknesses.has("Physical")
+          ),
+      },
+      (ctx) => {
+        const maxHp = ctx.self.currentStat("hp");
+        if (maxHp <= 0) return;
+        const amount =
+          k.rankParam(2, 1) *
+          ctx.self.currentStat("atk") *
+          (1 + ctx.self.currentStat("outgoingHealing"));
+        ctx.heal(ctx.self, amount / maxHp);
       }
-    });
-    k.on("actionEnd", "e4", { subject: "self" }, (ctx) =>
-      ctx.removeStatus(ctx.self, destructingGlance)
     );
+  }
+
+  if (k.e(4)) {
+    k.stat("e4", {
+      stat: "critRate",
+      value: k.rankParam(4, 1),
+      filter: { targetBroken: true },
+    });
   }
 
   k.ability({
@@ -92,26 +102,53 @@ export default defineCharacter("8001", (k) => {
     after: (ctx) => ctx.removeStatus(ctx.self, fightingWill),
   });
 
+  const ultimateAfter = (ctx: ActionContext) => {
+    ctx.removeStatus(ctx.self, fightingWill);
+    if (e1Kill) ctx.gainEnergy(ctx.self, k.rankParam(1, 1));
+    if (e6Kill) ctx.applyStatus(ctx.self, perfectPickoff);
+  };
+
+  // Blowout: Farewell Hit.
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     hits: [
-      ripHomeRun
-        ? {
-            shape: "blast",
-            main: k.param("09", 1),
-            adjacent: k.param("09", 2),
-            toughness: { main: 20, adjacent: 20 },
-          }
-        : { shape: "single", main: k.param("08", 1), toughness: { main: 30 } },
+      { shape: "single", main: k.param("08", 1), toughness: { main: 30 } },
+    ],
+    after: ultimateAfter,
+  });
+
+  // Blowout: RIP Home Run.
+  k.ability({
+    id: "ultimateRip",
+    kind: "ultimate",
+    hits: [
+      {
+        shape: "blast",
+        main: k.param("09", 1),
+        adjacent: k.param("09", 2),
+        toughness: { main: 20, adjacent: 20 },
+      },
     ],
     before: (ctx) => {
-      if (ripHomeRun && k.a(3)) ctx.applyStatus(ctx.self, fightingWill);
+      if (k.a(3)) ctx.applyStatus(ctx.self, fightingWill);
     },
-    after: (ctx) => {
-      ctx.removeStatus(ctx.self, fightingWill);
-      if (e1Kill) ctx.gainEnergy(ctx.self, k.rankParam(1, 1));
-      if (e6Kill) ctx.applyStatus(ctx.self, perfectPickoff);
-    },
+    after: ultimateAfter,
+  });
+
+  const neighbours = (view: PolicyView) => {
+    const index = view.mainTarget ? view.enemies.indexOf(view.mainTarget) : -1;
+    if (index < 0) return 0;
+    return (index > 0 ? 1 : 0) + (index < view.enemies.length - 1 ? 1 : 0);
+  };
+  // RIP Home Run when its total beats Farewell Hit: with A6 one neighbour is
+  // enough (270% x 1.25 + 162% > 450%), without it two are needed.
+  const ripMultiplier =
+    k.param("09", 1) * (k.a(3) ? 1 + k.traceParam(3, 1) : 1);
+  k.policy({
+    ultimate: (view) =>
+      ripMultiplier + neighbours(view) * k.param("09", 2) > k.param("08", 1)
+        ? "ultimateRip"
+        : true,
   });
 });

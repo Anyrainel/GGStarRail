@@ -83,8 +83,7 @@ export default defineCharacter("1214", (k) => {
     ],
   });
 
-  // Ignoring Weakness Types is not modeled: the engine only reduces Toughness
-  // of matching Weaknesses (tracker xueyi-ignore-weakness).
+  // Ignores Weakness Types; a break triggers the Quantum Break effect.
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -110,6 +109,7 @@ export default defineCharacter("1214", (k) => {
         shape: "single",
         main: k.param("03", 1),
         toughness: { main: ultToughness },
+        toughnessWithoutWeakness: 1,
       },
     ],
     after: (ctx) => {
@@ -146,6 +146,8 @@ export default defineCharacter("1214", (k) => {
         each: k.param("04", 2),
         bounces: 3,
         toughness: { each: 5 },
+        // E2: regardless of Weakness Type (Quantum Break effect).
+        toughnessWithoutWeakness: k.e(2) ? 1 : 0,
       },
     ],
     before: (ctx) => {
@@ -153,6 +155,10 @@ export default defineCharacter("1214", (k) => {
       ctx.setCounter(ctx.self, "follow-up-queued", 0);
     },
     after: (ctx) => {
+      if (k.e(2)) {
+        const boost = 1 + ctx.self.currentStat("outgoingHealing");
+        ctx.heal(ctx.self, k.rankParam(2, 1) * boost);
+      }
       const tally = ctx.self.counter("karma-tally");
       ctx.setCounter(ctx.self, "karma-tally", 0);
       if (tally > 0) gainKarma(ctx, tally);
