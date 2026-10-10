@@ -1,1 +1,71 @@
 # Combat translation tracker: preservation. Schema: .agents/skills/hsr-combat/tracking.md
+- id: dan-heng-pt-bondmate-choice
+  entity: "1414"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    The Bondmate is picked by heuristic (damage Paths, then Nihility, then the
+    highest ATK, never Dan Heng unless alone) through a Skill turn choice; the
+    player's actual choice cannot be expressed (see engine-ally-option-vocabulary).
+  detail: ""
+- id: dan-heng-pt-e6-field-effect
+  entity: "1414"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    E6 "DMG taken +20% while the Bondmate is on the field" is a non-debuff
+    enemy status applied when the Bondmate is designated; confirm it does not
+    count as a debuff for per-debuff effects.
+  detail: ""
+- id: dan-heng-pt-souldragon-toughness
+  entity: "1414"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    The enhanced Souldragon Follow-Up ATK uses the Talent row's facts (20
+    Toughness per enemy) since it has no skill row of its own; its Additional
+    DMG parts reduce no Toughness.
+  detail: ""
+- id: dan-heng-pt-e2-scope
+  entity: "1414"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    E2 doubles every Additional DMG instance the Bondmate deals during an
+    enhanced Souldragon action, including A6's highest-HP instance; confirm A6
+    is in scope.
+  detail: "Implemented by scaling the multipliers (equivalent to dmgMultiplier 1 on those instances)."
+- id: trailblazer-preservation-a6-shield
+  entity: "8003"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    A6 checks a marker for the Talent's own Shield (2 turns, renewed by every
+    Basic ATK, Skill, and Ultimate); Shields from teammates or the Technique,
+    and Shields broken by enemy hits, are not seen.
+  detail: ""
+- id: trailblazer-preservation-taunt-aggro
+  entity: "8003"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The Skill's Taunt is applied as a debuff but does not redirect enemy
+    attacks, so Magma Will from being hit (and hit Energy) uses the base
+    Preservation aggro share (see engine-aggro-modifiers).
+  detail: ""
+- id: trailblazer-preservation-e1-instance
+  entity: "8003"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    E1's DEF-scaled Fire DMG is a silent second scaling part of the Basic ATK /
+    Enhanced Basic ATK instance on the main target; confirm it is not a
+    separate damage instance.
+  detail: ""

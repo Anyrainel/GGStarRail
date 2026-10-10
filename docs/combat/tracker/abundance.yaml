@@ -1,1 +1,40 @@
 # Combat translation tracker: abundance. Schema: .agents/skills/hsr-combat/tracking.md
+- id: natasha-skill-policy
+  entity: "1105"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated, so Natasha uses Basic ATK and only Skills when a Basic
+    ATK would overflow the Skill Point cap; real play spends Skill Points on
+    heals as damage comes in (see engine-hp-model).
+  detail: ""
+- id: natasha-e6-instance
+  entity: "1105"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    E6's Max-HP-scaled Physical DMG is a silent second scaling part of the
+    Basic ATK instance; confirm it is not a separate damage instance.
+  detail: ""
+- id: lynx-survival-response-target
+  entity: "1110"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    Survival Response goes to a heuristic carry (Destruction, then other damage
+    Paths, then Nihility, then the highest Max HP) and is renewed when missing;
+    the player's actual target cannot be expressed (see engine-ally-option-vocabulary).
+  detail: ""
+- id: lynx-survival-response-aggro
+  entity: "1110"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Survival Response's aggro increase on Destruction/Preservation targets is
+    not modelled, so A2's Energy from hits on the target uses its base aggro
+    share (see engine-aggro-modifiers).
+  detail: ""

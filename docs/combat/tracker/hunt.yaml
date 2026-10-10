@@ -482,3 +482,135 @@
     The fallback Proof of Debt on "a random enemy" goes to the engine's main
     target; it only matters before Topaz's first Skill.
   detail: ""
+- id: archer-skill-sp-cost
+  entity: "1015"
+  rule: U10
+  status: open
+  category: bug
+  summary: >
+    fribbels has Archer's Skill consume 2 Skill Points; our kit leaves it at
+    the Skill default of 1 and leaves Circuit Connection only below 1 Skill
+    Point. Which matches the game?
+  detail: >
+    The dossier facts for 101502 now exist and read SP-cost=2. The
+    archer-facts-missing item was written before they existed. fribbels agrees
+    (2 Skill Points used). The text does not state the cost, but its exit
+    condition "when Skill Points are insufficient to use Skill again" then
+    means fewer than 2. The facts and fribbels support a cost of 2. Fix: set
+    `skillPoints: -2` on the Skill, end the chain when ctx.skillPoints < 2,
+    and recheck the turn policy's `>= 2` threshold (now enough for only one
+    Skill). As it stands, each Skill Point buys twice the Skills, which
+    overstates Archer.
+- id: topaz-numby-hit-split
+  entity: "1112"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    fribbels splits Numby's Talent Follow-Up ATK and the Skill's DMG into 7
+    equal hits, and into 8 hits (7 × 10% + 30%) in Windfall Bonanza!. Our
+    kit deals each as a single hit. What is the real split?
+  detail: >
+    Neither the text nor the facts (111202, 111204 SingleAttack) give a hit
+    split, so the text does not settle it. The split matters for per-hit
+    Follow-Up ATK effects: The Ashblazing Grand Duke 4pc adds a stack on
+    every Follow-Up ATK `hit` event. With one hit, Numby builds 1 stack per
+    attack instead of 7-8, which understates Topaz's usual set. The source
+    is the Ashblazing hit distribution in fribbels Topaz.ts. Keep the
+    Toughness totals (20) when splitting.
+- id: feixiao-blitz-hit-split
+  entity: "1220"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    fribbels splits each Boltsunder Blitz (Broken target) into two hits of
+    10%/90% and keeps Waraxe Skyward and the finishing hit as one hit each.
+    Our kit uses one hit per strike. Which matches the game?
+  detail: >
+    The text and facts (122008/122009, one SingleAttack row each, Toughness
+    5) do not give a split. It matters because A4 makes the Ultimate a
+    Follow-Up ATK (The Ashblazing Grand Duke 4pc stacks per hit) and because
+    the kit's E1 listener adds a Skyward Quell stack on every Ultimate `hit`.
+    If Blitz becomes two HitDefs, E1 has to count strikes instead ("After
+    launching Boltsunder Blitz or Waraxe Skyward"). fribbels' E1 average
+    (+30.71% on the Ultimate) matches our stack timing, so E1 itself agrees.
+- id: moze-fua-additional-dmg
+  entity: "1223"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    fribbels adds the Talent's 30% Additional DMG to Moze's Talent Follow-Up
+    ATK on Prey. Our kit gives that Follow-Up ATK neither the Additional DMG
+    nor a Charge use. Does it trigger the Additional DMG without consuming
+    Charge?
+  detail: >
+    The trigger is any ally attack on Prey, and the text names only the
+    Charge as an exception ("Talent's Follow-Up ATK does not consume Charge"
+    / 天赋的追加攻击不会消耗充能). The text therefore leans toward fribbels: the
+    Follow-Up ATK deals the Additional DMG (and E1's 2 Energy) but leaves
+    Charge and the tally alone. The kit's actionEnd listener returns early
+    for abilityId "followUp", so it skips both. The Skill exclusion is
+    covered by moze-prey-reading.
+- id: moze-fua-hit-split
+  entity: "1223"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    fribbels splits Moze's Talent Follow-Up ATK into 6 hits (5 × 8% + 60%);
+    our kit deals it as one hit. What is the real split?
+  detail: >
+    It is not in the text or facts (122304 SingleAttack, Toughness 10), so
+    the text does not settle it. The split matters for per-hit Follow-Up ATK
+    effects such as The Ashblazing Grand Duke 4pc, one of Moze's usual sets.
+    The Toughness split is also unknown; keep the total of 10.
+- id: march-7th-e2-hit-split
+  entity: "1224"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    fribbels splits the E2 Follow-Up ATK into 2 hits (40%/60%); our kit
+    deals it as one hit. What is the real split?
+  detail: >
+    It is not in the text, and the attack has no facts row. The split only
+    matters for per-hit Follow-Up ATK effects (The Ashblazing Grand Duke
+    4pc). fribbels also gives this attack 10 Toughness, which is evidence for
+    march-7th-e2-facts (not duplicated here).
+- id: boothill-e6-multiplier
+  entity: "1315"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels reads E6 as +40 percentage points on the Talent Break DMG
+    multiplier, main target only. Our kit deals an extra 40% of the Talent's
+    multiplier to the target and 70% to adjacent enemies. Which matches the
+    game?
+  detail: >
+    The text reads "equal to 40% of the original DMG multiplier" /
+    等同于原伤害倍率40%. If "original DMG" is the Talent Break DMG
+    (70/120/170%), the text supports our kit: at 3 Pocket Trickshot the
+    extra is 68% against fribbels' 40%, and at 1 stack 28% against 40%.
+    Reading it as 40% of Boothill's base Physical Break DMG gives fribbels'
+    value instead. fribbels does not model the adjacent 70% hits. Both apply
+    the 16× Toughness cap to the extra DMG.
+- id: ashveil-fua-hit-split
+  entity: "1504"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    fribbels splits Ashveil's Talent Follow-Up ATK into 10 hits of 10%, and
+    each extra 200% instance of the enhanced Follow-Up ATK into 10 more. Our
+    kit deals each as one hit. What is the real split?
+  detail: >
+    It is not in the text or facts (150404 SingleAttack, Toughness 5). The
+    split matters for per-hit Follow-Up ATK effects such as The Ashblazing
+    Grand Duke 4pc. Toughness per hit is unknown, so keep the total of 5;
+    the extra instances' Toughness is covered by
+    ashveil-extra-instance-toughness. fribbels also splits the Ultimate into
+    20 × 5%, but nothing in the kit counts Ultimate hits, so that split does
+    not matter.
