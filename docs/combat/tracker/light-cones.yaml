@@ -655,3 +655,80 @@
     missed, and the heal on the lowest-HP ally after each Ultimate is spread
     evenly over ally targets.
   detail: "Heal events from Character kits (engine-hp-model) would replace the table and pick the lowest-HP ally."
+- id: dazzled-by-a-flowery-world-durations
+  entity: "23053"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    The text gives the DEF ignore stacks and Stream Promo no duration, so both
+    last for the battle once gained. Stream Promo's "4 or more Skill Points
+    in the same turn" is checked against the expected Skill Points consumed
+    since the last turn start (Sparxie's farming is weighted).
+  detail: >
+    Sparxie's Thrill counts as consuming Skill Points in game but emits no
+    skillPointsChanged (sparxie-thrill-sp-event), so it adds neither stacks
+    nor progress toward Stream Promo.
+- id: when-she-decided-to-see-ally-ultimate
+  entity: "23054"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    "Uses Ultimate on an ally target" is an Ultimate whose turn choice names
+    an ally, or one that does not attack enemies (Yao Guang's, Trailblazer's,
+    and Silver Wolf LV.999's self-targeted one). An Ultimate that targets an
+    ally and also attacks would be missed.
+  detail: "Ally targets on Ultimate actions (see a-grounded-ascent-ultimate-target) would replace the heuristic."
+- id: colors-for-tomorrow-all-allies
+  entity: "23055"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Elation Skills carry no ally target, so one is "used on all allies" when
+    it does not attack enemies and the statuses the wearer applies during it
+    reach every ally Character (Pearl's Dissolve Reason). Silver Wolf LV.999's
+    non-attacking Elation Skill does not count.
+  detail: >
+    Pearl is not in the pinned catalog, so the kit check used a scratch
+    Pearl-like wearer: the DMG taken debuff and the fixed 10 Energy fire on
+    each Elation Skill. The healing is not modeled (U12).
+- id: welcome-to-the-cosmic-city-self-ultimate
+  entity: "23057"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    "Uses Ultimate on themselves" is an Ultimate whose turn choice names the
+    wearer, or one that does not attack enemies and whose statuses from the
+    wearer reach the wearer and no other Character (Silver Wolf LV.999's
+    Godmode). The Punchline is therefore gained when the Ultimate ends.
+  detail: >
+    Reading: Basic ATKs are counted only after the trigger is used, and the
+    third one makes it available again (Enhanced Basic ATKs count).
+- id: summer-rides-the-surf-readings
+  entity: "23064"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    Updraft and Uptrend have no duration in the text and last for the battle.
+    Elation Skills are told apart by ability ID, and the first one has
+    nothing to differ from, so it grants no Uptrend.
+  detail: >
+    Aventurine • Waveflair's Talent Cheers (talentCheers) and Aha Instant
+    Elation Skill (elationSkill) have different IDs, but the Aha Instant's
+    Cheers and All In share one ID, as do Silver Wolf LV.999's two variants
+    (silver-wolf-lv999-elation-attack).
+- id: elation-brimming-with-blessings-ally-target
+  entity: "24006"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    A Skill or Ultimate is "on one ally character" when its turn choice names
+    an ally Character, or when it does not attack enemies and the statuses
+    the wearer applies during it reach exactly one other Character, which
+    receives the Elation bonus (Trailblazer's Ultimate).
+  detail: "Ally targets on Skill and Ultimate actions (see a-grounded-ascent-ultimate-target) would replace the heuristic."
