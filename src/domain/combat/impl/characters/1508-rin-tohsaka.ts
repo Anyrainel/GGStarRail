@@ -1,23 +1,12 @@
-import {
-  type BattleApi,
-  type EnemyView,
-  isEnemy,
-  type UnitView,
-} from "../../kit/api";
+import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
 
 const ARCHER = "1015";
 const GEM = "gem-energy";
 const SHADOW_GEM = "shadow-gem";
-const SEEN_SKILL_POINTS = "skill-points-seen";
 
-/**
- * Rin Tohsaka — Erudition, Quantum.
- *
- * The reference data has no Toughness/Energy facts for this Character yet:
- * Toughness and follow-up Energy below use the usual values for each shape.
- */
+/** Rin Tohsaka — Erudition, Quantum. */
 export default defineCharacter("1508", (k) => {
   const archerInTeam = k.team.some((member) => member.characterId === ARCHER);
   // Unused #6 of "Gem Magecraft" (999) is read as the "Gem Energy" cap.
@@ -56,36 +45,30 @@ export default defineCharacter("1508", (k) => {
     ctx.setCounter(ctx.self, GEM, Math.min(gemCap, current + amount));
   };
 
-  // Skill Point changes have no event: compare against the last value seen
-  // at every action and turn boundary and credit the unit acting there.
-  const syncSkillPoints = (ctx: BattleApi, unit: UnitView) => {
-    const delta = ctx.skillPoints - ctx.self.counter(SEEN_SKILL_POINTS);
-    ctx.setCounter(ctx.self, SEEN_SKILL_POINTS, ctx.skillPoints);
-    if (Math.abs(delta) < 1e-9) return;
-    gainGem(ctx, Math.abs(delta));
-    const holder = unit.kind === "summon" && unit.owner ? unit.owner : unit;
-    if (holder.kind === "enemy") return;
-    ctx.applyStatus(holder, holder === ctx.self ? selfCritDmg : allyCritDmg);
-  };
-  for (const event of [
-    "actionStart",
-    "actionEnd",
-    "turnStart",
-    "turnEnd",
-  ] as const) {
-    k.on(event, "talent", { subject: "any" }, (ctx, battleEvent) =>
-      syncSkillPoints(ctx, battleEvent.unit)
-    );
-  }
+  // Changes are measured after the cap, so recovery lost at the cap does not
+  // count. Summons credit their owner.
+  k.on(
+    "skillPointsChanged",
+    "talent",
+    { subject: "any", when: (event) => Math.abs(event.delta ?? 0) > 1e-9 },
+    (ctx, event) => {
+      gainGem(ctx, Math.abs(event.delta ?? 0));
+      const unit = event.unit;
+      const holder = unit.kind === "summon" && unit.owner ? unit.owner : unit;
+      if (holder.kind === "enemy") return;
+      ctx.applyStatus(holder, holder === ctx.self ? selfCritDmg : allyCritDmg);
+    }
+  );
 
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
-    ctx.setCounter(ctx.self, SEEN_SKILL_POINTS, ctx.skillPoints);
     gainGem(ctx, k.param("04", 1));
     if (k.a(2)) ctx.applyStatus(ctx.self, a4Spd);
   });
 
   if (k.a(1)) {
-    // The +2 Skill Point cap is an engine option (not modeled).
+    k.on("battleStart", "a2", { subject: "any" }, (ctx) =>
+      ctx.setMaxSkillPoints(ctx.maxSkillPoints + k.traceParam(1, 1))
+    );
     k.stat("a2", { stat: "atkPct", value: k.traceParam(1, 2) });
     k.stat("a2", {
       stat: "resPen",
@@ -128,13 +111,6 @@ export default defineCharacter("1508", (k) => {
   }
   if (k.e(6)) k.stat("e6", { stat: "resPen", value: k.rankParam(6, 1) });
 
-  // "X% to one designated enemy and Y% to other enemies": Blast covers the
-  // adjacent ones; enemies two or more away get the remainder by deal().
-  const beyondAdjacent = (ctx: BattleApi, main: EnemyView) => {
-    const index = ctx.enemies.indexOf(main);
-    return ctx.enemies.filter((_, other) => Math.abs(other - index) >= 2);
-  };
-
   k.ability({
     id: "basic",
     kind: "basic",
@@ -152,14 +128,9 @@ export default defineCharacter("1508", (k) => {
   });
 
   // "Second Magic Experiment": the number of random follow-up instances is
-  // known only when cast, so its hits are rebuilt in `before`.
+  // known only when cast. Only the conversion down to 2 consumes Skill Points.
   const gemPerInstance = k.param("09", 2);
-  const aoeHit: HitDef = {
-    shape: "aoe",
-    each: k.param("09", 1),
-    toughness: { each: 10 },
-  };
-  const enhancedHits: HitDef[] = [aoeHit];
+  const INSTANCES = "instances";
   const enhancedReady = (self: UnitView, skillPoints: number) =>
     self.counter(SHADOW_GEM) > 0 ||
     self.counter(GEM) >= k.param("04", 5) ||
@@ -168,6 +139,7 @@ export default defineCharacter("1508", (k) => {
   k.ability({
     id: "enhancedSkill",
     kind: "skill",
+    skillPoints: 0,
     before: (ctx) => {
       let instances: number;
       const shadow = ctx.self.counter(SHADOW_GEM);
@@ -179,12 +151,12 @@ export default defineCharacter("1508", (k) => {
         );
         ctx.setCounter(ctx.self, SHADOW_GEM, 0);
       } else {
+        // The Talent's Gem Energy for these Skill Points comes from its
+        // skillPointsChanged listener.
         const excess = ctx.skillPoints - k.param("09", 4);
         if (excess > 0) {
           ctx.gainSkillPoints(-excess);
           gainGem(ctx, excess * k.param("09", 5));
-          // The Talent also counts these consumed Skill Points.
-          syncSkillPoints(ctx, ctx.self);
         }
         const gem = ctx.self.counter(GEM);
         instances = Math.min(
@@ -197,22 +169,28 @@ export default defineCharacter("1508", (k) => {
           ctx.setCounter(ctx.self, SHADOW_GEM, consumed);
         }
       }
-      enhancedHits.splice(0, enhancedHits.length, aoeHit);
+      ctx.scratch.set(INSTANCES, instances);
+    },
+    hits: (ctx) => {
+      const instances = (ctx.scratch.get(INSTANCES) as number | undefined) ?? 0;
+      const hits: HitDef[] = [
+        { shape: "aoe", each: k.param("09", 1), toughness: { each: 20 } },
+      ];
       if (instances > 0) {
-        enhancedHits.push({
+        hits.push({
           shape: "bounce",
           each: k.param("09", 3),
           bounces: instances,
+          toughness: { each: 2 },
         });
       }
+      return hits;
     },
-    hits: enhancedHits,
     after: (ctx) => {
       if (k.a(2)) ctx.applyStatus(ctx.self, a4Spd);
     },
   });
 
-  const otherMultiplier = k.param("03", 2);
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -224,27 +202,13 @@ export default defineCharacter("1508", (k) => {
     },
     hits: [
       {
-        shape: "blast",
+        shape: "aoe",
         main: k.param("03", 1),
-        adjacent: otherMultiplier,
-        toughness: { main: 20, adjacent: 20 },
+        each: k.param("03", 2),
+        toughness: { main: 30, each: 20 },
       },
     ],
     after: (ctx) => {
-      if (isEnemy(ctx.target)) {
-        const rest = beyondAdjacent(ctx, ctx.target);
-        if (rest.length > 0) {
-          ctx.deal(
-            { shape: "aoe", each: otherMultiplier, toughness: { each: 20 } },
-            {
-              targets: rest,
-              tags: ["ultimate"],
-              abilityKind: "ultimate",
-              origin: "ultimate",
-            }
-          );
-        }
-      }
       if (k.e(6)) ctx.grantExtraTurn(ctx.self);
     },
   });
@@ -256,7 +220,7 @@ export default defineCharacter("1508", (k) => {
       kind: "followUp",
       tags: jointTags,
       energy: 10,
-      hits: [{ shape: "aoe", each: k.param("05", 1), toughness: { each: 10 } }],
+      hits: [{ shape: "aoe", each: k.param("05", 1), toughness: { each: 20 } }],
       after: (ctx) => {
         const archer = ctx.allies.find(
           (ally) => ally.kind === "character" && ally.definitionId === ARCHER
@@ -310,8 +274,6 @@ export default defineCharacter("1508", (k) => {
   // it then converts the surplus Skill Points.
   k.policy({
     turn: (view) =>
-      view.skillPoints >= 1 && enhancedReady(view.self, view.skillPoints)
-        ? "enhancedSkill"
-        : "basic",
+      enhancedReady(view.self, view.skillPoints) ? "enhancedSkill" : "basic",
   });
 });

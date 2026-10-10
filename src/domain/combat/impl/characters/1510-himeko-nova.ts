@@ -41,29 +41,6 @@ export default defineCharacter("1510", (k) => {
     },
     modifiers: [{ stat: "dmgBoost", value: k.param("02", 1) }],
   });
-  // E2 and E6 scale "Assist Skill" DMG, which has no damage tag: the bonus
-  // is held only while an Assist Skill resolves.
-  const assistDmg =
-    k.e(2) || k.e(6)
-      ? k.status({
-          id: "assist-skill-dmg",
-          origin: k.e(6) ? "e6" : "e2",
-          modifiers: [
-            ...(k.e(2)
-              ? [
-                  {
-                    stat: "dmgMultiplier" as const,
-                    value: k.rankParam(2, 1) - 1,
-                  },
-                ]
-              : []),
-            ...(k.e(6)
-              ? [{ stat: "dmgBoost" as const, value: k.rankParam(6, 3) }]
-              : []),
-          ],
-        })
-      : null;
-
   const sourceCap = k.e(6) ? k.rankParam(6, 2) : k.param("08", 3);
   const gainSource = (ctx: BattleApi, amount: number) =>
     ctx.setCounter(
@@ -99,7 +76,7 @@ export default defineCharacter("1510", (k) => {
     k.stat("e2", {
       stat: "dmgMultiplier",
       value: k.rankParam(2, 1) - 1,
-      filter: { tags: ["ultimate"] },
+      filter: { tags: ["ultimate", "assist"] },
     });
   }
   if (k.e(6)) {
@@ -107,6 +84,11 @@ export default defineCharacter("1510", (k) => {
       stat: "resPen",
       value: k.rankParam(6, 1),
       filter: { combatTypes: ["Fire"] },
+    });
+    k.stat("e6", {
+      stat: "dmgBoost",
+      value: k.rankParam(6, 3),
+      filter: { tags: ["assist"] },
     });
   }
 
@@ -142,7 +124,12 @@ export default defineCharacter("1510", (k) => {
     id: "basic",
     kind: "basic",
     hits: [
-      { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
+      {
+        shape: "single",
+        main: k.param("01", 1),
+        toughness: { main: 10 },
+        toughnessWithoutWeakness: 1,
+      },
     ],
   });
 
@@ -162,21 +149,29 @@ export default defineCharacter("1510", (k) => {
   // variants are her Skill-kind actions, but their DMG is Assist Skill DMG
   // (not Skill DMG), hence only `assist`. Facts: Toughness 10 for the AoE part and
   // 5 per random instance; Energy 18 for her own use (others get the
-  // Talent's Energy instead).
-  const startAssist = (ctx: ActionContext) => {
-    if (assistDmg) ctx.applyStatus(ctx.self, assistDmg);
+  // Talent's Energy instead). The Talent reduces Toughness regardless of
+  // Weakness Type on every hit.
+  const gainAssistSource = (ctx: ActionContext) => {
     if (k.e(6)) gainSource(ctx, 1);
-  };
-  const endAssist = (ctx: ActionContext) => {
-    if (assistDmg) ctx.removeStatus(ctx.self, assistDmg);
   };
   const assistHits = (
     aoe: number,
     instances: number,
     each: number
   ): HitDef[] => [
-    { shape: "aoe", each: aoe, toughness: { each: 10 } },
-    { shape: "bounce", each, bounces: instances, toughness: { each: 5 } },
+    {
+      shape: "aoe",
+      each: aoe,
+      toughness: { each: 10 },
+      toughnessWithoutWeakness: 1,
+    },
+    {
+      shape: "bounce",
+      each,
+      bounces: instances,
+      toughness: { each: 5 },
+      toughnessWithoutWeakness: 1,
+    },
   ];
 
   k.ability({
@@ -190,14 +185,13 @@ export default defineCharacter("1510", (k) => {
       if (!k.a(1)) {
         ctx.setCounter(ctx.self, USES, Math.max(0, ctx.self.counter(USES) - 1));
       }
-      startAssist(ctx);
+      gainAssistSource(ctx);
     },
     hits: assistHits(
       k.param("22", 4),
       k.param("22", 5) + (k.e(1) ? k.rankParam(1, 3) : 0),
       k.param("22", 6)
     ),
-    after: endAssist,
   });
 
   k.ability({
@@ -206,9 +200,8 @@ export default defineCharacter("1510", (k) => {
     onlyTags: ["assist"],
     skillPoints: 0,
     energy: 0,
-    before: startAssist,
+    before: gainAssistSource,
     hits: assistHits(k.param("22", 1), k.param("22", 2), k.param("22", 3)),
-    after: endAssist,
   });
 
   // Ultimate: "Starblazer" fires 6 "Hyperluminal Particle Beams" (no
@@ -218,7 +211,6 @@ export default defineCharacter("1510", (k) => {
   // target and Pulse instance, 4 per Final Hit instance (48 in total).
   const beamCount = 6;
   const beamSource = k.param("08", 2) + (k.e(6) ? 1 : 0);
-  const ultimateHits: HitDef[] = [];
   const planUltimate = (start: number) => {
     const hits: HitDef[] = [];
     let source = start;
@@ -227,6 +219,7 @@ export default defineCharacter("1510", (k) => {
         shape: "aoe",
         each: k.param("09", 1),
         toughness: { each: 2 },
+        toughnessWithoutWeakness: 1,
       });
       // "When the current Source Energy is more than 1, for every 1 point
       // consumed": all points are consumed, one random instance each.
@@ -237,6 +230,7 @@ export default defineCharacter("1510", (k) => {
           each: k.param("09", 3) + (boosted ? k.traceParam(3, 3) : 0),
           bounces: Math.floor(source / k.param("09", 2)),
           toughness: { each: 2 },
+          toughnessWithoutWeakness: 1,
         });
       }
       if (k.e(6) && source >= k.rankParam(6, 4)) {
@@ -254,6 +248,7 @@ export default defineCharacter("1510", (k) => {
         shape: "aoe",
         each: k.param("08", 1),
         toughness: { each: 2 },
+        toughnessWithoutWeakness: 1,
       });
       beams -= 1;
       source = Math.min(sourceCap, source + beamSource);
@@ -264,24 +259,21 @@ export default defineCharacter("1510", (k) => {
       each: k.param("03", 7),
       bounces: k.param("03", 6),
       toughness: { each: 4 },
+      toughnessWithoutWeakness: 1,
     });
     return hits;
   };
-  ultimateHits.push(...planUltimate(0));
 
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     before: (ctx) => {
       if (k.a(3)) gainSource(ctx, k.traceParam(3, 1));
-      ultimateHits.splice(
-        0,
-        ultimateHits.length,
-        ...planUltimate(ctx.self.counter(SOURCE))
-      );
+      ctx.scratch.set(SOURCE, ctx.self.counter(SOURCE));
       ctx.setCounter(ctx.self, SOURCE, 0);
     },
-    hits: ultimateHits,
+    hits: (ctx) =>
+      planUltimate((ctx.scratch.get(SOURCE) as number | undefined) ?? 0),
   });
 
   // Skill to keep "Navigator's Semaphore" up; otherwise her own Assist Skill.

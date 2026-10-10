@@ -1,6 +1,6 @@
-import { canonicalCharacterId } from "@/domain/characterIdentity";
 import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
+import type { HitDef } from "../../kit/model";
 
 /** Jade — Erudition, Quantum. */
 export default defineCharacter("1314", (k) => {
@@ -72,8 +72,8 @@ export default defineCharacter("1314", (k) => {
   const isCollector = (unit: UnitView) =>
     unit.has(debtCollector) || unit.has(jadeCollector);
 
-  // The Skill goes to the teammate who attacks most: damage-dealing Paths
-  // first, then the highest SPD; Jade herself only when alone.
+  // The Debt Collector is the player's choice; by default the first teammate
+  // on a damage-dealing Path, then any teammate, and Jade only when alone.
   const attackerPaths = new Set([
     "Warrior",
     "Rogue",
@@ -81,35 +81,26 @@ export default defineCharacter("1314", (k) => {
     "Warlock",
     "Elation",
   ]);
-  const pathOf = new Map(
-    k.team.map((member) => [member.characterId, member.pathId])
+  const collectorMember = k.ally(
+    "debt-collector",
+    "skill",
+    (candidates) => {
+      const others = candidates.filter(
+        (member) => member.characterId !== "1314"
+      );
+      return (
+        others.find((member) => attackerPaths.has(member.pathId)) ??
+        others[0] ??
+        candidates[0]
+      );
+    },
+    { includeSelf: true }
   );
-  const chooseCollector = (self: UnitView, allies: readonly UnitView[]) => {
-    let best: UnitView = self;
-    let bestScore = Number.NEGATIVE_INFINITY;
-    for (const ally of allies) {
-      if (ally === self || ally.kind !== "character") continue;
-      const path = pathOf.get(canonicalCharacterId(ally.definitionId)) ?? "";
-      const score = (attackerPaths.has(path) ? 1000 : 0) + ally.speed;
-      if (score > bestScore) {
-        best = ally;
-        bestScore = score;
-      }
-    }
-    return best;
-  };
+  const chooseCollector = (self: UnitView, allies: readonly UnitView[]) =>
+    allies.find(
+      (ally) => ally.kind === "character" && ally.slot === collectorMember?.slot
+    ) ?? self;
 
-  const vowActive = k.status({
-    id: "vow-of-the-deep",
-    origin: "ultimate",
-    modifiers: [
-      {
-        stat: "multiplierBoost",
-        value: k.param("03", 1),
-        filter: { tags: ["followUp"] },
-      },
-    ],
-  });
   const e4DefIgnore = k.status({
     id: "e4-def-ignore",
     origin: "e4",
@@ -159,7 +150,10 @@ export default defineCharacter("1314", (k) => {
     target: "ally",
     usable: (view) => !view.allies.some(isCollector),
     before: (ctx) => {
-      const target = chooseCollector(ctx.self, ctx.allies);
+      const target =
+        ctx.target && !isEnemy(ctx.target)
+          ? ctx.target
+          : chooseCollector(ctx.self, ctx.allies);
       if (target !== ctx.self) ctx.applyStatus(target, debtCollector);
       if (target === ctx.self || k.e(6)) {
         ctx.applyStatus(ctx.self, jadeCollector);
@@ -178,6 +172,25 @@ export default defineCharacter("1314", (k) => {
     after: (ctx) => ctx.setCounter(ctx.self, VOW, k.param("03", 2)),
   });
 
+  // 4 equal instances, or 5 at 10/10/10/10/60% of the enhanced multiplier
+  // under Vow of the Deep (fribbels' Ashblazing split); the 10 Toughness per
+  // enemy is assumed to split the same way.
+  const followUpHits = (multiplier: number, shares: readonly number[]) =>
+    shares.map(
+      (share): HitDef => ({
+        shape: "aoe",
+        each: share * multiplier,
+        toughness: { each: share * 10 },
+      })
+    );
+  const plainFollowUp = followUpHits(
+    k.param("04", 5),
+    [0.25, 0.25, 0.25, 0.25]
+  );
+  const vowFollowUp = followUpHits(
+    k.param("04", 5) + k.param("03", 1),
+    [0.1, 0.1, 0.1, 0.1, 0.6]
+  );
   k.ability({
     id: "followUp",
     kind: "followUp",
@@ -186,12 +199,11 @@ export default defineCharacter("1314", (k) => {
       gainPawnedAsset(ctx, k.param("04", 4));
       const vow = ctx.self.counter(VOW);
       if (vow > 1e-9) {
-        ctx.applyStatus(ctx.self, vowActive);
+        ctx.scratch.set("vow", true);
         ctx.setCounter(ctx.self, VOW, Math.max(0, vow - 1));
       }
     },
-    hits: [{ shape: "aoe", each: k.param("04", 5), toughness: { each: 10 } }],
-    after: (ctx) => ctx.removeStatus(ctx.self, vowActive),
+    hits: (ctx) => (ctx.scratch.get("vow") ? vowFollowUp : plainFollowUp),
   });
 
   // Count the enemies hit by each attack of Jade or the Debt Collector.
@@ -225,6 +237,8 @@ export default defineCharacter("1314", (k) => {
           { shape: "aoe", each: k.param("02", 3), onlyTags: ["additional"] },
           { targets, origin: "skill" }
         );
+        // Jade's own attacks as the Debt Collector consume no HP.
+        if (attacker !== ctx.self) ctx.consumeHp(attacker, k.param("02", 2));
       }
       // "This Follow-Up ATK does not generate Charge."
       if (attacker === ctx.self && event.abilityId === "followUp") return;
@@ -252,7 +266,7 @@ export default defineCharacter("1314", (k) => {
   k.policy({
     turn: (view) =>
       view.skillPoints >= 1 && !view.allies.some(isCollector)
-        ? "skill"
+        ? { ability: "skill", target: chooseCollector(view.self, view.allies) }
         : "basic",
   });
 });

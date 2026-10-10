@@ -27,12 +27,6 @@ export default defineCharacter("1405", (k) => {
     id: "qualitative-disclosure",
     origin: "talent",
   });
-  // Anaxa's DMG bonus against it, synced to the current action's target.
-  const disclosureDmg = k.status({
-    id: "qualitative-disclosure-dmg",
-    origin: "talent",
-    modifiers: [{ stat: "dmgBoost", value: k.param("04", 1) }],
-  });
   const sublimation = k.status({
     id: "sublimation",
     origin: "ultimate",
@@ -74,33 +68,46 @@ export default defineCharacter("1405", (k) => {
     modifiers: [{ stat: "atkPct", value: k.rankParam(4, 1) }],
   });
 
+  k.stat("talent", {
+    stat: "dmgBoost",
+    value: k.param("04", 1),
+    filter: { targetStatuses: [disclosure.id] },
+  });
+
   const syncDisclosure = (ctx: BattleApi, enemy: EnemyView) => {
-    if (!enemy.has(disclosure) && enemy.weaknesses.size >= k.param("04", 3)) {
+    const disclosed = enemy.weaknesses.size >= k.param("04", 3);
+    if (disclosed && !enemy.has(disclosure)) {
       ctx.applyStatus(enemy, disclosure);
+    } else if (!disclosed && enemy.has(disclosure)) {
+      ctx.removeStatus(enemy, disclosure);
     }
   };
-  // Random Type with priority to missing ones: the first missing Type. The
-  // engine cannot remove Weaknesses, so the 3-turn duration is not modeled.
+  const syncAllDisclosure = (ctx: BattleApi) => {
+    for (const enemy of ctx.enemies) syncDisclosure(ctx, enemy);
+  };
+
+  // Types an enemy holds only through "Sublimation", removed when it ends.
+  const sublimationOnly = new Map<EnemyView, Set<CombatType>>();
+  const refreshCursor = new Map<EnemyView, number>();
+  // Random Type with priority to missing ones: the first missing Type. With
+  // none missing, a random held Type is refreshed; cycling through the seven
+  // refreshes each as often as a random pick would.
   const implantOne = (ctx: BattleApi, enemy: EnemyView) => {
-    const missing = COMBAT_TYPES.find((type) => !enemy.weaknesses.has(type));
-    if (missing) ctx.implantWeakness(enemy, missing);
+    let type = COMBAT_TYPES.find((entry) => !enemy.weaknesses.has(entry));
+    if (!type) {
+      const cursor = refreshCursor.get(enemy) ?? 0;
+      refreshCursor.set(enemy, cursor + 1);
+      type = COMBAT_TYPES[cursor % COMBAT_TYPES.length];
+    }
+    if (!type) return;
+    ctx.implantWeakness(enemy, type, { turns: k.param("04", 2) });
+    sublimationOnly.get(enemy)?.delete(type);
     syncDisclosure(ctx, enemy);
   };
 
-  let actionTarget: EnemyView | null = null;
-  const syncDisclosureDmg = (ctx: BattleApi) => {
-    if (actionTarget?.has(disclosure)) {
-      ctx.applyStatus(ctx.self, disclosureDmg);
-    } else {
-      ctx.removeStatus(ctx.self, disclosureDmg);
-    }
-  };
-  // Approximation: the +DMG vs "Qualitative Disclosure" follows the action's
-  // main target; Bounce and AoE targets are assumed to share its state.
-  k.on("actionStart", "talent", { subject: "self" }, (ctx, event) => {
-    actionTarget = isEnemy(event.target) ? event.target : null;
-    syncDisclosureDmg(ctx);
-  });
+  // Implants expire at the enemies' turn ends, so Anaxa re-reads the state
+  // before she acts.
+  k.on("actionStart", "talent", { subject: "self" }, syncAllDisclosure);
 
   // One implant per landed hit: expected (Bounce) hit counts accumulate per
   // enemy and implant at the nearest whole hit.
@@ -117,7 +124,17 @@ export default defineCharacter("1405", (k) => {
       implantOne(ctx, enemy);
     }
     implants.set(enemy, done);
-    if (enemy === actionTarget) syncDisclosureDmg(ctx);
+    syncDisclosure(ctx, enemy);
+  });
+
+  k.on("statusRemoved", "ultimate", { status: sublimation }, (ctx, event) => {
+    const enemy = event.target;
+    if (!isEnemy(enemy)) return;
+    for (const type of sublimationOnly.get(enemy) ?? []) {
+      ctx.removeWeakness(enemy, type);
+    }
+    sublimationOnly.delete(enemy);
+    syncDisclosure(ctx, enemy);
   });
 
   k.on("battleStart", "skill", { subject: "any" }, (ctx) => {
@@ -133,6 +150,7 @@ export default defineCharacter("1405", (k) => {
     }
   });
 
+  k.on("turnStart", "talent", { subject: "self" }, syncAllDisclosure);
   if (k.a(1)) {
     k.on("turnStart", "a2", { subject: "self" }, (ctx) => {
       if (!ctx.enemies.some((enemy) => enemy.has(disclosure))) {
@@ -173,14 +191,16 @@ export default defineCharacter("1405", (k) => {
 
   // 1 targeted hit plus 4 Bounces preferring unhit enemies spreads the 5
   // instances evenly over up to 5 enemies, so one even Bounce is exact in
-  // expectation. Facts give Energy (6) and Toughness (10) per instance.
+  // expectation. Facts give Energy (6) per instance. Toughness is 10 for the
+  // designated hit and 5 per extra instance (fribbels), averaged over the
+  // even Bounce: (10 + 4 x 5) / 5 = 6.
   const instances = 1 + k.param("02", 2);
   const skillHits: readonly HitDef[] = [
     {
       shape: "bounce",
       each: k.param("02", 1),
       bounces: instances,
-      toughness: { each: 10 },
+      toughness: { each: 6 },
     },
   ];
   const beforeSkill = (ctx: ActionContext) => {
@@ -240,14 +260,19 @@ export default defineCharacter("1405", (k) => {
     id: "ultimate",
     kind: "ultimate",
     before: (ctx) => {
-      // "Sublimation": every Weakness Type. Its Crowd Control is not modeled
-      // (bosses have Control RES).
+      // "Sublimation": every Weakness Type until the enemy's turn starts. Its
+      // Crowd Control is not modeled (bosses have Control RES).
       for (const enemy of ctx.enemies) {
         ctx.applyStatus(enemy, sublimation);
-        for (const type of COMBAT_TYPES) ctx.implantWeakness(enemy, type);
+        const added = sublimationOnly.get(enemy) ?? new Set<CombatType>();
+        for (const type of COMBAT_TYPES) {
+          if (enemy.weaknesses.has(type)) continue;
+          ctx.implantWeakness(enemy, type);
+          added.add(type);
+        }
+        sublimationOnly.set(enemy, added);
         syncDisclosure(ctx, enemy);
       }
-      syncDisclosureDmg(ctx);
     },
     hits: [{ shape: "aoe", each: k.param("03", 1), toughness: { each: 20 } }],
   });

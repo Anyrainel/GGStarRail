@@ -35,8 +35,13 @@ export default defineCharacter("1013", (k) => {
     }
   }
 
-  // A6 (Ultimate DMG vs Frozen enemies) is not modeled: kits cannot see the
-  // Frozen state of Weakness Break (tracker herta-a6-frozen).
+  if (k.a(3)) {
+    k.stat("a6", {
+      stat: "dmgBoost",
+      value: k.traceParam(3, 1),
+      filter: { tags: ["ultimate"], targetFamilies: ["frozen"] },
+    });
+  }
 
   if (k.e(4)) {
     k.stat("e4", {

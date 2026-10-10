@@ -6,7 +6,6 @@ import {
 } from "../../kit/api";
 import { defineCharacter, preferSkill } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
-import { actionValue } from "../../model/formulas";
 
 const HITS = "lightning-lord-hits";
 const STRIKES = "lightning-lord-strikes";
@@ -77,33 +76,18 @@ export default defineCharacter("1204", (k) => {
     modifiers: [{ stat: "vulnerability", value: k.rankParam(6, 1) }],
   });
 
-  // Summons have a fixed engine SPD, but Lightning-Lord gains SPD with every
-  // extra hit (tracker jing-yuan-lord-spd). The summon stays at base SPD and
-  // its remaining gauge is rescaled by old/new SPD whenever the hit count
-  // changes. Only policies see battle time, so they record it for the
-  // abilities that run right after them.
-  let now = 0;
-  let lord: UnitView | null = null;
-  /** Remaining gauge fraction at base SPD, as of `gaugeAt`. */
-  let gauge = 1;
-  let gaugeAt = 0;
-  const lordSpeed = (hits: number) =>
-    baseSpeed + speedPerHit * (hits - baseHits);
-
-  const addHits = (ctx: BattleApi, amount: number) => {
-    if (!lord) return;
-    const current = lord.counter(HITS);
-    const next = Math.min(maxHits, current + amount);
-    if (next <= current) return;
-    const remaining = Math.max(
-      0,
-      gauge - (now - gaugeAt) / actionValue(baseSpeed)
-    );
-    const rescaled = (remaining * lordSpeed(current)) / lordSpeed(next);
-    ctx.advanceAction(lord, remaining - rescaled);
-    gauge = rescaled;
-    gaugeAt = now;
-    ctx.setCounter(lord, HITS, next);
+  const lordSpeed = k.status({
+    id: "lightning-lord-spd",
+    origin: "talent",
+    maxStacks: maxHits - baseHits,
+    modifiers: [{ stat: "spdFlat", value: speedPerHit }],
+  });
+  const setHits = (ctx: BattleApi, lord: UnitView, hits: number) => {
+    ctx.setCounter(lord, HITS, hits);
+    const stacks = hits - baseHits;
+    if (stacks <= 0) ctx.removeStatus(lord, lordSpeed);
+    else if (lord.has(lordSpeed)) ctx.setStatusStacks(lord, lordSpeed, stacks);
+    else ctx.applyStatus(lord, lordSpeed, { stacks });
   };
 
   // Facts list the per-hit Toughness as `main`; a Bounce reads `each`.
@@ -137,9 +121,7 @@ export default defineCharacter("1204", (k) => {
           ctx.setCounter(ctx.self, STRIKES, 0);
         }
         if (k.e(2)) ctx.applyStatus(owner, swingSkiesSquashed);
-        ctx.setCounter(ctx.self, HITS, baseHits);
-        gauge = 1;
-        gaugeAt = now;
+        setHits(ctx, ctx.self, baseHits);
       },
     });
   }
@@ -150,7 +132,6 @@ export default defineCharacter("1204", (k) => {
     speed: baseSpeed,
     abilities: lordAbilities,
     policy: (view) => {
-      now = view.time;
       const hits = Math.min(
         maxHits,
         Math.max(baseHits, view.self.counter(HITS))
@@ -160,12 +141,16 @@ export default defineCharacter("1204", (k) => {
   });
 
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
-    now = 0;
-    gauge = 1;
-    gaugeAt = 0;
-    lord = ctx.summon(ctx.self, lightningLord.id);
+    const lord = ctx.summon(ctx.self, lightningLord.id);
     ctx.setCounter(lord, HITS, baseHits);
   });
+  const addHits = (ctx: BattleApi, amount: number) => {
+    const lord = ctx.findSummon(ctx.self, lightningLord.id);
+    if (!lord) return;
+    const current = lord.counter(HITS);
+    const next = Math.min(maxHits, current + amount);
+    if (next > current) setHits(ctx, lord, next);
+  };
 
   if (k.a(2)) {
     k.on("battleStart", "a4", { subject: "any" }, (ctx) =>
@@ -244,14 +229,5 @@ export default defineCharacter("1204", (k) => {
   });
 
   // Skill every turn when possible: it feeds Lightning-Lord.
-  k.policy({
-    turn: (view) => {
-      now = view.time;
-      return preferSkill(view);
-    },
-    ultimate: (view) => {
-      now = view.time;
-      return true;
-    },
-  });
+  k.policy({ turn: preferSkill });
 });

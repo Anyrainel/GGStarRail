@@ -111,6 +111,8 @@ export default defineCharacter("1317", (k) => {
 
   // Facts give 25 (main) / 15 (adjacent) Toughness in total: 10/5 for each
   // of the first two hits and 5 to every enemy for the third.
+  // Enemies without Imaginary Weakness take 50% of the Toughness Reduction.
+  const withoutWeakness = k.param("18", 4);
   const firstHits = {
     shape: "blast",
     main: k.param("18", 1),
@@ -119,6 +121,7 @@ export default defineCharacter("1317", (k) => {
       main: 10 * (k.e(2) ? 1 + k.rankParam(2, 1) : 1),
       adjacent: 5,
     },
+    toughnessWithoutWeakness: withoutWeakness,
   } as const;
 
   k.ability({
@@ -129,7 +132,12 @@ export default defineCharacter("1317", (k) => {
     hits: [
       firstHits,
       firstHits,
-      { shape: "aoe", each: k.param("18", 3), toughness: { each: 5 } },
+      {
+        shape: "aoe",
+        each: k.param("18", 3),
+        toughness: { each: 5 },
+        toughnessWithoutWeakness: withoutWeakness,
+      },
     ],
     after: (ctx) => {
       // Talent: with the third hit, Break DMG to all enemies, consuming all
@@ -142,6 +150,7 @@ export default defineCharacter("1317", (k) => {
           each: k.param("04", 3) + k.param("04", 5) * charge,
           onlyTags: ["break"],
           toughness: { each: k.param("04", 4) + k.param("04", 6) * charge },
+          toughnessWithoutWeakness: 1,
         },
         { origin: "talent" }
       );

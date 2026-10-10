@@ -1,11 +1,11 @@
 import {
+  type ActionContext,
   type BattleApi,
   type EnemyView,
   isEnemy,
   type UnitView,
 } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { HitDef } from "../../kit/model";
 
 /** The Herta — Erudition, Ice. */
 export default defineCharacter("1401", (k) => {
@@ -173,44 +173,20 @@ export default defineCharacter("1401", (k) => {
     },
   });
 
-  // "Hear Me Out": the Talent raises every instance's multiplier by the
-  // primary target's stacks (per stack: primary / other targets), so the
-  // hits are rebuilt per cast; the engine resolves them after `before`.
+  // "Hear Me Out": the Talent raises the multiplier by the primary target's
+  // stacks (per stack: primary / other targets) once per target, on the first
+  // instance that hits it (fribbels' reading; tracker
+  // the-herta-interpretation-per-hit). Later instances and the final AoE keep
+  // their base multipliers.
   const spreadMultiplier = k.param("09", 1);
   const finalMultiplier = k.param("09", 3);
   const perStack = eruditionDuo ? 2 : 1;
   const primaryPerStack = k.param("04", 1) * perStack;
   const otherPerStack = k.param("04", 2) * perStack;
-  let primaryBonus = 0;
-  let otherBonus = 0;
-  const enhancedHits: HitDef[] = [];
-  // Toughness: main 5 per instance (20), adjacent 5 per spread instance (10).
-  const buildEnhancedHits = () => {
-    const spread: HitDef = {
-      shape: "blast",
-      main: spreadMultiplier + primaryBonus,
-      adjacent: spreadMultiplier + otherBonus,
-      toughness: { main: 5, adjacent: 5 },
-    };
-    enhancedHits.splice(
-      0,
-      enhancedHits.length,
-      {
-        shape: "single",
-        main: spreadMultiplier + primaryBonus,
-        toughness: { main: 5 },
-      },
-      spread,
-      { ...spread },
-      {
-        shape: "blast",
-        main: finalMultiplier + primaryBonus,
-        adjacent: finalMultiplier + otherBonus,
-        toughness: { main: 5 },
-      }
-    );
-  };
-  buildEnhancedHits();
+  const PRIMARY_BONUS = "primary-bonus";
+  const OTHER_BONUS = "other-bonus";
+  const bonus = (ctx: ActionContext, key: string) =>
+    (ctx.scratch.get(key) as number | undefined) ?? 0;
 
   k.ability({
     id: "enhancedSkill",
@@ -230,23 +206,49 @@ export default defineCharacter("1401", (k) => {
         );
         counted += k.rankParam(1, 1) * most;
       }
-      primaryBonus = counted * primaryPerStack;
-      otherBonus = counted * otherPerStack;
-      buildEnhancedHits();
+      ctx.scratch.set(PRIMARY_BONUS, counted * primaryPerStack);
+      ctx.scratch.set(OTHER_BONUS, counted * otherPerStack);
       if (k.a(1) && own >= maxInterpretation) {
         ctx.applyStatus(ctx.self, a2Ice);
       }
       inflict(ctx, target, k.param("09", 2));
     },
-    hits: enhancedHits,
+    // Toughness: main 5 per instance (20), adjacent 5 per spread instance (10).
+    hits: (ctx) => [
+      {
+        shape: "single",
+        main: spreadMultiplier + bonus(ctx, PRIMARY_BONUS),
+        toughness: { main: 5 },
+      },
+      {
+        shape: "blast",
+        main: spreadMultiplier,
+        adjacent: spreadMultiplier + bonus(ctx, OTHER_BONUS),
+        toughness: { main: 5, adjacent: 5 },
+      },
+      {
+        shape: "blast",
+        main: spreadMultiplier,
+        adjacent: spreadMultiplier,
+        toughness: { main: 5, adjacent: 5 },
+      },
+      {
+        shape: "blast",
+        main: finalMultiplier,
+        adjacent: finalMultiplier,
+        toughness: { main: 5 },
+      },
+    ],
     after: (ctx) => {
       const target = ctx.target;
       if (isEnemy(target)) {
+        const otherBonus = bonus(ctx, OTHER_BONUS);
         const options = {
           tags: ["skill"] as const,
           abilityKind: "skill" as const,
           origin: "skill" as const,
         };
+        // The third instance reaches targets two away from the primary one.
         const ring = neighbours(ctx, target, 2);
         if (ring.length > 0) {
           ctx.deal(
@@ -258,11 +260,21 @@ export default defineCharacter("1401", (k) => {
             { ...options, targets: ring }
           );
         }
+        // Final AoE on targets beyond the adjacent ones; those beyond the
+        // third instance's reach are first hit here and take the bonus.
         const rest = beyondAdjacent(ctx, target);
-        if (rest.length > 0) {
+        const reached = rest.filter((enemy) => ring.includes(enemy));
+        const unreached = rest.filter((enemy) => !ring.includes(enemy));
+        if (reached.length > 0) {
+          ctx.deal(
+            { shape: "aoe", each: finalMultiplier },
+            { ...options, targets: reached }
+          );
+        }
+        if (unreached.length > 0) {
           ctx.deal(
             { shape: "aoe", each: finalMultiplier + otherBonus },
-            { ...options, targets: rest }
+            { ...options, targets: unreached }
           );
         }
         ctx.applyStatus(target, interpretation, {

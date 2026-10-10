@@ -31,20 +31,13 @@ export default defineCharacter("1003", (k) => {
     }
   };
 
-  // A4 only boosts Skill DMG against Burned targets. Without a target-status
-  // filter, the boost is weighted by the Burned share of the Skill's
-  // multipliers (tracker himeko-a4-burned-share).
-  const magma = k.status({
-    id: "magma",
-    origin: "a4",
-    modifiers: [
-      {
-        stat: "dmgBoost",
-        value: k.traceParam(2, 1),
-        filter: { tags: ["skill"] },
-      },
-    ],
-  });
+  if (k.a(2)) {
+    k.stat("a4", {
+      stat: "dmgBoost",
+      value: k.traceParam(2, 1),
+      filter: { tags: ["skill"], targetFamilies: ["burn"] },
+    });
+  }
 
   const childhood = k.status({
     id: "childhood",
@@ -54,14 +47,22 @@ export default defineCharacter("1003", (k) => {
   });
 
   if (k.a(3)) {
-    const highHp = k.toggle(
-      "a6-high-hp",
-      "a6",
-      "selfHpAbove",
-      true,
-      k.traceParam(3, 1)
-    );
-    if (highHp) k.stat("a6", { stat: "critRate", value: k.traceParam(3, 2) });
+    const benchmark = k.status({
+      id: "benchmark",
+      origin: "a6",
+      modifiers: [{ stat: "critRate", value: k.traceParam(3, 2) }],
+    });
+    const threshold = k.traceParam(3, 1);
+    const syncBenchmark = (ctx: BattleApi) => {
+      const high = ctx.self.hpRatio >= threshold - 1e-9;
+      if (high && !ctx.self.has(benchmark)) {
+        ctx.applyStatus(ctx.self, benchmark);
+      } else if (!high && ctx.self.has(benchmark)) {
+        ctx.removeStatus(ctx.self, benchmark);
+      }
+    };
+    k.on("battleStart", "a6", { subject: "any" }, syncBenchmark);
+    k.on("hpChanged", "a6", {}, syncBenchmark);
   }
 
   if (k.e(2)) {
@@ -86,34 +87,18 @@ export default defineCharacter("1003", (k) => {
     },
   });
 
-  const skillMain = k.param("02", 1);
-  const skillAdjacent = k.param("02", 2);
   k.ability({
     id: "skill",
     kind: "skill",
     hits: [
       {
         shape: "blast",
-        main: skillMain,
-        adjacent: skillAdjacent,
+        main: k.param("02", 1),
+        adjacent: k.param("02", 2),
         toughness: { main: 20, adjacent: 10 },
       },
     ],
-    before: (ctx) => {
-      if (!k.a(2) || !isEnemy(ctx.target)) return;
-      let burned = 0;
-      let total = 0;
-      for (const enemy of blastTargets(ctx.enemies, ctx.target)) {
-        const multiplier = enemy === ctx.target ? skillMain : skillAdjacent;
-        total += multiplier;
-        if (enemy.has(burn)) burned += multiplier;
-      }
-      if (burned > 0) {
-        ctx.applyStatus(ctx.self, magma, { setStacks: burned / total });
-      }
-    },
     after: (ctx) => {
-      ctx.removeStatus(ctx.self, magma);
       if (isEnemy(ctx.target)) {
         inflictBurn(ctx, blastTargets(ctx.enemies, ctx.target));
       }
@@ -146,7 +131,15 @@ export default defineCharacter("1003", (k) => {
     id: "followUp",
     kind: "followUp",
     energy: 10,
-    hits: [{ shape: "aoe", each: k.param("04", 1), toughness: { each: 10 } }],
+    // 4 instances at 20/20/20/40% of the multiplier (fribbels' Ashblazing
+    // split); the 10 Toughness per enemy is assumed to split the same way.
+    hits: [0.2, 0.2, 0.2, 0.4].map(
+      (share): HitDef => ({
+        shape: "aoe",
+        each: share * k.param("04", 1),
+        toughness: { each: share * 10 },
+      })
+    ),
     after: (ctx) => {
       inflictBurn(ctx, ctx.enemies);
       if (k.e(1)) ctx.applyStatus(ctx.self, childhood);

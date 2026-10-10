@@ -18,7 +18,9 @@ export default defineCharacter("1302", (k) => {
   });
 
   // Talent: Energy and one Apotheosis stack per enemy hit by Basic ATK,
-  // Skill, or Ultimate. AoE parts hit every enemy, so bounces add none.
+  // Skill, or Ultimate, granted after each HitDef so stacks from the AoE part
+  // raise the CRIT Rate of the bounces. The AoE part hits every enemy, so the
+  // bounces add none.
   const sublimeObject = (ctx: ActionContext, enemiesHit: number) => {
     ctx.gainEnergy(ctx.self, k.param("04", 1) * enemiesHit);
     ctx.applyStatus(ctx.self, apotheosis, { stacks: enemiesHit });
@@ -74,14 +76,14 @@ export default defineCharacter("1302", (k) => {
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
-    after: (ctx) => sublimeObject(ctx, 1),
+    afterHit: (ctx) => sublimeObject(ctx, 1),
   });
 
   k.ability({
     id: "skill",
     kind: "skill",
     hits: [{ shape: "aoe", each: k.param("02", 1), toughness: { each: 10 } }],
-    after: (ctx) => sublimeObject(ctx, ctx.enemies.length),
+    afterHit: (ctx) => sublimeObject(ctx, ctx.enemies.length),
   });
 
   const ultimateBefore = (ctx: ActionContext) => {
@@ -106,17 +108,19 @@ export default defineCharacter("1302", (k) => {
         toughness: { each: 5 },
       },
     ],
-    after: (ctx) => sublimeObject(ctx, ctx.enemies.length),
+    afterHit: (ctx, index) => {
+      if (index === 0) sublimeObject(ctx, ctx.enemies.length);
+    },
   });
 
-  // The 90-Energy Ultimate. The engine only casts `ultimate`, so this variant
-  // is defined for completeness but never chosen (tracked as an engine gap).
+  // The 90-Energy Ultimate. Never chosen: it only pays when 180 Energy cannot
+  // be reached before the battle ends (tracker argenti-90-ultimate).
   k.ability({
     id: "ultimateLesser",
     kind: "ultimate",
     energyCost: k.param("03", 2),
     before: ultimateBefore,
     hits: [{ shape: "aoe", each: k.param("03", 1), toughness: { each: 20 } }],
-    after: (ctx) => sublimeObject(ctx, ctx.enemies.length),
+    afterHit: (ctx) => sublimeObject(ctx, ctx.enemies.length),
   });
 });
