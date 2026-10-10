@@ -1,1 +1,12 @@
 # Combat translation tracker: light-cones. Schema: .agents/skills/hsr-combat/tracking.md
+
+- id: the-birth-of-the-self-enemy-hp
+  entity: "21006"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    The Birth of the Self's extra Follow-Up ATK DMG against targets at or
+    below 50% HP is a single on-by-default toggle for every target, because
+    enemy HP is not simulated.
+  detail: ""
