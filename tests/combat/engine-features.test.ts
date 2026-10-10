@@ -571,6 +571,46 @@ describe("combat engine features", () => {
     expect(boosts.every((value) => value === 0.3)).toBe(true);
   });
 
+  it("tracks HP from costs, healing, and enemy attacks", () => {
+    const changes: { cause?: string; delta?: number; hp: number }[] = [];
+    const consumed: number[] = [];
+    run(
+      (k) => {
+        basic(k);
+        k.ability({
+          id: "skill",
+          kind: "skill",
+          hits: [{ shape: "single", main: 1 }],
+          before: (ctx) => {
+            consumed.push(ctx.consumeHp(ctx.self, 0.3));
+          },
+          after: (ctx) => {
+            ctx.heal(ctx.self, 0.5);
+            ctx.consumeHp(ctx.self, 5);
+          },
+        });
+        k.on("hpChanged", "talent", {}, (_ctx, event) => {
+          changes.push({
+            cause: event.hpCause,
+            delta: event.delta,
+            hp: event.unit.hpRatio,
+          });
+        });
+        k.policy({ turn: () => "skill", ultimate: () => false });
+      },
+      { cycles: 2 }
+    );
+    // From full HP the first cost is paid in full; later ones start at 1%.
+    expect(consumed[0]).toBeCloseTo(0.3, 9);
+    const causes = new Set(changes.map((change) => change.cause));
+    expect(causes).toEqual(new Set(["consume", "heal", "enemy"]));
+    // Healing stops at Max HP; costs stop at 1%.
+    expect(changes.every((change) => change.hp <= 1 && change.hp >= 0.01)).toBe(
+      true
+    );
+    expect(changes.some((change) => change.hp === 0.01)).toBe(true);
+  });
+
   it("reports ability targets, status removal, and summon lifecycle", () => {
     const seen: string[] = [];
     run(

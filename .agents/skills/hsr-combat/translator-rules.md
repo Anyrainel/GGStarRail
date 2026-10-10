@@ -160,7 +160,8 @@ Decide in this order:
    Weakness Break and Broken state, statuses and their families on the target
    (U14), debuff counts, Skill Points gained and spent, Energy, being hit by
    enemies (aggro-weighted), enemy SPD changes, memosprite presence,
-   Punchline, and Certified Banger. Do not add an option for these.
+   Punchline, Certified Banger, and allies' HP (U12). Do not add an option
+   for these.
 2. **Team composition** ("if there are N Nihility allies"): `k.countPath`,
    `k.countCombatType`, `k.team`. Path IDs are catalog IDs: Warrior =
    Destruction, Rogue = The Hunt, Mage = Erudition, Shaman = Harmony, Warlock =
@@ -175,8 +176,6 @@ Decide in this order:
    | enemy HP ≤ X% with X < 50 | off |
    | enemy HP ≥ X% with X ≤ 50 | on |
    | enemy HP ≥ X% with X > 50 | off |
-   | own HP ≥ X% | on |
-   | own HP ≤ X% | off, unless the kit consumes its own HP |
    | "upon defeating an enemy" (condition `enemyDefeated`) | off (boss scenarios) |
    | per-cycle frequency of an unmodelled trigger | `count` with the typical value |
 
@@ -231,12 +230,24 @@ Decide in this order:
 
 ### U12. Effects that are not modelled
 
-Skip these silently: healing, shields, damage reduction taken by allies, HP
-costs (unless they trigger damage effects), Crowd Control resistance, aggro
-changes, and Technique effects. **[TRACK]** (`engine-gap`) if any of them
-converts into a modelled stat or trigger. HP is not simulated: when damage
-depends on HP thresholds or HP lost, use a U8 option or a counter fed by
-`hitByEnemy` weights, and file an `approximation`.
+Skip these silently: shields, damage reduction taken by allies, Crowd Control
+resistance, aggro changes, and Technique effects. **[TRACK]** (`engine-gap`)
+if any of them converts into a modelled stat or trigger.
+
+HP is simulated as a share of Max HP per ally (expected value, never below
+1%), so model every HP change and read HP rather than adding options:
+
+- "Consumes X% of Max HP" → `ctx.consumeHp(unit, X)`; "sets HP to X%" →
+  `ctx.setHp(unit, X)`. Enemy attacks remove HP on their own.
+- Healing → `ctx.heal(target, amount / target Max HP)`, with the amount from
+  the healer's stats (`panelStat`) and Outgoing Healing. Every healer must
+  heal, or allies only lose HP.
+- "When HP is lost/consumed/restored" → `hpChanged` (`hpCause`, `delta`).
+- "While HP ≥ X%" → `unit.hpRatio`. "HP lost" tallies → sum `hpChanged`
+  deltas. **[BUG]** for an own-HP option or HP counter where these apply.
+
+Healing amounts beyond Max HP are not reported; kits that tally them compute
+the requested share themselves.
 
 ### U13. Non-stacking effects
 

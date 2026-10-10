@@ -43,7 +43,7 @@ than user settings:
   they do not script turns.
 - **Buff uptime.** Buffs exist when the battle applied them. A condition is
   an option only when the battle cannot observe it (enemy HP thresholds,
-  kills, HP costs). Each option is labelled with its source ability and a
+  kills). Each option is labelled with its source ability and a
   shared condition phrase, so options need no per-Character strings.
 - **Enemy stats.** Scenario presets fix count, Toughness, SPD, RES, and Effect
   RES. Teams are compared under the same enemies.
@@ -84,5 +84,7 @@ team's Combat Types.
   `docs/combat/tracker/`.
 - Expected values replace randomness (see `architecture.md`). Results are
   averages, comparable across builds.
-- Healing, shields, HP, and kills are not simulated. Where they change damage,
-  kits expose a condition option and file an approximation item.
+- Allies' HP is simulated as an expected share of Max HP: costs, healing,
+  and a fixed share lost per enemy attack. Shields, enemy HP, and kills are
+  not simulated; where they change damage, kits expose a condition option
+  and file an approximation item.

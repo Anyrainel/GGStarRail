@@ -7,6 +7,7 @@ import type {
   DealOptions,
   EnemyView,
   EventFilter,
+  HpCause,
   PolicyView,
   ToughnessOptions,
   TurnChoice,
@@ -55,6 +56,8 @@ export interface BattleOptions {
   maxSkillPoints: number;
   /** Energy an ally gains when the enemy attack lands on it (before ERR). */
   enemyAttackEnergy: number;
+  /** HP an enemy attack removes from the ally it lands on (share of Max HP). */
+  enemyAttackHp: number;
   /** First cycle length in action value (Memory of Chaos: 150). */
   firstCycle: number;
   cycleLength: number;
@@ -71,6 +74,7 @@ export const DEFAULT_BATTLE_OPTIONS: BattleOptions = {
   startingSkillPoints: 3,
   maxSkillPoints: 5,
   enemyAttackEnergy: 10,
+  enemyAttackHp: 0.1,
   firstCycle: 150,
   cycleLength: 100,
   punchlinePerElationCharacter: 0,
@@ -84,6 +88,8 @@ interface QueuedAction {
 }
 
 const MAX_ACTIONS = 2000;
+/** HP never drops below 1% (units are not defeated). */
+const HP_FLOOR = 0.01;
 const ULTIMATE_PASSES = 8;
 /** Abilities one turn may chain when they do not end the turn. */
 const MAX_TURN_ABILITIES = 12;
@@ -369,6 +375,7 @@ export class Battle {
         { type: "hitByEnemy", unit: ally, target: enemy, weight: share },
         null
       );
+      this.changeHp(ally, -this.options.enemyAttackHp * share, "enemy", enemy);
     });
   }
 
@@ -1333,6 +1340,20 @@ export class Battle {
         instance.stacks = Math.max(0, instance.stacks - stacks);
         if (instance.stacks <= 0) battle.removeStatusInstance(unit, instance);
       },
+      consumeHp: (unit, share) =>
+        -battle.changeHp(asUnit(unit), -share * weight, "consume", self),
+      heal: (unit, share) =>
+        battle.changeHp(asUnit(unit), share * weight, "heal", self),
+      setHp: (unit, share) => {
+        const target = asUnit(unit);
+        const delta = (share - target.hp) * weight;
+        return battle.changeHp(
+          target,
+          delta,
+          delta < 0 ? "consume" : "heal",
+          self
+        );
+      },
       extendStatus: (target, status, turns) => {
         for (const instance of asUnit(target).statuses.values()) {
           if (instance.def === status && instance.remaining !== null)
@@ -1495,6 +1516,35 @@ export class Battle {
         }
       },
     };
+  }
+
+  /**
+   * Changes HP by a share of Max HP within [1%, 100%] and reports the change
+   * actually made. HP is an expected value: weighted changes scale it.
+   */
+  changeHp(
+    unit: CombatUnit,
+    delta: number,
+    cause: HpCause,
+    source: CombatUnit
+  ): number {
+    const before = unit.hp;
+    unit.hp = Math.min(1, Math.max(HP_FLOOR, before + delta));
+    const change = unit.hp - before;
+    if (Math.abs(change) > 1e-12) {
+      this.emit(
+        {
+          type: "hpChanged",
+          unit,
+          source,
+          delta: change,
+          hpCause: cause,
+          weight: 1,
+        },
+        source
+      );
+    }
+    return change;
   }
 
   /** Removes a status and reports it (expiry, removal, or no stacks left). */

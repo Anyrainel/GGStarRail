@@ -23,6 +23,8 @@ export interface UnitView {
   readonly owner: UnitView | null;
   readonly energy: number;
   readonly maxEnergy: number;
+  /** Current HP as a share of Max HP (expected value, never below 1%). */
+  readonly hpRatio: number;
   readonly speed: number;
   readonly inActionOrder: boolean;
   /** Remaining action-gauge distance (10000 = a full turn away). */
@@ -142,6 +144,14 @@ export interface BattleApi {
   ): number;
   setEnergy(unit: UnitView, amount: number): void;
   gainSkillPoints(amount: number): void;
+  /**
+   * HP, as shares of the unit's Max HP. `consumeHp` stops at 1 HP and
+   * returns the share actually consumed; `heal` stops at Max HP and returns
+   * the share restored; `setHp` consumes or restores to reach the share.
+   */
+  consumeHp(unit: UnitView, share: number): number;
+  heal(unit: UnitView, share: number): number;
+  setHp(unit: UnitView, share: number): number;
   /** Raise or lower the team's Skill Point cap (default 5). */
   setMaxSkillPoints(max: number): void;
 
@@ -231,6 +241,7 @@ export type BattleEventType =
   | "dotTick"
   | "teamResourceChanged"
   | "skillPointsChanged"
+  | "hpChanged"
   | "ahaInstantStart"
   | "ahaInstantEnd";
 
@@ -259,8 +270,14 @@ export interface BattleEvent {
   readonly detonation?: boolean;
   /** `turnStart`/`turnEnd`: an extra turn. */
   readonly extraTurn?: boolean;
+  /** `hpChanged`: why HP changed; `delta` is the share of Max HP. */
+  readonly hpCause?: HpCause;
+  /** `hpChanged`: the unit that consumed, healed, or attacked. */
+  readonly source?: UnitView;
   readonly weight: number;
 }
+
+export type HpCause = "consume" | "heal" | "enemy";
 
 /** Who an event listener reacts to, relative to the kit's own unit. */
 export type EventSubject =

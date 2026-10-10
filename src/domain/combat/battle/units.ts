@@ -164,6 +164,8 @@ export class CombatUnit implements UnitView {
   readonly conditional: AppliedModifier[] = [];
   energy = 0;
   maxEnergy = 0;
+  /** Current HP as a share of Max HP. */
+  hp = 1;
   /** Base aggro (Path-dependent); enemies target allies proportionally. */
   aggro = 100;
   /**
@@ -209,6 +211,10 @@ export class CombatUnit implements UnitView {
   /** The unit whose stats an attack by this unit scales with. */
   get statUnit(): CombatUnit {
     return this.kind === "summon" && this.owner ? this.owner : this;
+  }
+
+  get hpRatio(): number {
+    return this.hp;
   }
 
   get actionGauge(): number {

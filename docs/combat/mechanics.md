@@ -154,6 +154,19 @@ several partial triggers add up to at most the limit.
 - The Skill Point cap can change (`setMaxSkillPoints`); every change is
   reported as `skillPointsChanged` after clamping.
 
+### HP [COM, engine model]
+
+- Each ally's HP is a share of its Max HP, starting full. It is an expected
+  value: weighted costs and heals change it proportionally.
+- Costs stop at 1 HP and heals at Max HP; units are never defeated (HP stays
+  at 1% or more).
+- Each enemy attack removes 10% of the target's Max HP, split by aggro like
+  its Energy. Shields and damage reduction are not modelled, so this is the
+  HP lost after them.
+- Healing restores the healer's amount divided by the target's Max HP.
+- Every change is reported as `hpChanged` with its cause (`consume`, `heal`,
+  `enemy`).
+
 ## Memosprites [GT talent text, FR, INF]
 
 - HP and SPD come from talent text. All other stats are inherited from the

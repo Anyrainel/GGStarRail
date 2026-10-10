@@ -173,6 +173,7 @@ ctx.self / ctx.allies / ctx.enemies / ctx.target / ctx.mainTarget / ctx.weight
 ctx.skillPoints / ctx.maxSkillPoints / ctx.cycle / ctx.time          // live values
 ctx.applyStatus / setStatusStacks / removeStatus / consumeStacks
 ctx.extendStatus(unit, status, turns) / unit.remainingTurns(status, applier?)
+ctx.consumeHp(unit, share) → consumed / heal(unit, share) → restored / setHp(unit, share) / unit.hpRatio
 ctx.gainEnergy(unit, n, { fixed? }) → overflow / setEnergy / gainSkillPoints(n) / setMaxSkillPoints(n)
 ctx.advanceAction(unit, f) / delayAction / grantExtraTurn(unit) / setInActionOrder(unit, b)
 ctx.queueAction(unit, abilityId, { target?, weight? })   // follow-ups after the current action
@@ -219,6 +220,7 @@ isEnemy(view)                                               // narrow event targ
 | `dotTick` | enemy | `status`; `detonation` tells detonations from turn-start ticks |
 | `teamResourceChanged` | changer | `resource`, `delta` |
 | `skillPointsChanged` | unit that caused it | `delta` (+ gained, − spent), after the cap |
+| `hpChanged` | unit whose HP changed | `delta` (share of Max HP), `hpCause` (`consume`, `heal`, `enemy`), `source` |
 | `ahaInstantStart` / `ahaInstantEnd` | Aha | Elation |
 
 "After X attacks" → `actionEnd` with `attack: true`. "When X uses" →

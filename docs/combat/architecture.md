@@ -83,8 +83,8 @@ are thresholds rather than sums.
 
 ## Points and resources
 
-Energy, Skill Points, and per-unit counters live in the battle because they
-shape the timeline:
+Energy, Skill Points, HP, and per-unit counters live in the battle because
+they shape the timeline:
 
 - Energy: ERR-scaled gains, overflow reported to the kit, enemy attacks
   distributed by aggro.
@@ -94,6 +94,9 @@ shape the timeline:
   Aureus.
 - Team resources: Punchline, which the Aha unit reads for its SPD and its
   Instants.
+- HP: an expected share of Max HP per ally, changed by kit costs and
+  healing and by enemy attacks, reported as `hpChanged`. Heal amounts read
+  the healer's and target's panels, so those reads join the timeline key.
 
 The optimizer never estimates Energy outside the battle; ERR is a timeline
 input.
