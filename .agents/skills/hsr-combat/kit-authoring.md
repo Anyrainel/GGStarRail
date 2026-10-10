@@ -153,6 +153,7 @@ k.ability({
 ```
 
 - `kind` is one of `direct`, `dot`, `break`, `superBreak`, `elation`, `fixed`.
+  `kind: "elation"` hits always carry the `elation` tag.
 - `aoe` with both `main` and `each`: the designated target takes `main`, the
   others `each`.
 - `split`: "X% distributed evenly across all enemies"; `main` is the total.
@@ -182,6 +183,7 @@ ctx.addCounter(unit, name, d, max?) / setCounter / unit.counter(name)
 ctx.teamResource(name) / addTeamResource(name, d, max?)    // "punchline"
 ctx.summon(owner, servantId) / findSummon(owner, servantId) / dismiss(unit)
 ctx.grantCertifiedBanger(unit, value, turns?) / unit.certifiedBanger()
+ctx.ahaExtraTurn(punchline)                                 // "Aha takes an extra turn" (fixed Punchline)
 unit.pathId / unit.slot / unit.actionGauge / unit.speed
 isEnemy(view)                                               // narrow event targets
 ```

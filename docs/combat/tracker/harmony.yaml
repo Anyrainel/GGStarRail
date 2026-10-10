@@ -123,3 +123,90 @@
     receiver's Energy Regeneration Rate per U10; community sources describe
     it as a flat amount. See engine-energy-fixed-sources.
   detail: ""
+- id: sunday-summon-ids
+  entity: "1313"
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    The Skill's summon bonus and "their summon takes action" find memosprites
+    in ctx.allies but stat-less summons only through hard-coded kit-local IDs
+    (lightning-lord, numby, fuyuan, souldragon); a new summon kit is missed
+    until it is added to SUMMON_IDS in 1313-sunday.ts.
+  detail: "Needs a way to list an ally's summons and to tell in-game summons from countdowns (Concerto, Supreme Stance)."
+- id: sunday-ultimate-target
+  entity: "1313"
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    Ultimates run on the main enemy and an Ultimate policy cannot return an
+    ally target, so The Beatified and the Energy go to the ally the Skill's
+    heuristic picks (first ally Character in team order not on Harmony,
+    Abundance, or Preservation), chosen inside the Ultimate.
+  detail: "See engine-ally-option-vocabulary for choosing the teammate."
+- id: tribbie-a4-team-hp
+  entity: "1403"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    A4's Max HP bonus (9% of the sum of all ally Characters' Max HP) is a
+    stacking hpFlat status whose stacks are the summed steady-panel Max HP,
+    set when the Zone opens; HP buffs from statuses and later changes are
+    not counted.
+  detail: "Needs a scaling source that sums a stat over ally Characters."
+- id: tribbie-zone-highest-hp
+  entity: "1403"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated, so the Zone's Additional DMG goes to the main target
+    (the boss) when the attack hit it, else to the first enemy hit, instead of
+    the hit target with the highest current HP.
+  detail: ""
+- id: tribbie-zone-debuff
+  entity: "1403"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    The Zone's "enemy targets' DMG taken +30%" is an enemy status that is not
+    a debuff; confirm whether it counts toward debuff counts.
+  detail: ""
+- id: harmony-auras-late-memosprites
+  entity: "1403"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    Timed team buffs (Tribbie's Numinosity and E1, Trailblazer Harmony's
+    Backup Dancer, Sunday's The Beatified) are applied to the allies present
+    at cast time; a memosprite summoned or re-summoned later (Garmentmaker)
+    does not get the remaining duration.
+  detail: "Needs a summon event, or statuses that follow an aura holder, plus a read of a status's remaining turns (engine-status-lifecycle)."
+- id: cerydra-coup-de-main-order
+  entity: "1412"
+  rule: U11
+  status: open
+  category: approximation
+  summary: >
+    Coup de Main ("copy and immediately use the ability about to be used, then
+    use the original") is queued after the Peerage holder's Skill: the first
+    use keeps Peerage and the queued use runs with Military Merit after 6
+    Charge is consumed. The queued use's Skill Points are refunded through
+    skillPointsChanged (other kits see a spend and a refund), and it
+    regenerates the holder's Skill Energy again, which is unverified.
+  detail: "Needs a way to insert an ability use before the current one, free of Skill Points. Coup de Main text from ExtraEffectConfig 10000023 (not in the dossier)."
+- id: trailblazer-harmony-a2-zone
+  entity: "8005"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    A2 ("the Super Break DMG triggered by Backup Dancer increases by 20-60%")
+    is modeled as extra superBreakDmg on the Backup Dancer conversion rate
+    (100% + 60% against one enemy, as community calculators do), not as DMG
+    Boost scoped to Super Break per the U2 table. Confirm the zone.
+  detail: "Related: engine-super-break-zones in engine.yaml."

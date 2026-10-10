@@ -190,6 +190,11 @@ export interface BattleApi {
   findSummon(owner: UnitView, servantId: string): UnitView | null;
   dismiss(unit: UnitView): void;
 
+  /**
+   * Aha takes an extra turn after the current action, counting a fixed
+   * Punchline (the team's Punchline is neither used nor consumed).
+   */
+  ahaExtraTurn(punchline: number): void;
   /** Grant a Certified Banger state worth `value` Punchline (default 2 turns). */
   grantCertifiedBanger(unit: UnitView, value: number, turns?: number): void;
 }

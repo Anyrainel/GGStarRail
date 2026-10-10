@@ -122,6 +122,8 @@ export class Battle {
   maxSkillPoints: number;
   private readonly queue: QueuedAction[] = [];
   private readonly extraTurns: CombatUnit[] = [];
+  /** Aha extra turns granted by kits, with their fixed Punchline. */
+  private readonly ahaExtraTurns: number[] = [];
   private actionCount = 0;
   private currentActor: CombatUnit | null = null;
   private currentExtraTurn = false;
@@ -469,7 +471,16 @@ export class Battle {
 
   private processQueue(): void {
     let guard = 0;
-    while (this.queue.length > 0 && guard < 64) {
+    while (
+      (this.queue.length > 0 || this.ahaExtraTurns.length > 0) &&
+      guard < 64
+    ) {
+      if (this.queue.length === 0) {
+        const punchline = this.ahaExtraTurns.shift();
+        if (punchline !== undefined) this.ahaInstant(punchline);
+        guard += 1;
+        continue;
+      }
       guard += 1;
       const next = this.queue.shift();
       if (!next) break;
@@ -594,8 +605,12 @@ export class Battle {
   ): void {
     const main = context.mainTarget ?? this.mainTarget;
     if (!main) return;
-    const tags = hit.onlyTags ?? [
-      ...new Set([...context.tags, ...(hit.tags ?? [])]),
+    const declared = hit.onlyTags ?? [...context.tags, ...(hit.tags ?? [])];
+    // Elation DMG is always Elation DMG, whatever ability deals it.
+    const tags = [
+      ...new Set(
+        hit.kind === "elation" ? [...declared, "elation" as const] : declared
+      ),
     ];
     const placements = this.placements(hit, main, context.targets);
     for (const placement of placements) {
@@ -957,26 +972,40 @@ export class Battle {
     );
   }
 
-  private ahaInstant(): void {
-    const punchline = this.teamResources.get("punchline") ?? 0;
+  /**
+   * Aha's turn: every participant's Elation Skill, then Certified Bangers
+   * worth the Punchline. An extra turn (`fixedPunchline`) counts that fixed
+   * amount instead and leaves the team's Punchline untouched.
+   */
+  private ahaInstant(fixedPunchline?: number): void {
+    const aha = this.aha;
+    if (!aha) return;
+    const held = this.teamResources.get("punchline") ?? 0;
+    const extraTurn = fixedPunchline !== undefined;
+    const punchline = fixedPunchline ?? held;
+    if (extraTurn) this.teamResources.set("punchline", punchline);
     const participants = this.allies.filter((ally) =>
       ally.behaviour?.abilities.has("elationSkill")
     );
-    const aha = this.aha;
-    if (!aha) return;
-    this.emit({ type: "ahaInstantStart", unit: aha, weight: 1 }, null);
+    this.emit(
+      { type: "ahaInstantStart", unit: aha, extraTurn, weight: 1 },
+      null
+    );
     for (const unit of participants) {
       const ability = unit.behaviour?.abilities.get("elationSkill");
       if (ability) this.execute(unit, ability, this.mainTarget, "queued", 1);
       this.processQueue();
     }
-    for (const unit of participants) {
-      if (unit.kind === "character") {
-        unit.bangers.push({ value: punchline, remaining: 2, skip: false });
+    if (punchline > 0) {
+      for (const unit of participants) {
+        if (unit.kind === "character") {
+          unit.bangers.push({ value: punchline, remaining: 2, skip: false });
+        }
       }
     }
-    this.teamResources.set("punchline", 0);
-    this.emit({ type: "ahaInstantEnd", unit: aha, weight: 1 }, null);
+    this.teamResources.set("punchline", extraTurn ? held : 0);
+    this.emit({ type: "ahaInstantEnd", unit: aha, extraTurn, weight: 1 }, null);
+    if (extraTurn) return;
     const regained =
       this.options.punchlinePerElationCharacter *
       this.elationCharacters().length;
@@ -1424,6 +1453,9 @@ export class Battle {
         [...battle.allies, ...battle.summons].find(
           (unit) => unit.owner === owner && unit.definitionId === servantId
         ) ?? null,
+      ahaExtraTurn: (punchline) => {
+        if (battle.aha) battle.ahaExtraTurns.push(punchline);
+      },
       grantCertifiedBanger: (unit, value, turns = 2) => {
         const target = asUnit(unit);
         target.bangers.push({

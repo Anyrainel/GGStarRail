@@ -1,1 +1,126 @@
 # Combat translation tracker: elation. Schema: .agents/skills/hsr-combat/tracking.md
+- id: sparxie-farming-odds
+  entity: "1501"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Engagement Farming is played as "farm while Thrill or Skill Points remain,
+    up to 20 triggers". The Skill queues each further trigger weighted by its
+    probability under that policy (a random walk on SP), with gift odds
+    assumed 50/50 and each gift at its expected value.
+  detail: >
+    farmingOdds() in the kit computes the odds from the Skill Points and Thrill
+    at Skill time (fractional values mixed between floor and ceil). From 2 SP
+    with a 5 SP cap this averages about 10.6 triggers. Real gift weights and a
+    reserve for teammates would change the count.
+- id: sparxie-thrill-sp-event
+  entity: "1501"
+  rule: U10
+  status: open
+  category: approximation
+  summary: >
+    Thrill is a kit counter spent through separate `skillThrill`/`farmThrill`
+    abilities. "Consuming Thrill is considered as consuming Skill Points", but
+    spending it emits no skillPointsChanged, so other kits' SP-consumption
+    triggers miss it.
+  detail: ""
+- id: sparxie-elation-toughness
+  entity: "1501"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    Toughness facts are read as index 0 = per random instance and index 1 =
+    per enemy for the AoE part (Elation Skill 1.67/6.67, as for Yao Guang's
+    5/20). The Talent's 5 Toughness is put on the Enhanced Basic ATK's
+    main-target Elation hit; it could belong to the per-farm instances.
+  detail: ""
+- id: yao-guang-aha-extra-turn
+  entity: "1502"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    The Ultimate's Aha extra turn (fixed 20 Punchline, 40 at E1, consumes
+    none) has no engine construct. The kit queues every Elation Character's
+    Elation Skill, then grants Certified Banger worth the fixed amount.
+  detail: >
+    Inaccuracies: the queued Elation Skills read the team Punchline, not the
+    fixed amount; ahaInstantStart/ahaInstantEnd do not fire (Sparxie E1/E2);
+    E4's "Elation Skill DMG becomes 150%" is a status filtered on the
+    `elation` tag, so Great Boon and other Elation procs in that window are
+    also boosted. Needs something like grantAhaExtraTurn({ punchline, consume:
+    false }) that runs a real Aha Instant and tells kits which Ultimate
+    granted it.
+- id: yao-guang-a6-banger-duration
+  entity: "1502"
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    A6 extends each Certified Banger Yao Guang gains by 1 turn. The engine
+    grants Aha Instant bangers directly (2 turns), with no gain event or way
+    to extend them, so A6 applies only to the bangers her emulated Aha extra
+    turn grants.
+  detail: ""
+- id: yao-guang-great-boon-stats
+  entity: "1502"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    Great Boon deals Elation DMG of the attacker's Type with Yao Guang's
+    stats. The text uses the attacker's stats and swaps in Yao Guang's
+    Elation only when it is higher; a stat maximum across two units cannot
+    be expressed.
+  detail: >
+    Usually Yao Guang has the highest Elation, so the Elation term is right
+    and CRIT and Merrymake come from her instead of the attacker.
+- id: pearl-missing-facts
+  entity: "1503"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    Pearl (4.6) is not in the pinned TurnBasedGameData, so Energy, Skill
+    Points, and Toughness use kind conventions; both AoE Enhanced Basic ATKs
+    assume 10 Toughness per enemy.
+  detail: ""
+- id: pearl-banger-rules
+  entity: "1503"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Pearl's Certified Banger lasts indefinitely, caps at 50, and is spent as
+    Repellency. The kit caps its own grants, but Aha Instant bangers (2 turns)
+    stack past the cap, and Repellency spending is not simulated. Starry
+    Night's Elation DMG therefore sees a high Punchline (over 100 in a full
+    Elation team).
+  detail: >
+    The 4-Elation extra turn's 30 Certified Banger is granted at Ultimate time
+    for 1 turn so it expires with the extra turn, because a banger cannot be
+    removed at turn end. Needs per-unit banger rules (cap, no expiry) and
+    removal.
+- id: pearl-elation-targets
+  entity: "1503"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    Several Elation DMG instances name no target. Starry Night's 15%, the
+    Ultimate's 60%, and E6's 240% (from the Aesthetic Archetype's stats) are
+    assumed to hit every enemy the AoE hit. The Elation Skill's proc hits
+    only the attack's designated target.
+  detail: ""
+- id: pearl-archetype-choice
+  entity: "1503"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    The Ultimate's Aesthetic Archetype is the first other Elation Character,
+    else the first other Character. No option type exists for choosing a
+    teammate (engine-ally-option-vocabulary).
+  detail: ""

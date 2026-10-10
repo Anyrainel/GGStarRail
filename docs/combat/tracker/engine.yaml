@@ -250,3 +250,29 @@
     strings "skill"/"basic", so a `{ ability, target }` choice (Huohuo, Bailu)
     bypasses the "avoid" Skill override.
   detail: ""
+- id: engine-elation-zero-banger
+  entity: engine
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Once Aha has joined the Action Order it acts even at 0 Punchline, and its
+    participants gain Certified Banger worth 0. certifiedBanger() sums
+    values, so kits read such a banger as not held ("while holding Certified
+    Banger").
+  detail: >
+    Seen in a Sparxie/Yao Guang/Pearl/Robin run, where an Aha Instant came
+    before anyone regained Punchline. Need to confirm whether Aha acts at 0
+    Punchline, and whether holding Certified Banger should be a state
+    separate from its value.
+- id: engine-elation-kind-tag
+  entity: engine
+  rule: U4
+  status: open
+  category: engine-gap
+  summary: >
+    A hit with `kind: "elation"` does not get the `elation` tag. Only Elation
+    Skill abilities add it by default, so procs dealt with `deal` must add it
+    themselves, or "when dealing Elation DMG" filters (Yao Guang E1's DEF
+    ignore) miss them.
+  detail: "Adding the tag automatically for kind elation would remove the convention."
