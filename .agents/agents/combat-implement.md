@@ -43,6 +43,11 @@ You are not alone in the codebase:
    - `KIT_FILES=<path>[,<path>...] npx vitest run tests/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept`.
      It runs each kit at E0/E6 (or S1/S5, or the set tiers) in a team with
      Robin and Kafka, then prints the timeline and an ability breakdown.
+     Light Cones are worn by a reference kit of their Path (or a generic
+     attacker), Relic sets by a generic attacker with Basic ATK, Skill,
+     Follow-up ATK, and Ultimate. When an effect needs a specific wearer
+     (e.g. a memosprite owner or a DoT user), add
+     `WEARER=src/domain/combat/impl/characters/<file>.ts`.
      Read them: abilities should fire at sensible times, and no damaging
      ability should be missing from the breakdown.
    - `npx tsc -p tsconfig.app.json --noEmit` and fix errors in your own files.

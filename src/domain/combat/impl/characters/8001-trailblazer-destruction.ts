@@ -35,8 +35,8 @@ export default defineCharacter("8001", (k) => {
   const ripHomeRun = k.toggle("rip-home-run", "ultimate", "active", true);
 
   // Kills are not simulated: when enabled, every Ultimate defeats an enemy.
-  const e1Kill = k.e(1) && k.toggle("e1-ultimate-kill", "e1", "active", false);
-  const e6Kill = k.e(6) && k.toggle("e6-kill", "e6", "active", false);
+  const e1Kill = k.e(1) && k.toggle("e1-ultimate-kill", "e1", "enemyDefeated", false);
+  const e6Kill = k.e(6) && k.toggle("e6-kill", "e6", "enemyDefeated", false);
 
   k.on("weaknessBreak", "talent", { subject: "self" }, (ctx) =>
     ctx.applyStatus(ctx.self, perfectPickoff)

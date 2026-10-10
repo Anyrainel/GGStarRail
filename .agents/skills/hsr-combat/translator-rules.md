@@ -176,7 +176,7 @@ Decide in this order:
    | enemy HP ≥ X% with X > 50 | off |
    | own HP ≥ X% | on |
    | own HP ≤ X% | off, unless the kit consumes its own HP |
-   | "upon defeating an enemy" | off (boss scenarios) |
+   | "upon defeating an enemy" (condition `enemyDefeated`) | off (boss scenarios) |
    | per-cycle frequency of an unmodelled trigger | `count` with the typical value |
 
    **[BUG]** for an option that duplicates something the engine models, or a

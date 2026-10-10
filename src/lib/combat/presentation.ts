@@ -136,6 +136,8 @@ export function optionConditionLabel(
       return t("combat.condition.selfHpBelow", { percent });
     case "selfHpAbove":
       return t("combat.condition.selfHpAbove", { percent });
+    case "enemyDefeated":
+      return t("combat.condition.enemyDefeated");
   }
 }
 

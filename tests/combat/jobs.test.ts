@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { runCombatJob } from "@/lib/combat/client";
 import { emptyTeam } from "@/stores/teamSchemas";
+import { createDemoAccount } from "../fixtures/demoAccount";
 
 function team() {
   const plan = emptyTeam("team:test");
@@ -41,4 +42,40 @@ describe("combat jobs", () => {
     expect(result.steps.length).toBeGreaterThan(0);
     expect(result.steps.every((step) => step.damage > 0)).toBe(true);
   }, 30_000);
+
+  it("optimizes an owned Character from the account's Relics", async () => {
+    const account = await createDemoAccount(new Date("2026-09-02T00:00:00Z"));
+    const plan = emptyTeam("team:owned");
+    // The demo account equips Relics on March 7th and Dan Heng.
+    plan.members[0] = { characterId: "1002", options: {}, skill: "kit" };
+    plan.members[1] = { characterId: "1309", options: {}, skill: "kit" };
+    const owned = { account, characterLightConeIds: {}, builds: [] };
+    const simulated = await runCombatJob({
+      kind: "simulate",
+      request: { team: plan, sources: owned },
+    });
+    expect(simulated.members[0]?.owned).toBe(true);
+    expect(simulated.members[0]?.relicSource).toBe("equipped");
+
+    const optimized = await runCombatJob({
+      kind: "optimize",
+      request: { team: plan, sources: owned, slot: 0 },
+    });
+    expect(optimized.candidatePieces).toBeGreaterThan(0);
+    expect(optimized.loadouts.length).toBeGreaterThan(0);
+    const best = optimized.loadouts[0];
+    expect(best?.damage ?? 0).toBeGreaterThanOrEqual(optimized.currentDamage);
+
+    const ideal = await runCombatJob({
+      kind: "ideal",
+      request: {
+        team: plan,
+        sources: owned,
+        slot: 0,
+        constraints: { minSpeed: 120 },
+      },
+    });
+    expect(ideal.speed).toBeGreaterThanOrEqual(120 - 1e-6);
+    expect(Object.keys(ideal.weights).length).toBeGreaterThan(0);
+  }, 60_000);
 });

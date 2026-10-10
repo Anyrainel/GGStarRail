@@ -4,7 +4,10 @@ import { formatTimeline } from "@/domain/combat/debug/timeline";
 import kafka from "@/domain/combat/impl/characters/1005-kafka";
 import seele from "@/domain/combat/impl/characters/1102-seele";
 import robin from "@/domain/combat/impl/characters/1309-robin";
-import type { CharacterKitDefinition } from "@/domain/combat/kit/character";
+import {
+  type CharacterKitDefinition,
+  defineCharacter,
+} from "@/domain/combat/kit/character";
 import type {
   LightConeKitDefinition,
   RelicSetKitDefinition,
@@ -24,6 +27,11 @@ import { loadCombatReferenceData } from "@/lib/combat/referenceData";
  *     npx vitest run tests/combat/kit-check.test.ts
  *
  * It prints a timeline and ability breakdown for review.
+ *
+ * Light Cones are worn by a reference kit of their Path, or by a generic
+ * attacker when the Path has none, so on-action effects fire. Relic sets are
+ * worn by a generic attacker (Basic ATK, Skill, Follow-up, Ultimate) with
+ * Seele's stats. Set WEARER=<character file> to choose the wearer's kit.
  */
 const files = (process.env.KIT_FILES ?? "")
   .split(",")
@@ -40,6 +48,72 @@ let data: CombatReferenceData;
 beforeAll(async () => {
   data = await loadCombatReferenceData();
 });
+
+/** Stable kits used as Light Cone wearers, by catalog Path ID. */
+const PATH_WEARERS: Readonly<Record<string, string>> = {
+  Warrior: "src/domain/combat/impl/characters/1212-jingliu.ts",
+  Rogue: "src/domain/combat/impl/characters/1102-seele.ts",
+  Mage: "src/domain/combat/impl/characters/1013-herta.ts",
+  Shaman: "src/domain/combat/impl/characters/1309-robin.ts",
+  Warlock: "src/domain/combat/impl/characters/1005-kafka.ts",
+};
+
+async function loadKit(file: string): Promise<AnyKit> {
+  const module = (await import(/* @vite-ignore */ path.resolve(file))) as {
+    default: AnyKit;
+  };
+  return module.default;
+}
+
+/** Basic ATK, Blast Skill, AoE Ultimate, and a follow-up: triggers most effects. */
+function genericAttacker(id: string): CharacterKitDefinition {
+  return defineCharacter(id, (k) => {
+    k.ability({
+      id: "basic",
+      kind: "basic",
+      hits: [{ shape: "single", main: 1, toughness: { main: 10 } }],
+    });
+    k.ability({
+      id: "skill",
+      kind: "skill",
+      hits: [
+        {
+          shape: "blast",
+          main: 2,
+          adjacent: 1,
+          toughness: { main: 20, adjacent: 10 },
+        },
+      ],
+      after: (ctx) => ctx.queueAction(ctx.self, "followUp"),
+    });
+    k.ability({
+      id: "followUp",
+      kind: "followUp",
+      energy: 5,
+      hits: [{ shape: "single", main: 1, toughness: { main: 10 } }],
+    });
+    k.ability({
+      id: "ultimate",
+      kind: "ultimate",
+      hits: [{ shape: "aoe", each: 2, toughness: { each: 20 } }],
+    });
+  });
+}
+
+async function lightConeWearer(
+  pathId: string | undefined
+): Promise<CharacterKitDefinition> {
+  const file = process.env.WEARER ?? (pathId && PATH_WEARERS[pathId]);
+  if (file) {
+    const kit = await loadKit(file);
+    if (kit.type !== "character") throw new Error(`${file} is not a Character`);
+    return kit;
+  }
+  const character = [...data.characters.values()].find(
+    (entry) => entry.path_id === pathId
+  );
+  return genericAttacker(character?.id ?? "1102");
+}
 
 function member(
   characterId: string,
@@ -58,15 +132,25 @@ function member(
 
 describe.skipIf(files.length === 0)("kit check (KIT_FILES)", () => {
   it.each(files)("%s", async (file) => {
-    const module = (await import(/* @vite-ignore */ path.resolve(file))) as {
-      default: AnyKit;
-    };
-    const kit = module.default;
+    const kit = await loadKit(file);
     const fileId = /(\d+)-[^/]+\.ts$/.exec(file)?.[1];
     expect(kit.id).toBe(fileId);
-    const characters = [seele, robin, kafka].filter(
-      (entry) => entry.id !== kit.id
-    );
+    let wearer: CharacterKitDefinition | null = null;
+    if (kit.type === "lightCone") {
+      wearer = await lightConeWearer(data.lightCones.get(kit.id)?.path_id);
+    } else if (kit.type === "relicSet") {
+      const chosen = process.env.WEARER
+        ? await loadKit(process.env.WEARER)
+        : genericAttacker("1102");
+      if (chosen.type === "character") wearer = chosen;
+    }
+    // The wearer comes first so it replaces a reference kit with its ID.
+    const characters = [...(wearer ? [wearer] : []), seele, robin, kafka]
+      .filter((entry) => entry.id !== kit.id)
+      .filter(
+        (entry, index, all) =>
+          all.findIndex((other) => other.id === entry.id) === index
+      );
     const registry = createKitRegistry({
       characters: kit.type === "character" ? [...characters, kit] : characters,
       lightCones: kit.type === "lightCone" ? [kit] : [],
@@ -76,10 +160,6 @@ describe.skipIf(files.length === 0)("kit check (KIT_FILES)", () => {
     if (kit.type === "character") {
       runs.push(member(kit.id), member(kit.id, { eidolon: 6 }));
     } else if (kit.type === "lightCone") {
-      const lightCone = data.lightCones.get(kit.id);
-      const wearer = [...data.characters.values()].find(
-        (character) => character.path_id === lightCone?.path_id
-      );
       for (const superimposition of [1, 5]) {
         runs.push(
           member(wearer?.id ?? "1102", {
@@ -90,7 +170,7 @@ describe.skipIf(files.length === 0)("kit check (KIT_FILES)", () => {
     } else {
       const set = data.relicSets.get(kit.id);
       runs.push(
-        member("1102", {
+        member(wearer?.id ?? "1102", {
           relics: {
             stats: {},
             sets: { [kit.id]: set?.kind === "planar_ornament" ? 2 : 4 },

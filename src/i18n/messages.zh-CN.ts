@@ -1015,6 +1015,7 @@ export const messagesZhCn = {
   "combat.condition.enemyHpBelow": "敌人生命值 ≤ {percent}%",
   "combat.condition.enemyHpAbove": "敌人生命值 ≥ {percent}%",
   "combat.condition.selfHpBelow": "生命值 ≤ {percent}%",
+  "combat.condition.enemyDefeated": "击败敌人",
   "combat.condition.selfHpAbove": "生命值 ≥ {percent}%",
   "combat.damageKind.dot": "持续伤害",
   "combat.damageKind.break": "击破伤害",

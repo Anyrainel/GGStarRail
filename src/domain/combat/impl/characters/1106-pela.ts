@@ -54,7 +54,7 @@ export default defineCharacter("1106", (k) => {
   // condition. It gates A6, E2, and the turn policy.
   const dispel = k.toggle("dispel", "skill", "active", false);
   // Kills are not simulated; when on, each Ultimate is assumed to defeat one.
-  const ultimateKill = k.e(1) && k.toggle("e1-kill", "e1", "active", false);
+  const ultimateKill = k.e(1) && k.toggle("e1-kill", "e1", "enemyDefeated", false);
 
   const wipeOut = k.status({
     id: "wipe-out",

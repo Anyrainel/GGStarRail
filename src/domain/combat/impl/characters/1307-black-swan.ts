@@ -262,7 +262,7 @@ export default defineCharacter("1307", (k) => {
 
   // Kills are not simulated; when on, an Arcana-afflicted enemy next to the
   // designated target is assumed to fall to each Ultimate.
-  const e2Kill = k.e(2) && k.toggle("e2-kill", "e2", "active", false);
+  const e2Kill = k.e(2) && k.toggle("e2-kill", "e2", "enemyDefeated", false);
 
   k.ability({
     id: "basic",

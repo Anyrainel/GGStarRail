@@ -22,6 +22,7 @@ export type OptionCondition =
   | "enemyHpAbove"
   | "selfHpBelow"
   | "selfHpAbove"
+  | "enemyDefeated"
   | "perCycle";
 
 export interface OptionDef {

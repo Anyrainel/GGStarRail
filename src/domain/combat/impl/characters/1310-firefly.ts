@@ -246,7 +246,7 @@ export default defineCharacter("1310", (k) => {
   if (k.e(2)) {
     // Kills are not simulated; the option stands for Enhanced attacks that
     // defeat an enemy.
-    const defeats = k.toggle("e2-defeat", "e2", "active", false);
+    const defeats = k.toggle("e2-defeat", "e2", "enemyDefeated", false);
     const cooldown = k.status({
       id: "e2-cooldown",
       origin: "e2",

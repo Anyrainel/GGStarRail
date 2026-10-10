@@ -8,7 +8,7 @@ export default defineCharacter("1209", (k) => {
   // E6 needs a kill; when the user assumes one per buff window, Soulsteel
   // Sync and the Ultimate buffs last 1 extra turn.
   const e6Extension =
-    k.e(6) && k.toggle("e6-defeat", "e6", "active", false) ? 1 : 0;
+    k.e(6) && k.toggle("e6-defeat", "e6", "enemyDefeated", false) ? 1 : 0;
 
   const syncModifiers: ModifierDef[] = [
     { stat: "critRate", value: k.param("04", 1) },
