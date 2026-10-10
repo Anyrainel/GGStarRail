@@ -9,9 +9,10 @@ export default defineLightCone("21037", (k) => {
     modifiers: [{ stat: "critDmg", value: k.s(2) }],
   });
   // CRIT is evaluated in expectation: each hit on an enemy grants its CRIT
-  // chance (panel CRIT Rate) in stacks, from the next hit on.
+  // chance (CRIT Rate with current statuses, unfiltered) in stacks, from the
+  // next hit on.
   k.on("hit", "lightCone", {}, (ctx) => {
-    const chance = Math.min(1, Math.max(0, ctx.self.panelStat("critRate")));
+    const chance = Math.min(1, Math.max(0, ctx.self.currentStat("critRate")));
     if (chance > 0) {
       ctx.applyStatus(ctx.self, goodFortune, { stacks: chance * ctx.weight });
     }

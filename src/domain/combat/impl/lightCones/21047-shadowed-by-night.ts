@@ -13,9 +13,22 @@ export default defineLightCone("21047", (k) => {
   // "Once per turn" is a limit on each trigger: a second trigger in the same
   // turn would only refresh the same duration.
   k.on("battleStart", "lightCone", { subject: "any" }, grant);
-  // Break DMG dealt by the wearer: the Weakness Break itself, Break-kind
-  // procs (e.g. Boothill's Talent), and its Break DoTs ticking or detonated.
-  k.on("weaknessBreak", "lightCone", { limitPerTurn: 1 }, grant);
+  // Break DMG dealt by the wearer: Weakness Break and Super Break DMG, Break-
+  // kind procs (e.g. Boothill's Talent), and its Break DoTs ticking or
+  // detonated. breakDamage also reports Toughness reduced on Broken enemies
+  // by attackers without a Super Break conversion, which deals no DMG, so
+  // Super Break needs the wearer's current conversion rate.
+  k.on(
+    "breakDamage",
+    "lightCone",
+    {
+      limitPerTurn: 1,
+      when: (event, self) =>
+        !event.tags?.includes("superBreak") ||
+        self.currentStat("superBreakDmg") > 0,
+    },
+    grant
+  );
   k.on("hit", "lightCone", { tags: ["break"], limitPerTurn: 1 }, grant);
   k.on(
     "dotTick",
