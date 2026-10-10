@@ -257,7 +257,8 @@ already used in a turn that did not end), and `teamResource(name)`.
 
 - A turn policy may return `{ ability, target }` to aim an ally ability at a
   specific ally (`ctx.target` is that ally).
-- An Ultimate policy may return an ability ID to cast an Ultimate variant.
+- An Ultimate policy may return an ability ID to cast an Ultimate variant,
+  or `{ ability, target }` to aim an ally-targeted Ultimate.
 
 ### What timelines may depend on
 

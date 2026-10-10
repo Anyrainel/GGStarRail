@@ -362,9 +362,12 @@ export interface TurnChoice {
 export type TurnPolicy = (view: PolicyView) => string | TurnChoice;
 /**
  * Decide whether to cast the Ultimate now (energy permitting). Return the
- * ID of an Ultimate variant to cast that one instead of `ultimate`.
+ * ID of an Ultimate variant to cast that one instead of `ultimate`, or a
+ * choice to aim it at an ally.
  */
-export type UltimatePolicy = (view: PolicyView) => boolean | string;
+export type UltimatePolicy = (
+  view: PolicyView
+) => boolean | string | TurnChoice;
 
 export interface PermanentModifier extends ModifierDef {
   origin: EffectOrigin;

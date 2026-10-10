@@ -439,9 +439,13 @@ export class Battle {
         const view = this.policyView(unit);
         const decision = behaviour.ultimatePolicy(view);
         if (decision === false) continue;
-        const ultimate = behaviour.abilities.get(
-          typeof decision === "string" ? decision : "ultimate"
-        );
+        const choice: TurnChoice =
+          decision === true
+            ? { ability: "ultimate" }
+            : typeof decision === "string"
+              ? { ability: decision }
+              : decision;
+        const ultimate = behaviour.abilities.get(choice.ability);
         if (!ultimate) continue;
         if (
           !unit.inActionOrder &&
@@ -461,7 +465,13 @@ export class Battle {
           if (unit.energy + 1e-9 < cost) continue;
           unit.energy -= cost;
         }
-        this.execute(unit, ultimate, this.mainTarget, "ultimate", 1);
+        this.execute(
+          unit,
+          ultimate,
+          (choice.target as CombatUnit | undefined) ?? this.mainTarget,
+          "ultimate",
+          1
+        );
         this.processQueue();
         cast = true;
       }

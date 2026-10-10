@@ -364,6 +364,33 @@ describe("combat engine features", () => {
     ).toBe(false);
   });
 
+  it("aims Ultimates at the ally the policy names", () => {
+    const targets: string[] = [];
+    run(
+      (k) => {
+        basic(k);
+        k.ability({
+          id: "ultimate",
+          kind: "ultimate",
+          target: "ally",
+          after: (ctx) => {
+            if (ctx.target) targets.push(ctx.target.id);
+          },
+        });
+        k.policy({
+          turn: () => "basic",
+          ultimate: (view) => ({
+            ability: "ultimate",
+            target: view.allies.find((ally) => ally !== view.self) ?? view.self,
+          }),
+        });
+      },
+      { support: (k) => basic(k), cycles: 3 }
+    );
+    expect(targets.length).toBeGreaterThan(0);
+    expect(targets.every((id) => id === "ally:1")).toBe(true);
+  });
+
   it("reports Skill Point changes and the new cap", () => {
     const changes: number[] = [];
     run(
