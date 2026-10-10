@@ -1,6 +1,16 @@
-import type { PolicyView, UnitView } from "../../kit/api";
+import {
+  type ActionContext,
+  type BattleApi,
+  isEnemy,
+  type PolicyView,
+  type UnitView,
+} from "../../kit/api";
+import type { TeamMemberInfo } from "../../kit/builder";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
+
+/** The turn policy heals an ally Character at or below this HP share. */
+const LOW_HP = 0.5;
 
 /** Lynx — Abundance, Quantum. */
 export default defineCharacter("1110", (k) => {
@@ -18,12 +28,19 @@ export default defineCharacter("1110", (k) => {
   if (k.e(6)) {
     responseModifiers.push({ stat: "effectRes", value: k.rankParam(6, 2) });
   }
-  // The aggro increase for Destruction/Preservation targets is not modelled.
   const survivalResponse = k.status({
     id: "survival-response",
     origin: "skill",
     duration: { turns: k.param("02", 3) },
     modifiers: responseModifiers,
+  });
+  // Survival Response's aggro increase (#6), only on Destruction and
+  // Preservation holders; it lasts as long.
+  const responseAggro = k.status({
+    id: "survival-response-aggro",
+    origin: "skill",
+    duration: { turns: k.param("02", 3) },
+    modifiers: [{ stat: "aggroPct", value: k.param("02", 6) }],
   });
   const warmCampfire = k.status({
     id: "dusk-of-warm-campfire",
@@ -36,33 +53,76 @@ export default defineCharacter("1110", (k) => {
       },
     ],
   });
+  // Talent: continuous healing at the start of the holder's turns.
+  const outdoorSurvival = k.status({
+    id: "outdoor-survival-experience",
+    origin: "talent",
+    duration: {
+      turns: k.param("04", 1) + (k.a(3) ? k.traceParam(3, 1) : 0),
+    },
+  });
 
-  // Survival Response goes to the carry: Destruction first (the usual
-  // HP-scaling partners, who also draw the aggro), then other damage Paths,
-  // then Nihility, then the highest Max HP; Lynx herself only when alone.
-  const pathRank = (unit: UnitView) => {
-    if (unit.pathId === "Warrior") return 3;
-    if (["Rogue", "Mage", "Memory", "Elation"].includes(unit.pathId)) return 2;
-    return unit.pathId === "Warlock" ? 1 : 0;
+  /**
+   * Restores `ratio` of Lynx's Max HP plus `flat`. E1 adds Outgoing Healing
+   * on targets at 50% HP or lower.
+   */
+  const heal = (
+    ctx: BattleApi,
+    target: UnitView,
+    ratio: number,
+    flat: number
+  ) => {
+    const maxHp = target.panelStat("hp");
+    if (maxHp <= 0) return;
+    const e1 =
+      k.e(1) && target.hpRatio <= k.rankParam(1, 1) + 1e-9
+        ? k.rankParam(1, 2)
+        : 0;
+    const amount = ratio * ctx.self.panelStat("hp") + flat;
+    const boost = 1 + ctx.self.panelStat("outgoingHealing") + e1;
+    ctx.heal(target, (amount * boost) / maxHp);
   };
-  const responseTarget = (view: PolicyView): UnitView => {
-    let best: UnitView | null = null;
-    for (const ally of view.allies) {
-      if (ally.kind !== "character" || ally === view.self) continue;
-      if (!best) {
-        best = ally;
-        continue;
-      }
-      const rank = pathRank(ally) - pathRank(best);
-      if (
-        rank > 0 ||
-        (rank === 0 && ally.panelStat("hp") > best.panelStat("hp") + 1e-9)
-      ) {
-        best = ally;
-      }
+
+  const allyTarget = (ctx: ActionContext): UnitView =>
+    ctx.target && !isEnemy(ctx.target) ? ctx.target : ctx.self;
+
+  // Survival Response goes to a designated ally. The default is the carry:
+  // Destruction first (the usual HP-scaling partners, who also draw the
+  // aggro), then other damage Paths, then Nihility, then the earliest slot;
+  // Lynx herself only when alone.
+  const pathRank = (member: TeamMemberInfo) => {
+    if (member.characterId === k.id) return -1;
+    if (member.pathId === "Warrior") return 3;
+    if (["Rogue", "Mage", "Memory", "Elation"].includes(member.pathId)) {
+      return 2;
     }
-    return best ?? view.self;
+    return member.pathId === "Warlock" ? 1 : 0;
   };
+  const designated = k.ally(
+    "survival-response-target",
+    "skill",
+    (candidates) =>
+      candidates.reduce<TeamMemberInfo | undefined>(
+        (best, member) =>
+          !best || pathRank(member) > pathRank(best) ? member : best,
+        undefined
+      ),
+    { includeSelf: true }
+  );
+  const responseTarget = (view: PolicyView): UnitView =>
+    view.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === designated?.slot
+    ) ?? view.self;
+
+  /** The ally Character with the lowest HP share (ties: the earlier slot). */
+  const lowestAlly = (view: PolicyView): UnitView =>
+    view.allies.reduce(
+      (best, ally) =>
+        ally.kind === "character" && ally.hpRatio < best.hpRatio - 1e-9
+          ? ally
+          : best,
+      view.allies.find((ally) => ally.kind === "character") ?? view.self
+    );
 
   k.ability({
     id: "basic",
@@ -77,19 +137,53 @@ export default defineCharacter("1110", (k) => {
     ],
   });
 
-  // Healing (instant and continuous) is not modelled.
   k.ability({
     id: "skill",
     kind: "skill",
     target: "ally",
-    before: (ctx) => {
-      const target = ctx.target?.kind === "character" ? ctx.target : ctx.self;
+    after: (ctx) => {
+      const target = allyTarget(ctx);
       ctx.applyStatus(target, survivalResponse);
+      if (target.pathId === "Warrior" || target.pathId === "Knight") {
+        ctx.applyStatus(target, responseAggro);
+      }
       if (k.e(4)) ctx.applyStatus(target, warmCampfire);
+      heal(ctx, target, k.param("02", 4), k.param("02", 5));
+      ctx.applyStatus(target, outdoorSurvival);
     },
   });
 
-  k.ability({ id: "ultimate", kind: "ultimate", target: "allies" });
+  k.ability({
+    id: "ultimate",
+    kind: "ultimate",
+    target: "allies",
+    after: (ctx) => {
+      for (const ally of ctx.allies) {
+        heal(ctx, ally, k.param("03", 2), k.param("03", 3));
+        ctx.applyStatus(ally, outdoorSurvival);
+      }
+    },
+  });
+
+  // The continuous healing restores more while the holder has Survival
+  // Response.
+  k.on(
+    "turnStart",
+    "talent",
+    {
+      subject: "ally",
+      when: (event, self) => event.unit.has(outdoorSurvival, self),
+    },
+    (ctx, event) => {
+      const response = event.unit.has(survivalResponse);
+      heal(
+        ctx,
+        event.unit,
+        k.param("04", 2) + (response ? k.param("04", 4) : 0),
+        k.param("04", 3) + (response ? k.param("04", 5) : 0)
+      );
+    }
+  );
 
   if (k.a(1)) {
     k.on(
@@ -103,18 +197,20 @@ export default defineCharacter("1110", (k) => {
     );
   }
 
-  // Keep Survival Response on the carry; otherwise Basic ATK, with a Skill
-  // when a Basic ATK would overflow the Skill Point cap.
+  // Skill the lowest ally Character when it is low; otherwise keep Survival
+  // Response on the designated ally, Skill when a Basic ATK would overflow
+  // the Skill Point cap, and Basic ATK.
   k.policy({
     turn: (view) => {
+      if (view.skillPoints < 1) return "basic";
+      const low = lowestAlly(view);
+      if (low.hpRatio <= LOW_HP + 1e-9)
+        return { ability: "skill", target: low };
       const target = responseTarget(view);
-      if (
-        !target.has(survivalResponse) ||
+      return !target.has(survivalResponse) ||
         view.skillPoints >= view.maxSkillPoints
-      ) {
-        return { ability: "skill", target };
-      }
-      return "basic";
+        ? { ability: "skill", target }
+        : "basic";
     },
   });
 });

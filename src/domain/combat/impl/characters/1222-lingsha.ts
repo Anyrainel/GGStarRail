@@ -10,7 +10,10 @@ import { defineCharacter } from "../../kit/character";
 const FUYUAN = "fuyuan";
 /** Fuyuan's remaining action count, kept on Lingsha. */
 const FUYUAN_ACTIONS = "fuyuan-actions";
-const EMBER_COOLDOWN = "embers-echo-cooldown";
+
+/** Ally targets: Characters and memosprites, not countdowns or summons. */
+const isAllyTarget = (unit: UnitView) =>
+  unit.kind === "character" || unit.kind === "memosprite";
 
 /** Lingsha — Abundance, Fire. */
 export default defineCharacter("1222", (k) => {
@@ -30,8 +33,8 @@ export default defineCharacter("1222", (k) => {
       },
     ],
   });
-  // E1 gives no duration; the DEF reduction is kept while the enemy stays
-  // Weakness Broken.
+  // E1 has no duration and is not removed on recovery: it lasts for the rest
+  // of the battle. It lands after the breaking hit's Break DMG.
   const vilewardBouquet = k.status({
     id: "bloom-on-vileward-bouquet",
     origin: "e1",
@@ -50,6 +53,11 @@ export default defineCharacter("1222", (k) => {
     debuff: true,
     modifiers: [{ stat: "resReduction", value: k.rankParam(6, 1) }],
   });
+  const emberCooldown = k.status({
+    id: "embers-echo-cooldown",
+    origin: "a6",
+    duration: { turns: k.traceParam(3, 2) },
+  });
 
   if (k.a(1)) {
     k.stat("a2", {
@@ -61,7 +69,45 @@ export default defineCharacter("1222", (k) => {
         cap: k.traceParam(1, 3),
       },
     });
+    k.stat("a2", {
+      stat: "outgoingHealing",
+      scaling: {
+        source: "holder",
+        stat: "breakEffect",
+        ratio: k.traceParam(1, 2),
+        cap: k.traceParam(1, 4),
+      },
+    });
   }
+
+  /**
+   * Restores `ratio` of Lingsha's ATK plus `flat` (Fuyuan heals with
+   * Lingsha's stats). panelStat leaves out scaled modifiers, so A2's
+   * Outgoing Healing is added here; its ATK is not (tracker
+   * lingsha-heal-a2-atk).
+   */
+  const heal = (
+    ctx: BattleApi,
+    target: UnitView,
+    ratio: number,
+    flat: number
+  ) => {
+    const maxHp = target.panelStat("hp");
+    if (maxHp <= 0) return;
+    const lingsha = ctx.self.owner ?? ctx.self;
+    const a2 = k.a(1)
+      ? Math.min(
+          k.traceParam(1, 4),
+          k.traceParam(1, 2) * lingsha.panelStat("breakEffect")
+        )
+      : 0;
+    const amount = ratio * lingsha.panelStat("atk") + flat;
+    const boost = 1 + lingsha.panelStat("outgoingHealing") + a2;
+    ctx.heal(target, (amount * boost) / maxHp);
+  };
+  const healAll = (ctx: BattleApi, ratio: number, flat: number) => {
+    for (const ally of ctx.allies) heal(ctx, ally, ratio, flat);
+  };
 
   if (k.e(1)) {
     k.stat("e1", { stat: "breakEfficiency", value: k.rankParam(1, 2) });
@@ -72,18 +118,6 @@ export default defineCharacter("1222", (k) => {
       (ctx, event) => {
         if (event.target) ctx.applyStatus(event.target, vilewardBouquet);
       }
-    );
-    k.on(
-      "turnEnd",
-      "e1",
-      {
-        subject: "enemy",
-        when: (event) =>
-          isEnemy(event.unit) &&
-          !event.unit.broken &&
-          event.unit.has(vilewardBouquet),
-      },
-      (ctx, event) => ctx.removeStatus(event.unit, vilewardBouquet)
     );
   }
 
@@ -120,20 +154,38 @@ export default defineCharacter("1222", (k) => {
     for (const enemy of ctx.enemies) ctx.removeStatus(enemy, deepSeclusion);
   };
 
+  // A6's attack (`consumesAction` false) is the Talent's follow-up, with its
+  // heal; E4's heal comes with Fuyuan's own actions.
   const fuyuanAttack = (id: string, consumesAction: boolean): AbilityDef => ({
     id,
     kind: "followUp",
     hits: [{ shape: "aoe", each: k.param("04", 2), toughness: { each: 10 } }],
     after: (ctx: ActionContext) => {
-      // The extra hit's Toughness reduction is not in the facts (tracker).
-      randomFireHit(ctx, k.param("04", 8), 0);
+      // The extra hit uses the AoE's Toughness value (game data).
+      randomFireHit(ctx, k.param("04", 8), 10);
       if (k.e(6)) {
         for (let index = 0; index < k.rankParam(6, 2); index += 1) {
           randomFireHit(ctx, k.rankParam(6, 3), k.rankParam(6, 4));
         }
       }
+      healAll(ctx, k.param("04", 3), k.param("04", 4));
       const lingsha = ctx.self.owner;
       if (!consumesAction || !lingsha) return;
+      if (k.e(4)) {
+        // "The ally target whose current HP is the lowest" (absolute HP).
+        const lowest = ctx.allies
+          .filter(isAllyTarget)
+          .reduce<UnitView | null>(
+            (best, ally) =>
+              !best ||
+              ally.hpRatio * ally.panelStat("hp") <
+                best.hpRatio * best.panelStat("hp") - 1e-9
+                ? ally
+                : best,
+            null
+          );
+        if (lowest) heal(ctx, lowest, k.rankParam(4, 1), 0);
+      }
       ctx.addCounter(lingsha, FUYUAN_ACTIONS, -1);
       if (lingsha.counter(FUYUAN_ACTIONS) <= 1e-9) dismissFuyuan(ctx, ctx.self);
     },
@@ -149,34 +201,38 @@ export default defineCharacter("1222", (k) => {
     policy: () => "fuyuan-attack",
   });
 
-  // A6 needs a Character at 60% HP or lower when an ally takes DMG. HP is
-  // not simulated: when enabled, each enemy attack off cooldown counts.
-  if (
-    k.a(3) &&
-    k.toggle("a6-low-hp", "a6", "selfHpBelow", false, k.traceParam(3, 1))
-  ) {
+  // A6: while Fuyuan is present, an ally Character's HP loss (from an enemy
+  // or a cost) launches the Talent's follow-up when any Character is at 60%
+  // HP or lower, then waits 2 of Lingsha's turns. The team-wide condition
+  // makes the trigger certain for an enemy attack (it always damages some
+  // Character), so it fires in full on the first qualifying HP loss rather
+  // than with that loss's aggro share.
+  if (k.a(3)) {
     k.on(
-      "enemyAttack",
+      "hpChanged",
       "a6",
       {
-        subject: "enemy",
-        when: (_event, self) =>
+        subject: "ally",
+        when: (event, self) =>
+          event.unit.kind === "character" &&
+          (event.hpCause === "enemy" || event.hpCause === "consume") &&
+          (event.delta ?? 0) < 0 &&
           self.counter(FUYUAN_ACTIONS) > 1e-9 &&
-          self.counter(EMBER_COOLDOWN) <= 1e-9,
+          !self.has(emberCooldown),
       },
-      (ctx) => {
+      (ctx, event) => {
         const fuyuan = ctx.findSummon(ctx.self, FUYUAN);
-        if (!fuyuan) return;
-        ctx.setCounter(ctx.self, EMBER_COOLDOWN, k.traceParam(3, 2));
-        ctx.queueAction(fuyuan, "embers-echo");
+        const low = ctx.allies.some(
+          (ally) =>
+            ally.kind === "character" &&
+            ally.hpRatio <= k.traceParam(3, 1) + 1e-9
+        );
+        if (!fuyuan || !low) return;
+        ctx.applyStatus(ctx.self, emberCooldown);
+        ctx.queueAction(fuyuan, "embers-echo", {
+          weight: event.hpCause === "enemy" ? 1 / ctx.weight : 1,
+        });
       }
-    );
-    k.on("turnEnd", "a6", {}, (ctx) =>
-      ctx.setCounter(
-        ctx.self,
-        EMBER_COOLDOWN,
-        Math.max(0, ctx.self.counter(EMBER_COOLDOWN) - 1)
-      )
     );
   }
 
@@ -199,14 +255,14 @@ export default defineCharacter("1222", (k) => {
       }
       ctx.summon(ctx.self, FUYUAN);
       ctx.setCounter(ctx.self, FUYUAN_ACTIONS, actionsPerSkill);
-      if (k.e(6)) {
-        for (const enemy of ctx.enemies) {
-          ctx.applyStatus(enemy, deepSeclusion);
-        }
-      }
     },
     hits: [{ shape: "aoe", each: k.param("02", 1), toughness: { each: 10 } }],
     after: (ctx) => {
+      healAll(ctx, k.param("02", 2), k.param("02", 3));
+      // E6 lands after the Skill's hits and lasts while Fuyuan is present.
+      if (k.e(6)) {
+        for (const enemy of ctx.enemies) ctx.applyStatus(enemy, deepSeclusion);
+      }
       const fuyuan = ctx.findSummon(ctx.self, FUYUAN);
       if (fuyuan) ctx.advanceAction(fuyuan, k.param("02", 4));
     },
@@ -225,6 +281,7 @@ export default defineCharacter("1222", (k) => {
     },
     hits: [{ shape: "aoe", each: k.param("03", 1), toughness: { each: 20 } }],
     after: (ctx) => {
+      healAll(ctx, k.param("03", 2), k.param("03", 3));
       const fuyuan = ctx.findSummon(ctx.self, FUYUAN);
       if (fuyuan) ctx.advanceAction(fuyuan, k.param("03", 6));
     },

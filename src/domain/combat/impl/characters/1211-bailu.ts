@@ -6,10 +6,10 @@ import {
 } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 
-/** Remaining turns of Invigoration on a Character. */
-const INVIGORATION = "bailu-invigoration";
-/** Remaining heals of that Invigoration. */
-const INVIGORATION_HEALS = "bailu-invigoration-heals";
+/** The turn policy heals an ally Character at or below this HP share. */
+const LOW_HP = 0.5;
+/** Damage Paths, preferred as the default E4 teammate before Nihility. */
+const DAMAGE_PATHS = ["Warrior", "Rogue", "Mage", "Memory", "Elation"];
 
 /** Bailu — Abundance, Lightning. */
 export default defineCharacter("1211", (k) => {
@@ -19,6 +19,12 @@ export default defineCharacter("1211", (k) => {
     duration: { turns: k.traceParam(1, 2) },
     modifiers: [{ stat: "hpPct", value: k.traceParam(1, 1) }],
   });
+  const sylphicSlumber = k.status({
+    id: "sylphic-slumber",
+    origin: "e2",
+    duration: { turns: k.rankParam(2, 2) },
+    modifiers: [{ stat: "outgoingHealing", value: k.rankParam(2, 1) }],
+  });
   const evilExcision = k.status({
     id: "evil-excision",
     origin: "e4",
@@ -26,17 +32,42 @@ export default defineCharacter("1211", (k) => {
     maxStacks: k.rankParam(4, 2),
     modifiers: [{ stat: "dmgBoost", value: k.rankParam(4, 1) }],
   });
+  // Stacks are the heals left; it ends when they run out or its turns end.
+  const invigorationHeals =
+    k.param("04", 5) + (k.a(2) ? k.traceParam(2, 1) : 0);
+  const invigoration = k.status({
+    id: "invigoration",
+    origin: "ultimate",
+    duration: { turns: k.param("03", 3) },
+    maxStacks: invigorationHeals,
+    unique: true,
+  });
 
-  // HP is not simulated. A2 needs the healed ally at full HP (overhealing),
-  // and E1 needs full HP when Invigoration ends.
-  const overheal =
-    k.a(1) && k.toggle("a2-overheal", "a2", "selfHpAbove", true, 1);
-  const fullHpAtEnd =
-    k.e(1) && k.toggle("e1-full-hp", "e1", "selfHpAbove", true, 1);
-
-  /** A heal reaching `ally` with probability `chance`. */
-  const healed = (ctx: BattleApi, ally: UnitView, chance = 1) => {
-    if (overheal) ctx.applyStatus(ally, qihuangAnalects, { stacks: chance });
+  /**
+   * Restores `ratio` of Bailu's Max HP plus `flat` with probability
+   * `chance`. A2: a heal beyond the missing HP raises Max HP.
+   */
+  const heal = (
+    ctx: BattleApi,
+    target: UnitView,
+    ratio: number,
+    flat: number,
+    chance = 1
+  ) => {
+    const maxHp = target.panelStat("hp");
+    if (maxHp <= 0) return;
+    // panelStat leaves out timed statuses, so E2 is added here.
+    const boost =
+      1 +
+      ctx.self.panelStat("outgoingHealing") +
+      (ctx.self.has(sylphicSlumber) ? k.rankParam(2, 1) : 0);
+    const share = ((ratio * ctx.self.panelStat("hp") + flat) * boost) / maxHp;
+    if (k.a(1) && share > 1 - target.hpRatio + 1e-9) {
+      ctx.applyStatus(target, qihuangAnalects, {
+        stacks: ctx.weight * chance,
+      });
+    }
+    ctx.heal(target, share * chance);
   };
 
   k.ability({
@@ -47,94 +78,136 @@ export default defineCharacter("1211", (k) => {
     ],
   });
 
-  // One heal on the target, then random heals spread over all ally targets.
+  // One heal on the target, then random heals, each smaller than the last
+  // by the same share, spread over all ally targets as expected values.
   k.ability({
     id: "skill",
     kind: "skill",
     target: "ally",
     after: (ctx) => {
       const target = ctx.target && !isEnemy(ctx.target) ? ctx.target : ctx.self;
+      heal(ctx, target, k.param("02", 1), k.param("02", 2));
       const randomHeals = k.param("02", 4);
       const share = 1 / ctx.allies.length;
+      for (let index = 1; index <= randomHeals; index += 1) {
+        const factor = (1 - k.param("02", 3)) ** index;
+        for (const ally of ctx.allies) {
+          heal(
+            ctx,
+            ally,
+            k.param("02", 1) * factor,
+            k.param("02", 2) * factor,
+            share
+          );
+        }
+      }
+      if (!k.e(4)) return;
       for (const ally of ctx.allies) {
         const first = ally === target ? 1 : 0;
-        const missed = (1 - first) * (1 - share) ** randomHeals;
-        healed(ctx, ally, 1 - missed);
-        if (k.e(4)) {
-          ctx.applyStatus(ally, evilExcision, {
-            stacks: first + randomHeals * share,
-          });
-        }
+        ctx.applyStatus(ally, evilExcision, {
+          stacks: first + randomHeals * share,
+        });
       }
     },
   });
 
-  const invigorationHeals =
-    k.param("04", 5) + (k.a(2) ? k.traceParam(2, 1) : 0);
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     target: "allies",
-    before: (ctx) => {
+    after: (ctx) => {
       for (const ally of ctx.allies) {
-        healed(ctx, ally);
-        if (ally.kind !== "character") continue;
-        const remaining = ally.counter(INVIGORATION);
-        if (remaining > 1e-9) {
-          ctx.setCounter(ally, INVIGORATION, remaining + 1);
+        heal(ctx, ally, k.param("03", 1), k.param("03", 2));
+        if (ally.has(invigoration)) {
+          ctx.extendStatus(ally, invigoration, 1);
         } else {
-          ctx.setCounter(ally, INVIGORATION, k.param("03", 3));
-          ctx.setCounter(ally, INVIGORATION_HEALS, invigorationHeals);
+          ctx.applyStatus(ally, invigoration, { setStacks: invigorationHeals });
         }
       }
+      if (k.e(2)) ctx.applyStatus(ctx.self, sylphicSlumber);
     },
   });
 
-  // Invigoration is tracked as counters because E1 reacts to its end. It
-  // counts down at the end of the holder's turns.
+  // Talent: an Invigorated ally heals after being hit, using one of its
+  // heals per hit (the hit's aggro share in expectation).
   k.on(
-    "turnEnd",
-    "ultimate",
-    {
-      subject: "ally",
-      when: (event) => event.unit.counter(INVIGORATION) > 1e-9,
-    },
-    (ctx, event) => {
-      const remaining = event.unit.counter(INVIGORATION) - 1;
-      ctx.setCounter(event.unit, INVIGORATION, Math.max(0, remaining));
-      if (remaining > 1e-9) return;
-      ctx.setCounter(event.unit, INVIGORATION_HEALS, 0);
-      if (fullHpAtEnd) ctx.gainEnergy(event.unit, k.rankParam(1, 1));
-    }
-  );
-
-  // Talent: an Invigorated ally heals after being hit.
-  k.on(
-    "hitByEnemy",
+    "hpChanged",
     "talent",
     {
       subject: "ally",
-      when: (event) =>
-        event.unit.counter(INVIGORATION) > 1e-9 &&
-        event.unit.counter(INVIGORATION_HEALS) > 1e-9,
+      when: (event, self) =>
+        event.hpCause === "enemy" &&
+        event.unit.stacks(invigoration, self) > 1e-9,
     },
     (ctx, event) => {
-      ctx.addCounter(event.unit, INVIGORATION_HEALS, -1);
-      healed(ctx, event.unit, ctx.weight);
+      const chance = Math.min(
+        1,
+        event.unit.stacks(invigoration, ctx.self) / ctx.weight
+      );
+      heal(ctx, event.unit, k.param("04", 1), k.param("04", 2), chance);
+      ctx.consumeStacks(event.unit, invigoration, ctx.weight * chance);
+      if (event.unit.stacks(invigoration, ctx.self) <= 1e-9) {
+        ctx.removeStatus(event.unit, invigoration);
+      }
     }
   );
 
-  const firstTeammate = (view: PolicyView): UnitView =>
+  // E1: fixed Energy when Invigoration ends on a Character at full HP.
+  if (k.e(1)) {
+    k.on(
+      "statusRemoved",
+      "e1",
+      {
+        status: invigoration,
+        when: (event) =>
+          event.target?.kind === "character" &&
+          event.target.hpRatio >= 1 - 1e-9,
+      },
+      (ctx, event) => {
+        if (event.target) {
+          ctx.gainEnergy(event.target, k.rankParam(1, 1), { fixed: true });
+        }
+      }
+    );
+  }
+
+  /** The ally Character with the lowest HP share (ties: the earlier slot). */
+  const lowestAlly = (view: PolicyView): UnitView =>
+    view.allies.reduce(
+      (best, ally) =>
+        ally.kind === "character" && ally.hpRatio < best.hpRatio - 1e-9
+          ? ally
+          : best,
+      view.allies.find((ally) => ally.kind === "character") ?? view.self
+    );
+  // E4: the teammate who receives surplus Skills (default: the first on a
+  // damage Path, then the first on Nihility).
+  const excisionTarget = k.e(4)
+    ? k.ally(
+        "evil-excision-target",
+        "e4",
+        (candidates) =>
+          candidates.find((member) => DAMAGE_PATHS.includes(member.pathId)) ??
+          candidates.find((member) => member.pathId === "Warlock")
+      )
+    : null;
+  const designatedTeammate = (view: PolicyView): UnitView =>
     view.allies.find(
-      (ally) => ally.kind === "character" && ally !== view.self
+      (ally) => ally.kind === "character" && ally.slot === excisionTarget?.slot
     ) ?? view.self;
 
-  // Basic ATK keeps Skill Points for the team. At E4 surplus Skill Points go
-  // to the Skill's DMG bonus on the first teammate.
+  // The Skill heals the lowest ally Character when it is low. Otherwise Basic
+  // ATK keeps Skill Points for the team; at E4 surplus Skill Points go to the
+  // Skill's DMG bonus on the designated teammate.
   k.policy({
-    turn: (view) =>
-      k.e(4) && view.skillPoints >= 3
-        ? { ability: "skill", target: firstTeammate(view) }
-        : "basic",
+    turn: (view) => {
+      if (view.skillPoints < 1) return "basic";
+      const low = lowestAlly(view);
+      if (low.hpRatio <= LOW_HP + 1e-9)
+        return { ability: "skill", target: low };
+      return k.e(4) && view.skillPoints >= 3
+        ? { ability: "skill", target: designatedTeammate(view) }
+        : "basic";
+    },
   });
 });

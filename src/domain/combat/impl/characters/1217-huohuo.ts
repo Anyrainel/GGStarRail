@@ -6,6 +6,9 @@ import {
 } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 
+/** The turn policy heals an ally Character at or below this HP share. */
+const LOW_HP = 0.5;
+
 /** Ally targets: Characters and memosprites, not countdowns or summons. */
 const isAllyTarget = (unit: UnitView) =>
   unit.kind === "character" || unit.kind === "memosprite";
@@ -51,16 +54,37 @@ export default defineCharacter("1217", (k) => {
     }
   };
 
-  const healed = (ctx: BattleApi, ally: UnitView) => {
-    if (k.e(6)) ctx.applyStatus(ally, wovenTogether);
+  /**
+   * Restores `ratio` of Huohuo's Max HP plus `flat` (every heal comes from
+   * the Skill or Talent). E4's bonus grows linearly with the HP the target
+   * is missing, reaching its maximum at 0 HP (assumed shape). E6 buffs the
+   * healed ally.
+   */
+  const heal = (
+    ctx: BattleApi,
+    target: UnitView,
+    ratio: number,
+    flat: number
+  ) => {
+    const maxHp = target.panelStat("hp");
+    if (maxHp <= 0) return;
+    const e4 = k.e(4) ? k.rankParam(4, 1) * (1 - target.hpRatio) : 0;
+    const amount = ratio * ctx.self.panelStat("hp") + flat;
+    const boost = 1 + ctx.self.panelStat("outgoingHealing") + e4;
+    ctx.heal(target, (amount * boost) / maxHp);
+    if (k.e(6)) ctx.applyStatus(target, wovenTogether);
   };
 
   // Divine Provision heals the ally whose turn starts or who uses an
-  // Ultimate. Its extra heals for allies at 50% HP or lower add no trigger
-  // count and no E6 uptime beyond these.
+  // Ultimate and, at the same time, once each ally at 50% HP or lower (read
+  // when it triggers, so a low triggering ally is healed twice).
   const talentHeal = (ctx: BattleApi, ally: UnitView) => {
     if (k.a(3)) ctx.gainEnergy(ctx.self, k.traceParam(3, 1));
-    healed(ctx, ally);
+    const low = ctx.allies.filter(
+      (unit) => isAllyTarget(unit) && unit.hpRatio <= k.param("04", 6) + 1e-9
+    );
+    heal(ctx, ally, k.param("04", 3), k.param("04", 5));
+    for (const unit of low) heal(ctx, unit, k.param("04", 3), k.param("04", 5));
   };
   const providing = (unit: UnitView, self: UnitView) =>
     isAllyTarget(unit) && self.has(divineProvision);
@@ -106,13 +130,13 @@ export default defineCharacter("1217", (k) => {
     target: "ally",
     after: (ctx) => {
       const target = ctx.target && !isEnemy(ctx.target) ? ctx.target : ctx.self;
-      healed(ctx, target);
+      heal(ctx, target, k.param("02", 1), k.param("02", 2));
       for (const ally of ctx.allies) {
         if (
           ally.kind === "character" &&
           Math.abs(ally.slot - target.slot) === 1
         ) {
-          healed(ctx, ally);
+          heal(ctx, ally, k.param("02", 3), k.param("02", 4));
         }
       }
       gainProvision(ctx, provisionTurns);
@@ -126,31 +150,43 @@ export default defineCharacter("1217", (k) => {
     before: (ctx) => {
       for (const ally of ctx.allies) {
         if (ally === ctx.self) continue;
+        // A fixed share of each teammate's max Energy, unaffected by ERR.
         // Memosprites have no Energy of their own.
         if (ally.kind === "character") {
-          ctx.gainEnergy(ally, ally.maxEnergy * k.param("03", 1));
+          ctx.gainEnergy(ally, ally.maxEnergy * k.param("03", 1), {
+            fixed: true,
+          });
         }
         ctx.applyStatus(ally, spiritualDomination);
       }
     },
   });
 
-  /** The Character whose Skill heal also reaches the most adjacent allies. */
+  /**
+   * The ally Character with the lowest HP share; ties go to the one whose
+   * Skill heal also reaches the most adjacent allies.
+   */
   const skillTarget = (view: PolicyView): UnitView => {
     const characters = view.allies.filter((ally) => ally.kind === "character");
     const reach = (unit: UnitView) =>
       characters.filter((ally) => Math.abs(ally.slot - unit.slot) <= 1).length;
-    return characters.reduce(
-      (best, ally) => (reach(ally) > reach(best) ? ally : best),
-      characters[0] ?? view.self
-    );
+    return characters.reduce((best, ally) => {
+      if (Math.abs(ally.hpRatio - best.hpRatio) > 1e-9) {
+        return ally.hpRatio < best.hpRatio ? ally : best;
+      }
+      return reach(ally) > reach(best) ? ally : best;
+    }, characters[0] ?? view.self);
   };
 
-  // Skill only when Divine Provision has run out; Basic ATK otherwise.
+  // Skill when Divine Provision has run out or an ally Character is low;
+  // Basic ATK otherwise.
   k.policy({
-    turn: (view) =>
-      view.self.has(divineProvision)
-        ? "basic"
-        : { ability: "skill", target: skillTarget(view) },
+    turn: (view) => {
+      if (view.skillPoints < 1) return "basic";
+      const target = skillTarget(view);
+      return !view.self.has(divineProvision) || target.hpRatio <= LOW_HP + 1e-9
+        ? { ability: "skill", target }
+        : "basic";
+    },
   });
 });
