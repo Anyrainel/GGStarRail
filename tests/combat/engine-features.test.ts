@@ -713,6 +713,25 @@ describe("combat engine features", () => {
     expect(boosted.length).toBeGreaterThan(0);
   });
 
+  it("keeps RES from native Weaknesses when a Weakness is implanted", () => {
+    const { result } = run(
+      (k) => {
+        basic(k);
+        k.on("battleStart", "talent", { subject: "any" }, (ctx: BattleApi) => {
+          for (const enemy of ctx.enemies) {
+            ctx.implantWeakness(enemy, "Imaginary");
+          }
+        });
+        k.policy({ turn: () => "basic", ultimate: () => false });
+      },
+      { cycles: 1, enemies: 1 }
+    );
+    const enemy = result.team.enemies[0];
+    if (!enemy) throw new Error("No enemy");
+    expect(enemy.weaknesses.has("Imaginary")).toBe(true);
+    expect(enemy.resistanceAgainst("Imaginary")).toBe(enemy.resistance);
+  });
+
   it("designates an ally through a user option", () => {
     const chosen = (override?: string) => {
       let picked: string | null = null;

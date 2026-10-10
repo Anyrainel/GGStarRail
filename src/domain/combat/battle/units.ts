@@ -455,6 +455,12 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
   maxToughness: number;
   broken = false;
   readonly weaknesses: Set<CombatType>;
+  /**
+   * Weaknesses from the enemy's data. RES comes from these only: implanted
+   * Weaknesses count for Toughness and filters, and kits lower RES
+   * separately when the text says so.
+   */
+  readonly nativeWeaknesses: ReadonlySet<CombatType>;
   /** Implanted Weaknesses with remaining enemy turns (null: permanent). */
   readonly implants = new Map<CombatType, number | null>();
   readonly resistance: number;
@@ -490,6 +496,7 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
     this.maxToughness = options.maxToughness;
     this.toughness = options.maxToughness;
     this.weaknesses = new Set(options.weaknesses);
+    this.nativeWeaknesses = new Set(options.weaknesses);
     this.resistance = options.resistance;
     this.weakResistance = options.weakResistance;
     this.enemyLevel = options.level;
@@ -497,7 +504,7 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
   }
 
   resistanceAgainst(combatType: CombatType): number {
-    return this.weaknesses.has(combatType)
+    return this.nativeWeaknesses.has(combatType)
       ? this.weakResistance
       : this.resistance;
   }

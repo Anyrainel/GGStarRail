@@ -24,7 +24,7 @@ DMG = Base × DMG Boost × CRIT × DEF × RES × Vulnerability × Mitigation × 
 | DMG Boost | 1 + Σ`dmgBoost` | Excludes Break family unless the filter names `break`/`superBreak`. None for Elation DMG [GT glossary] |
 | CRIT | 1 + min(CR,1) × CD | Expected value by default. Not for DoT/Break/Super Break [GT] |
 | DEF | (L_a+20) / ((L_e+20)·max(0, 1−reduction−ignore) + L_a+20) | Enemy DEF = 200 + 10·L_e [COM] |
-| RES | 1 − clamp(RES − reduction − PEN, −1, 0.9) | Enemy RES 20% (0% to weak types) [COM] |
+| RES | 1 − clamp(RES − reduction − PEN, −1, 0.9) | Enemy RES 20% (0% to its own weak types) [COM]; implanted Weaknesses do not change RES [TBGD: StanceWeakList and DamageTypeResistance are separate] |
 | Vulnerability | 1 + Σ`vulnerability` | No cap known (fribbels caps at 250%) |
 | Mitigation | Π(1 − `dmgMitigation`) | Enemy-side |
 | Toughness | 0.9 unbroken, 1.0 broken | Applies to every kind [COM]. *verify* for Break and Elation DMG |
