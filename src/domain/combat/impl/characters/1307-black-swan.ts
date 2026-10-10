@@ -2,17 +2,17 @@ import { type BattleApi, type EnemyView, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { StatusDef } from "../../kit/model";
 import type { CombatType } from "../../model/stats";
+import type { StatusFamily } from "../../model/tags";
 
-/** Wind Shear, Bleed, Burn, and Shock, by the Combat Type of their DMG. */
-const DOT_TYPES: readonly CombatType[] = [
-  "Wind",
-  "Physical",
-  "Fire",
-  "Thunder",
+/** Wind Shear, Bleed, Burn, and Shock, with the RES E1 reduces for each. */
+const DOT_FAMILIES: ReadonlyArray<readonly [StatusFamily, CombatType]> = [
+  ["windShear", "Wind"],
+  ["bleed", "Physical"],
+  ["burn", "Fire"],
+  ["shock", "Thunder"],
 ];
 const SERIAL = "black-swan:action";
 const ATTACKING = "black-swan:attacking";
-const OWN_TURN = "black-swan:own-turn";
 const NO_RESET = "black-swan:no-reset";
 const E4_CHARGE = "black-swan:e4";
 const A4_ACTION = "black-swan:a4-action";
@@ -53,6 +53,18 @@ export default defineCharacter("1307", (k) => {
     debuff: true,
     duration: { turns: k.param("03", 2) },
   });
+  // Arcana under Epiphany "is considered" Wind Shear, Bleed, Burn, and
+  // Shock: markers that carry only the family, so they add no debuffs.
+  const epiphanyFamilies = DOT_FAMILIES.map(([family]) =>
+    k.status({ id: `epiphany-${family}`, origin: "ultimate", family })
+  );
+  const syncEpiphanyFamilies = (ctx: BattleApi, enemy: EnemyView) => {
+    const active = enemy.has(epiphany) && enemy.has(arcana);
+    for (const marker of epiphanyFamilies) {
+      if (active && !enemy.has(marker)) ctx.applyStatus(enemy, marker);
+      else if (!active && enemy.has(marker)) ctx.removeStatus(enemy, marker);
+    }
+  };
   // "Take increased DMG in their turn": held only during the enemy's turn.
   const epiphanyOwnTurn = k.status({
     id: "epiphany-own-turn",
@@ -83,7 +95,7 @@ export default defineCharacter("1307", (k) => {
 
   const e1Res = new Map<CombatType, StatusDef>(
     k.e(1)
-      ? DOT_TYPES.map((type) => [
+      ? DOT_FAMILIES.map(([, type]) => [
           type,
           k.status({
             id: `e1-res-${type}`,
@@ -112,24 +124,14 @@ export default defineCharacter("1307", (k) => {
     });
   }
 
-  // The Engine cannot list a unit's statuses, so DoTs are learned as they are
-  // applied, typed by the Combat Type of their DMG. Frozen and Entanglement
-  // deal Additional DMG, not DoT, and their Types are excluded.
-  const dotTypes = new Map<StatusDef, CombatType>();
-  const afflictions = (enemy: EnemyView): Set<CombatType> => {
-    const types = new Set<CombatType>();
-    for (const [status, type] of dotTypes) {
-      if (DOT_TYPES.includes(type) && enemy.has(status)) types.add(type);
-    }
-    if (enemy.has(epiphany) && enemy.has(arcana)) {
-      for (const type of DOT_TYPES) types.add(type);
-    }
-    return types;
-  };
+  const afflictions = (enemy: EnemyView): CombatType[] =>
+    DOT_FAMILIES.filter(([family]) => enemy.hasFamily(family)).map(
+      ([, type]) => type
+    );
 
   const syncE1 = (ctx: BattleApi, enemy: EnemyView) => {
     if (!k.e(1)) return;
-    const types = afflictions(enemy);
+    const types = new Set(afflictions(enemy));
     for (const [type, status] of e1Res) {
       if (!types.has(type)) ctx.removeStatus(enemy, status);
       else if (!enemy.has(status)) ctx.applyStatus(enemy, status);
@@ -146,17 +148,30 @@ export default defineCharacter("1307", (k) => {
   ) => {
     ctx.applyStatus(enemy, arcanaBase, { baseChance });
     ctx.applyStatus(enemy, arcana, { stacks: stacks + e6Extra, baseChance });
+    if (enemy.has(epiphany)) syncEpiphanyFamilies(ctx, enemy);
     syncE1(ctx, enemy);
   };
 
-  k.on("statusApplied", "talent", { subject: "any" }, (ctx, event) => {
-    const status = event.status;
-    if (!status?.dot || status === arcana || status === arcanaBase) return;
-    if (!dotTypes.has(status)) {
-      dotTypes.set(status, status.dot.hit.combatType ?? event.unit.combatType);
-    }
-    if (isEnemy(event.target)) syncE1(ctx, event.target);
-  });
+  for (const status of [epiphany, arcana]) {
+    k.on("statusRemoved", status.origin, { status }, (ctx, event) => {
+      if (!isEnemy(event.target)) return;
+      syncEpiphanyFamilies(ctx, event.target);
+      syncE1(ctx, event.target);
+    });
+  }
+
+  if (k.e(1)) {
+    const isAffliction = (status: StatusDef | undefined) =>
+      DOT_FAMILIES.some(([family]) => family === status?.family);
+    k.on(
+      "statusApplied",
+      "e1",
+      { subject: "any", when: (event) => isAffliction(event.status) },
+      (ctx, event) => {
+        if (isEnemy(event.target)) syncE1(ctx, event.target);
+      }
+    );
+  }
 
   k.on("actionStart", "talent", { subject: "ally" }, (ctx, event) => {
     ctx.setCounter(ctx.self, SERIAL, ctx.self.counter(SERIAL) + 1);
@@ -167,7 +182,6 @@ export default defineCharacter("1307", (k) => {
   k.on("turnStart", "talent", { subject: "enemy" }, (ctx, event) => {
     const enemy = event.unit;
     if (!isEnemy(enemy)) return;
-    ctx.setCounter(enemy, OWN_TURN, 1);
     for (const other of ctx.enemies) syncE1(ctx, other);
     if (enemy.has(epiphany)) {
       ctx.applyStatus(enemy, epiphanyOwnTurn);
@@ -184,7 +198,6 @@ export default defineCharacter("1307", (k) => {
   k.on("turnEnd", "talent", { subject: "enemy" }, (ctx, event) => {
     const enemy = event.unit;
     if (!isEnemy(enemy)) return;
-    ctx.setCounter(enemy, OWN_TURN, 0);
     ctx.removeStatus(enemy, epiphanyOwnTurn);
     ctx.removeStatus(ctx.self, arcanaPierce);
   });
@@ -216,30 +229,39 @@ export default defineCharacter("1307", (k) => {
     }
   };
 
-  k.on("dotTick", "talent", { subject: "enemy" }, (ctx, event) => {
-    const enemy = event.unit;
-    const status = event.status;
-    if (!isEnemy(enemy) || !status || status === arcanaBase) return;
-    const type = status === arcana ? "Wind" : dotTypes.get(status);
-    if (!type || !DOT_TYPES.includes(type)) return;
-    if (enemy.counter(OWN_TURN) > 0) {
-      // Turn-start DMG. Arcana resets before its own tick adds a stack.
-      if (status === arcana) afterArcanaTick(ctx, enemy);
-      inflictArcana(ctx, enemy, 1, k.param("04", 2));
-      return;
+  // Any DoT counts, except Frozen and Entanglement, whose DMG is Additional
+  // DMG; Arcana's flat part ticks with Arcana itself.
+  const isDot = (status: StatusDef | undefined) =>
+    status?.dot !== undefined &&
+    status !== arcanaBase &&
+    status.family !== "frozen" &&
+    status.family !== "entanglement";
+  k.on(
+    "dotTick",
+    "talent",
+    { subject: "enemy", when: (event) => isDot(event.status) },
+    (ctx, event) => {
+      const enemy = event.unit;
+      if (!isEnemy(enemy)) return;
+      if (!event.detonation) {
+        // Turn-start DMG. Arcana resets before its own tick adds a stack.
+        if (event.status === arcana) afterArcanaTick(ctx, enemy);
+        inflictArcana(ctx, enemy, 1, k.param("04", 2));
+        return;
+      }
+      if (!k.a(2) || ctx.self.counter(ATTACKING) <= 0) return;
+      // A4: DoT received during an ally's attack (detonations), up to #2
+      // stacks per attack and enemy.
+      const serial = ctx.self.counter(SERIAL);
+      if (enemy.counter(A4_ACTION) !== serial) {
+        ctx.setCounter(enemy, A4_ACTION, serial);
+        ctx.setCounter(enemy, A4_STACKS, 0);
+      }
+      if (enemy.counter(A4_STACKS) >= k.traceParam(2, 2)) return;
+      ctx.setCounter(enemy, A4_STACKS, enemy.counter(A4_STACKS) + 1);
+      inflictArcana(ctx, enemy, 1, k.traceParam(2, 1));
     }
-    if (!k.a(2) || ctx.self.counter(ATTACKING) <= 0) return;
-    // A4: DoT received during an ally's attack (detonations), up to #2
-    // stacks per attack and enemy.
-    const serial = ctx.self.counter(SERIAL);
-    if (enemy.counter(A4_ACTION) !== serial) {
-      ctx.setCounter(enemy, A4_ACTION, serial);
-      ctx.setCounter(enemy, A4_STACKS, 0);
-    }
-    if (enemy.counter(A4_STACKS) >= k.traceParam(2, 2)) return;
-    ctx.setCounter(enemy, A4_STACKS, enemy.counter(A4_STACKS) + 1);
-    inflictArcana(ctx, enemy, 1, k.traceParam(2, 1));
-  });
+  );
 
   if (k.a(2)) {
     k.on("battleStart", "a4", { subject: "any" }, (ctx) => {
@@ -316,6 +338,7 @@ export default defineCharacter("1307", (k) => {
         ctx.applyStatus(enemy, epiphany);
         ctx.setCounter(enemy, NO_RESET, k.param("03", 4));
         ctx.setCounter(enemy, E4_CHARGE, 1);
+        syncEpiphanyFamilies(ctx, enemy);
         syncE1(ctx, enemy);
       }
     },

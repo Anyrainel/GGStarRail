@@ -1,9 +1,4 @@
-import {
-  type ActionContext,
-  type BattleApi,
-  type EnemyView,
-  isEnemy,
-} from "../../kit/api";
+import { type BattleApi, type EnemyView, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { StatusDef } from "../../kit/model";
 
@@ -48,16 +43,9 @@ export default defineCharacter("1210", (k) => {
     ? [burn, boostedBurn]
     : [burn];
   // "Burn" is any Burn, whatever its source (Weakness Break, other
-  // Characters): a Fire DoT. Statuses have no DoT family, so Burns are
-  // recognized by Combat Type and collected as they are applied.
-  const isBurn = (status: StatusDef | undefined) =>
-    status?.dot?.hit.combatType === "Fire";
-  const knownBurns = new Set<StatusDef>(ownBurns);
-  k.on("statusApplied", "talent", { subject: "any" }, (_ctx, event) => {
-    if (event.status && isBurn(event.status)) knownBurns.add(event.status);
-  });
-  const burned = (enemy: EnemyView) =>
-    [...knownBurns].some((status) => enemy.has(status));
+  // Characters): the burn family.
+  const isBurn = (status: StatusDef | undefined) => status?.family === "burn";
+  const burned = (enemy: EnemyView) => enemy.hasFamily("burn");
 
   const applyBurn = (ctx: BattleApi, enemy: EnemyView, baseChance: number) => {
     const status = boostedBurn && burned(enemy) ? boostedBurn : burn;
@@ -76,35 +64,13 @@ export default defineCharacter("1210", (k) => {
     modifiers: [{ stat: "vulnerability", value: k.param("04", 4) }],
   });
 
-  // A6 for her direct hits: the Engine has no target-state filter, so the
-  // bonus follows the main target's Burn when the action starts. Her own
-  // Burn ticks only ever hit Burned enemies.
-  const walkingOnKnives = k.status({
-    id: "walking-on-knives",
-    origin: "a6",
-    modifiers: [
-      {
-        stat: "dmgBoost",
-        value: k.traceParam(3, 1),
-        filter: { tags: ["basic", "skill", "ultimate"] },
-      },
-    ],
-  });
   if (k.a(3)) {
     k.stat("a6", {
       stat: "dmgBoost",
       value: k.traceParam(3, 1),
-      filter: { tags: ["dot"] },
+      filter: { targetFamilies: ["burn"] },
     });
   }
-  const syncWalkingOnKnives = (ctx: ActionContext) => {
-    if (!k.a(3)) return;
-    if (isEnemy(ctx.target) && burned(ctx.target)) {
-      ctx.applyStatus(ctx.self, walkingOnKnives);
-    } else {
-      ctx.removeStatus(ctx.self, walkingOnKnives);
-    }
-  };
 
   // E1 (Effect RES −#2 on Skill targets) is not modeled: enemy Effect RES
   // reductions have no stat.
@@ -118,7 +84,6 @@ export default defineCharacter("1210", (k) => {
   k.ability({
     id: "basic",
     kind: "basic",
-    before: syncWalkingOnKnives,
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
@@ -132,7 +97,6 @@ export default defineCharacter("1210", (k) => {
   k.ability({
     id: "skill",
     kind: "skill",
-    before: syncWalkingOnKnives,
     hits: [
       {
         shape: "blast",
@@ -157,7 +121,6 @@ export default defineCharacter("1210", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    before: syncWalkingOnKnives,
     hits: [{ shape: "aoe", each: k.param("03", 1), toughness: { each: 20 } }],
     after: (ctx) => {
       for (const enemy of ctx.enemies) {
@@ -167,10 +130,15 @@ export default defineCharacter("1210", (k) => {
   });
 
   // Firekiss follows every Burn tick or detonation, from any source.
-  k.on("dotTick", "talent", { subject: "enemy" }, (ctx, event) => {
-    if (!isBurn(event.status) || !isEnemy(event.unit)) return;
-    ctx.applyStatus(event.unit, firekiss, { baseChance: k.param("04", 1) });
-  });
+  k.on(
+    "dotTick",
+    "talent",
+    { subject: "enemy", when: (event) => isBurn(event.status) },
+    (ctx, event) => {
+      if (!isEnemy(event.unit)) return;
+      ctx.applyStatus(event.unit, firekiss, { baseChance: k.param("04", 1) });
+    }
+  );
 
   if (k.e(4)) {
     k.on("dotTick", "e4", { subject: "enemy" }, (ctx, event) => {

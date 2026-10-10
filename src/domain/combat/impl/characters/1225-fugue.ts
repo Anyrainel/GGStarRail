@@ -1,4 +1,9 @@
-import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
+import {
+  type BattleApi,
+  isEnemy,
+  type PolicyView,
+  type UnitView,
+} from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { AbilityKind, ModifierDef } from "../../kit/model";
 
@@ -13,8 +18,8 @@ const ATTACK_KINDS: readonly AbilityKind[] = [
 
 /** Fugue — Nihility, Fire. */
 export default defineCharacter("1225", (k) => {
-  // Not modeled (engine gaps): Toughness reduction against non-weak enemies
-  // (Foxian Prayer at #6, the Ultimate in full) and Cloudflame Luster.
+  // Not modeled (engine gaps): Foxian Prayer's Toughness reduction against
+  // non-weak enemies (#6) and Cloudflame Luster.
   const prayerModifiers: ModifierDef[] = [
     { stat: "breakEffect", value: k.param("02", 2) },
   ];
@@ -56,27 +61,20 @@ export default defineCharacter("1225", (k) => {
     k.stat("e6", { stat: "breakEfficiency", value: k.rankParam(6, 1) });
   }
 
-  // The designated ally is the Break DPS: the ally Character with the
-  // highest Break Effect, then a non-support Path, then team order.
+  // The designated ally is the player's choice; by default the first
+  // teammate not on a support Path (the Break DPS), then team order.
   const supportPaths = new Set(["Shaman", "Priest", "Knight"]);
-  const supportIds = new Set(
-    k.team
-      .filter((member) => supportPaths.has(member.pathId))
-      .map((member) => member.characterId)
+  const prayerMember = k.ally(
+    "foxian-prayer",
+    "skill",
+    (candidates) =>
+      candidates.find((member) => !supportPaths.has(member.pathId)) ??
+      candidates[0]
   );
-  const better = (a: UnitView, b: UnitView) => {
-    const diff = a.panelStat("breakEffect") - b.panelStat("breakEffect");
-    if (Math.abs(diff) > 1e-9) return diff > 0;
-    return supportIds.has(b.definitionId) && !supportIds.has(a.definitionId);
-  };
-  const prayerTarget = (ctx: BattleApi): UnitView => {
-    let best: UnitView | null = null;
-    for (const ally of ctx.allies) {
-      if (ally.kind !== "character" || ally === ctx.self) continue;
-      if (!best || better(ally, best)) best = ally;
-    }
-    return best ?? ctx.self;
-  };
+  const prayerTarget = (view: PolicyView): UnitView =>
+    view.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === prayerMember?.slot
+    ) ?? view.self;
 
   k.ability({
     id: "basic",
@@ -104,7 +102,7 @@ export default defineCharacter("1225", (k) => {
     kind: "skill",
     target: "ally",
     before: (ctx) => {
-      const target = prayerTarget(ctx);
+      const target = ctx.target && !isEnemy(ctx.target) ? ctx.target : ctx.self;
       for (const ally of ctx.allies) {
         if (ally === target) continue;
         ctx.removeStatus(ally, designated);
@@ -140,7 +138,15 @@ export default defineCharacter("1225", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    hits: [{ shape: "aoe", each: k.param("03", 1), toughness: { each: 20 } }],
+    // "Ignores Weakness Type to reduce all enemies' Toughness."
+    hits: [
+      {
+        shape: "aoe",
+        each: k.param("03", 1),
+        toughness: { each: 20 },
+        toughnessWithoutWeakness: 1,
+      },
+    ],
     after: (ctx) => {
       if (k.e(2)) {
         for (const ally of ctx.allies) {
@@ -216,7 +222,7 @@ export default defineCharacter("1225", (k) => {
       view.self.has(torridScorch)
         ? "enhancedBasic"
         : view.skillPoints >= 1
-          ? "skill"
+          ? { ability: "skill", target: prayerTarget(view) }
           : "basic",
   });
 });

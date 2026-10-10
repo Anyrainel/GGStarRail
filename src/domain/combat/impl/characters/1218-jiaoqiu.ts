@@ -178,28 +178,14 @@ export default defineCharacter("1218", (k) => {
   );
 
   if (k.e(1)) {
-    // The engine has no "target has status" filter for outgoing modifiers:
-    // the DMG Boost follows the main target of each ally attack.
-    const pentapathic = k.status({
-      id: "pentapathic-transference",
-      origin: "e1",
-      modifiers: [{ stat: "dmgBoost", value: k.rankParam(1, 1) }],
-    });
-    k.on(
-      "actionStart",
+    k.teamStat(
       "e1",
-      { subject: "ally", attack: true },
-      (ctx, event) => {
-        const attacker =
-          event.unit.kind === "summon" && event.unit.owner
-            ? event.unit.owner
-            : event.unit;
-        if (isEnemy(event.target) && event.target.has(ashenRoast)) {
-          ctx.applyStatus(attacker, pentapathic);
-        } else {
-          ctx.removeStatus(attacker, pentapathic);
-        }
-      }
+      {
+        stat: "dmgBoost",
+        value: k.rankParam(1, 1),
+        filter: { targetStatuses: [ashenRoast.id] },
+      },
+      "allies"
     );
   }
 });

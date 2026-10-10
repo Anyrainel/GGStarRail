@@ -11,6 +11,8 @@ const HIT_THIS_ATTACK = "dahlia:hit";
 const FOLLOW_UP_THIS_TURN = "dahlia:follow-up";
 const FOLLOW_UPS = "dahlia:follow-ups";
 const E1_TRIGGERED = "dahlia:e1";
+const ATTACKER_SLOT = "dahlia:a6-attacker";
+const IMPLANTED = "dahlia:a6-implanted";
 
 /** The Dahlia — Nihility, Fire. */
 export default defineCharacter("1321", (k) => {
@@ -77,9 +79,11 @@ export default defineCharacter("1321", (k) => {
     modifiers: [{ stat: "defReduction", value: k.param("03", 3) }],
   });
 
+  // Each grant sets its own duration (#2 at battle start, #4 on healing).
   const funeral = k.status({
     id: "yet-another-funeral",
     origin: "a2",
+    duration: { turns: k.traceParam(1, 2) },
     modifiers: [
       {
         stat: "breakEffect",
@@ -92,11 +96,6 @@ export default defineCharacter("1321", (k) => {
       },
     ],
   });
-  // A2 retriggers when a teammate heals or shields The Dahlia; healing is
-  // not simulated, so a sustained team refreshes it once per her turn.
-  const sustained = k.a(1)
-    ? k.toggle("a2-heal-or-shield", "a2", "active", true)
-    : false;
   const grantFuneral = (ctx: BattleApi, turns: number) => {
     for (const ally of ctx.allies) {
       if (ally.kind === "character" && ally !== ctx.self) {
@@ -127,20 +126,23 @@ export default defineCharacter("1321", (k) => {
     modifiers: [{ stat: "vulnerability", value: k.rankParam(4, 1) }],
   });
 
+  // The Dance Partner is the teammate that triggered combat, the player's
+  // choice; by default the first teammate not on a support Path (the Break
+  // DPS), then team order.
+  const supportPaths = new Set(["Shaman", "Priest", "Knight"]);
+  const partnerMember = k.ally(
+    "dance-partner",
+    "talent",
+    (candidates) =>
+      candidates.find((member) => !supportPaths.has(member.pathId)) ??
+      candidates[0]
+  );
+
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
     ctx.gainEnergy(ctx.self, k.param("04", 4));
-    // The teammate who triggered combat is unknown: the "no other Dance
-    // Partner" rule picks the highest Break Effect (team order breaks ties).
-    let partner: UnitView | null = null;
-    for (const ally of ctx.allies) {
-      if (ally.kind !== "character" || ally === ctx.self) continue;
-      if (
-        !partner ||
-        ally.panelStat("breakEffect") > partner.panelStat("breakEffect") + 1e-9
-      ) {
-        partner = ally;
-      }
-    }
+    const partner = ctx.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === partnerMember?.slot
+    );
     if (partner) ctx.applyStatus(partner, dancePartner);
     if (e1Conversion) {
       for (const ally of ctx.allies) {
@@ -155,9 +157,20 @@ export default defineCharacter("1321", (k) => {
     }
   });
 
-  if (sustained) {
-    k.on("turnStart", "a2", { subject: "self" }, (ctx) =>
-      grantFuneral(ctx, k.traceParam(1, 4))
+  if (k.a(1)) {
+    // Retriggers when a teammate heals The Dahlia (Shields are not modeled).
+    k.on(
+      "hpChanged",
+      "a2",
+      {
+        subject: "self",
+        when: (event, self) =>
+          event.hpCause === "heal" &&
+          event.source !== undefined &&
+          event.source !== self,
+        limitPerTurn: 1,
+      },
+      (ctx) => grantFuneral(ctx, k.traceParam(1, 4))
     );
   }
 
@@ -195,33 +208,52 @@ export default defineCharacter("1321", (k) => {
         .map((ally) => ally.combatType);
       for (const enemy of ctx.enemies) {
         ctx.applyStatus(enemy, wilt);
-        // Implanted Weakness is permanent: the Engine cannot remove it when
-        // Wilt ends.
-        for (const type of partnerTypes) ctx.implantWeakness(enemy, type);
+        // The Weakness lasts as long as Wilt (both end on the enemy's turn).
+        for (const type of partnerTypes) {
+          ctx.implantWeakness(enemy, type, { turns: k.param("03", 2) });
+        }
       }
     },
-    hits: [
-      // "Distributed evenly across all enemies": one Bounce instance gives
-      // each enemy an even share of the DMG...
-      { shape: "bounce", bounces: 1, each: k.param("03", 1) },
-      // ...while every enemy takes the full Toughness Reduction.
-      { shape: "aoe", each: 0, toughness: { each: 20 } },
-    ],
-    after: (ctx) => {
-      if (!k.a(3)) return;
-      // A6 for her own Wilt implant (the Engine has no event for Weakness
-      // implanted by other allies).
-      ctx.applyStatus(ctx.self, outgrowSpd);
-      for (const enemy of ctx.enemies) {
-        ctx.reduceToughness(enemy, k.traceParam(3, 5));
+    hits: [{ shape: "split", main: k.param("03", 1), toughness: { each: 20 } }],
+  });
+
+  if (k.a(3)) {
+    // The ally that adds a Weakness gains SPD. Weaknesses a Fire ally
+    // character adds during its own attack mark their enemies for the fixed
+    // Toughness Reduction and Energy after that attack.
+    k.on("actionStart", "a6", { subject: "ally", attack: true }, (ctx, event) =>
+      ctx.setCounter(ctx.self, ATTACKER_SLOT, event.unit.slot + 1)
+    );
+    k.on("weaknessImplanted", "a6", { subject: "ally" }, (ctx, event) => {
+      ctx.applyStatus(event.unit, outgrowSpd);
+      const duringOwnAttack =
+        ctx.self.counter(ATTACKER_SLOT) === event.unit.slot + 1;
+      if (
+        isEnemy(event.target) &&
+        event.unit.kind === "character" &&
+        event.unit.combatType === "Fire" &&
+        duringOwnAttack
+      ) {
+        ctx.setCounter(event.target, IMPLANTED, 1);
+      }
+    });
+    k.on("actionEnd", "a6", { subject: "ally" }, (ctx) => {
+      ctx.setCounter(ctx.self, ATTACKER_SLOT, 0);
+      const marked = ctx.enemies.filter(
+        (enemy) => enemy.counter(IMPLANTED) > 0
+      );
+      if (marked.length === 0) return;
+      for (const enemy of marked) {
+        ctx.setCounter(enemy, IMPLANTED, 0);
+        ctx.reduceToughness(enemy, k.traceParam(3, 5), { fixed: true });
       }
       const cap = ctx.self.maxEnergy * k.traceParam(3, 1);
       if (ctx.self.energy < cap) {
         ctx.gainEnergy(ctx.self, ctx.self.maxEnergy * k.traceParam(3, 2));
         if (ctx.self.energy > cap) ctx.setEnergy(ctx.self, cap);
       }
-    },
-  });
+    });
+  }
 
   // Facts list 3 Toughness per Bounce instance.
   k.ability({
@@ -269,7 +301,7 @@ export default defineCharacter("1321", (k) => {
       k.rankParam(1, 3),
       Math.max(k.rankParam(1, 2), enemy.maxToughness * k.rankParam(1, 1))
     );
-    ctx.reduceToughness(enemy, amount);
+    ctx.reduceToughness(enemy, amount, { fixed: true });
   };
 
   // Enemies hit by the current attack, for the Talent and E1.

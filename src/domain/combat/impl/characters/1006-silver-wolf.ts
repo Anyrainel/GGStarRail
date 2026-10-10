@@ -23,8 +23,8 @@ const IMPLANT_COUNTER = "silver-wolf:implanted-type";
 /** Silver Wolf — Nihility, Quantum. */
 export default defineCharacter("1006", (k) => {
   // Bugs are random: they are implanted in rotation per enemy, so after three
-  // attacks an enemy holds all three (tracked as an approximation). Enemy ATK
-  // and SPD are not modeled, so those two Bugs only count as debuffs.
+  // attacks an enemy holds all three (tracked as an approximation). Enemy
+  // attacks deal a fixed share of HP, so the ATK Bug only counts as a debuff.
   const bugTurns = k.param("04", 5) + (k.a(1) ? k.traceParam(1, 1) : 0);
   const bugs: readonly StatusDef[] = [
     k.status({
@@ -42,9 +42,11 @@ export default defineCharacter("1006", (k) => {
     }),
     k.status({
       id: "bug-spd",
+      family: "slow",
       origin: "talent",
       debuff: true,
       duration: { turns: bugTurns },
+      modifiers: [{ stat: "spdPct", value: -k.param("04", 3) }],
     }),
   ];
   const implantBug = (ctx: BattleApi, enemy: EnemyView, baseChance: number) => {
@@ -83,13 +85,12 @@ export default defineCharacter("1006", (k) => {
 
   // The Type is "an on-field character's Type", chosen at random among those
   // the enemy is not weak to; here the first such ally in team order. The
-  // Engine cannot remove an implanted Weakness, so it outlasts the debuff
-  // (tracked as engine-gap); the counter remembers which Type was added so
-  // the same one is refreshed rather than a second one implanted.
+  // Weakness lasts as long as its RES reduction, and the counter remembers
+  // the Type implanted last so only the most recent one is kept.
   const implant = (ctx: ActionContext, enemy: EnemyView) => {
-    const added = COMBAT_TYPES[enemy.counter(IMPLANT_COUNTER) - 1];
+    const previous = COMBAT_TYPES[enemy.counter(IMPLANT_COUNTER) - 1];
     const native = (type: CombatType) =>
-      enemy.weaknesses.has(type) && type !== added;
+      enemy.weaknesses.has(type) && type !== previous;
     const type = ctx.allies
       .filter((ally) => ally.kind === "character")
       .map((ally) => ally.combatType)
@@ -103,10 +104,9 @@ export default defineCharacter("1006", (k) => {
       ctx.applyStatus(enemy, implantNative, { baseChance });
       return;
     }
-    if (!enemy.weaknesses.has(type)) {
-      ctx.implantWeakness(enemy, type);
-      ctx.setCounter(enemy, IMPLANT_COUNTER, COMBAT_TYPES.indexOf(type) + 1);
-    }
+    if (previous && previous !== type) ctx.removeWeakness(enemy, previous);
+    ctx.implantWeakness(enemy, type, { turns: implantTurns });
+    ctx.setCounter(enemy, IMPLANT_COUNTER, COMBAT_TYPES.indexOf(type) + 1);
     ctx.applyStatus(enemy, status, { baseChance });
   };
 

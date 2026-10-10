@@ -6,11 +6,10 @@ const CHARGE = "mortenax:charge";
 const OVERFLOW = "mortenax:overflow";
 const E6_USED = "mortenax:e6-used";
 const HIT_THIS_ATTACK = "mortenax:hit";
+const HP_FLOOR = 0.01;
 
 /** Mortenax Blade — Nihility, Fire. */
 export default defineCharacter("1507", (k) => {
-  // HP is not modeled: his HP is assumed to stay above 1, so Skill and the
-  // Talent's extra Skill are always available in Infinite Fury.
   const balefireBind = k.status({
     id: "balefire-bind",
     origin: "ultimate",
@@ -89,48 +88,65 @@ export default defineCharacter("1507", (k) => {
     });
   }
 
-  // A2 overflow Energy is tracked for the Energy this kit grants itself.
-  // `scale` undoes the trigger's weight for effects that fire in full.
-  const regenerate = (ctx: BattleApi, amount: number, scale = 1) => {
-    if (k.a(1)) {
-      const scaled = amount * (1 + ctx.self.panelStat("energyRegen"));
-      const excess = ctx.self.energy + scaled - ctx.self.maxEnergy;
-      if (excess > 0) {
-        ctx.setCounter(
+  // A2: Energy beyond the cap, from any source, is banked up to #2.
+  if (k.a(1)) {
+    k.on(
+      "energyGained",
+      "a2",
+      { subject: "self", when: (event) => (event.overflow ?? 0) > 0 },
+      (ctx, event) =>
+        ctx.addCounter(
           ctx.self,
           OVERFLOW,
-          Math.min(k.traceParam(1, 2), ctx.self.counter(OVERFLOW) + excess)
-        );
-      }
-    }
-    ctx.gainEnergy(ctx.self, amount * scale);
-  };
+          event.overflow ?? 0,
+          k.traceParam(1, 2)
+        )
+    );
+  }
   const restoreEnergyFloor = (ctx: BattleApi, unit: UnitView) => {
     if (!k.a(1)) return;
     const floor = unit.maxEnergy * k.traceParam(1, 1);
     if (unit.energy < floor) ctx.setEnergy(unit, floor);
   };
 
+  // HP never drops below 1% (the engine's stand-in for 1 HP): "current HP
+  // is 1 or lower" means HP at that floor. Receiving a killing blow (which
+  // would end the Zone and restore HP) is not simulated.
+  const aboveOneHp = (unit: UnitView) => unit.hpRatio > HP_FLOOR + 1e-9;
+
   const chargeCap = k.e(2) ? k.rankParam(2, 2) : k.param("04", 1);
   // Charge is an expected value (being attacked is weighted by aggro); the
-  // Energy and extra Skill fire in full once it reaches the cap.
-  const addCharge = (ctx: BattleApi) => {
+  // Energy and extra Skill fire in full once it reaches the cap, and wait
+  // there while HP is 1.
+  const addCharge = (ctx: BattleApi, amount = 1) => {
     if (!ctx.self.has(infiniteFury)) return;
-    ctx.addCounter(ctx.self, CHARGE, 1, chargeCap);
+    ctx.addCounter(ctx.self, CHARGE, amount, chargeCap);
     if (ctx.self.counter(CHARGE) + 1e-9 < chargeCap) return;
+    if (!aboveOneHp(ctx.self)) return;
     ctx.setCounter(ctx.self, CHARGE, 0);
     const full = 1 / ctx.weight;
-    regenerate(ctx, k.param("04", 2), full);
+    ctx.gainEnergy(ctx.self, k.param("04", 2) * full);
     ctx.queueAction(ctx.self, "followUp", { weight: full });
   };
-  // E6: taking DMG or consuming HP grants Charge, once until a turn ends.
-  const e6Charge = (ctx: BattleApi) => {
-    if (!k.e(6) || !ctx.self.has(infiniteFury)) return;
-    if (ctx.self.counter(E6_USED) > 0) return;
-    ctx.setCounter(ctx.self, E6_USED, 1);
-    addCharge(ctx);
-  };
   if (k.e(6)) {
+    // Taking DMG or consuming HP grants Charge, once until any turn ends.
+    // Weighted triggers (enemy hits by aggro) use up a share of that once.
+    k.on(
+      "hpChanged",
+      "e6",
+      {
+        subject: "self",
+        when: (event, self) =>
+          (event.hpCause === "consume" || event.hpCause === "enemy") &&
+          self.has(infiniteFury) &&
+          self.counter(E6_USED) < 1 - 1e-9,
+      },
+      (ctx) => {
+        const share = Math.min(1, (1 - ctx.self.counter(E6_USED)) / ctx.weight);
+        ctx.addCounter(ctx.self, E6_USED, share);
+        addCharge(ctx, share);
+      }
+    );
     k.on("turnEnd", "e6", { subject: "any" }, (ctx) =>
       ctx.setCounter(ctx.self, E6_USED, 0)
     );
@@ -156,6 +172,7 @@ export default defineCharacter("1507", (k) => {
   const countdown = k.summon({
     id: "infinite-fury-countdown",
     speed: k.param("03", 5),
+    countdown: true,
     policy: () => "end",
     abilities: [
       {
@@ -180,7 +197,6 @@ export default defineCharacter("1507", (k) => {
   k.ability({
     id: "basic",
     kind: "basic",
-    energy: 0,
     hits: [
       {
         shape: "single",
@@ -189,13 +205,11 @@ export default defineCharacter("1507", (k) => {
         toughness: { main: 10 },
       },
     ],
-    after: (ctx) => regenerate(ctx, 20),
   });
 
   k.ability({
     id: "enhancedBasic",
     kind: "basic",
-    energy: 0,
     hits: [
       {
         shape: "single",
@@ -204,7 +218,6 @@ export default defineCharacter("1507", (k) => {
         toughness: { main: 10 },
       },
     ],
-    after: (ctx) => regenerate(ctx, 20),
   });
 
   // Facts list 10 Toughness for every enemy and 5 per Bounce instance.
@@ -224,14 +237,17 @@ export default defineCharacter("1507", (k) => {
     },
   ];
 
+  // "Consumes HP equal to #4 of Max HP" (down to 1 HP); unusable outside
+  // Infinite Fury or at 1 HP.
+  const payHp = (ctx: BattleApi) => ctx.consumeHp(ctx.self, k.param("02", 4));
+
   k.ability({
     id: "skill",
     kind: "skill",
     skillPoints: 0,
-    energy: 0,
-    before: e6Charge,
+    usable: (view) => view.self.has(infiniteFury) && aboveOneHp(view.self),
+    before: payHp,
     hits: skillHits,
-    after: (ctx) => regenerate(ctx, 30),
   });
 
   // The Talent's extra Skill, "considered as Follow-Up ATK".
@@ -240,11 +256,10 @@ export default defineCharacter("1507", (k) => {
     kind: "followUp",
     tags: ["skill", "followUp"],
     skillPoints: 0,
-    energy: 0,
-    before: e6Charge,
+    energy: 30,
+    before: payHp,
     hits: skillHits,
     after: (ctx) => {
-      regenerate(ctx, 30);
       if (k.e(1) && countdownUnit) {
         ctx.delayAction(countdownUnit, k.rankParam(1, 2));
       }
@@ -271,8 +286,9 @@ export default defineCharacter("1507", (k) => {
     },
     after: (ctx) => {
       if (!ctx.self.has(infiniteFury)) {
-        // Fornax Ex Corpore: Balefire Bind, then the Zone.
+        // Fornax Ex Corpore: Balefire Bind, then the HP cost deploys the Zone.
         for (const enemy of ctx.enemies) ctx.applyStatus(enemy, balefireBind);
+        ctx.consumeHp(ctx.self, k.param("03", 1));
         ctx.applyStatus(ctx.self, infiniteFury);
         if (zoneSelfStatus) ctx.applyStatus(ctx.self, zoneSelfStatus);
         for (const ally of ctx.allies) {
@@ -286,8 +302,9 @@ export default defineCharacter("1507", (k) => {
         countdownUnit = ctx.summon(ctx.self, countdown.id);
       }
       if (k.a(1)) {
-        ctx.gainEnergy(ctx.self, ctx.self.counter(OVERFLOW), { fixed: true });
+        const banked = ctx.self.counter(OVERFLOW);
         ctx.setCounter(ctx.self, OVERFLOW, 0);
+        ctx.gainEnergy(ctx.self, banked, { fixed: true });
       }
     },
   });
@@ -314,17 +331,22 @@ export default defineCharacter("1507", (k) => {
 
   // A4 (the higher aggro is not modeled): being attacked binds the
   // attacker and grants Charge.
-  k.on("hitByEnemy", "a4", { subject: "self" }, (ctx, event) => {
-    if (!ctx.self.has(infiniteFury)) return;
-    if (k.a(2)) {
+  if (k.a(2)) {
+    k.on("hitByEnemy", "a4", { subject: "self" }, (ctx, event) => {
+      if (!ctx.self.has(infiniteFury)) return;
       if (isEnemy(event.target)) ctx.applyStatus(event.target, balefireBind);
       addCharge(ctx);
-    }
-    e6Charge(ctx);
-  });
+    });
+  }
 
   k.policy({
-    // Skill (no SP cost) throughout Infinite Fury; Basic ATK otherwise.
-    turn: (view) => (view.self.has(infiniteFury) ? "skill" : "basic"),
+    // Skill (no SP cost) throughout Infinite Fury, Enhanced Basic ATK once
+    // HP is down to 1; Basic ATK otherwise.
+    turn: (view) =>
+      view.self.has(infiniteFury)
+        ? aboveOneHp(view.self)
+          ? "skill"
+          : "enhancedBasic"
+        : "basic",
   });
 });

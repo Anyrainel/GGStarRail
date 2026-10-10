@@ -884,3 +884,49 @@
     Boothill (1315, boothill-weakness-duration), Phainon (1408,
     phainon-territory-weakness), and the other implanting kits (Silver Wolf
     1006, Silver Wolf LV.999 1506, The Dahlia 1321, Anaxa 1405).
+- id: engine-break-damage-no-conversion
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    breakDamage reports Super Break DMG for every Toughness reduction on a
+    Weakness Broken enemy, also by attackers without a Super Break
+    conversion, whose superBreak records then evaluate to 0 DMG. "After
+    dealing Break DMG" listeners over-trigger unless they check the
+    conversion themselves.
+  detail: >
+    Emit the superBreak breakDamage event (and record the hit) only when
+    the attacker's conversion (superBreakDmg, filters and scaling included)
+    applies to that hit. Shadowed by Night (21047) works around it by
+    requiring currentStat('superBreakDmg') > 0, which misses filtered and
+    scaling conversions; Whereabouts Should Dreams Rest (23025) listens to
+    the same event.
+- id: engine-before-break-event
+  entity: engine
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    weaknessBreak fires after the breaking hit's Break DMG and Break DoT, so
+    effects the game adds OnBeforeBeingBreak (debuffs on the enemy being
+    broken) miss that Break DMG.
+  detail: >
+    Needs a hook when an enemy's Toughness reaches 0, before Break DMG
+    resolves, where kits can apply statuses to it. Affects Lingsha's E1
+    (1222, lingsha-e1-before-break).
+- id: engine-ally-hp-modifiers
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy hits remove a fixed share of Max HP and heals restore the share the
+    healer requests, so an ally's DMG taken reduction and Incoming Healing
+    never change its simulated HP, although kits now spend and read HP.
+  detail: >
+    Needs ally-side modifiers that scale HP lost to enemy hits (DMG taken
+    reduction, multiplicative like dmgMitigation) and HP restored by heals
+    (Incoming Healing). Affects Mortenax Blade (1507, mortenax-blade-a4-hp),
+    whose Skill needs HP above 1 and whose A4 halves DMG taken and raises
+    Incoming Healing by 50% while the Zone lasts.

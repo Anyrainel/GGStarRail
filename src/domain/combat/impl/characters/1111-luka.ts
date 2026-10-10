@@ -41,16 +41,9 @@ export default defineCharacter("1111", (k) => {
     },
   });
   // Detonations and "is Bleeding" checks cover any Bleed (Weakness Break,
-  // other Characters): a Physical DoT. Statuses have no DoT family, so
-  // Bleeds are recognized by Combat Type and collected as they are applied.
-  const isBleed = (status: StatusDef | undefined) =>
-    status?.dot?.hit.combatType === "Physical";
-  const knownBleeds = new Set<StatusDef>([bleed]);
-  k.on("statusApplied", "talent", { subject: "any" }, (_ctx, event) => {
-    if (event.status && isBleed(event.status)) knownBleeds.add(event.status);
-  });
-  const bleeding = (enemy: EnemyView) =>
-    [...knownBleeds].some((status) => enemy.has(status));
+  // other Characters): the bleed family.
+  const isBleed = (status: StatusDef | undefined) => status?.family === "bleed";
+  const bleeding = (enemy: EnemyView) => enemy.hasFamily("bleed");
 
   const vulnerability = k.status({
     id: "coup-de-grace",

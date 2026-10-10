@@ -44,6 +44,7 @@ export default defineCharacter("1108", (k) => {
   });
 
   // Bounce facts list Energy per hit (6), so the Skill's Energy is ×hits.
+  // Facts give the first hit 10 Toughness; each extra bounce reduces 5.
   const bounces = k.param("02", 1) + (k.e(1) ? k.rankParam(1, 1) : 0);
   k.ability({
     id: "skill",
@@ -55,7 +56,7 @@ export default defineCharacter("1108", (k) => {
         shape: "bounce",
         each: k.param("02", 2),
         bounces,
-        toughness: { each: 10 },
+        toughness: { each: 5 },
       },
     ],
   });

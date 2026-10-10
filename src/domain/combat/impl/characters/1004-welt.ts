@@ -3,8 +3,6 @@ import { defineCharacter } from "../../kit/character";
 
 /** Welt — Nihility, Imaginary. */
 export default defineCharacter("1004", (k) => {
-  // Enemy SPD is fixed in the engine, so the SPD reductions below only mark
-  // the enemy as Slowed for the Talent.
   const slow = k.status({
     id: "edge-of-the-void-slow",
     family: "slow",
@@ -22,9 +20,10 @@ export default defineCharacter("1004", (k) => {
     duration: { turns: 1 },
     modifiers: [{ stat: "spdPct", value: -k.param("03", 4) }],
   });
-  // Other kits' Slows (and Imaginary Break Imprisonment) are not visible.
+  // "Already Slowed" counts any Slow, plus Imprisonment (its SPD reduction),
+  // including other kits' and Imaginary Break's.
   const isSlowed = (enemy: EnemyView) =>
-    enemy.has(slow) || enemy.has(imprisoned);
+    enemy.hasFamily("slow") || enemy.hasFamily("imprisonment");
 
   const retribution = k.status({
     id: "retribution",
@@ -123,24 +122,10 @@ export default defineCharacter("1004", (k) => {
   );
 
   if (k.a(3)) {
-    // The engine has no "target is Weakness Broken" filter: the DMG Boost
-    // follows the main target of each of Welt's attacks.
-    const punishment = k.status({
-      id: "punishment",
-      origin: "a6",
-      modifiers: [{ stat: "dmgBoost", value: k.traceParam(3, 1) }],
+    k.stat("a6", {
+      stat: "dmgBoost",
+      value: k.traceParam(3, 1),
+      filter: { targetBroken: true },
     });
-    k.on(
-      "actionStart",
-      "a6",
-      { subject: "self", attack: true },
-      (ctx, event) => {
-        if (isEnemy(event.target) && event.target.broken) {
-          ctx.applyStatus(ctx.self, punishment);
-        } else {
-          ctx.removeStatus(ctx.self, punishment);
-        }
-      }
-    );
   }
 });
