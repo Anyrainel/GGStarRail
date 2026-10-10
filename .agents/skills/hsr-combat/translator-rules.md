@@ -167,7 +167,12 @@ Decide in this order:
    Destruction, Rogue = The Hunt, Mage = Erudition, Shaman = Harmony, Warlock =
    Nihility, Knight = Preservation, Priest = Abundance, Memory = Remembrance,
    Elation = Elation.
-3. **Unmodelled environment**: an option with the shared vocabulary
+3. **Player choice of a single ally** ("one designated ally" that stays
+   chosen: Shifu, Foxian Prayer, Dance Partner, Debt Collector): `k.ally`,
+   with a `pick` that chooses the usual target (the main damage dealer,
+   usually the first teammate not on a support Path). Abilities that pick
+   a target each cast use the turn or Ultimate policy instead.
+4. **Unmodelled environment**: an option with the shared vocabulary
    (`k.toggle`/`k.count`). Defaults:
 
    | Condition | Default |

@@ -3,7 +3,7 @@ import type { OptionDef } from "@/domain/combat/kit/builder";
 import type { MemberOptionGroup } from "@/domain/combat/team/assemble";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildReferences } from "@/lib/buildReferences";
-import { localizedName } from "@/lib/catalogPresentation";
+import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
 import {
   ORIGIN_LABEL_KEYS,
   optionConditionLabel,
@@ -23,18 +23,49 @@ interface MemberOptionsProps {
   onChange: (values: OptionValues) => void;
 }
 
+type OptionValue = boolean | number | string;
+
 function OptionControl({
   label,
   option,
   value,
+  allyName,
   onChange,
 }: {
   label: string;
   option: OptionDef;
-  value: boolean | number;
-  onChange: (value: boolean | number) => void;
+  value: OptionValue | null;
+  allyName: (characterId: string) => string;
+  onChange: (value: OptionValue) => void;
 }) {
   const id = useId();
+  if (option.condition === "ally") {
+    const choices = option.choices ?? [];
+    const selected =
+      typeof value === "string" && choices.includes(value)
+        ? value
+        : (option.defaultValue as string | null);
+    return (
+      <div className="flex items-center gap-2 px-1 py-0.5">
+        <label htmlFor={id} className="min-w-0 flex-1 truncate" title={label}>
+          {label}
+        </label>
+        <select
+          id={id}
+          value={selected ?? ""}
+          disabled={choices.length === 0}
+          className="h-7 max-w-[55%] rounded-md border border-border bg-background/70 px-1"
+          onChange={(event) => onChange(event.target.value)}
+        >
+          {choices.map((characterId) => (
+            <option key={characterId} value={characterId}>
+              {allyName(characterId)}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  }
   if (typeof option.defaultValue === "boolean") {
     return (
       <label
@@ -65,7 +96,13 @@ function OptionControl({
         min={0}
         max={option.max}
         step={1}
-        value={typeof value === "number" ? value : option.defaultValue}
+        value={
+          typeof value === "number"
+            ? value
+            : typeof option.defaultValue === "number"
+              ? option.defaultValue
+              : 0
+        }
         className="h-7 w-14 rounded-md border border-border bg-background/70 px-2 text-right tabular-nums"
         onChange={(event) => {
           const next = Number(event.target.value);
@@ -86,6 +123,12 @@ export function MemberOptions({
   onChange,
 }: MemberOptionsProps) {
   const { locale, t } = useI18n();
+  const allyName = (characterId: string) => {
+    const ally = references.characters.byId.get(characterId);
+    return ally
+      ? characterCatalogName(ally, locale, t("terms.trailblazer"))
+      : characterId;
+  };
 
   function groupKey(group: MemberOptionGroup): string {
     return group.entity === "character" || group.entity === "lightCone"
@@ -143,6 +186,7 @@ export function MemberOptions({
               key={`${key}:${option.id}`}
               label={label}
               option={option}
+              allyName={allyName}
               value={values[key]?.[option.id] ?? option.defaultValue}
               onChange={(value) =>
                 onChange({

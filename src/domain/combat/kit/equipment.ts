@@ -1,3 +1,4 @@
+import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { LightConeData, RelicSetData } from "../model/data";
 import {
   type CompiledKit,
@@ -33,6 +34,10 @@ export class LightConeKitBuilder extends KitBuilder {
       Math.max(superimposition, 1),
       data.effect.superimpositions.length
     );
+  }
+
+  protected override ownCharacterId(): string {
+    return canonicalCharacterId(this.wearer.characterId);
   }
 
   /** `#index` of the effect at the current Superimposition. */
@@ -76,6 +81,10 @@ export class RelicSetKitBuilder extends KitBuilder {
     team: readonly TeamMemberInfo[] = []
   ) {
     super(options, team);
+  }
+
+  protected override ownCharacterId(): string {
+    return canonicalCharacterId(this.wearer.characterId);
   }
 
   /** `#index` of this tier's bonus text. */

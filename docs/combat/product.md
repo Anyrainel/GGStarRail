@@ -27,6 +27,7 @@ updates every team.
 | Ideal main stats | the same builds | (edited in Character Builds) |
 | Skill use | the kit's play pattern | prefer Skill / prefer Basic ATK |
 | Conditions | each kit's peak-damage default (see translator rule U8) | per condition |
+| Designated ally (Shifu, Dance Partner, ...) | the kit's usual target, usually the main damage dealer | any teammate |
 | Battle | Boss with 2 adds, 3 cycles, enemy level 95 | Single boss, 5 enemies, cycles, enemy level |
 
 Value origins are shown as badges: Account, Your build, Recommended, Default,

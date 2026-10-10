@@ -39,6 +39,7 @@ Shared by all entities (`KitBuilder`):
 | `k.on(event, origin, filter, handler)` | react to battle events |
 | `k.toggle(id, origin, condition, default, threshold?)` | user condition (U8) |
 | `k.count(id, origin, condition, default, max)` | user count (U8) |
+| `k.ally(id, origin, pick, { includeSelf? })` | user-designated teammate (U8); `pick(candidates)` returns the default; returns the member (find its unit by `slot`) or null |
 | `k.countPath(pathId)`, `k.countCombatType(type)`, `k.team` | team composition |
 
 Characters (`CharacterKitBuilder`) add:

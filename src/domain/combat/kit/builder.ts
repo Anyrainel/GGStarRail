@@ -23,7 +23,9 @@ export type OptionCondition =
   | "selfHpBelow"
   | "selfHpAbove"
   | "enemyDefeated"
-  | "perCycle";
+  | "perCycle"
+  /** A teammate the user designates; the value is its Character ID. */
+  | "ally";
 
 export interface OptionDef {
   /** Unique within the entity. */
@@ -32,12 +34,17 @@ export interface OptionDef {
   condition: OptionCondition;
   /** Percent threshold for HP conditions (0.5 = 50%). */
   threshold?: number;
-  /** `true/false` for toggles, a number for counts. */
-  defaultValue: boolean | number;
+  /**
+   * `true/false` for toggles, a number for counts, a Character ID (or null
+   * without candidates) for ally choices.
+   */
+  defaultValue: boolean | number | string | null;
   max?: number;
+  /** Ally choices: the Character IDs that may be designated. */
+  choices?: readonly string[];
 }
 
-export type OptionValues = Readonly<Record<string, boolean | number>>;
+export type OptionValues = Readonly<Record<string, boolean | number | string>>;
 
 export interface ListenerDef {
   event: BattleEventType;
@@ -137,6 +144,41 @@ export class KitBuilder {
     this.declareOption({ id, origin, condition, defaultValue, threshold });
     const value = this.optionValues[id];
     return typeof value === "boolean" ? value : defaultValue;
+  }
+
+  /**
+   * A teammate the user designates ("one designated ally"). `pick` gives
+   * the default among the candidates: the other team members, plus the
+   * kit's own Character with `includeSelf`. Returns the chosen member, or
+   * null when there is no candidate. Find its unit at runtime by `slot`.
+   */
+  ally(
+    id: string,
+    origin: EffectOrigin,
+    pick: (candidates: readonly TeamMemberInfo[]) => TeamMemberInfo | undefined,
+    options: { includeSelf?: boolean } = {}
+  ): TeamMemberInfo | null {
+    const own = this.ownCharacterId();
+    const candidates = this.team.filter(
+      (member) => options.includeSelf || member.characterId !== own
+    );
+    const fallback = pick(candidates) ?? candidates[0] ?? null;
+    this.declareOption({
+      id,
+      origin,
+      condition: "ally",
+      defaultValue: fallback?.characterId ?? null,
+      choices: candidates.map((member) => member.characterId),
+    });
+    const value = this.optionValues[id];
+    return (
+      candidates.find((member) => member.characterId === value) ?? fallback
+    );
+  }
+
+  /** The Character this kit belongs to or is worn by (canonical ID). */
+  protected ownCharacterId(): string | null {
+    return null;
   }
 
   /** A user count (stacks, procs per cycle) clamped to `[0, max]`. */

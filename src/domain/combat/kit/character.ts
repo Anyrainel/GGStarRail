@@ -1,4 +1,5 @@
 import { bonusAbilityTraceId } from "@/domain/account/traces";
+import { canonicalCharacterId } from "@/domain/characterIdentity";
 import { isCombatTypeId } from "@/domain/stats";
 import type { CharacterData } from "../model/data";
 import type { AbilityDef, PolicyView, TurnPolicy, UltimatePolicy } from "./api";
@@ -57,6 +58,10 @@ export class CharacterKitBuilder extends KitBuilder {
     this.combatType = data.combat_type_id;
     this.eidolon = progress.eidolon;
     this.levels = new SkillLevels(data, progress.eidolon, progress.traces);
+  }
+
+  protected override ownCharacterId(): string {
+    return canonicalCharacterId(this.id);
   }
 
   /** `#index` of a skill at its effective level (Eidolon bonuses included). */

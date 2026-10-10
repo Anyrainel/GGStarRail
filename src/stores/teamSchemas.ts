@@ -31,10 +31,11 @@ export const TeamMemberPlanSchema = z
       })
       .strict()
       .optional(),
+    /** Kit options by source; ally choices hold a Character ID. */
     options: z
       .record(
         z.string(),
-        z.record(z.string(), z.union([z.boolean(), z.number()]))
+        z.record(z.string(), z.union([z.boolean(), z.number(), StableIdSchema]))
       )
       .default({}),
     skill: z.enum(["kit", "prefer", "avoid"]).default("kit"),

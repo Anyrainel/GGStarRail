@@ -1058,6 +1058,7 @@ export const messagesEn = {
   "combat.condition.enemyHpAbove": "Enemy HP ≥ {percent}%",
   "combat.condition.selfHpBelow": "HP ≤ {percent}%",
   "combat.condition.enemyDefeated": "Enemy defeated",
+  "combat.condition.ally": "Ally",
   "combat.condition.selfHpAbove": "HP ≥ {percent}%",
   "combat.damageKind.dot": "DoT",
   "combat.damageKind.break": "Weakness Break",

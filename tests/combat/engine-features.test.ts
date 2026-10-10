@@ -713,6 +713,56 @@ describe("combat engine features", () => {
     expect(boosted.length).toBeGreaterThan(0);
   });
 
+  it("designates an ally through a user option", () => {
+    const chosen = (override?: string) => {
+      let picked: string | null = null;
+      const kits = createKitRegistry({
+        characters: [
+          defineCharacter(HUNTER, basic),
+          defineCharacter(SUPPORT, (k) => {
+            basic(k);
+            const ally = k.ally("partner", "talent", (candidates) =>
+              candidates.find((member) => member.characterId === HUNTER)
+            );
+            picked = ally?.characterId ?? null;
+          }),
+          defineCharacter("1005", basic),
+        ],
+        lightCones: [],
+        relicSets: [],
+      });
+      const member = (characterId: string) => ({
+        characterId,
+        level: 80,
+        eidolon: 0,
+        traces: {},
+        lightCone: null,
+        relics: { stats: {}, sets: {} },
+      });
+      const input: TeamInput = {
+        members: [
+          member(HUNTER),
+          {
+            ...member(SUPPORT),
+            ...(override
+              ? { options: { character: { partner: override } } }
+              : {}),
+          },
+          member("1005"),
+        ],
+        scenario: { ...SCENARIO_PRESETS.singleBoss, cycles: 1 },
+      };
+      const { team } = simulateTeam(input, data, kits);
+      const option = team.members[1]?.optionGroups[0]?.options[0];
+      return { picked, choices: option?.choices };
+    };
+    expect(chosen().picked).toBe(HUNTER);
+    expect(chosen().choices).toEqual([HUNTER, "1005"]);
+    expect(chosen("1005").picked).toBe("1005");
+    // A Character no longer on the team falls back to the default.
+    expect(chosen("1309").picked).toBe(HUNTER);
+  });
+
   it("reports ability targets, status removal, and summon lifecycle", () => {
     const seen: string[] = [];
     run(
