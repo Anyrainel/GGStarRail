@@ -116,6 +116,7 @@ function descriptor(record: HitRecord, attacker: CombatUnit): HitDescriptor {
     targetWeaknesses: new Set(record.targetWeaknesses),
     targetStatuses: new Set(record.targetStatuses),
     targetDebuffs: record.targetDebuffs,
+    targetDots: record.targetDots,
     targetBroken: record.targetBroken,
   };
 }
@@ -141,6 +142,7 @@ function groupKey(record: HitRecord): string {
     record.targetWeaknesses.join("+"),
     record.targetStatuses.join("+"),
     record.targetDebuffs,
+    record.targetDots,
     hit.stat ?? "atk",
     hit.critOverride
       ? `${hit.critOverride.critRate}/${hit.critOverride.critDmg}`

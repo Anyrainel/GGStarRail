@@ -166,6 +166,8 @@ export class CombatUnit implements UnitView {
   maxEnergy = 0;
   /** Current HP as a share of Max HP. */
   hp = 1;
+  /** A countdown or marker summon rather than an in-game summon. */
+  countdown = false;
   /** Base aggro (Path-dependent); enemies target allies proportionally. */
   aggro = 100;
   /**
@@ -313,7 +315,9 @@ export class CombatUnit implements UnitView {
 
   hasFamily(family: StatusFamily): boolean {
     for (const status of this.statuses.values()) {
-      if (status.def.family === family && status.stacks > 0) return true;
+      if (status.stacks > 0 && statusFamilies(status.def).includes(family)) {
+        return true;
+      }
     }
     return false;
   }
@@ -324,9 +328,42 @@ export class CombatUnit implements UnitView {
     for (const status of this.statuses.values()) {
       if (status.stacks <= 0) continue;
       entries.add(status.def.id);
-      if (status.def.family) entries.add(`family:${status.def.family}`);
+      for (const family of statusFamilies(status.def)) {
+        entries.add(`family:${family}`);
+      }
     }
     return [...entries].sort();
+  }
+
+  /** DoT statuses on this unit. */
+  dotCount(): number {
+    let count = 0;
+    for (const status of this.statuses.values()) {
+      if (status.def.dot && status.stacks > 0) count += 1;
+    }
+    return count;
+  }
+
+  /**
+   * A stat with the statuses on this unit right now (unfiltered and not
+   * scaling), unlike `panelStat`. Recorded like `panelStat`, so optimizer
+   * timelines re-simulate when it changes.
+   */
+  currentStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number {
+    if (stat === "spd") return this.speed;
+    this.statReads.add(stat);
+    const vector = this.panel.slice();
+    for (const modifier of [
+      ...this.statusModifiers("outgoing"),
+      ...this.conditional,
+    ]) {
+      const { def } = modifier;
+      if (def.filter || def.scaling || INCOMING_STATS.has(def.stat)) continue;
+      combineStat(vector, def.stat, (def.value ?? 0) * modifier.scale);
+    }
+    return stat === "hp" || stat === "atk" || stat === "def"
+      ? finalStat(vector, stat)
+      : readStat(vector, stat);
   }
 
   debuffCount(): number {
@@ -464,4 +501,23 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
       ? this.weakResistance
       : this.resistance;
   }
+}
+
+/**
+ * Families a status belongs to: its declared family, plus `defReduced` for
+ * any status that lowers its holder's DEF.
+ */
+function statusFamilies(def: StatusDef): readonly StatusFamily[] {
+  const families: StatusFamily[] = [];
+  if (def.family) families.push(def.family);
+  if (
+    def.modifiers?.some(
+      (modifier) =>
+        modifier.stat === "defReduction" &&
+        ((modifier.value ?? 0) > 0 || modifier.scaling !== undefined)
+    )
+  ) {
+    families.push("defReduced");
+  }
+  return families;
 }

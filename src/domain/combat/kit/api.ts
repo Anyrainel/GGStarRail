@@ -25,6 +25,8 @@ export interface UnitView {
   readonly maxEnergy: number;
   /** Current HP as a share of Max HP (expected value, never below 1%). */
   readonly hpRatio: number;
+  /** A countdown or marker summon (Concerto, Supreme Stance), not a summon. */
+  readonly countdown: boolean;
   readonly speed: number;
   readonly inActionOrder: boolean;
   /** Remaining action-gauge distance (10000 = a full turn away). */
@@ -40,6 +42,8 @@ export interface UnitView {
   debuffCount(): number;
   /** Steady panel value of a stat (no momentary statuses). */
   panelStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number;
+  /** The stat with the statuses on the unit right now. */
+  currentStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number;
   /** Kit-owned counter (e.g. charges, points) stored on the unit. */
   counter(name: string): number;
   /** Sum of this unit's Certified Banger values (Elation). */
@@ -114,6 +118,8 @@ export interface BattleApi {
   readonly time: number;
   /** The engine's designated target (the middle enemy). */
   readonly mainTarget: EnemyView | null;
+  /** Action value at which the battle ends. */
+  readonly endTime: number;
   /**
    * Probability mass of the current trigger (1 unless random). Energy,
    * Skill Points, counters, action advance, and `deal` scale with it;
@@ -242,6 +248,9 @@ export type BattleEventType =
   | "teamResourceChanged"
   | "skillPointsChanged"
   | "hpChanged"
+  | "energyGained"
+  | "breakDamage"
+  | "weaknessImplanted"
   | "ahaInstantStart"
   | "ahaInstantEnd";
 
@@ -272,6 +281,15 @@ export interface BattleEvent {
   readonly extraTurn?: boolean;
   /** `hpChanged`: why HP changed; `delta` is the share of Max HP. */
   readonly hpCause?: HpCause;
+  /**
+   * `energyGained`: Energy beyond the cap (`delta` is what was gained);
+   * `skillPointsChanged`: Skill Points recovered beyond the cap.
+   */
+  readonly overflow?: number;
+  /** `actionStart`/`actionEnd` of an Ultimate: the Energy it consumed. */
+  readonly energySpent?: number;
+  /** `weaknessImplanted`: the implanted Weakness. */
+  readonly combatType?: CombatType;
   /** `hpChanged`: the unit that consumed, healed, or attacked. */
   readonly source?: UnitView;
   readonly weight: number;
@@ -372,6 +390,8 @@ export interface PolicyView {
   readonly cycle: number;
   readonly time: number;
   readonly mainTarget: EnemyView | null;
+  /** Action value at which the battle ends. */
+  readonly endTime: number;
   /** The unit about to take its turn, when Ultimates are checked before it. */
   readonly upcoming: UnitView | null;
   /** The current turn is an extra turn. */

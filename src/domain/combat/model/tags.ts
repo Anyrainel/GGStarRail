@@ -60,6 +60,8 @@ export const STATUS_FAMILIES = [
   "entanglement",
   "imprisonment",
   "slow",
+  /** Derived: any status that lowers its holder's DEF. */
+  "defReduced",
 ] as const;
 
 export type StatusFamily = (typeof STATUS_FAMILIES)[number];
@@ -85,6 +87,8 @@ export interface HitFilter {
   targetFamilies?: readonly StatusFamily[];
   /** Only against targets with at least this many debuffs. */
   minTargetDebuffs?: number;
+  /** Only against targets with at least this many DoTs. */
+  minTargetDots?: number;
   /** Only against Weakness Broken (true) or unbroken (false) targets. */
   targetBroken?: boolean;
   /** Only hits on these target roles (e.g. the main target of a Blast). */
@@ -102,6 +106,7 @@ export interface HitDescriptor {
   /** Status IDs and `family:<name>` entries present on the target. */
   targetStatuses: ReadonlySet<string>;
   targetDebuffs: number;
+  targetDots: number;
   targetBroken: boolean;
 }
 
@@ -170,6 +175,12 @@ export function filterMatches(
   if (
     filter.minTargetDebuffs !== undefined &&
     hit.targetDebuffs < filter.minTargetDebuffs
+  ) {
+    return false;
+  }
+  if (
+    filter.minTargetDots !== undefined &&
+    hit.targetDots < filter.minTargetDots
   ) {
     return false;
   }

@@ -23,12 +23,7 @@ import {
   type HitDef,
   type StatusDef,
 } from "../kit/model";
-import {
-  type CombatStat,
-  type CombatType,
-  combineStat,
-  readStat,
-} from "../model/stats";
+import type { CombatStat, CombatType } from "../model/stats";
 import type { DamageTag, TargetRole } from "../model/tags";
 import { BREAK_EFFECT_STATUS, breakEffectFor } from "./breakEffects";
 import type { ActionRecord, BreakEffect, CombatLog, HitRecord } from "./log";
@@ -121,6 +116,13 @@ export class Battle {
   readonly retired: CombatUnit[] = [];
   /** Applies team-wide permanent modifiers to newly summoned units. */
   onUnitCreated: ((unit: CombatUnit) => void) | null = null;
+  /** Abilities being executed, innermost last (for `statusApplied`). */
+  private readonly actionStack: {
+    abilityId: string;
+    abilityKind: AbilityKind;
+  }[] = [];
+  /** Energy paid for the Ultimate about to execute. */
+  private pendingEnergySpent = 0;
   /** Aha joins the Action Order once Punchline is first gained. */
   aha: CombatUnit | null = null;
   time = 0;
@@ -138,7 +140,7 @@ export class Battle {
   private upcoming: CombatUnit | null = null;
   /** Enemies hit by the action being executed. */
   private targetsHit: Set<EnemyUnit> | null = null;
-  private readonly endTime: number;
+  readonly endTime: number;
 
   constructor(
     characters: readonly CombatUnit[],
@@ -370,7 +372,13 @@ export class Battle {
     targets.forEach((ally, index) => {
       const share = ((aggro[index] ?? 0) / total) * weight;
       if (share <= 0) return;
-      this.gainEnergy(ally, this.options.enemyAttackEnergy * share, false);
+      this.gainEnergy(
+        ally,
+        this.options.enemyAttackEnergy,
+        false,
+        enemy,
+        share
+      );
       this.emit(
         { type: "hitByEnemy", unit: ally, target: enemy, weight: share },
         null
@@ -461,6 +469,7 @@ export class Battle {
           continue;
         }
         if (ultimate.usable && !ultimate.usable(view)) continue;
+        let energySpent = 0;
         if (ultimate.resource) {
           const { counter, amount } = ultimate.resource;
           if (unit.counter(counter) + 1e-9 < amount) continue;
@@ -469,7 +478,9 @@ export class Battle {
           const cost = ultimate.energyCost ?? unit.maxEnergy;
           if (unit.energy + 1e-9 < cost) continue;
           unit.energy -= cost;
+          energySpent = cost;
         }
+        this.pendingEnergySpent = energySpent;
         this.execute(
           unit,
           ultimate,
@@ -528,6 +539,10 @@ export class Battle {
   ): void {
     const skillPoints =
       ability.skillPoints ?? DEFAULT_SKILL_POINTS[ability.kind] ?? 0;
+    const energySpent =
+      mode === "ultimate" ? this.pendingEnergySpent : undefined;
+    this.pendingEnergySpent = 0;
+    this.actionStack.push({ abilityId: ability.id, abilityKind: ability.kind });
     for (const listener of this.listeners) listener.firedInAction = 0;
     const outerTargets = this.targetsHit;
     const targetsHit = new Set<EnemyUnit>();
@@ -556,6 +571,7 @@ export class Battle {
         abilityTarget,
         tags,
         attack,
+        energySpent,
         weight,
       },
       unit
@@ -578,7 +594,7 @@ export class Battle {
     });
     ability.after?.(context);
     const energy = ability.energy ?? DEFAULT_ENERGY[ability.kind] ?? 0;
-    if (energy > 0) this.gainEnergy(unit, energy * weight, false);
+    if (energy > 0) this.gainEnergy(unit, energy, false, unit, weight);
     this.emit(
       {
         type: "actionEnd",
@@ -589,6 +605,7 @@ export class Battle {
         abilityTarget,
         tags,
         attack,
+        energySpent,
         targetsHit: [...targetsHit],
         weight,
       },
@@ -605,6 +622,7 @@ export class Battle {
       energyAfter: unit.energy,
     });
     this.targetsHit = outerTargets;
+    this.actionStack.pop();
   }
 
   /** Expands one HitDef over its target roles and records each instance. */
@@ -855,14 +873,16 @@ export class Battle {
       ...targetSnapshot(enemy),
     };
     if (enemy.broken) {
+      const tags: DamageTag[] = ["break", "superBreak", ...context.tags];
       this.hits.push({
         ...base,
-        tags: ["break", "superBreak", ...context.tags],
+        tags,
         kind: "superBreak",
         weight: 1,
         targetBroken: true,
         toughnessReduced: reduced,
       });
+      this.emitBreakDamage(breaker, enemy, tags, context);
       return;
     }
     enemy.toughness -= reduced;
@@ -878,6 +898,7 @@ export class Battle {
       targetBroken: false,
       maxToughness: enemy.maxToughness,
     });
+    this.emitBreakDamage(breaker, enemy, ["break"], context);
     const effect = breakEffectFor(combatType);
     enemy.distance += ACTION_GAUGE * 0.25;
     const breakEffectValue = this.momentaryStat(breaker, "breakEffect");
@@ -958,19 +979,28 @@ export class Battle {
 
   /** Stat value from panel and current unfiltered statuses (no scaling). */
   momentaryStat(unit: CombatUnit, stat: CombatStat): number {
-    unit.statReads.add(stat);
-    const vector = unit.panel.slice();
-    for (const modifier of unit.statusModifiers("outgoing")) {
-      if (modifier.def.stat !== stat || modifier.def.filter) continue;
-      if (modifier.def.scaling) continue;
-      combineStat(vector, stat, (modifier.def.value ?? 0) * modifier.scale);
-    }
-    for (const modifier of unit.conditional) {
-      if (modifier.def.stat !== stat || modifier.def.filter) continue;
-      if (modifier.def.scaling) continue;
-      combineStat(vector, stat, (modifier.def.value ?? 0) * modifier.scale);
-    }
-    return readStat(vector, stat);
+    return unit.currentStat(stat);
+  }
+
+  /** Break and Super Break DMG instances (`breakDamage`). */
+  private emitBreakDamage(
+    breaker: CombatUnit,
+    enemy: EnemyUnit,
+    tags: readonly DamageTag[],
+    context: { abilityId: string; abilityKind: AbilityKind; weight: number }
+  ): void {
+    this.emit(
+      {
+        type: "breakDamage",
+        unit: breaker,
+        target: enemy,
+        abilityId: context.abilityId,
+        abilityKind: context.abilityKind,
+        tags,
+        weight: context.weight,
+      },
+      breaker
+    );
   }
 
   // ---------------------------------------------------------------------
@@ -1069,15 +1099,40 @@ export class Battle {
   // ---------------------------------------------------------------------
   // Resources
 
-  /** Returns the Energy lost to the cap (overflow), after ERR. */
-  gainEnergy(unit: CombatUnit, amount: number, fixed: boolean): number {
+  /**
+   * Gives `amount` Energy (before ERR) with probability `weight` and returns
+   * the expected Energy lost to the cap. `energyGained` reports the gain and
+   * overflow per occurrence.
+   */
+  gainEnergy(
+    unit: CombatUnit,
+    amount: number,
+    fixed: boolean,
+    source: CombatUnit,
+    weight = 1
+  ): number {
     // Summons and memosprites have no Energy bar; it goes to the owner.
     const target = unit.kind !== "character" && unit.owner ? unit.owner : unit;
-    if (target.kind !== "character") return 0;
+    if (target.kind !== "character" || weight <= 0) return 0;
     const scale = fixed ? 1 : 1 + this.momentaryStat(target, "energyRegen");
-    const next = target.energy + amount * scale;
+    const before = target.energy;
+    const next = before + amount * scale * weight;
     target.energy = Math.min(target.maxEnergy, next);
-    return Math.max(0, next - target.maxEnergy);
+    const overflow = Math.max(0, next - target.maxEnergy);
+    if (amount > 0) {
+      this.emit(
+        {
+          type: "energyGained",
+          unit: target,
+          source,
+          delta: (target.energy - before) / weight,
+          overflow: overflow / weight,
+          weight,
+        },
+        source
+      );
+    }
+    return overflow;
   }
 
   /** Clamp Skill Points to [0, cap] and report the actual change. */
@@ -1088,12 +1143,14 @@ export class Battle {
       Math.max(0, this.skillPoints + delta)
     );
     const change = this.skillPoints - before;
-    if (Math.abs(change) < 1e-12) return;
+    const overflow = Math.max(0, before + delta - this.maxSkillPoints);
+    if (Math.abs(change) < 1e-12 && overflow < 1e-12) return;
     this.emit(
       {
         type: "skillPointsChanged",
         unit: actor ?? this.allies[0] ?? this.enemies[0]!,
         delta: change,
+        overflow,
         weight: 1,
       },
       actor
@@ -1151,6 +1208,7 @@ export class Battle {
         unit: applier,
         target: holder,
         status: def,
+        ...this.actionStack.at(-1),
         weight: 1,
       },
       applier
@@ -1258,6 +1316,7 @@ export class Battle {
       cycle: this.cycle,
       time: this.time,
       mainTarget: this.mainTarget,
+      endTime: this.endTime,
       upcoming: this.upcoming,
       extraTurn: this.currentActor === unit && this.currentExtraTurn,
       usedThisTurn: this.currentActor === unit ? [...this.usedThisTurn] : [],
@@ -1315,6 +1374,7 @@ export class Battle {
       get mainTarget() {
         return battle.mainTarget;
       },
+      endTime: battle.endTime,
       weight,
       applyStatus: (target, status, options = {}) =>
         battle.applyStatusInternal(asUnit(target), status, self, options),
@@ -1364,8 +1424,10 @@ export class Battle {
       gainEnergy: (unit, amount, options) =>
         battle.gainEnergy(
           asUnit(unit),
-          amount * weight,
-          options?.fixed ?? false
+          amount,
+          options?.fixed ?? false,
+          self,
+          weight
         ),
       setEnergy: (unit, amount) => {
         asUnit(unit).energy = Math.min(asUnit(unit).maxEnergy, amount);
@@ -1464,8 +1526,21 @@ export class Battle {
         const native =
           enemy.weaknesses.has(combatType) && !enemy.implants.has(combatType);
         if (native) return;
+        const added = !enemy.weaknesses.has(combatType);
         enemy.weaknesses.add(combatType);
         enemy.implants.set(combatType, options.turns ?? null);
+        if (added) {
+          battle.emit(
+            {
+              type: "weaknessImplanted",
+              unit: self,
+              target: enemy,
+              combatType,
+              weight: 1,
+            },
+            self
+          );
+        }
       },
       removeWeakness: (target, combatType) => {
         const enemy = target as EnemyUnit;
@@ -1619,5 +1694,6 @@ function targetSnapshot(enemy: EnemyUnit) {
     targetWeaknesses: [...enemy.weaknesses],
     targetStatuses: enemy.statusSignature(),
     targetDebuffs: enemy.debuffCount(),
+    targetDots: enemy.dotCount(),
   };
 }

@@ -188,6 +188,11 @@ export interface MemospriteDef {
 export interface SummonDef {
   id: string;
   speed: number;
+  /**
+   * A countdown or marker (Concerto, Supreme Stance, Complete Combustion)
+   * rather than an in-game summon (Lightning-Lord, Numby, Fuyuan).
+   */
+  countdown?: boolean;
   /** Runs on the summon's turn; it acts with its owner's stats. */
   abilities: readonly AbilityDef[];
   policy: TurnPolicy;

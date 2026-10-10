@@ -50,6 +50,7 @@ export interface HitRecord {
   /** Status IDs and `family:<name>` entries (see `HitDescriptor`). */
   readonly targetStatuses: readonly string[];
   readonly targetDebuffs: number;
+  readonly targetDots: number;
   /** Break and Super Break inputs. */
   readonly toughnessReduced?: number;
   readonly maxToughness?: number;

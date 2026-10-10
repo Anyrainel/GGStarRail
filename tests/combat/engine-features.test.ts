@@ -1,5 +1,9 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import type { BattleApi, BattleEvent } from "@/domain/combat/kit/api";
+import {
+  type BattleApi,
+  type BattleEvent,
+  isEnemy,
+} from "@/domain/combat/kit/api";
 import {
   type CharacterKitBuilder,
   defineCharacter,
@@ -614,6 +618,99 @@ describe("combat engine features", () => {
     expect(changes.some((change) => change.hp === 0.01)).toBe(true);
     // A heal at full HP is still reported ("after healing an ally").
     expect(changes[0]).toEqual({ cause: "heal", delta: 0, hp: 1 });
+  });
+
+  it("reports Energy, Skill Point overflow, Break DMG, and implants", () => {
+    const seen: string[] = [];
+    let currentAtk = 0;
+    let panelAtk = 0;
+    let endTime = 0;
+    const { result } = run(
+      (k) => {
+        const sunder = k.status({
+          id: "sunder",
+          origin: "skill",
+          debuff: true,
+          modifiers: [{ stat: "defReduction", value: 0.1 }],
+        });
+        const rot = k.status({
+          id: "rot",
+          origin: "skill",
+          debuff: true,
+          dot: { hit: { shape: "single", main: 0.1, kind: "dot" } },
+        });
+        const might = k.status({
+          id: "might",
+          origin: "talent",
+          modifiers: [{ stat: "atkPct", value: 0.5 }],
+        });
+        k.stat("talent", {
+          stat: "critDmg",
+          value: 1,
+          filter: { targetFamilies: ["defReduced"], minTargetDots: 1 },
+        });
+        k.summon({
+          id: "clock",
+          speed: 100,
+          countdown: true,
+          abilities: [],
+          policy: () => "none",
+        });
+        k.ability({
+          id: "basic",
+          kind: "basic",
+          hits: [{ shape: "single", main: 1, toughness: { main: 200 } }],
+          after: (ctx) => {
+            if (ctx.target && isEnemy(ctx.target)) {
+              ctx.applyStatus(ctx.target, sunder);
+              ctx.applyStatus(ctx.target, rot);
+              ctx.implantWeakness(ctx.target, "Imaginary");
+            }
+            ctx.gainSkillPoints(5);
+            ctx.gainEnergy(ctx.self, 500);
+            ctx.applyStatus(ctx.self, might);
+            currentAtk = ctx.self.currentStat("atk");
+            panelAtk = ctx.self.panelStat("atk");
+            endTime = ctx.endTime;
+            const clock = ctx.summon(ctx.self, "clock");
+            if (clock.countdown) seen.push("countdown");
+          },
+        });
+        k.on("statusApplied", "talent", { status: sunder }, (_ctx, event) => {
+          seen.push(`applied-by:${event.abilityId}`);
+        });
+        k.on("energyGained", "talent", {}, (_ctx, event) => {
+          if ((event.overflow ?? 0) > 0) seen.push("energy-overflow");
+        });
+        k.on("skillPointsChanged", "talent", {}, (_ctx, event) => {
+          if ((event.overflow ?? 0) > 0) seen.push("sp-overflow");
+        });
+        k.on("breakDamage", "talent", {}, () => seen.push("break"));
+        k.on("weaknessImplanted", "talent", {}, (_ctx, event) => {
+          seen.push(`implanted:${event.combatType}`);
+        });
+        k.policy({ turn: () => "basic", ultimate: () => false });
+      },
+      { cycles: 2, enemies: 1 }
+    );
+    for (const entry of [
+      "applied-by:basic",
+      "energy-overflow",
+      "sp-overflow",
+      "break",
+      "implanted:Imaginary",
+      "countdown",
+    ]) {
+      expect(seen).toContain(entry);
+    }
+    // The +50% ATK status counts now but not in the steady panel.
+    expect(currentAtk).toBeGreaterThan(panelAtk * 1.3);
+    expect(endTime).toBeGreaterThan(0);
+    // The second Basic ATK sees the DEF reduction and the DoT it applied.
+    const boosted = result.model.groups.filter((group) =>
+      group.constant.some((entry) => entry.stat === "critDmg")
+    );
+    expect(boosted.length).toBeGreaterThan(0);
   });
 
   it("reports ability targets, status removal, and summon lifecycle", () => {

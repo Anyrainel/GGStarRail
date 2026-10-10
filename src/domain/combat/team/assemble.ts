@@ -728,6 +728,7 @@ function registerServants(
         unitOwner.pathId
       );
       unit.fixedSpeed = summon.speed;
+      unit.countdown = summon.countdown ?? false;
       unit.behaviour = {
         abilities: new Map(
           summon.abilities.map((ability) => [ability.id, ability])

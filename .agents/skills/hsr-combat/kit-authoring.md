@@ -50,7 +50,7 @@ Characters (`CharacterKitBuilder`) add:
 | `k.rankParam(e, n)` | `#n` of Eidolon `e` |
 | `k.e(n)` / `k.a(n)` | Eidolon reached / Bonus Ability unlocked |
 | `k.ability(def)` | an action (see below) |
-| `k.memosprite(def)` / `k.summon(def)` | memosprite / stat-less countdown units |
+| `k.memosprite(def)` / `k.summon(def)` | memosprite / stat-less summon or countdown (`countdown: true` for markers such as Concerto, so "while a summon is on the field" skips it) |
 | `k.policy({ turn, ultimate })` | play pattern overrides |
 | `k.startingEnergy(fraction)` | default 0.5 |
 
@@ -69,7 +69,8 @@ filter: {
   tags?, combatTypes?, attackerKinds?,
   // Target state when the hit landed:
   targetWeakness?, targetStatuses?: ["status-id"], targetFamilies?: ["burn"],
-  minTargetDebuffs?, targetBroken?, targetRoles?: ["main" | "adjacent" | "each"],
+  minTargetDebuffs?, minTargetDots?, targetBroken?,
+  targetRoles?: ["main" | "adjacent" | "each"],
 }
 scaling: { source: "holder" | "applier", stat, ratio, threshold?, step?, cap?, atLeast? }
 ```
@@ -79,7 +80,10 @@ zones are listed in `translator-rules.md` U2.
 
 "Deals X% more DMG to Burned enemies" is `filter: { targetFamilies: ["burn"] }`;
 "to enemies with Y" is `targetStatuses: [y.id]`; "to the target" (not the
-adjacent ones) is `targetRoles: ["main"]`. Do not apply and remove self
+adjacent ones) is `targetRoles: ["main"]`; "to enemies in a DEF reduction
+state" is `targetFamilies: ["defReduced"]`, which the engine derives from any
+status lowering DEF; "for each DoT on the target" is `minTargetDots` tiers. Do
+not apply and remove self
 statuses around hits to emulate these. Target filters see whether a status is
 present, not its landing chance.
 
@@ -186,7 +190,9 @@ ctx.teamResource(name) / addTeamResource(name, d, max?)    // "punchline"
 ctx.summon(owner, servantId) / findSummon(owner, servantId) / dismiss(unit)
 ctx.grantCertifiedBanger(unit, value, turns?) / unit.certifiedBanger()
 ctx.ahaExtraTurn(punchline)                                 // "Aha takes an extra turn" (fixed Punchline)
-unit.pathId / unit.slot / unit.actionGauge / unit.speed
+unit.pathId / unit.slot / unit.actionGauge / unit.speed / unit.countdown
+unit.panelStat(stat) / unit.currentStat(stat)              // steady panel / with current statuses
+ctx.endTime / view.endTime                                 // action value when the battle ends
 isEnemy(view)                                               // narrow event targets
 ```
 
@@ -210,16 +216,19 @@ isEnemy(view)                                               // narrow event targ
 |---|---|---|
 | `battleStart` | first ally | use `subject: "any"` |
 | `turnStart` / `turnEnd` | acting unit | extra turns included |
-| `actionStart` / `actionEnd` | acting unit | `abilityId`, `abilityKind`, `abilityTarget`, `tags`, `target`, `attack`; `actionEnd` adds `targetsHit` |
+| `actionStart` / `actionEnd` | acting unit | `abilityId`, `abilityKind`, `abilityTarget`, `tags`, `target`, `attack`, `energySpent` (Ultimates); `actionEnd` adds `targetsHit` |
 | `hit` | attacker | once per damage instance and target |
 | `weaknessBreak` | breaker | `target` is the enemy |
 | `enemyAttack` / `hitByEnemy` | enemy / ally hit | `weight` is the aggro share |
-| `statusApplied` | applier | `target`, `status` |
+| `statusApplied` | applier | `target`, `status`; `abilityId`/`abilityKind` when applied during an ability |
 | `statusRemoved` | applier | `target`, `status`; expiry, removal, or no stacks left |
 | `summoned` / `departed` | the memosprite or summon | use `subject: "memosprite"` or `"selfOrMemosprite"` for the owner's |
 | `dotTick` | enemy | `status`; `detonation` tells detonations from turn-start ticks |
 | `teamResourceChanged` | changer | `resource`, `delta` |
-| `skillPointsChanged` | unit that caused it | `delta` (+ gained, − spent), after the cap |
+| `skillPointsChanged` | unit that caused it | `delta` (+ gained, − spent), after the cap; `overflow` for gains beyond it |
+| `energyGained` | Character receiving it | `delta` gained and `overflow` per occurrence, `source` (ally, enemy, or self) |
+| `breakDamage` | breaker | Break and Super Break DMG (`tags` tell them apart), `target` |
+| `weaknessImplanted` | implanter | `target`, `combatType`; only when the Weakness is new |
 | `hpChanged` | unit whose HP changed | `delta` (share of Max HP per occurrence; `weight` is its probability), `hpCause` (`consume`, `heal`, `enemy`), `source`; heals fire even at full HP |
 | `ahaInstantStart` / `ahaInstantEnd` | Aha | Elation |
 
@@ -261,7 +270,7 @@ k.policy({
 ```
 
 `view` gives you `self`, `allies`, `enemies`, `mainTarget`, `skillPoints`,
-`maxSkillPoints`, `cycle`, `time`, `upcoming` (the unit about to act when
+`maxSkillPoints`, `cycle`, `time`, `endTime`, `upcoming` (the unit about to act when
 Ultimates are checked before a turn), `extraTurn`, `usedThisTurn` (abilities
 already used in a turn that did not end), and `teamResource(name)`.
 
@@ -273,8 +282,11 @@ already used in a turn that did not end), and `teamResource(name)`.
 ### What timelines may depend on
 
 The optimizer caches timelines and re-scores Relics without re-simulating.
-Reading any stat with `unit.panelStat(...)` in a policy or handler is fine:
-the engine records the read and the optimizer keys its cache on that stat.
+Reading any stat with `unit.panelStat(...)` or `unit.currentStat(...)` in a
+policy or handler is fine: the engine records the read and the optimizer keys
+its cache on that stat. Use `currentStat` when the text means the stat at
+that moment ("based on the ATK when used"), `panelStat` for steady
+thresholds.
 Do not read stats any other way (e.g. by caching a panel value in a closure
 at build time).
 
