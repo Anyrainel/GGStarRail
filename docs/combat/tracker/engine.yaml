@@ -830,3 +830,57 @@
     Aha's SPD already reads SPD statuses on Aha. Expose Aha (for example
     `ctx.aha`) so kits can apply them. Affects Aventurine • Waveflair's A4
     (1513, aventurine-waveflair-aha-spd).
+- id: engine-chained-scaling
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Scaling inputs are read before any scaling modifier applies, so a
+    conversion cannot feed another conversion or an `atLeast` threshold.
+    Firefly's A6 Break Effect (from ATK above 1800) does not count toward A4's
+    200%/360% thresholds or the Enhanced Skill's Break Effect term, although
+    all three read final Break Effect in game.
+  detail: >
+    Needs ordered conversions (a modifier marked as reading the results of
+    earlier scaling modifiers, or a second evaluation pass). Affects Firefly
+    (1310, firefly-a6-chained-be).
+- id: engine-ally-killing-blow
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The HP model keeps every ally at 1% HP or more, so "when receiving a
+    killing blow" and "when knocked down" effects never trigger: Gepard's
+    Talent revive (with A4's Energy and E6's immediate action), Mydei's
+    Vendetta exit (and A2's three saves), and Khaslana's early final hit.
+  detail: >
+    Needs a rule for when an expected-value HP share counts as a killing blow
+    (for example an enemy hit whose loss exceeds the HP left, weighted by its
+    probability) and an event for it, which kits answer instead of being
+    knocked down. Affects Gepard (1104, gepard-talent-killing-blow), Mydei
+    (1404, mydei-hp-model, mydei-a2-killing-blow), and Phainon (1408,
+    phainon-territory-timeline).
+- id: engine-implant-weakness-res
+  entity: engine
+  rule: U14
+  status: open
+  category: verify
+  summary: >
+    An implanted Weakness moves the enemy to the weak-type RES, and damage
+    evaluation reads RES from the enemy's Weakness set after the battle
+    (evaluate/damage.ts resistanceAgainst) rather than the Weaknesses captured
+    with each hit, so expired timed implants lose the lower RES for every hit
+    and permanent ones give it to hits made before the implant.
+  detail: >
+    To verify: whether an implant lowers RES at all. Silver Wolf's Skill
+    lowers the implanted type's RES in a separate clause, which suggests the
+    implant itself does not. Either way, RES should come from the hit's
+    recorded targetWeaknesses. The pinned AvatarStatusConfig also lists
+    Firefly's, Boothill's, and Phainon's implants as Debuff statuses, so they
+    should count for per-debuff effects while present. Affects Firefly (1310,
+    firefly-weakness-implant), Archer (1015, archer-e2-weakness-duration),
+    Boothill (1315, boothill-weakness-duration), Phainon (1408,
+    phainon-territory-weakness), and the other implanting kits (Silver Wolf
+    1006, Silver Wolf LV.999 1506, The Dahlia 1321, Anaxa 1405).

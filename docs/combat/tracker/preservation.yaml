@@ -8,37 +8,54 @@
     The Bondmate is picked by heuristic (damage Paths, then Nihility, then the
     highest ATK, never Dan Heng unless alone) through a Skill turn choice; the
     player's actual choice cannot be expressed (see engine-ally-option-vocabulary).
-  detail: ""
+  detail: >
+    Blocked on engine-ally-option-vocabulary (an option naming a teammate).
+    The Skill already aims at the chosen ally through a turn choice.
 - id: dan-heng-pt-e6-field-effect
   entity: "1414"
   rule: U3
-  status: open
-  category: verify
+  status: actionable
+  category: bug
   summary: >
     E6 "DMG taken +20% while the Bondmate is on the field" is a non-debuff
     enemy status applied when the Bondmate is designated; confirm it does not
     count as a debuff for per-debuff effects.
-  detail: ""
+  detail: >
+    Settled: AvatarStatusConfig (pinned) lists E6's DMG taken increase
+    (MAvatar_DanHengPT_00_Rank06_AllDamageTypeTakenRatio) as StatusType
+    Debuff (not dispellable). Give the enemy status `debuff: true` so it
+    counts for per-debuff effects; keep it tied to the Bondmate being on the
+    field.
 - id: dan-heng-pt-souldragon-toughness
   entity: "1414"
   rule: U1
-  status: open
+  status: wont-do
   category: verify
   summary: >
     The enhanced Souldragon Follow-Up ATK uses the Talent row's facts (20
     Toughness per enemy) since it has no skill row of its own; its Additional
     DMG parts reduce no Toughness.
-  detail: ""
+  detail: >
+    Settled, kit right: in the pinned TurnBasedGameData ability config
+    (Config/ConfigAbility/Avatar/Avatar_DanHengPT_00_Ability.json) the
+    enhanced Souldragon Follow-Up uses DanHengPT_Stance_All, set from the
+    Talent's AoE stance slot (20 per enemy), in 4 hits of 25%; its
+    Additional DMG parts have no StanceValue. fribbels' 10 is wrong.
 - id: dan-heng-pt-e2-scope
   entity: "1414"
   rule: U2
-  status: open
+  status: wont-do
   category: verify
   summary: >
     E2 doubles every Additional DMG instance the Bondmate deals during an
     enhanced Souldragon action, including A6's highest-HP instance; confirm A6
     is in scope.
-  detail: "Implemented by scaling the multipliers (equivalent to dmgMultiplier 1 on those instances)."
+  detail: >
+    Settled by ZH: 强化【龙灵】行动时，【同袍】造成的附加伤害为原伤害的200% covers every Additional
+    DMG the Bondmate deals during the enhanced Souldragon action, and A6's
+    highest-HP instance is dealt in that action ("When the enhanced
+    Souldragon takes action, additionally deals 1 instance of Additional
+    DMG").
 - id: trailblazer-preservation-a6-shield
   entity: "8003"
   rule: U12
@@ -48,7 +65,10 @@
     A6 checks a marker for the Talent's own Shield (2 turns, renewed by every
     Basic ATK, Skill, and Ultimate); Shields from teammates or the Technique,
     and Shields broken by enemy hits, are not seen.
-  detail: ""
+  detail: >
+    Blocked on engine-shield-state. Once a shared Shielded state exists, A6
+    checks it at turn start (any source, removed when broken), replacing the
+    Talent-shield marker.
 - id: trailblazer-preservation-taunt-aggro
   entity: "8003"
   rule: U12
@@ -58,17 +78,23 @@
     The Skill's Taunt is applied as a debuff but does not redirect enemy
     attacks, so Magma Will from being hit (and hit Energy) uses the base
     Preservation aggro share (see engine-aggro-modifiers).
-  detail: ""
+  detail: >
+    Blocked on engine-aggro-modifiers (Taunt). Once Taunt exists, the
+    Skill's Taunt (base chance #2 of 800302, 1 turn) sends enemy attacks to
+    the Trailblazer, and Magma Will per hit and hit Energy follow.
 - id: trailblazer-preservation-e1-instance
   entity: "8003"
   rule: C2
-  status: open
+  status: wont-do
   category: verify
   summary: >
     E1's DEF-scaled Fire DMG is a silent second scaling part of the Basic ATK /
     Enhanced Basic ATK instance on the main target; confirm it is not a
     separate damage instance.
-  detail: ""
+  detail: >
+    Settled by fribbels TrailblazerPreservation.ts: E1 is defScaling on the
+    Basic ATK / Enhanced Basic ATK hit itself (0.25/0.50), one instance with
+    two scaling terms, as the kit's silent second part.
 - id: march-7th-taunt-counters
   entity: "1001"
   rule: U12
@@ -79,17 +105,27 @@
     fire on the shielded ally's base aggro share. The Skill shields March 7th
     herself (highest base aggro), and E2's lowest-HP battle-start Shield (all
     allies at full HP) is assumed to land on her.
-  detail: ""
+  detail: >
+    Blocked on engine-aggro-modifiers (Taunt). E2's battle-start Shield on
+    the lowest-HP ally: every ally starts at full HP in the HP model too, so
+    placing it on March stays a choice.
 - id: fu-xuan-e6-hp-tally
   entity: "1208"
   rule: U12
-  status: open
+  status: actionable
   category: approximation
   summary: >
     E6's HP-loss tally is the toggle e6-hp-loss-tally-capped (default on: the
     tally is at its 120% Max HP cap at every Ultimate, +240% Max HP per
     target); HP loss is not simulated.
-  detail: ""
+  detail: >
+    With the HP model: while Matrix of Prescience is active, sum the HP all
+    allies lose from hpChanged (delta < 0, any cause) as −delta x weight x
+    that ally's panelStat("hp"), divided by Fu Xuan's Max HP and capped at
+    #2 of E6; the Ultimate adds #1 of E6 x tally to its HP multiplier
+    (functional `hits`) and resets the tally. Drop the
+    `e6-hp-loss-tally-capped` toggle. Matrix's DMG redistribution to Fu Xuan
+    is not modelled, so losses stay on the allies hit.
 - id: gepard-talent-killing-blow
   entity: "1104"
   rule: U12
@@ -98,4 +134,8 @@
   summary: >
     The Talent's revive drives A4 (Energy to 100%) and E6 (immediate action),
     but killing blows are not simulated (engine-hp-model), so neither fires.
-  detail: ""
+  detail: >
+    Blocked on engine-ally-killing-blow. The HP model keeps allies at 1% HP
+    or more, so a killing blow never happens. Once it can: the Talent
+    revives once (restoring its share of Max HP), A4 regenerates Energy to
+    100%, and E6 grants immediate action.
