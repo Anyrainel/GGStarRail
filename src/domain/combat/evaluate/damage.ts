@@ -15,6 +15,7 @@ import {
 } from "../model/formulas";
 import {
   type CombatStat,
+  type CombatType,
   combineStat,
   finalStat,
   INCOMING_STATS,
@@ -39,8 +40,14 @@ export interface DamageZones {
   special: number;
 }
 
+/**
+ * Equipment-dependent inputs per unit. The optimizer swaps these for one
+ * unit while every other part of a compiled log stays fixed.
+ */
 export interface UnitPanels {
   panel(unitId: string): StatVector;
+  /** Relic Elemental DMG Boost of a unit for a Combat Type. */
+  elemental?(unitId: string, combatType: CombatType): number;
 }
 
 interface ScalingModifier {
@@ -253,6 +260,18 @@ export class DamageModel {
     return effectHitChance(base, effectHitRate, target.effectResistance);
   }
 
+  private elementalOf(
+    panels: UnitPanels,
+    unitId: string,
+    combatType: CombatType
+  ): number {
+    const unit = this.unit(unitId);
+    const owner = unit.kind === "memosprite" && unit.owner ? unit.owner : unit;
+    return panels.elemental
+      ? panels.elemental(owner.id, combatType)
+      : (owner.relicElemental[combatType] ?? 0);
+  }
+
   /** Memosprites read their owner's panel; equipment lives on the owner. */
   private panelOf(panels: UnitPanels, unitId: string): StatVector {
     const unit = this.unit(unitId);
@@ -365,7 +384,10 @@ export class DamageModel {
           special = 1 + (5 * punchline) / (punchline + 240);
           dmgBoost = 1;
         } else {
-          dmgBoost = 1 + readStat(stats, "dmgBoost");
+          dmgBoost =
+            1 +
+            readStat(stats, "dmgBoost") +
+            this.elementalOf(panels, group.statUnitId, record.combatType);
         }
         if (record.kind !== "dot") {
           const override = record.hit.critOverride;
@@ -443,9 +465,12 @@ export class DamageModel {
     return damage;
   }
 
-  total(panels: UnitPanels): number {
+  total(panels: UnitPanels, include?: (group: HitGroup) => boolean): number {
     let total = 0;
-    for (const group of this.groups) total += this.evaluateGroup(group, panels);
+    for (const group of this.groups) {
+      if (include && !include(group)) continue;
+      total += this.evaluateGroup(group, panels);
+    }
     return total;
   }
 }
@@ -481,11 +506,14 @@ function scaledValue(input: number, scaling: StatScaling): number {
 
 /** Default panels: each unit's own assembled panel. */
 export function unitPanels(units: ReadonlyMap<string, CombatUnit>): UnitPanels {
+  const unit = (unitId: string) => {
+    const found = units.get(unitId);
+    if (!found) throw new Error(`Unknown combat unit ${unitId}`);
+    return found;
+  };
   return {
-    panel(unitId: string) {
-      const unit = units.get(unitId);
-      if (!unit) throw new Error(`Unknown combat unit ${unitId}`);
-      return unit.panel;
-    },
+    panel: (unitId) => unit(unitId).panel,
+    elemental: (unitId, combatType) =>
+      unit(unitId).relicElemental[combatType] ?? 0,
   };
 }

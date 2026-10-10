@@ -149,6 +149,11 @@ export class CombatUnit implements UnitView {
   maxEnergy = 0;
   /** Base aggro (Path-dependent); enemies target allies proportionally. */
   aggro = 100;
+  /**
+   * Elemental DMG Boost from Relics, kept apart from the panel because it
+   * only reaches hits of its Combat Type and varies with equipment.
+   */
+  relicElemental: Partial<Record<CombatType, number>> = {};
   /** Remaining action-gauge distance; time to act = distance / speed. */
   distance = ACTION_GAUGE;
   inActionOrder = true;

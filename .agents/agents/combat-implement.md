@@ -39,8 +39,16 @@ You are not alone in the codebase:
    - a turn policy that reflects how the Character is played.
 4. Add a comment only where the translation is not obvious from the text
    (approximations, EN/ZH conflicts, assumptions). Do not restate the code.
-5. Run `npx tsc -p tsconfig.app.json --noEmit` and
-   `npx vitest run tests/combat`. Fix every failure in your files.
+5. Check your kits in isolation:
+   - `KIT_FILES=<path>[,<path>...] npx vitest run tests/combat/kit-check.test.ts --silent=false`.
+     It runs each kit at E0/E6 (or S1/S5, or the set tiers) in a team with
+     Robin and Kafka, then prints the timeline and an ability breakdown.
+     Read them: abilities should fire at sensible times, and no damaging
+     ability should be missing from the breakdown.
+   - `npx tsc -p tsconfig.app.json --noEmit` and fix errors in your own files.
+     Other agents' files may be mid-edit; ignore their errors.
+   - Finally run `npx vitest run tests/combat`. If it fails only because of
+     another agent's file, say so in your report.
 6. For anything you could not translate exactly, append an item to the right
    tracker file (`tracking.md`): `approximation`, `engine-gap`, `needs-data`,
    or `verify`, with the rule ID. Do not file items for things the rules already

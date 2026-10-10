@@ -1,1 +1,484 @@
 # Combat translation tracker: hunt. Schema: .agents/skills/hsr-combat/tracking.md
+- id: yanqing-sss-removal
+  entity: "1209"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Soulsteel Sync is removed by enemy hits with Yanqing's base Rogue aggro
+    share (expected value held in fractional stacks); kits cannot lower aggro
+    while it is active, and shields that absorb the hit (which keep it in game)
+    are not modeled, so it falls off more often than in shielded teams.
+  detail: "Needs a kit-settable aggro modifier and shield absorption on hitByEnemy."
+- id: yanqing-freeze-status
+  entity: "1209"
+  rule: U4
+  status: open
+  category: engine-gap
+  summary: >
+    Talent Freeze is a DotDef status: its Ice Additional DMG tick is tagged
+    `dot` (DoT boosts apply, Kafka-style detonation triggers it), and the
+    Frozen enemy still takes its turn because only Break Frozen skips turns.
+  detail: "Needs non-DoT periodic damage on statuses and a kit-applied crowd-control flag."
+- id: yanqing-a6-crit-trigger
+  entity: "1209"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    A6 Gentle Blade (SPD on CRIT Hit) is applied after every attack because
+    CRIT is evaluated in expectation and the engine has no CRIT event.
+  detail: ""
+- id: yanqing-e1-freeze-chance
+  entity: "1209"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    E1 Additional DMG on Frozen enemies scales by the expected presence of
+    Yanqing's own Freeze (Follow-Up chance) but ignores the debuff's landing
+    chance (65% base vs Effect RES), overstating it; Break Frozen counts fully.
+  detail: "The kit cannot read a status's landing probability."
+- id: yanqing-sss-timing
+  entity: "1209"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    Soulsteel Sync is applied after the Skill DMG (text order), so the Skill
+    hit only benefits from a still-active previous one; the Talent Follow-Up
+    is gated on Soulsteel Sync. Confirm both in game.
+  detail: ""
+- id: yanqing-e6-kill-toggle
+  entity: "1209"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    E6 (extend buffs on kill) is a toggle, default off; when on, Soulsteel
+    Sync and the Ultimate buffs simply last 1 extra turn.
+  detail: "Kills are not simulated (engine-kill-triggers)."
+- id: archer-facts-missing
+  entity: "1015"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    TurnBasedGameData has no AvatarSkillConfig rows for Archer; the kit uses
+    Toughness 10/20/30/10 and Energy 20/30/5/5 for Basic/Skill/Ultimate/Talent
+    Follow-Up.
+  detail: ""
+- id: archer-a2-max-sp
+  entity: "1015"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    A2 (max Skill Points +2 while Archer is on the field) is not modeled:
+    max Skill Points is a fixed battle option (5), which shortens Circuit
+    Connection chains and caps the A6 threshold checks.
+  detail: "Needs a kit-adjustable Skill Point cap."
+- id: archer-a6-sp-gain
+  entity: "1015"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    A6 triggers "after allies gain a Skill Point"; there is no Skill Point
+    event, so the kit compares Skill Points around every ally action, missing
+    gains that are offset by a spend in the same window.
+  detail: "Needs a skillPointsChanged event with delta."
+- id: archer-e2-weakness-duration
+  entity: "1015"
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    E2 implants Quantum Weakness for 2 turns, but implantWeakness has no
+    duration or removal, so the Weakness stays for the rest of the battle.
+  detail: ""
+- id: archer-chain-queue
+  entity: "1015"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    Circuit Connection Skills are chained with queueAction, so Ultimates cannot
+    be inserted between them and Follow-Ups triggered by one Skill resolve
+    after the next chained Skill.
+  detail: "AbilityDef.endsTurn exists but the engine ignores it."
+- id: archer-ctx-sp-snapshot
+  entity: "1015"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Engine-wide: ActionContext spreads BattleApi, so ctx.skillPoints and
+    ctx.cycle inside ability before/after are frozen at action start and miss
+    gains made during the action; Archer decides his chain in an actionEnd
+    listener instead.
+  detail: "battle.ts actionContext() copies the getters by spreading this.api(...)."
+- id: ashveil-kill-effects
+  entity: "1504"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Kill-dependent parts are not modeled: the enhanced Follow-Up continuing on
+    a new Bait after a killing blow, A2 Gluttony per killing blow, and a new
+    Bait when the current one dies.
+  detail: "Kills are not simulated (engine-kill-triggers)."
+- id: ashveil-initial-bait
+  entity: "1504"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Without enemy HP, the first enemy stands in for the lowest-HP enemy that
+    becomes the Bait at battle start; Skill/Ultimate then move it to the
+    designated target.
+  detail: ""
+- id: ashveil-talent-energy
+  entity: "1504"
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    The kit grants the fixed 8 Energy every time the Bait is attacked by an
+    ally, even with no Charge left for the Follow-Up ATK; the text order is
+    ambiguous.
+  detail: ""
+- id: ashveil-gluttony-details
+  entity: "1504"
+  rule: U6
+  status: open
+  category: verify
+  summary: >
+    Assumed: the enhanced Follow-Up also grants the Talent's 2 Gluttony, the
+    E2 35% refund rounds down, and E6 counts Gluttony actually gained (after
+    the cap, refunds included).
+  detail: ""
+- id: ashveil-extra-instance-toughness
+  entity: "1504"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    Toughness reduction of the enhanced Follow-Up's extra 200% instances (per
+    4 Gluttony) is not in the facts; the kit gives them none.
+  detail: ""
+- id: ashveil-weighted-status
+  entity: "1504"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Engine-wide: applyStatus and consumeStacks ignore the action weight, so
+    kits scale stacks by ctx.weight by hand (Ashveil Gluttony from weighted
+    ally triggers, Yanqing Freeze from his chance-based Follow-Up).
+  detail: ""
+- id: dr-ratio-folly-debuff
+  entity: "1305"
+  rule: U6
+  status: open
+  category: verify
+  summary: >
+    Wiseman's Folly is modeled as a debuff (it counts toward Summation, the
+    Talent chance, A6, and E2) and is removed once its trigger count is used
+    up. Confirm both in game.
+  detail: ""
+- id: dr-ratio-talent-chance-order
+  entity: "1305"
+  rule: U9
+  status: open
+  category: verify
+  summary: >
+    The Talent's Follow-Up chance counts debuffs after the Skill hit,
+    including the A4 Effect RES debuff from that Skill. Summation counts the
+    debuffs present when the Skill is used. Confirm the order.
+  detail: ""
+- id: dr-ratio-effect-res-debuff
+  entity: "1305"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    A4 lowers enemy Effect RES by 10%, but landing chances read the
+    scenario's enemy Effect RES. Later debuffs, such as Kafka's Shock, ignore
+    the reduction. The kit still carries the `effectRes` modifier.
+  detail: "Needs enemy Effect RES from incoming status modifiers in landingChance."
+- id: boothill-standoff-vulnerability
+  entity: "1315"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    Standoff's "DMG received from Boothill +30% (+12% at E4)" needs an
+    incoming modifier scoped to one attacker. Boothill holds it as a
+    `dmgMultiplier` while his own action hits the Standoff target, so it
+    multiplies with other Vulnerability instead of adding to it.
+  detail: "Needs a HitFilter on the attacker unit (or applier) for incoming modifiers."
+- id: boothill-skill-turn
+  entity: "1315"
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    The Skill does not end the turn, but Battle ignores `endsTurn`. The
+    Skill queues the Enhanced Basic ATK instead, so no Ultimate can be cast
+    between the two, and the action is logged as queued.
+  detail: "Same gap as archer-chain-queue."
+- id: boothill-weakness-duration
+  entity: "1315"
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    The Ultimate's Physical Weakness lasts 2 turns, but `implantWeakness` is
+    permanent. This only matters when the scenario's Weakness list omits
+    Physical.
+  detail: "Same gap as archer-e2-weakness-duration."
+- id: boothill-standoff-taunt
+  entity: "1315"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The Standoff target is Taunted, so its attacks, and the Energy they
+    grant, all go to Boothill. Enemy attacks are distributed by aggro only,
+    so Boothill's Energy is understated during Standoff.
+  detail: "Needs a per-enemy forced target (Taunt) in enemyAttack."
+- id: boothill-standoff-break-order
+  entity: "1315"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    When his Enhanced Basic ATK breaks the Standoff target, the new Pocket
+    Trickshot stack, E2 Break Effect, and Standoff vulnerability all apply to
+    that attack's Talent Break DMG. The Standoff is dispelled after the
+    attack. Confirm the order.
+  detail: ""
+- id: dan-heng-skill-crit-slow
+  entity: "1002"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    The Skill's Slow requires a CRIT Hit. CRIT Rate is a build stat outside
+    the timeline, so the Slow is applied on every Skill. Presence checks also
+    ignore its landing chance, which overrates the Ultimate's multiplier
+    bonus and A6.
+  detail: "Needs CRIT-conditioned or chance-weighted status presence."
+- id: dan-heng-slowed-state
+  entity: "1002"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    "Slowed" from any source cannot be queried, so the Ultimate bonus and A6
+    only see Dan Heng's own Slow. Enemy SPD debuffs also have no effect
+    because enemies use a fixed SPD.
+  detail: "Needs a status-category query (Slow = SPD-reducing debuff) and status SPD modifiers on enemies."
+- id: dan-heng-talent-target
+  entity: "1002"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    "Becomes the target of an ally's ability" needs ability targets in
+    events, since every ability receives the enemy main target. It is
+    modeled with the `talent-ally-target` toggle (default on), which
+    re-triggers at his turn start once the cooldown ends.
+  detail: "Needs ally-targeted abilities to carry their ally target(s) in actionStart."
+- id: dan-heng-a4-uptime
+  entity: "1002"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    A4's 50% fixed-chance SPD Boost (2 turns) is applied after every attack
+    at its steady-state expected value, 20% × (1 − 0.5²) = 15%, because ally
+    buffs have no chance mechanism.
+  detail: ""
+- id: engine-report-group-attribution
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Engine-wide: DamageModel groups hits without abilityId or origin, and the
+    report credits each group to its first record's ability. Procs with
+    identical modifiers merge into one row, as when Boothill's E6 main-target
+    Break DMG shows under talent:1315.
+  detail: "groupKey() in evaluate/damage.ts; totals are correct, only per-ability rows are affected."
+- id: feixiao-aureus-resource
+  entity: "1220"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Flying Aureus is a non-Energy Ultimate resource, but the engine feeds
+    unit.energy from enemy hits, ERR, and ally Energy effects. The kit keeps
+    Aureus in a counter, gates the Ultimate with `usable` and `energyCost: 0`,
+    and mirrors the counter into the Energy bar for the timeline.
+  detail: "Needs a kit-declared Ultimate resource (or a 'gains no Energy' flag) honoured by gainEnergy and checkUltimates."
+- id: feixiao-ult-ignore-weakness
+  entity: "1220"
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    The Ultimate ignores Weakness Type when reducing Toughness, but
+    applyToughness requires a matching Weakness. Only matters when the
+    scenario's Weakness list omits Wind.
+  detail: "Needs a HitDef flag that bypasses the Weakness check for Toughness."
+- id: feixiao-ult-toughness
+  entity: "1220"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    The Ultimate's 30 displayed Toughness (122003) is modeled as six strikes
+    of 5 (122008/122009 facts) and no Toughness on the finishing hit, whose
+    own row (122014) shows none; doubled by the +100% Break Efficiency while
+    unbroken. Confirm the finishing hit reduces no Toughness.
+  detail: ""
+- id: feixiao-e2-aureus
+  entity: "1220"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    E2 is read as replacing the two-attack count ("即可"): a Follow-Up ATK
+    alone grants 1 Flying Aureus (6 per turn of any unit) instead of also
+    counting toward the two attacks. Feixiao's own Ultimate (a Follow-Up ATK
+    via A4) is excluded like in the Talent.
+  detail: ""
+- id: feixiao-a2-talent-check
+  entity: "1220"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    A2 counts 1 attack at Feixiao's turn start when the teammate-triggered
+    Talent Follow-Up did not fire since her previous turn start; the Skill's
+    extra Talent instance does not count as "launched via Talent".
+  detail: ""
+- id: moze-departed-ultimate
+  entity: "1223"
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    Moze can cast his Ultimate while Departed, but checkUltimates skips
+    characters outside the Action Order, so it waits until Prey is dispelled
+    and then misses Prey (Charge use, A6, E2). While out of the order he still
+    takes enemy attacks (Energy) and Action Advance (e.g. Robin's Ultimate),
+    which shifts his return turn.
+  detail: "Needs a per-ability 'castable while out of the Action Order' flag, untargetable allies in enemyAttack, and no advance for units outside the order."
+- id: moze-e2-target-crit
+  entity: "1223"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    E2 raises allies' CRIT DMG only against Prey. HitFilter cannot test
+    target statuses, so every ally holds the CRIT DMG while Prey exists,
+    which also reaches their hits on other enemies.
+  detail: "Needs a HitFilter on target statuses (or incoming CRIT DMG). Same need as topaz-debtor-crit."
+- id: moze-prey-reading
+  entity: "1223"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Assumed: Moze's own Skill (which marks Prey and grants the Charge) does
+    not consume a Charge but his Ultimate does; Prey is a mark, not a debuff;
+    the Follow-Up ATK on the last Charge hits before Prey is dispelled, so it
+    keeps A6. Confirm in game.
+  detail: ""
+- id: march-7th-shifu-choice
+  entity: "1224"
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    Ally-targeted Skills receive the enemy main target and no option can name
+    an ally, so Shifu is fixed at build time: the first Erudition,
+    Destruction, The Hunt, Remembrance, or Elation teammate, else Nihility,
+    else the first teammate.
+  detail: "Needs user-selectable ally targets for ally-targeted abilities. Related: dan-heng-talent-target."
+- id: march-7th-a4-weakness
+  entity: "1224"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    A4 lets March reduce Toughness of enemies weak to Shifu's Combat Type
+    (Imaginary Break effect), but applyToughness requires an Imaginary
+    Weakness. Only matters when the scenario's Weakness list omits Imaginary.
+  detail: "Needs a per-unit list of extra Weakness Types that count for Toughness."
+- id: march-7th-e2-facts
+  entity: "1224"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    The E2 Follow-Up ATK has no facts row; the kit uses the Talent's (122404):
+    no Toughness Reduction and 5 Energy.
+  detail: ""
+- id: march-7th-enhanced-hits
+  entity: "1224"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Enhanced Basic ATK extra hits are expected values: the i-th extra hit
+    carries chance^i in its multiplier, Toughness, and Shifu Additional DMG,
+    so per-hit triggers see three full instances. The Harmony/Nihility/
+    Preservation/Abundance Shifu bonus multiplies each hit's Toughness
+    (not Break Efficiency) and is also present before Shifu is designated.
+  detail: ""
+- id: topaz-debtor-crit
+  entity: "1112"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    E1 Debtor raises the CRIT DMG of Follow-Up ATKs the enemy takes; there is
+    no incoming CRIT DMG stat, so allies hold Follow-Up CRIT DMG mirroring the
+    Proof of Debt target's Debtor stacks, which also reaches other enemies.
+  detail: "Same need as moze-e2-target-crit."
+- id: topaz-numby-handle
+  entity: "1112"
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    BattleApi cannot look up a kit's summons (ctx.summon resets an existing
+    one's gauge), so Numby is summoned at battle start and its view kept in a
+    closure for Action Advance. Numby's turn also attacks the engine's main
+    target; the kit keeps Proof of Debt there.
+  detail: "Needs a servant lookup (e.g. ctx.servant(owner, id)) and policy-chosen turn targets."
+- id: topaz-windfall-scope
+  entity: "1112"
+  rule: U4
+  status: open
+  category: verify
+  summary: >
+    Assumed: Windfall Bonanza's multiplier and CRIT DMG and E6 RES PEN apply
+    only to Numby's own attacks, not the Skill's DMG; the Talent and Ultimate
+    Action Advances trigger separately (a Follow-Up ATK that is also a Basic
+    ATK, Skill, or Ultimate advances Numby by 100%); Proof of Debt and Debtor
+    are debuffs. Confirm in game.
+  detail: ""
+- id: topaz-random-debt
+  entity: "1112"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    The fallback Proof of Debt on "a random enemy" goes to the engine's main
+    target; it only matters before Topaz's first Skill.
+  detail: ""

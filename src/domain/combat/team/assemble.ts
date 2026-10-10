@@ -117,7 +117,6 @@ function elementalProperties(
 
 export function relicVector(loadout: RelicLoadout): {
   vector: StatVector;
-  elemental: PermanentModifier[];
 } {
   const vector = newStatVector();
   const properties = Object.entries(loadout.stats).map(
@@ -127,7 +126,19 @@ export function relicVector(loadout: RelicLoadout): {
     })
   );
   addProperties(vector, properties);
-  return { vector, elemental: elementalProperties(properties) };
+  return { vector };
+}
+
+/** Relic Elemental DMG Boost by Combat Type (Planar Sphere main stats). */
+export function relicElementalBoost(
+  loadout: RelicLoadout
+): Partial<Record<CombatType, number>> {
+  const boost: Partial<Record<CombatType, number>> = {};
+  for (const [propertyId, value] of Object.entries(loadout.stats)) {
+    const type = PROPERTY_STAT[propertyId]?.combatType;
+    if (type) boost[type] = (boost[type] ?? 0) + value;
+  }
+  return boost;
 }
 
 function characterBasePanel(
@@ -217,6 +228,7 @@ export function assembleTeam(
   battleOptions: Partial<BattleOptions> = {}
 ): AssembledTeam {
   const members: AssembledMember[] = [];
+  const relicVectors: StatVector[] = [];
   const team: TeamMemberInfo[] = input.members.flatMap((member, slot) => {
     const definition = data.characters.get(member.characterId);
     return definition
@@ -385,16 +397,12 @@ export function assembleTeam(
       }
     }
 
-    const panelWithoutRelics = panel.slice();
     const relics = relicVector(member.relics);
+    relicVectors.push(relics.vector);
     for (let index = 0; index < panel.length; index += 1) {
       panel[index] = (panel[index] ?? 0) + (relics.vector[index] ?? 0);
     }
-    permanentToUnit(unit, relics.elemental, {
-      type: "engine",
-      id: "relics",
-      providerId: unitId,
-    });
+    unit.relicElemental = relicElementalBoost(member.relics);
 
     const characterDefinition = kits.character(
       canonicalCharacterId(characterData.id)
@@ -422,7 +430,8 @@ export function assembleTeam(
       slot,
       unit,
       data: characterData,
-      panelWithoutRelics,
+      // Filled in once every permanent modifier is on the panel.
+      panelWithoutRelics: newStatVector(),
       optionGroups,
       implemented: {
         character: characterKit !== null,
@@ -576,6 +585,14 @@ export function assembleTeam(
       if (summon.presentAtStart) battle.summon(member.unit, summon.id);
     }
   }
+
+  // The optimizer swaps Relics on top of everything else that is permanent.
+  members.forEach((member, slot) => {
+    const relics = relicVectors[slot];
+    member.unit.panel.forEach((value, index) => {
+      member.panelWithoutRelics[index] = value - (relics?.[index] ?? 0);
+    });
+  });
 
   return {
     battle,

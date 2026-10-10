@@ -35,6 +35,10 @@ const INDEX_COPY: Partial<
     title: "home.index.filters.title",
     description: "home.index.filters.description",
   },
+  [APP_PATHS.teamDamage]: {
+    title: "home.index.teamDamage.title",
+    description: "home.index.teamDamage.description",
+  },
   [APP_PATHS.tierCharacters]: {
     title: "home.index.tierCharacters.title",
     description: "home.index.tierCharacters.description",

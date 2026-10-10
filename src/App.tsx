@@ -26,6 +26,7 @@ const RelicFiltersView = lazy(() => import("@/pages/builds/RelicFiltersView"));
 const CharacterBuildView = lazy(
   () => import("@/pages/builds/CharacterBuildView")
 );
+const TeamDamageView = lazy(() => import("@/pages/damage/TeamDamageView"));
 const CharacterTierListView = lazy(
   () => import("@/pages/tier-list/CharacterTierListView")
 );
@@ -93,6 +94,7 @@ export default function App() {
           <Route path={APP_PATHS.builds} element={<CharacterBuildView />} />
           <Route path={APP_PATHS.filters} element={<RelicFiltersView />} />
           <Route path={APP_PATHS.triage} element={<TriageView />} />
+          <Route path={APP_PATHS.teamDamage} element={<TeamDamageView />} />
           <Route
             path="/builds/scoring"
             element={<Navigate to={APP_PATHS.builds} replace />}

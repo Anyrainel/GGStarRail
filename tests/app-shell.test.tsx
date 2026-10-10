@@ -249,7 +249,7 @@ describe("GGArtifact family shell", () => {
       "md:block"
     );
     const buildTabs = screen.getByRole("navigation", { name: "Builds" });
-    expect(within(buildTabs).getAllByRole("link")).toHaveLength(2);
+    expect(within(buildTabs).getAllByRole("link")).toHaveLength(3);
     expect(
       within(buildTabs).queryByRole("link", { name: "Relic Triage" })
     ).toBeNull();

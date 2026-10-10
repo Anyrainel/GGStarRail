@@ -9,10 +9,9 @@ import { I18nProvider } from "@/i18n/I18nContext";
 import { messagesEn } from "@/i18n/messages.en";
 
 describe("HSR route foundation", () => {
-  it("contains every MVP route and excludes out-of-scope engines", () => {
+  it("contains every route exactly once", () => {
     const paths = ROUTE_REGISTRY.map((route) => route.path);
     expect(paths).toEqual(Object.values(APP_PATHS));
-    expect(paths.join(" ")).not.toMatch(/team|damage|energy/i);
     expect(new Set(paths).size).toBe(paths.length);
   });
 
