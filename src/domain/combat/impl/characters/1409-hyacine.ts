@@ -1,10 +1,18 @@
-import type { BattleApi, PolicyView, UnitView } from "../../kit/api";
+import type {
+  BattleApi,
+  BattleEvent,
+  PolicyView,
+  UnitView,
+} from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
 
 /** Hyacine — Remembrance, Wind. */
 export default defineCharacter("1409", (k) => {
   const ICA = "11409";
+  // Expected Talent triggers of Little Ica waiting for the next turn start
+  // or action end.
+  const PENDING = "ica-pending";
 
   const afterRainTurns = k.param("03", 5);
   // "This duration decreases by 1 at the start of Hyacine's every turn."
@@ -77,8 +85,6 @@ export default defineCharacter("1409", (k) => {
       k.stat("e4", critDmg);
     }
   }
-  const lowHpHealing =
-    k.a(1) && k.toggle("a2-low-hp-healing", "a2", "active", false);
 
   const findIca = (ctx: BattleApi, hyacine: UnitView) =>
     ctx.findSummon(hyacine, ICA);
@@ -86,42 +92,64 @@ export default defineCharacter("1409", (k) => {
     view.allies.some(
       (unit) => unit.owner === view.self && unit.definitionId === ICA
     );
+  const isIca = (unit: UnitView, hyacine: UnitView) =>
+    unit.owner === hyacine && unit.definitionId === ICA;
+  // Ally targets: Characters and memosprites, not countdowns.
+  const allyTargets = (ctx: BattleApi) =>
+    ctx.allies.filter((unit) => unit.kind !== "summon");
 
   /**
-   * Adds healing to the tally, kept in units of Hyacine's panel Max HP so
-   * Rainclouds scales off it (tracker hyacine-healing-tally). Overhealing
-   * counts; healing-received bonuses are not modeled.
+   * Max HP with the timed bonuses the steady panel leaves out: After Rain
+   * and, for Hyacine, A6.
    */
-  const addTally = (
+  const maxHp = (unit: UnitView, hyacineSpeed?: number) => {
+    let pct = 0;
+    let flat = 0;
+    if (unit.has(afterRainHp)) {
+      pct += afterRainHpPct;
+      flat += k.param("03", 4);
+    }
+    if (k.a(3) && hyacineSpeed !== undefined && hyacineSpeed > speedThreshold) {
+      pct += k.traceParam(3, 2);
+    }
+    return unit.panelStat("hp") + unit.panelStat("hpBase") * pct + flat;
+  };
+
+  /**
+   * Hyacine or Little Ica heals `target` for pct × Hyacine's Max HP + flat.
+   * Little Ica's Max HP is a share of Hyacine's; other memosprites read
+   * their owner's (engine-memosprite-max-hp). The tally adds the requested
+   * amount (overhealing included), in units of Hyacine's panel Max HP so
+   * Rainclouds scales off it. Healing-received bonuses are not modeled.
+   */
+  const heal = (
     ctx: BattleApi,
     hyacine: UnitView,
+    target: UnitView,
     pct: number,
-    flat: number,
-    targets: number
+    flat: number
   ) => {
     const panelHp = hyacine.panelStat("hp");
-    if (panelHp <= 0 || targets <= 0) return;
-    const excess = Math.max(0, hyacine.speed - speedThreshold);
-    let bonusPct = 0;
-    let bonusFlat = 0;
-    if (hyacine.has(afterRain)) {
-      bonusPct += afterRainHpPct;
-      bonusFlat += k.param("03", 4);
-    }
+    if (panelHp <= 0) return;
+    const hyacineHp = maxHp(hyacine, hyacine.speed);
     let boost = 1 + hyacine.panelStat("outgoingHealing");
+    const excess = Math.max(0, hyacine.speed - speedThreshold);
     if (k.a(3) && excess > 0) {
-      bonusPct += k.traceParam(3, 2);
       boost +=
         Math.floor(Math.min(excess, excessCap) / k.traceParam(3, 3)) *
         k.traceParam(3, 4);
     }
-    if (lowHpHealing) boost += k.traceParam(1, 3);
-    const maxHp = panelHp + hyacine.panelStat("hpBase") * bonusPct + bonusFlat;
-    ctx.addCounter(
-      hyacine,
-      "tally",
-      (targets * (pct * maxHp + flat) * boost) / panelHp
-    );
+    if (k.a(1) && target.hpRatio <= k.traceParam(1, 2) + 1e-9) {
+      boost += k.traceParam(1, 3);
+    }
+    const amount = (pct * hyacineHp + flat) * boost;
+    const targetHp = isIca(target, hyacine)
+      ? k.param("04", 1) * hyacineHp
+      : target === hyacine
+        ? hyacineHp
+        : maxHp(target);
+    if (targetHp > 0) ctx.heal(target, amount / targetHp);
+    ctx.addCounter(hyacine, "tally", amount / panelHp);
   };
 
   /** Talent: Hyacine or Little Ica provides healing. */
@@ -138,10 +166,10 @@ export default defineCharacter("1409", (k) => {
     icaPct: number,
     icaFlat: number
   ) => {
-    const ica = findIca(ctx, ctx.self);
-    const others = ctx.allies.filter((unit) => unit !== ica).length;
-    addTally(ctx, ctx.self, pct, flat, others);
-    if (ica) addTally(ctx, ctx.self, icaPct, icaFlat, 1);
+    for (const ally of allyTargets(ctx)) {
+      if (isIca(ally, ctx.self)) heal(ctx, ctx.self, ally, icaPct, icaFlat);
+      else heal(ctx, ctx.self, ally, pct, flat);
+    }
     providesHealing(ctx, ctx.self);
   };
 
@@ -156,7 +184,6 @@ export default defineCharacter("1409", (k) => {
       ctx.self,
       k.param("1140905", 1) + (first ? k.param("1140905", 2) : 0)
     );
-    if (k.e(6)) for (const ally of ctx.allies) ctx.applyStatus(ally, e6ResPen);
   };
 
   k.ability({
@@ -207,8 +234,8 @@ export default defineCharacter("1409", (k) => {
   });
 
   const clearedShare = k.e(6) ? k.rankParam(6, 1) : k.param("1140901", 2);
-  // Little Ica never runs out of HP here (HP is not simulated), so "Fall,
-  // Then Take Wing" never triggers.
+  // HP never drops below 1% in the engine, so Little Ica never runs out of
+  // HP and "Fall, Then Take Wing" never triggers.
   k.memosprite({
     servantId: ICA,
     speed: { ownerRatio: 0, flat: 0 },
@@ -257,33 +284,55 @@ export default defineCharacter("1409", (k) => {
     }
   );
 
-  // Allies hit by enemies are healed by Little Ica after that action.
+  // An ally target (except Little Ica) loses HP to a cost or an enemy.
+  const hpReduced = (event: BattleEvent, self: UnitView) =>
+    event.hpCause !== "heal" &&
+    (event.delta ?? 0) < 0 &&
+    event.unit.kind !== "summon" &&
+    !isIca(event.unit, self);
+
+  // Little Ica heals each ally target whose HP was reduced (here at once,
+  // so the heal carries the loss's probability); its HP cost, the After
+  // Rain heal, and the Talent stack follow once at the next turn start or
+  // action end.
   k.on(
-    "hitByEnemy",
+    "hpChanged",
     "memospriteTalent",
-    { subject: "ally", when: (event) => event.unit.definitionId !== ICA },
+    { subject: "ally", when: hpReduced },
     (ctx, event) => {
-      ctx.addCounter(ctx.self, "hurt", 1);
-      if (k.e(2)) ctx.applyStatus(event.unit, e2Speed, { stacks: ctx.weight });
-    }
-  );
-  k.on("turnEnd", "memospriteTalent", { subject: "any" }, (ctx) => {
-    const hurt = ctx.self.counter("hurt");
-    if (hurt <= 1e-9) return;
-    ctx.setCounter(ctx.self, "hurt", 0);
-    if (!findIca(ctx, ctx.self)) return;
-    addTally(ctx, ctx.self, k.param("1140903", 2), k.param("1140903", 3), hurt);
-    if (ctx.self.has(afterRain)) {
-      addTally(
+      if (!findIca(ctx, ctx.self)) return;
+      heal(
         ctx,
         ctx.self,
-        k.param("1140903", 4),
-        k.param("1140903", 5),
-        ctx.allies.length
+        event.unit,
+        k.param("1140903", 2),
+        k.param("1140903", 3)
       );
+      ctx.addCounter(ctx.self, PENDING, 1, 1);
     }
-    providesHealing(ctx, ctx.self, Math.min(1, hurt));
-  });
+  );
+  const icaTalent = (ctx: BattleApi) => {
+    const pending = ctx.self.counter(PENDING);
+    if (pending <= 1e-9) return;
+    ctx.setCounter(ctx.self, PENDING, 0);
+    const ica = findIca(ctx, ctx.self);
+    if (!ica) return;
+    ctx.consumeHp(ica, k.param("1140903", 1) * pending);
+    if (ctx.self.has(afterRain)) {
+      for (const ally of allyTargets(ctx)) {
+        heal(
+          ctx,
+          ctx.self,
+          ally,
+          k.param("1140903", 4) * pending,
+          k.param("1140903", 5) * pending
+        );
+      }
+    }
+    providesHealing(ctx, ctx.self, pending);
+  };
+  k.on("turnStart", "memospriteTalent", { subject: "any" }, icaTalent);
+  k.on("actionEnd", "memospriteTalent", { subject: "any" }, icaTalent);
 
   if (k.e(1)) {
     // An ally target heals itself after attacking during After Rain.
@@ -293,22 +342,44 @@ export default defineCharacter("1409", (k) => {
       {
         subject: "ally",
         attack: true,
-        when: (_event, self) => self.has(afterRain),
+        when: (event, self) =>
+          self.has(afterRain) && event.unit.kind !== "summon",
       },
-      (ctx) => {
-        addTally(ctx, ctx.self, k.rankParam(1, 2), 0, 1);
+      (ctx, event) => {
+        heal(ctx, ctx.self, event.unit, k.rankParam(1, 2), 0);
         providesHealing(ctx, ctx.self, ctx.weight);
       }
     );
   }
 
+  if (k.e(2)) {
+    k.on(
+      "hpChanged",
+      "e2",
+      {
+        subject: "ally",
+        when: (event) =>
+          event.hpCause !== "heal" &&
+          (event.delta ?? 0) < 0 &&
+          event.unit.kind !== "summon",
+      },
+      (ctx, event) =>
+        ctx.applyStatus(event.unit, e2Speed, { stacks: ctx.weight })
+    );
+  }
+
   if (k.e(6)) {
-    // Memosprites summoned later also receive the RES PEN.
-    k.on("turnStart", "e6", { subject: "any" }, (ctx) => {
-      if (!findIca(ctx, ctx.self)) return;
-      for (const ally of ctx.allies) {
-        if (!ally.has(e6ResPen)) ctx.applyStatus(ally, e6ResPen);
+    // While Little Ica is on the field, including later memosprites.
+    k.on("summoned", "e6", { subject: "ally" }, (ctx, event) => {
+      if (isIca(event.unit, ctx.self)) {
+        for (const ally of allyTargets(ctx)) ctx.applyStatus(ally, e6ResPen);
+      } else if (event.unit.kind !== "summon" && findIca(ctx, ctx.self)) {
+        ctx.applyStatus(event.unit, e6ResPen);
       }
+    });
+    k.on("departed", "e6", { subject: "memosprite" }, (ctx, event) => {
+      if (!isIca(event.unit, ctx.self)) return;
+      for (const ally of ctx.allies) ctx.removeStatus(ally, e6ResPen);
     });
   }
 

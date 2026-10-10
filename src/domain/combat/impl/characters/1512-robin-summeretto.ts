@@ -1,5 +1,4 @@
-import { canonicalCharacterId } from "@/domain/characterIdentity";
-import type { BattleApi, UnitView } from "../../kit/api";
+import type { BattleApi, BattleEvent, UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { StatusDef } from "../../kit/model";
 
@@ -13,6 +12,14 @@ export default defineCharacter("1512", (k) => {
   // E6: Energy beyond the cap kept for a second Ultimate during Fever.
   const STORED = "stored-energy";
   const FEVER_ENTERED = "fever-entered";
+  // A4: Groove stacks.
+  const GROOVE = "groove";
+  // Expected share already used of the current turn's first Vibes gain
+  // (A4), first ability-driven Vibes gain (E2), and first healing or Shield
+  // provided (Talent).
+  const FIRST_GAIN = "first-vibes-gain";
+  const FIRST_ABILITY_GAIN = "first-ability-vibes-gain";
+  const FIRST_SUPPORT = "first-support";
   const supportPaths = new Set(["Shaman", "Priest", "Knight"]);
   // Remembrance supports (Hyacine, Cyrene, Trailblazer).
   const supportIds = new Set(["1409", "1415", "8007"]);
@@ -120,23 +127,44 @@ export default defineCharacter("1512", (k) => {
 
   const findSongbirds = (ctx: BattleApi, robin: UnitView) =>
     ctx.findSummon(robin, SONGBIRDS);
+  const isSongbirds = (unit: UnitView, robin: UnitView) =>
+    unit.owner === robin && unit.definitionId === SONGBIRDS;
 
-  // Energy that E6 lets Robin keep beyond the cap during Fever.
-  const gainEnergy = (
-    ctx: BattleApi,
-    robin: UnitView,
-    amount: number,
-    fixed: boolean
-  ) => {
-    const overflow = ctx.gainEnergy(robin, amount, { fixed });
-    if (k.e(6) && robin.has(fever) && overflow > 0) {
-      ctx.setCounter(
-        robin,
-        STORED,
-        Math.min(robin.maxEnergy, robin.counter(STORED) + overflow)
-      );
-    }
+  // E6: Energy beyond the cap from any source is kept during Fever for a
+  // second Ultimate.
+  if (k.e(6)) {
+    k.on(
+      "energyGained",
+      "e6",
+      {
+        when: (event, self) => self.has(fever) && (event.overflow ?? 0) > 0,
+      },
+      (ctx, event) =>
+        ctx.addCounter(
+          ctx.self,
+          STORED,
+          event.overflow ?? 0,
+          ctx.self.maxEnergy
+        )
+    );
+  }
+
+  /**
+   * Share of this (possibly weighted) trigger that is the first of its kind
+   * in the current turn; records it.
+   */
+  const firstInTurn = (ctx: BattleApi, robin: UnitView, name: string) => {
+    const left = 1 - robin.counter(name);
+    if (left <= 1e-9 || ctx.weight <= 0) return 0;
+    const share = Math.min(1, left / ctx.weight);
+    ctx.addCounter(robin, name, share);
+    return share;
   };
+  k.on("turnStart", "talent", { subject: "any" }, (ctx) => {
+    for (const name of [FIRST_GAIN, FIRST_ABILITY_GAIN, FIRST_SUPPORT]) {
+      if (ctx.self.counter(name) > 0) ctx.setCounter(ctx.self, name, 0);
+    }
+  });
 
   const syncVibes = (ctx: BattleApi, robin: UnitView) => {
     const vibes = robin.counter(VIBES);
@@ -190,7 +218,7 @@ export default defineCharacter("1512", (k) => {
       ctx.applyStatus(songbirds, e4Speed, { setStacks: ratio });
     }
     if (k.e(6) && robin.counter(FEVER_ENTERED) === 0) {
-      gainEnergy(ctx, robin, k.rankParam(6, 2), true);
+      ctx.gainEnergy(robin, k.rankParam(6, 2), { fixed: true });
     }
     ctx.setCounter(robin, FEVER_ENTERED, 1);
   };
@@ -206,13 +234,31 @@ export default defineCharacter("1512", (k) => {
     if (next >= 3) startFever(ctx, robin);
   };
 
+  /**
+   * Vibes from `source`. `ability`: an ally target used an ability to cause
+   * it (E2's first-per-turn bonus).
+   */
   const gainVibes = (
     ctx: BattleApi,
     robin: UnitView,
     amount: number,
-    source: UnitView | null
+    source: UnitView | null,
+    ability = false
   ) => {
-    ctx.addCounter(robin, VIBES, amount, vibesCap);
+    let gained = amount;
+    if (k.e(2) && ability) {
+      gained += k.rankParam(2, 2) * firstInTurn(ctx, robin, FIRST_ABILITY_GAIN);
+    }
+    ctx.addCounter(robin, VIBES, gained, vibesCap);
+    // A4: the first Vibes gain in a turn spends 1 Groove for fixed Energy.
+    if (k.a(2)) {
+      const first = firstInTurn(ctx, robin, FIRST_GAIN);
+      const spent = first * Math.min(1, robin.counter(GROOVE));
+      if (spent > 1e-9) {
+        ctx.addCounter(robin, GROOVE, -spent);
+        ctx.gainEnergy(robin, k.traceParam(2, 2) * spent, { fixed: true });
+      }
+    }
     if (k.a(1) && source && source.kind !== "summon") {
       const vibes = robin.counter(VIBES);
       if (source.panelStat("atk") > robin.panelStat("atk")) {
@@ -246,7 +292,8 @@ export default defineCharacter("1512", (k) => {
     ctx.advanceAction(robin, k.param("1151206", 1));
   };
 
-  // Talent: Vibes from ally attacks (healing and Shields are not modeled).
+  // Talent: Vibes when an ally target attacks, or the first time in a turn
+  // that one provides healing (heals at full HP count) or a Shield.
   k.on(
     "actionStart",
     "talent",
@@ -258,19 +305,73 @@ export default defineCharacter("1512", (k) => {
       if (unit.has(guest) || unit.owner?.has(guest)) {
         amount += k.param("03", 2);
       }
-      gainVibes(ctx, ctx.self, amount, guestUnit ?? unit);
+      gainVibes(ctx, ctx.self, amount, guestUnit ?? unit, true);
     }
   );
-  if (k.e(2)) {
+  const provides = (ctx: BattleApi, provider: UnitView) => {
+    const first = firstInTurn(ctx, ctx.self, FIRST_SUPPORT);
+    if (first > 1e-9) gainVibes(ctx, ctx.self, first, provider, true);
+  };
+  const isShield = (event: BattleEvent) =>
+    event.status?.family === "shield" &&
+    event.target !== undefined &&
+    event.target.kind !== "enemy";
+  k.on(
+    "hpChanged",
+    "talent",
+    {
+      subject: "ally",
+      when: (event) =>
+        event.hpCause === "heal" &&
+        event.source !== undefined &&
+        event.source.kind !== "enemy",
+    },
+    (ctx, event) => {
+      if (event.source) provides(ctx, event.source);
+    }
+  );
+  k.on(
+    "statusApplied",
+    "talent",
+    { subject: "ally", when: isShield },
+    (ctx, event) => provides(ctx, event.unit)
+  );
+  // A4: Robin • Summeretto or a Summer Songbird receives healing or a Shield
+  // from a teammate.
+  if (k.a(2)) {
+    const receiver = (unit: UnitView | undefined, self: UnitView) =>
+      unit !== undefined && (unit === self || isSongbirds(unit, self));
+    const groove = (ctx: BattleApi) =>
+      ctx.addCounter(ctx.self, GROOVE, k.traceParam(2, 1), k.traceParam(2, 3));
     k.on(
-      "actionStart",
-      "e2",
-      { subject: "ally", attack: true, limitPerTurn: 1 },
-      (ctx) => gainVibes(ctx, ctx.self, k.rankParam(2, 2), null)
+      "hpChanged",
+      "a4",
+      {
+        subject: "selfOrMemosprite",
+        when: (event, self) =>
+          event.hpCause === "heal" &&
+          event.source !== undefined &&
+          event.source !== self &&
+          receiver(event.unit, self),
+      },
+      groove
+    );
+    k.on(
+      "statusApplied",
+      "a4",
+      {
+        subject: "otherAlly",
+        when: (event, self) => isShield(event) && receiver(event.target, self),
+      },
+      groove
     );
   }
-  k.on("actionStart", "talent", { subject: "ally" }, (ctx) =>
-    spreadZone(ctx, ctx.self)
+  // The Zone reaches memosprites summoned during Fever.
+  k.on(
+    "summoned",
+    "talent",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx) => spreadZone(ctx, ctx.self)
   );
 
   k.ability({
@@ -291,35 +392,35 @@ export default defineCharacter("1512", (k) => {
     kind: "skill",
     target: "none",
     before: (ctx) => {
-      if (findSongbirds(ctx, ctx.self)) {
-        gainVibes(ctx, ctx.self, k.param("02", 2), ctx.self);
+      const present = findSongbirds(ctx, ctx.self);
+      if (present) {
+        ctx.heal(present, k.param("02", 1));
+        gainVibes(ctx, ctx.self, k.param("02", 2), ctx.self, true);
         return;
       }
       // Bessie takes the stage; the Songbirds only act during Fever.
       const songbirds = ctx.summon(ctx.self, SONGBIRDS);
       ctx.setInActionOrder(songbirds, false);
-      gainEnergy(ctx, ctx.self, k.param("1151205", 1), false);
+      ctx.gainEnergy(ctx.self, k.param("1151205", 1));
       setMembers(ctx, ctx.self, 1);
       checkStage(ctx, ctx.self);
     },
   });
 
-  // Special Guest: the first ally Character outside the support Paths and
-  // the Remembrance supports in team order, else the first other one.
-  const guestTarget = (ctx: BattleApi): UnitView | null => {
-    const characters = ctx.allies.filter(
-      (ally) => ally.kind === "character" && ally !== ctx.self
-    );
-    return (
-      characters.find(
-        (ally) =>
-          !supportPaths.has(ally.pathId) &&
-          !supportIds.has(canonicalCharacterId(ally.definitionId))
-      ) ??
-      characters[0] ??
-      null
-    );
-  };
+  // Special Guest: the user's choice, by default the first teammate outside
+  // the support Paths and the Remembrance supports, else the first one.
+  const guestMember = k.ally("special-guest", "ultimate", (candidates) =>
+    candidates.find(
+      (member) =>
+        !supportPaths.has(member.pathId) && !supportIds.has(member.characterId)
+    )
+  );
+  const guestUnit = (allies: readonly UnitView[]) =>
+    guestMember
+      ? (allies.find(
+          (ally) => ally.kind === "character" && ally.slot === guestMember.slot
+        ) ?? null)
+      : null;
 
   k.ability({
     id: "ultimate",
@@ -328,8 +429,10 @@ export default defineCharacter("1512", (k) => {
     // Usable during Fever, while Robin is out of the Action Order.
     castOutsideActionOrder: true,
     before: (ctx) => {
-      const target = guestTarget(ctx);
-      if (!target) return;
+      const target = ctx.target;
+      if (!target || target.kind !== "character" || target === ctx.self) {
+        return;
+      }
       ctx.advanceAction(target, k.param("03", 1));
       ctx.gainEnergy(target, target.maxEnergy * k.param("03", 3), {
         fixed: true,
@@ -363,7 +466,7 @@ export default defineCharacter("1512", (k) => {
           },
         ],
         after: (ctx) => {
-          if (ctx.self.owner) gainEnergy(ctx, ctx.self.owner, 20, false);
+          if (ctx.self.owner) ctx.gainEnergy(ctx.self.owner, 20);
         },
       },
     ],
@@ -372,6 +475,7 @@ export default defineCharacter("1512", (k) => {
   // "When its turn starts, deducts 50% of the current Vibes (minimum 12)."
   k.summon({
     id: COUNTDOWN,
+    countdown: true,
     speed: k.param("1151203", 9),
     policy: () => "tick",
     abilities: [
@@ -382,7 +486,9 @@ export default defineCharacter("1512", (k) => {
         before: (ctx) => {
           const robin = ctx.self.owner;
           if (!robin) return;
-          if (k.e(6)) gainEnergy(ctx, robin, k.rankParam(6, 2), true);
+          if (k.e(6)) {
+            ctx.gainEnergy(robin, k.rankParam(6, 2), { fixed: true });
+          }
           const vibes = robin.counter(VIBES);
           const deducted = Math.max(
             k.param("1151203", 6),
@@ -394,5 +500,13 @@ export default defineCharacter("1512", (k) => {
         },
       },
     ],
+  });
+
+  // The Ultimate names the Special Guest so equipment sees the ally target.
+  k.policy({
+    ultimate: (view) => {
+      const target = guestUnit(view.allies);
+      return target ? { ability: "ultimate", target } : true;
+    },
   });
 });

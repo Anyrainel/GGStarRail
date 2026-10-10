@@ -195,8 +195,11 @@ export default defineCharacter("1402", (k) => {
     energy: 20,
     usable: (view) => !view.self.has(supremeStance),
     before: (ctx) => {
-      // Healing Garmentmaker is not modeled.
-      if (findGarmentmaker(ctx, ctx.self)) return;
+      const present = findGarmentmaker(ctx, ctx.self);
+      if (present) {
+        ctx.heal(present, k.param("02", 1));
+        return;
+      }
       summonGarmentmaker(ctx, ctx.self);
       ctx.advanceAction(ctx.self, 1);
     },
@@ -235,6 +238,7 @@ export default defineCharacter("1402", (k) => {
 
   const countdown = k.summon({
     id: "supreme-stance-countdown",
+    countdown: true,
     speed: k.param("03", 4),
     policy: () => "end",
     abilities: [
@@ -256,9 +260,10 @@ export default defineCharacter("1402", (k) => {
     kind: "ultimate",
     target: "self",
     before: (ctx) => {
-      // Restoring Garmentmaker's HP is not modeled.
-      const garmentmaker =
-        findGarmentmaker(ctx, ctx.self) ?? summonGarmentmaker(ctx, ctx.self);
+      const present = findGarmentmaker(ctx, ctx.self);
+      // "If Garmentmaker is already on the field, restores its HP to max."
+      if (present) ctx.setHp(present, 1);
+      const garmentmaker = present ?? summonGarmentmaker(ctx, ctx.self);
       ctx.applyStatus(ctx.self, supremeStance);
       if (k.e(6)) {
         ctx.applyStatus(ctx.self, e6ResPen);
@@ -301,7 +306,9 @@ export default defineCharacter("1402", (k) => {
   const hitStitched = (targets: readonly UnitView[] | undefined) =>
     targets?.find((enemy) => enemy.has(seamStitch));
 
-  // Attacks by Aglaea or Garmentmaker on the Seam Stitch target.
+  // Aglaea's attacks on the Seam Stitch target (once per attack, so the
+  // Joint ATK triggers it through Aglaea's part); E1's Energy also follows
+  // Garmentmaker's attacks.
   k.on(
     "actionEnd",
     "talent",
@@ -313,10 +320,12 @@ export default defineCharacter("1402", (k) => {
     (ctx, event) => {
       const target = hitStitched(event.targetsHit);
       if (!isEnemy(target)) return;
-      ctx.deal(
-        { shape: "single", main: k.param("04", 1), onlyTags: ["additional"] },
-        { targets: [target], abilityId: "seamStitch" }
-      );
+      if (event.unit === ctx.self) {
+        ctx.deal(
+          { shape: "single", main: k.param("04", 1), onlyTags: ["additional"] },
+          { targets: [target], abilityId: "seamStitch" }
+        );
+      }
       if (k.e(1)) ctx.gainEnergy(ctx.self, k.rankParam(1, 2));
     }
   );

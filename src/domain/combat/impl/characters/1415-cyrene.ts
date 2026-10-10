@@ -53,9 +53,11 @@ export default defineCharacter("1415", (k) => {
     origin: "skill",
     modifiers: [{ stat: "trueDmg", value: k.param("02", 1) }],
   });
+  // Applied from Cyrene's and Demiurge's actions; one Zone, one copy.
   const zoneE2 = k.status({
     id: "zone-true-dmg-e2",
     origin: "e2",
+    unique: true,
     maxStacks: Math.round(k.rankParam(2, 4) / k.rankParam(2, 3)),
     modifiers: [{ stat: "trueDmg", value: k.rankParam(2, 3) }],
   });
@@ -261,10 +263,11 @@ export default defineCharacter("1415", (k) => {
     grantFuture(ctx, ctx.self)
   );
 
-  // Allies with Future that take action give 1 Recollection. With A2,
-  // teammates' memosprites keep Future (they gain it when summoned).
+  // Allies with Future give 1 Recollection whenever they use an ability
+  // (Ultimates and follow-ups included). With A2, teammates' memosprites
+  // keep Future (they gain it when summoned).
   k.on(
-    "turnStart",
+    "actionStart",
     "talent",
     {
       subject: "otherAlly",
@@ -303,15 +306,19 @@ export default defineCharacter("1415", (k) => {
     }
   );
 
-  k.on("actionStart", "skill", { subject: "ally" }, (ctx) => {
-    spreadZone(ctx, ctx.self);
-    // Ode to Genesis also applies to Mem, whenever it is summoned.
-    for (const ally of ctx.allies) {
-      if (ally.owner?.has(genesis) && !ally.has(genesis)) {
-        ctx.applyStatus(ally, genesis);
+  // Memosprites summoned later enter the Zone; Ode to Genesis also applies
+  // to Mem whenever it is summoned.
+  k.on(
+    "summoned",
+    "skill",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx, event) => {
+      spreadZone(ctx, ctx.self);
+      if (event.unit.owner?.has(genesis)) {
+        ctx.applyStatus(event.unit, genesis);
       }
     }
-  });
+  );
 
   // Ode effects that trigger on the buffed ally's actions.
   k.on(
@@ -504,26 +511,28 @@ export default defineCharacter("1415", (k) => {
     },
   });
 
-  // The Ode goes to the damage dealer: a Chrysos Heir outside the support
-  // Paths first, then any ally Character outside them, then any other.
-  const odeTarget = (view: PolicyView, cyrene: UnitView): UnitView | null => {
-    const characters = view.allies.filter(
-      (ally) => ally.kind === "character" && ally !== cyrene
-    );
-    const dealer = (ally: UnitView) =>
-      !SUPPORT_PATHS.has(ally.pathId) &&
-      !SUPPORT_IDS.has(canonicalCharacterId(ally.definitionId));
-    return (
-      characters.find(
-        (ally) =>
-          dealer(ally) &&
-          CHRYSOS_HEIRS.has(canonicalCharacterId(ally.definitionId))
+  // The Ode goes to the user's choice, by default the damage dealer: a
+  // Chrysos Heir outside the support Paths first, then any teammate outside
+  // them, then the first one.
+  const dealer = (characterId: string, pathId: string) =>
+    !SUPPORT_PATHS.has(pathId) && !SUPPORT_IDS.has(characterId);
+  const odeMember = k.ally(
+    "ode-to-all-lives",
+    "memospriteSkill",
+    (candidates) =>
+      candidates.find(
+        (member) =>
+          dealer(member.characterId, member.pathId) &&
+          CHRYSOS_HEIRS.has(member.characterId)
       ) ??
-      characters.find(dealer) ??
-      characters[0] ??
-      null
-    );
-  };
+      candidates.find((member) => dealer(member.characterId, member.pathId))
+  );
+  const odeTarget = (view: PolicyView): UnitView | null =>
+    odeMember
+      ? (view.allies.find(
+          (ally) => ally.kind === "character" && ally.slot === odeMember.slot
+        ) ?? null)
+      : null;
 
   const egoBase = k.param("1141526", 1);
   const minuetHits = (ctx: BattleApi): HitDef[] => {
@@ -619,7 +628,7 @@ export default defineCharacter("1415", (k) => {
       const cyrene = view.self.owner;
       if (!cyrene || cyrene.counter(AUTO_MINUET) > 1e-9) return "minuet";
       if (cyrene.counter(ODE_USED) > 0) return "minuet";
-      const target = odeTarget(view, cyrene);
+      const target = odeTarget(view);
       return target ? { ability: "ode", target } : "minuet";
     },
     abilities: [

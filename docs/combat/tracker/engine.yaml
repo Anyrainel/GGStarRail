@@ -959,3 +959,16 @@
     conversions. Affects Castorice (1407, castorice-netherwing-hp-counter),
     whose Netherwing gains HP from allies' losses and A2's conversions and
     keeps it in a counter meanwhile.
+- id: engine-hit-by-enemy-before-hp
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    hitByEnemy fires before the enemy hit removes HP, so "when hit, restore
+    HP" effects heal first and are capped at the HP the ally had before the
+    hit: a wearer at full HP loses the whole heal.
+  detail: >
+    Emit hitByEnemy after the hit's HP change (or add a post-hit event with
+    the same aggro weight). Affects Something Irreplaceable (23002), whose
+    Kinship heal on being hit is lost while the wearer is at full HP.

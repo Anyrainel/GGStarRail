@@ -1,4 +1,9 @@
-import type { BattleApi, PolicyView, UnitView } from "../../kit/api";
+import type {
+  BattleApi,
+  BattleEvent,
+  PolicyView,
+  UnitView,
+} from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef, StatusDef } from "../../kit/model";
 
@@ -109,29 +114,35 @@ export default defineCharacter("1413", (k) => {
   const findEvey = (ctx: BattleApi, owner: UnitView) =>
     ctx.findSummon(owner, EVEY);
 
+  const isEvey = (unit: UnitView, owner: UnitView) =>
+    unit.owner === owner && unit.definitionId === EVEY;
+
   // E1/E4 reach every ally memosprite while Evernight is on the field,
   // including memosprites summoned later.
-  const equipMemosprites = (ctx: BattleApi, owner: UnitView) => {
-    if (!k.e(1) && !k.e(4)) return;
-    const enemies = ctx.enemies.length;
-    const e1 =
-      e1Brackets[enemies >= 4 ? 0 : enemies === 3 ? 1 : enemies === 2 ? 2 : 3];
-    for (const ally of ctx.allies) {
-      if (ally.kind !== "memosprite") continue;
-      if (k.e(1) && e1 && !ally.has(e1)) ctx.applyStatus(ally, e1);
-      if (k.e(4) && !ally.has(e4Memosprites)) {
-        ctx.applyStatus(ally, e4Memosprites);
+  if (k.e(1) || k.e(4)) {
+    k.on(
+      "summoned",
+      k.e(1) ? "e1" : "e4",
+      { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+      (ctx, event) => {
+        const memosprite = event.unit;
+        if (k.e(1)) {
+          const enemies = ctx.enemies.length;
+          const e1 =
+            e1Brackets[
+              enemies >= 4 ? 0 : enemies === 3 ? 1 : enemies === 2 ? 2 : 3
+            ];
+          if (e1) ctx.applyStatus(memosprite, e1);
+        }
+        if (k.e(4)) {
+          ctx.applyStatus(memosprite, e4Memosprites);
+          if (isEvey(memosprite, ctx.self)) {
+            ctx.applyStatus(memosprite, e4Evey);
+          }
+        }
       }
-      if (
-        k.e(4) &&
-        ally.owner === owner &&
-        ally.definitionId === EVEY &&
-        !ally.has(e4Evey)
-      ) {
-        ctx.applyStatus(ally, e4Evey);
-      }
-    }
-  };
+    );
+  }
 
   const gainMemoria = (ctx: BattleApi, owner: UnitView, amount: number) => {
     ctx.addCounter(owner, MEMORIA, amount + memoriaBonus);
@@ -153,17 +164,27 @@ export default defineCharacter("1413", (k) => {
     if (owner.has(riddle)) ctx.applyStatus(evey, riddle);
     // "When summoned, this unit immediately takes action."
     ctx.advanceAction(evey, 1);
-    equipMemosprites(ctx, owner);
     return evey;
   };
 
-  // Talent: each HP loss of Evernight or Evey.
-  const loseHp = (ctx: BattleApi, owner: UnitView) => {
-    ctx.applyStatus(owner, withMe, { stacks: ctx.weight });
-    const evey = findEvey(ctx, owner);
-    if (evey) ctx.applyStatus(evey, withMe, { stacks: ctx.weight });
-    gainMemoria(ctx, owner, k.param("04", 1));
-  };
+  // Talent: each HP loss of Evernight or Evey, to a cost or once per
+  // received attack (enemy attacks only target Characters here:
+  // engine-memosprite-enemy-targets).
+  const lostHp = (event: BattleEvent, self: UnitView) =>
+    (event.hpCause === "consume" || event.hpCause === "enemy") &&
+    (event.delta ?? 0) < 0 &&
+    (event.unit === self || isEvey(event.unit, self));
+  k.on(
+    "hpChanged",
+    "talent",
+    { subject: "selfOrMemosprite", when: lostHp },
+    (ctx) => {
+      ctx.applyStatus(ctx.self, withMe, { stacks: ctx.weight });
+      const evey = findEvey(ctx, ctx.self);
+      if (evey) ctx.applyStatus(evey, withMe, { stacks: ctx.weight });
+      gainMemoria(ctx, ctx.self, k.param("04", 1));
+    }
+  );
 
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
     summonEvey(ctx, ctx.self);
@@ -173,28 +194,20 @@ export default defineCharacter("1413", (k) => {
     }
   });
 
-  // HP is not simulated: enemy attacks on Evernight (aggro share) and her
-  // own HP costs are the HP losses. Attacks on Evey are not modeled.
-  k.on("hitByEnemy", "talent", { subject: "self" }, (ctx) =>
-    loseHp(ctx, ctx.self)
-  );
-
-  // The Skill always consumes HP; with A2 every ability does. One HP loss
-  // per ability is counted (see tracker).
-  k.on(
-    "actionStart",
-    "talent",
-    { subject: "self", abilityKinds: ["basic", "skill", "ultimate"] },
-    (ctx, event) => {
-      if (event.abilityKind !== "skill" && !k.a(1)) return;
-      if (k.a(1)) {
+  // A2: every ability consumes 5% of Evernight's current HP for CRIT DMG.
+  if (k.a(1)) {
+    k.on(
+      "actionStart",
+      "a2",
+      { subject: "self", abilityKinds: ["basic", "skill", "ultimate"] },
+      (ctx) => {
+        ctx.consumeHp(ctx.self, ctx.self.hpRatio * k.traceParam(1, 2));
         ctx.applyStatus(ctx.self, a2CritDmg);
         const evey = findEvey(ctx, ctx.self);
         if (evey) ctx.applyStatus(evey, a2CritDmg);
       }
-      loseHp(ctx, ctx.self);
-    }
-  );
+    );
+  }
 
   if (k.a(2)) {
     k.on(
@@ -215,12 +228,6 @@ export default defineCharacter("1413", (k) => {
         ctx.gainEnergy(ctx.self, k.traceParam(2, 4));
         gainMemoria(ctx, ctx.self, k.traceParam(2, 1));
       }
-    );
-  }
-
-  if (k.e(1) || k.e(4)) {
-    k.on("actionStart", k.e(1) ? "e1" : "e4", { subject: "ally" }, (ctx) =>
-      equipMemosprites(ctx, ctx.self)
     );
   }
 
@@ -262,6 +269,9 @@ export default defineCharacter("1413", (k) => {
     target: "none",
     skillPoints: 0,
     before: (ctx) => {
+      ctx.consumeHp(ctx.self, ctx.self.hpRatio * k.param("02", 6));
+      const present = findEvey(ctx, ctx.self);
+      if (present) ctx.heal(present, k.param("02", 4));
       summonEvey(ctx, ctx.self);
       for (const ally of ctx.allies) {
         if (ally.kind === "memosprite") ctx.applyStatus(ally, daySlips);
