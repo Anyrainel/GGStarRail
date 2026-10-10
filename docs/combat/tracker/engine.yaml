@@ -1,0 +1,85 @@
+# Combat engine tracker. Schema: .agents/skills/hsr-combat/tracking.md
+- id: engine-elation-punchline-amounts
+  entity: engine
+  rule: U8
+  status: open
+  category: needs-data
+  summary: >
+    Punchline gained at battle start and after each Aha action scales with the
+    number of Elation Characters; the amounts are not in the reference data, so
+    `punchlinePerElationCharacter` defaults to 0.
+  detail: "Glossary text confirms the mechanic; values need datamined config or in-game measurement."
+- id: engine-elation-participant-order
+  entity: engine
+  rule: C1
+  status: open
+  category: needs-data
+  summary: >
+    Aha Instant orders Elation Skills by hidden Participant ID; the engine uses
+    team slot order.
+  detail: ""
+- id: engine-elation-laughter
+  entity: engine
+  rule: C1
+  status: open
+  category: needs-data
+  summary: >
+    Aha's own "Let There Be Laughter" (used when no unit has an Elation Skill)
+    is not modeled; its Punchline-scaled multiplier is unknown.
+  detail: ""
+- id: engine-break-unbroken-multiplier
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    The breaking hit's Break DMG uses the 0.9 unbroken Toughness multiplier
+    (community claim); Elation DMG also uses 0.9/1.0. Both need confirmation.
+  detail: ""
+- id: engine-memosprite-buff-inheritance
+  entity: engine
+  rule: C5
+  status: open
+  category: verify
+  summary: >
+    Memosprites share the owner's panel and permanent elemental bonuses but
+    not the owner's combat statuses (fribbels model); confirm in game.
+  detail: ""
+- id: engine-super-break-zones
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    "Super Break DMG increases by X%" is modeled as DMG Boost scoped to Super
+    Break, separate from the conversion multiplier `superBreakDmg`; confirm the
+    two are different zones.
+  detail: ""
+- id: engine-energy-fixed-sources
+  entity: engine
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    All Energy except abilities' own regeneration is ERR-scaled unless a kit
+    marks it fixed; the glossary says some sources ignore ERR without listing
+    them.
+  detail: ""
+- id: engine-enemy-attack-energy
+  entity: engine
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Each enemy turn is one single-target attack worth 10 Energy (scenario
+    setting), distributed by aggro; real enemy skills vary (5-25, AoE).
+  detail: ""
+- id: engine-kill-triggers
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy HP and kills are not simulated; "upon defeating an enemy" effects
+    are user options.
+  detail: ""
