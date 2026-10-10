@@ -11,6 +11,7 @@ import { BetaPreviews } from "./BetaPreviews";
 import { CharacterCatalog } from "./CharacterCatalog";
 import { CurrencyWarArchiveView } from "./CurrencyWarArchiveView";
 import { LightConeCatalog } from "./LightConeCatalog";
+import { QuestArchiveView } from "./QuestArchiveView";
 import { RelicSetCatalog } from "./RelicSetCatalog";
 
 export type ArchiveKind =
@@ -18,6 +19,7 @@ export type ArchiveKind =
   | "lightCones"
   | "relicSets"
   | "achievements"
+  | "quests"
   | "currencyWar";
 
 interface ArchivePageProps {
@@ -43,15 +45,19 @@ export default function ArchivePage({ kind, titleKey }: ArchivePageProps) {
           {error && <span role="alert">{error}</span>}
         </div>
       )}
-      {betaEnabled() && kind !== "achievements" && kind !== "currencyWar" && (
-        <div className="container mb-2 max-h-[25dvh] shrink-0 overflow-y-auto">
-          <BetaPreviews kind={kind} />
-        </div>
-      )}
+      {betaEnabled() &&
+        kind !== "achievements" &&
+        kind !== "quests" &&
+        kind !== "currencyWar" && (
+          <div className="container mb-2 max-h-[25dvh] shrink-0 overflow-y-auto">
+            <BetaPreviews kind={kind} />
+          </div>
+        )}
       {kind === "characters" && <CharacterCatalog />}
       {kind === "lightCones" && <LightConeCatalog />}
       {kind === "relicSets" && <RelicSetCatalog />}
       {kind === "achievements" && <AchievementArchiveView />}
+      {kind === "quests" && <QuestArchiveView />}
       {kind === "currencyWar" && <CurrencyWarArchiveView />}
     </PageLayout>
   );

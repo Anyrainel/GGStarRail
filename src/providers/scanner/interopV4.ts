@@ -5,6 +5,7 @@ import {
   type Character,
   CompletedAchievementIdsSchema,
   ImportCoverageSchema,
+  QuestProgressRecordsSchema,
   type Relic,
   type RelicSlot,
 } from "@/domain/account/schemas";
@@ -112,6 +113,14 @@ export const InteroperableScannerV4Schema = z
       .strip()
       .optional(),
     achievements: CompletedAchievementIdsSchema.optional(),
+    quests: z
+      .object({
+        schemaVersion: z.literal(1),
+        coverage: z.literal("complete"),
+        records: QuestProgressRecordsSchema,
+      })
+      .strict()
+      .optional(),
     light_cones: z.array(V4LightConeSchema),
     relics: z.array(V4RelicSchema),
     characters: z.array(V4CharacterSchema),
@@ -653,19 +662,36 @@ export async function parseInteroperableScannerV4Export(
   }
   // v4 supplies completed IDs, not the v3 packet-capture evidence object.
   // Preserve presence (including []) without inventing capture provenance.
+  const completedIds = parsed.quests
+    ? parsed.quests.records
+        .filter(
+          (quest) =>
+            (quest.status === 2 || quest.status === 3) &&
+            catalog.achievementIds?.has(quest.id)
+        )
+        .map((quest) => quest.id)
+    : parsed.achievements;
+  if (parsed.quests && !catalog.achievementIds)
+    throw new Error("Scanner achievement reference is unavailable");
   const achievementCompletion =
-    parsed.achievements === undefined
-      ? undefined
-      : { completedIds: parsed.achievements };
+    completedIds === undefined ? undefined : { completedIds };
   const isGoodScanner = parsed.generator?.name === "GOODScanner";
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: `scanner:v4:${sourceKind}`,
     ...(uid ? { uid } : {}),
     characters,
     lightCones,
     relics,
     ...(achievementCompletion ? { achievementCompletion } : {}),
+    ...(parsed.quests
+      ? {
+          questProgress: {
+            records: parsed.quests.records,
+            importedAt: now.toISOString(),
+          },
+        }
+      : {}),
     source: {
       provider: "scanner-export",
       formatVersion: 4,

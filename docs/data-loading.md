@@ -62,15 +62,17 @@ source revision, with no achievement data or account data. Clients check it ever
 two hours and expose Refresh data for an immediate update; offline clients can
 continue using their last validated local cache or bundled reference.
 
-`/good/hsr_achievement_ids.json` carries the public achievement ID set and source
-revision. Only achievement capture downloads it, and its revision must match the
-inventory reference. The full OCR mapping remains independently published as
-`/good/mapping_achievements.json`. Inventory scanning and manager operations do
-not download either achievement file. The old combined endpoint is removed;
+Packet capture preserves the complete Quest response without downloading
+achievement IDs. The website uses its achievement catalog to classify records,
+and loads the independent `quests` member for `/archive/quests`. That member
+contains all non-achievement QuestData rows, including untitled objectives,
+with explicit system categories, conditions and rewards. New uncatalogued IDs
+remain visible under Other objectives. The full OCR mapping remains independently
+published as `/good/mapping_achievements.json`. Inventory scanning and manager
+operations do not download it. The old achievement-ID endpoint is removed;
 website and companion releases must be published together.
 
-The data producer writes `src/data/game/`, `public/good/hsr_scanner_data.json`
-and `public/good/hsr_achievement_ids.json`
+The data producer writes `src/data/game/` and `public/good/hsr_scanner_data.json`
 into its selected website checkout and retains identical local exports. The website
 does not locate or invoke the producer. `data:website:check` rejects revision or
 catalog coverage drift.

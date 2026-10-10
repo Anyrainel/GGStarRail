@@ -386,7 +386,7 @@ export function normalizeHoYoLabAvatarInfo(
 
   const warningList = [...warnings];
   const account = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: accountProfileKey(request.uid),
     uid: request.uid,
     region: server,

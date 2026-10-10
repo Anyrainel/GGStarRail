@@ -8,10 +8,12 @@ evidence helpers. It does not locate a producer checkout or launch Python.
 
 Run the export command in the producer repository and select this checkout as its
 destination. The producer writes `src/data/game/` and
-`public/good/hsr_scanner_data.json` and `public/good/hsr_achievement_ids.json`,
+`public/good/hsr_scanner_data.json`,
 retaining the same JSON in its own output tree. The shared scanner/capture file
-excludes achievements; the optional ID file is validated separately against the
-same source revision and achievement catalog.
+excludes achievements and Quest definitions; packet capture exports all Quest
+records without an ID allowlist. The independent website `quests` member
+contains only non-achievement objectives, classified by DailyQuest,
+BattlePassQuest, CycleQuest and LinearQuest membership rather than ID prefixes.
 This repository requires no producer-root environment variable. For a fresh clone,
 run `npm run data:restore`, `npm run assets:webp`, and `npm run check`.
 
@@ -60,7 +62,7 @@ It contains no source metadata, source files, or raw member descriptors. Raw dia
 corroboration are never runtime imports because they can contain hidden names.
 
 Members are `characters`, `light_cones`, `relic_sets`, `relic_pieces`,
-`achievement_categories`, `achievements`, `property_tables`, `progression`, plus
+`achievement_categories`, `achievements`, `quests`, `property_tables`, `progression`, plus
 partial preview members `nanoka_characters`, `nanoka_light_cones`,
 `nanoka_relic_sets`.
 

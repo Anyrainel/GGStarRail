@@ -131,7 +131,7 @@ describe("GOODScanner HSR import compatibility", () => {
 
     const parsed = await parseVersionedScannerExport(scannerV2Fixture);
     expect(parsed.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       source: {
         sourceVersion: "goodscanner-hsr-experimental-v2",
       },
@@ -151,7 +151,7 @@ describe("GOODScanner HSR import compatibility", () => {
     const merged = applyAccountImport(current, draft.account, "merge");
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       characters: [],
       lightCones: [],
       relics: [],
@@ -409,7 +409,7 @@ describe("GOODScanner HSR import compatibility", () => {
       new Date("2026-09-02T12:00:00.000Z")
     );
 
-    expect(draft.account.schemaVersion).toBe(3);
+    expect(draft.account.schemaVersion).toBe(4);
     expect(draft.account.source.coverage).toEqual({
       characters: "unknown",
       lightCones: "unknown",
@@ -460,7 +460,7 @@ describe("GOODScanner HSR import compatibility", () => {
     );
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:local",
       source: {
         provider: "scanner-export",
@@ -698,7 +698,7 @@ describe("GOODScanner HSR import compatibility", () => {
     const draft = await parseVersionedScannerExport(nativeScannerV1Fixture);
 
     expect(draft.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:legacy",
       source: {
         coverage: {
@@ -1204,7 +1204,7 @@ describe("interoperable HSR scanner v4 imports", () => {
     );
 
     expect(first.account).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       profileId: "scanner:v4:hsr-scanner",
       uid: "601869216",
       source: {

@@ -2820,6 +2820,229 @@
       "title": "PropertyValue",
       "type": "object"
     },
+    "Quest": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Id",
+          "type": "integer"
+        },
+        "quest_type": {
+          "title": "Quest Type",
+          "type": "integer"
+        },
+        "category": {
+          "enum": [
+            "daily",
+            "battle_pass",
+            "activity",
+            "repeatable",
+            "progression",
+            "other"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "title_parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Title Parameters",
+          "type": "array"
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reward_id": {
+          "title": "Reward Id",
+          "type": "integer"
+        },
+        "rewards": {
+          "items": {
+            "$ref": "#/$defs/QuestReward"
+          },
+          "title": "Rewards",
+          "type": "array"
+        },
+        "unlock_type": {
+          "title": "Unlock Type",
+          "type": "string"
+        },
+        "unlock_parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Unlock Parameters",
+          "type": "array"
+        },
+        "activity_module_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Module Id"
+        },
+        "cycle_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Days"
+        },
+        "schedule_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Schedule Id"
+        },
+        "chain_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Chain Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "quest_type",
+        "category",
+        "title_parameters",
+        "reward_id",
+        "rewards",
+        "unlock_type",
+        "unlock_parameters",
+        "chain_ids"
+      ],
+      "title": "Quest",
+      "type": "object"
+    },
+    "QuestCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Id",
+          "type": "integer"
+        },
+        "finish_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Finish Type"
+        },
+        "parameter_type": {
+          "title": "Parameter Type",
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Parameters",
+          "type": "array"
+        },
+        "parameter_integers": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Parameter Integers",
+          "type": "array"
+        },
+        "parameter_string": {
+          "title": "Parameter String",
+          "type": "string"
+        },
+        "progress": {
+          "title": "Progress",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "finish_type",
+        "parameter_type",
+        "parameters",
+        "parameter_integers",
+        "parameter_string",
+        "progress"
+      ],
+      "title": "QuestCondition",
+      "type": "object"
+    },
+    "QuestReward": {
+      "additionalProperties": false,
+      "properties": {
+        "item_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 4294967295,
+          "title": "Item Id",
+          "type": "integer"
+        },
+        "count": {
+          "exclusiveMinimum": 0,
+          "title": "Count",
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalizedText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": ["item_id", "count"],
+      "title": "QuestReward",
+      "type": "object"
+    },
     "RelicAffixScoreBase": {
       "additionalProperties": false,
       "properties": {
@@ -3122,6 +3345,13 @@
   },
   "additionalProperties": false,
   "properties": {
+    "quests": {
+      "items": {
+        "$ref": "#/$defs/Quest"
+      },
+      "title": "Quests",
+      "type": "array"
+    },
     "achievement_categories": {
       "items": {
         "$ref": "#/$defs/AchievementCategory"

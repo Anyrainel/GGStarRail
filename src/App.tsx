@@ -157,6 +157,12 @@ export default function App() {
             }
           />
           <Route
+            path={APP_PATHS.archiveQuests}
+            element={
+              <ArchivePage kind="quests" titleKey="route.archiveQuests.title" />
+            }
+          />
+          <Route
             path={APP_PATHS.archiveCurrencyWar}
             element={
               <ArchivePage

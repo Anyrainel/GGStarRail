@@ -1,20 +1,18 @@
 import { z } from "zod";
-import {
-  AccountSnapshotSchema,
-  AchievementCompletionSchema,
-} from "@/domain/account/schemas";
+import { AchievementCompletionSchema } from "@/domain/account/schemas";
 import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
   TriageRulesSchema,
 } from "@/domain/build/schemas";
+import { MigratingAccountSnapshotSchema } from "./migration/accountV3";
 
 export const PersistedWorkspaceSchema = z
   .object({
     schemaVersion: z.literal(1),
     characterLightConeIds: CharacterLightConeChoicesSchema,
-    account: AccountSnapshotSchema.nullable(),
+    account: MigratingAccountSnapshotSchema.nullable(),
     localAchievementCompletion: AchievementCompletionSchema.default({
       completedIds: [],
     }),

@@ -32,6 +32,7 @@ import type {
   ProgressionTables,
 } from "@/providers/reference/types";
 import { validateRelicMainStatDisplayValue } from "@/providers/relicMainStat";
+import { MigratingAccountSnapshotSchema } from "@/stores/migration/accountV3";
 import type { AccountImportDraft } from "../types";
 import {
   isInteroperableScannerV4Export,
@@ -52,7 +53,7 @@ const NativeScannerExportSchema = z
       .strict(),
     exportedAt: z.string().datetime(),
     account: z.union([
-      AccountSnapshotSchema,
+      MigratingAccountSnapshotSchema,
       AccountSnapshotV2Schema,
       AccountSnapshotV1Schema,
     ]),
@@ -770,7 +771,7 @@ export function parseGoodScannerExperimentalExport(
   }
 
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     profileId: "scanner:local",
     characters,
     lightCones,

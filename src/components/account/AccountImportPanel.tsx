@@ -531,11 +531,14 @@ export function AccountImportPanel({
               <Badge variant="outline">
                 {draft.account.achievementCompletion
                   ? t(
-                      draft.account.achievementCompletion.capture
-                        ? draft.account.achievementCompletion.locallyModifiedAt
-                          ? "imports.review.achievementCapturedEdited"
-                          : "imports.review.achievementComplete"
-                        : "imports.review.achievementTracked",
+                      draft.account.questProgress
+                        ? "imports.review.achievementComplete"
+                        : draft.account.achievementCompletion.capture
+                          ? draft.account.achievementCompletion
+                              .locallyModifiedAt
+                            ? "imports.review.achievementCapturedEdited"
+                            : "imports.review.achievementComplete"
+                          : "imports.review.achievementTracked",
                       {
                         count:
                           draft.account.achievementCompletion.completedIds
@@ -544,6 +547,13 @@ export function AccountImportPanel({
                     )
                   : t("imports.review.achievementUnavailable")}
               </Badge>
+              {draft.account.questProgress && (
+                <Badge variant="outline">
+                  {t("imports.review.quests", {
+                    count: draft.account.questProgress.records.length,
+                  })}
+                </Badge>
+              )}
             </div>
             {draft.warnings.length > 0 && (
               <div className="space-y-2 rounded-lg border border-border bg-background/60 p-4">
