@@ -18,14 +18,15 @@ export default defineRelicSet("133", {
       modifiers: [{ stat: "critDmg", value: k.param(4) }],
       unique: true,
     });
-    // Only abilities aimed at a designated ally carry it as their target
-    // (see tracker).
+    // "On one other ally target" (我方其他单体目标): the ally the ability
+    // names, other than the wearer.
     k.on(
       "actionStart",
       "relic4pc",
       {
         abilityKinds: ["skill", "ultimate"],
         when: (event, self) =>
+          event.abilityTarget === "ally" &&
           event.target !== undefined &&
           !isEnemy(event.target) &&
           event.target.id !== self.id,

@@ -18,7 +18,7 @@
 - id: hunter-of-glacial-forest-ultimate-timing
   entity: "104"
   rule: U8
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Hunter of Glacial Forest's 4-piece CRIT DMG is applied when the Ultimate
@@ -26,31 +26,28 @@
     the triggering Ultimate. The ZH text reads "when" (施放终结技时), which
     would include it.
   detail: >
-    Settled: the source-language text reads 'when the wearer uses their
-    Ultimate' (当装备者施放终结技时), and fribbels applies the 25% CRIT DMG to all
-    of the wearer's damage, the Ultimate included (default on). Switch the
-    listener to actionStart so the triggering Ultimate is boosted.
+    The 4-piece listener moved from actionEnd to actionStart (ZH 施放终结技时), so
+    the triggering Ultimate is boosted. Checked with the generic attacker:
+    its Ultimate hits carry the 25% CRIT DMG.
 - id: guard-of-wuthering-snow-own-hp
   entity: "106"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Guard of Wuthering Snow's 4-piece turn-start Energy needs the wearer at
     or below 50% HP. HP is not simulated, so it is one off-by-default toggle
     (selfHpBelow) that applies to every turn start of the battle.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the low-hp
-    toggle. At the wearer's turn start, if self.hpRatio ≤ #1,
-    ctx.heal(self, #2) and regenerate #3 Energy.
+    Removed the low-hp toggle. At each turn start of the wearer, when
+    self.hpRatio <= #1, it heals itself for #2 x (1 + Outgoing Healing) and
+    regenerates #3 Energy. Checked with a scratch wearer whose Skill
+    consumes 30% HP (heal and Energy only below 50%). Until Character kits
+    call ctx.consumeHp, only enemy attacks lower a real wearer's HP.
 - id: longevous-disciple-hp-consumed
   entity: "113"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Longevous Disciple's 4-piece stacks on HP consumption are assumed at the
@@ -59,21 +56,16 @@
     enabled). HP consumed by allies (e.g. Jingliu's Enhanced Skill) is not
     modelled.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    own-hp-consumed toggle and the per-wearer table. Gain a stack from
-    hitByEnemy (stacks = weight) as now and from each hpChanged (subject
-    self, hpCause consume), whoever consumed it ('by an ally or
-    themselves': the wearer's own costs, Castorice's Skills, Jingliu's
-    Spectral Transmigration attacks, Long May Rainbows Adorn the Sky).
-    Needs those kits to call consumeHp.
+    Removed the own-hp-consumed toggle and the per-wearer table. Stacks
+    (stacks = weight) come from hitByEnemy and from every hpChanged on the
+    wearer with hpCause consume, whoever consumed it. Checked with a scratch
+    wearer whose Skill calls consumeHp before its hits (the Skill's hits see
+    the stack). Blade, Arlan, Mydei, Castorice, Jingliu, and Long May
+    Rainbows Adorn the Sky count once their kits call ctx.consumeHp.
 - id: messenger-traversing-hackerspace-ally-ultimate
   entity: "114"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     "Uses their Ultimate on an ally" cannot be read from events: actionStart
@@ -81,35 +73,29 @@
     plain `true` policy report the main enemy as target. The kit counts an
     Ultimate that deals no DMG or aims at an ally.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on the wearer's Ultimate with abilityTarget
-    ally, allies, or self; drop the no-DMG and ally-target proxy.
+    Triggers on the wearer's Ultimate with abilityTarget ally, allies, or
+    self (对我方目标); the no-DMG and ally-target proxy is gone. Checked with
+    Bronya and Robin (Ultimates on all allies) and a scratch support aiming
+    its Ultimate at one named ally; an attacking Ultimate does not trigger
+    it.
 - id: watchmaker-ally-ultimate
   entity: "118"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Watchmaker's "uses their Ultimate on an ally" uses the same proxy as
     Messenger (an Ultimate that deals no DMG or aims at an ally), because
     events do not carry the ability's target type.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on the wearer's Ultimate with abilityTarget
-    ally, allies, or self; drop the no-DMG and ally-target proxy (as
-    messenger-traversing-hackerspace-ally-ultimate).
+    Triggers on the wearer's Ultimate with abilityTarget ally, allies, or
+    self (对我方目标); the no-DMG and ally-target proxy is gone. Checked with
+    Bronya and a scratch support (Ultimate on all allies or on one named
+    ally); an attacking Ultimate does not trigger it.
 - id: prisoner-in-deep-confinement-dot-count
   entity: "116"
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Prisoner in Deep Confinement's 4-piece DEF ignore scales with the number
@@ -117,11 +103,10 @@
     the first DoT counts (6%), recognized by a Burn/Shock/Bleed/Wind Shear
     family, so DoT teams are undervalued by up to 12% DEF ignore.
   detail: >
-    Blocked on engine-target-dot-count. Then ignore #1 DEF per DoT on the
-    target, up to #2 DoTs. Meanwhile Character DoTs declare families
-    (Kafka and Serval Shock, Sampo Wind Shear, Luka Bleed, Himeko, Hook,
-    Guinaifen, and Jiaoqiu Burn, Hysilens's DoTs), so the first-DoT check
-    sees them; Black Swan's Arcana still has none.
+    One defIgnore #1 modifier per DoT tier, filter minTargetDots 1..#2,
+    replaces the first-DoT family check. Checked with Kafka: her hits see
+    1-2 DoTs on Shocked targets and the 4-piece raises her DMG by about 2.6%
+    over the 2-piece.
 - id: pioneer-diver-debuff-chance
   entity: "117"
   rule: U9
@@ -137,7 +122,7 @@
 - id: bananamusement-summon-detection
   entity: "318"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Kits cannot list a unit's summons or tell summoned targets (Numby,
@@ -147,13 +132,15 @@
     the summon's first attack (Topaz, Jing Yuan) and summons that never attack
     (Souldragon outside its enhanced state) miss the 32% CRIT DMG.
   detail: >
-    Track the wearer's memosprites and summons with summoned/departed
-    (61c14f6, subject selfOrMemosprite), leaving out Action Order
-    countdowns by definition ID as Sunday's SUMMON_IDS does (numby,
-    lightning-lord, fuyuan, souldragon are summons; the '-countdown' IDs
-    are not). The 32% applies from the moment one is summoned until none
-    is left; drop the 'after its first attack' rule and the boundary
-    polling.
+    Tracks the wearer's summoned targets by unit ID with summoned/departed
+    (subject selfOrMemosprite): memosprites, and summons that are not
+    countdowns (unit.countdown, or a '-countdown' ID until those kits
+    declare it: bananamusement-countdown-flag). The 32% applies while one is
+    present; the 'after its first attack' rule and the boundary polling are
+    gone. Checked with Jing Yuan, Topaz, Lingsha, Dan Heng • Permansor
+    Terrae, and Aglaea (32% from the summon on), Robin and Firefly
+    (countdowns give none), and a scratch summoner whose dismissal removes
+    it.
 - id: bananamusement-memosprite-crit-dmg
   entity: "318"
   rule: U3
@@ -181,10 +168,11 @@
     never raises Little Ica's damage; the same 20% as a Relic stat raises
     Hyacine's damage by about 11% at 180 SPD.
   detail: >
-    Blocked on engine-momentary-stat-read (a read that includes
-    conditional scaling modifiers). Convention (Outgoing Healing): keep
-    the tiers; they reach heal amounts and Hyacine's tally once those
-    reads include them.
+    Blocked on engine-momentary-stat-read (a read that includes conditional
+    scaling modifiers). unit.currentStat (85ed2c2) adds current statuses but
+    still leaves out scaling modifiers, so the SPD tiers do not reach it.
+    Convention (Outgoing Healing): keep the tiers; they reach heal amounts
+    and Hyacine's tally once those reads include them.
 - id: tengoku-sp-scope
   entity: "324"
   rule: U10
@@ -202,7 +190,7 @@
 - id: punklorde-elation-latch
   entity: "325"
   rule: E3
-  status: open
+  status: completed
   category: approximation
   summary: >
     The CRIT DMG tiers check the wearer's steady Elation with scaling
@@ -210,9 +198,13 @@
     buffs that reach 40%/80% once in combat, which latch the bonus for the
     rest of the battle in game, are not counted.
   detail: >
-    Blocked on engine-momentary-stat-read. Then latch each tier, as a
-    battle-long status, the first time the wearer's Elation with statuses
-    reaches #2 or #3.
+    The steady scaling tiers became latched statuses (#4, then #5 - #4)
+    applied the first time ctx.self.currentStat('elation') reaches #2 or #3,
+    checked at battleStart, at each of the wearer's actions, and when a
+    status lands on the wearer; they stay for the battle and reach the
+    wearer's memosprites (also ones summoned later). currentStat leaves out
+    scaling modifiers, as the old atLeast input did. Checked with Sparxie at
+    38%, 42%, and 86% Elation.
 - id: fallen-star-companions
   entity: "327"
   rule: U8
@@ -230,7 +222,7 @@
 - id: sacerdos-relived-ordeal-ally-target
   entity: "121"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Sacerdos' Relived Ordeal triggers only when a Skill or Ultimate event names
@@ -239,20 +231,14 @@
     Trailblazer • Elation, Robin • Summeretto) report the main enemy, so they
     grant no CRIT DMG stacks.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on Skills and Ultimates with abilityTarget
-    === 'ally' and give the stack to event.target. Character kits whose
-    single-ally abilities do not name the ally are filed as
-    <name>-ally-target-event items. Two wearers keep the stronger copy
-    (unique); whether their stacks pool in game is unverified.
+    Triggers on Skills and Ultimates with abilityTarget === 'ally' and a
+    non-enemy event.target, which gets the stack; abilities on all allies
+    give none. Checked with Bronya and Sunday (named targets); Pearl and
+    Robin • Summeretto name their Ultimate's ally in their policies too.
 - id: wavestrider-captain-ally-target
   entity: "126"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Wavestrider Captain gains Help only from another ally's ability whose
@@ -260,19 +246,15 @@
     Ultimates aimed by kit heuristics and abilities aimed at all allies
     (e.g. Robin's Ultimate) grant no Help.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Gain 1 Help from another ally's action with
-    abilityTarget === 'ally' and event.target the wearer, or with
-    abilityTarget === 'allies' (an all-ally ability also targets the
-    wearer; unconfirmed in game).
+    Gains 1 Help (stacks = weight) from another ally's action with
+    abilityTarget 'ally' naming the wearer, or 'allies' (unconfirmed in
+    game). Checked with the generic attacker next to Robin: Robin's Skill
+    and Ultimate (on all allies) give the 2 Help that the wearer's Ultimate
+    consumes for the ATK bonus.
 - id: dreamlit-actor-ally-target
   entity: "133"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Dreamlit Actor triggers only when the wearer's Skill or Ultimate event
@@ -280,13 +262,11 @@
     supports that pick their ally inside the ability (Pearl, Trailblazer •
     Elation, Robin • Summeretto Ultimates) never trigger it.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on Skills and Ultimates with abilityTarget
-    === 'ally' and event.target an ally other than the wearer.
+    Triggers on the wearer's Skills and Ultimates with abilityTarget 'ally'
+    and event.target an ally other than the wearer. Checked with Sunday and
+    a scratch support (named Skill target; a self target gives nothing; with
+    10+ Certified Banger all allies get the CRIT DMG). Pearl and Robin •
+    Summeretto name their Ultimate's ally in their policies too.
 - id: poet-of-mourning-collapse-prebattle-spd
   entity: "124"
   rule: E3
@@ -304,7 +284,7 @@
 - id: warrior-goddess-heal-trigger
   entity: "125"
   rule: U12
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Healing is not simulated, so Gentle Rain (wearer SPD, all allies' CRIT
@@ -312,34 +292,35 @@
     instead of a 2-turn state gained when the wearer or its memosprite heals
     another ally (once per turn).
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    gentle-rain option and the permanent stats. Gain Gentle Rain (#3
-    turns, limitPerTurn 1) on hpChanged with hpCause heal, source the
-    wearer or its memosprite, and a healed unit other than the source;
-    while it is held, the wearer's SPD +#1 and all allies' CRIT DMG +#2
-    (statuses on the wearer's clock, unique across wearers). Heals on
-    full-HP allies emit no event (engine-hp-event-triggers). Needs the
-    healer kits to call ctx.heal.
+    Removed the gentle-rain option and permanent stats. hpChanged with
+    hpCause heal, source the wearer or its memosprite, and a healed ally
+    that is neither (ZH 装备者及其忆灵以外的我方目标), limitPerTurn 1, gives Gentle Rain
+    (#3 turns on the wearer, SPD +#1) and a unique CRIT DMG +#2 status on
+    all allies, removed when Gentle Rain ends (statusRemoved); both take
+    stacks = weight. Heals on full-HP allies fire since dd13fa1. Checked
+    with a scratch healer (Skill heals on the wearer alone give nothing);
+    healer kits count once they call ctx.heal.
 - id: self-enshrouded-recluse-shield-state
   entity: "128"
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Shields are not simulated, so the CRIT DMG for allies holding the
     wearer's Shield is an on-by-default "active" option applied to all allies
     for the whole battle.
   detail: >
-    Blocked on engine-shield-state. Then give the CRIT DMG to allies
-    holding the wearer's Shield and drop the option.
+    Removed the shielded option and the team aura. A unique CRIT DMG +#2
+    status follows each ally's Shields from the wearer: applied on
+    statusApplied of a shield-family status by the wearer, removed on
+    statusRemoved when no Shield from the wearer is left. Checked with a
+    scratch shielder (one-ally and all-ally Shields). Only Luocha's E2
+    Shield carries the family so far; other Shield kits count once they tag
+    their Shields.
 - id: divine-querying-master-smith-def-reduced
   entity: "132"
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     There is no target filter for the generic "DEF reduction state". The kit
@@ -348,8 +329,11 @@
     before every action, which the CRIT DMG filter reads. Comburent triggers
     with certainty even when the DEF reduction was applied with a base chance.
   detail: >
-    Blocked on engine-def-reduced-state. Meanwhile statusRemoved (61c14f6)
-    can replace the resync before every action.
+    The CRIT DMG filter reads the engine's defReduced family; the marker
+    status, the collected StatusDefs, and the resync before every action are
+    gone. Comburent still triggers on a status with a DEF reduction applied
+    by the wearer (same test as the family). Checked with Pela. The
+    base-chance part is divine-querying-master-smith-debuff-chance.
 - id: hero-of-triumphant-song-joint-atk
   entity: "123"
   rule: U8
@@ -362,3 +346,28 @@
   detail: >
     Not settled: fribbels applies the CRIT DMG to the wearer and
     memosprite through a toggle and does not distinguish Joint ATKs.
+- id: divine-querying-master-smith-debuff-chance
+  entity: "132"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Comburent triggers on every DEF reduction the wearer applies, whatever
+    its landing chance, and the CRIT DMG against defReduced targets counts a
+    base-chance DEF reduction as landed.
+  detail: >
+    Blocked on engine-debuff-landing-chance. Then scale both by the landing
+    chance of the DEF reduction.
+- id: bananamusement-countdown-flag
+  entity: "318"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Countdown summons are told apart by unit.countdown or, until their kits
+    declare countdown: true, by a '-countdown' definition ID: Robin (1309,
+    concerto-countdown), Firefly (1310), Aglaea (1402), Mortenax Blade
+    (1507), and Robin • Summeretto (1512, fever-countdown).
+  detail: >
+    Once those kits pass countdown: true to k.summon, drop the ID suffix
+    check in summonedTarget.

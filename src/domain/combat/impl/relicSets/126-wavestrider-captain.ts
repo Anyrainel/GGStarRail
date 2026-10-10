@@ -14,14 +14,16 @@ export default defineRelicSet("126", {
       duration: { turns: k.param(3) },
       modifiers: [{ stat: "atkPct", value: k.param(2) }],
     });
-    // Only abilities aimed at a designated ally carry it as their target
-    // (see tracker).
+    // Another ally's ability aimed at the wearer, or at all allies (the
+    // wearer is one of its targets; unconfirmed in game).
     k.on(
       "actionStart",
       "relic4pc",
       {
         subject: "otherAlly",
-        when: (event, self) => event.target?.id === self.id,
+        when: (event, self) =>
+          (event.abilityTarget === "ally" && event.target?.id === self.id) ||
+          event.abilityTarget === "allies",
       },
       (ctx) => ctx.applyStatus(ctx.self, help, { stacks: ctx.weight })
     );

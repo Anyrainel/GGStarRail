@@ -2,6 +2,20 @@ import type { BattleApi, UnitView } from "../../kit/api";
 import { defineRelicSet } from "../../kit/equipment";
 
 /**
+ * Action Order countdowns and markers (Concerto, Supreme Stance) are not
+ * summoned targets. The ID suffix covers countdown kits not yet declared
+ * with `countdown: true` (bananamusement-countdown-flag).
+ */
+function summonedTarget(unit: UnitView): boolean {
+  return (
+    unit.kind === "memosprite" ||
+    (unit.kind === "summon" &&
+      !unit.countdown &&
+      !unit.definitionId.endsWith("-countdown"))
+  );
+}
+
+/**
  * The Wondrous BananAmusement Park. CRIT DMG is applied from catalog
  * properties.
  */
@@ -12,47 +26,31 @@ export default defineRelicSet("318", {
       origin: "ornament",
       modifiers: [{ stat: "critDmg", value: k.param(2) }],
     });
-    // Summons (kind "summon") cannot be told apart from countdowns, which
-    // never attack: a summon counts once it has attacked and while it is
-    // still active (Numby, Lightning-Lord). Memosprites count while present.
-    const attackingSummons = new Set<string>();
-    const memospritesOf = (ctx: BattleApi): UnitView[] =>
-      ctx.allies.filter(
-        (ally) => ally.kind === "memosprite" && ally.owner?.id === ctx.self.id
-      );
+    // The wearer's summoned targets on the field, by unit ID.
+    const active = new Set<string>();
     // Memosprites inherit the wearer's equipment bonuses (the engine copies
     // them), so the conditional CRIT DMG follows the same rule.
     const sync = (ctx: BattleApi) => {
-      const memosprites = memospritesOf(ctx);
-      const present =
-        memosprites.length > 0 ||
-        [...attackingSummons].some(
-          (id) => ctx.findSummon(ctx.self, id) !== null
-        );
+      const present = active.size > 0;
+      const memosprites = ctx.allies.filter(
+        (ally) => ally.kind === "memosprite" && ally.owner?.id === ctx.self.id
+      );
       for (const unit of [ctx.self, ...memosprites]) {
         if (present && !unit.has(summoned)) ctx.applyStatus(unit, summoned);
         if (!present && unit.has(summoned)) ctx.removeStatus(unit, summoned);
       }
     };
-    k.on("battleStart", "ornament", { subject: "any" }, (ctx) => {
-      attackingSummons.clear();
+    const filter = {
+      subject: "selfOrMemosprite" as const,
+      when: (event: { unit: UnitView }) => summonedTarget(event.unit),
+    };
+    k.on("summoned", "ornament", filter, (ctx, event) => {
+      active.add(event.unit.id);
       sync(ctx);
     });
-    k.on(
-      "actionStart",
-      "ornament",
-      {
-        subject: "self",
-        attack: true,
-        when: (event, self) =>
-          event.unit.kind === "summon" && event.unit.owner?.id === self.id,
-      },
-      (_ctx, event) => {
-        attackingSummons.add(event.unit.definitionId);
-      }
-    );
-    for (const event of ["turnStart", "actionStart", "actionEnd"] as const) {
-      k.on(event, "ornament", { subject: "any" }, sync);
-    }
+    k.on("departed", "ornament", filter, (ctx, event) => {
+      active.delete(event.unit.id);
+      sync(ctx);
+    });
   },
 });

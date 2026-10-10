@@ -1,5 +1,4 @@
 import { defineRelicSet } from "../../kit/equipment";
-import type { AbilityKind } from "../../kit/model";
 
 /** Longevous Disciple. Max HP is applied from catalog properties. */
 export default defineRelicSet("113", {
@@ -15,32 +14,12 @@ export default defineRelicSet("113", {
     k.on("hitByEnemy", "relic4pc", {}, (ctx) =>
       ctx.applyStatus(ctx.self, critRate, { stacks: ctx.weight })
     );
-
-    // HP is not simulated, so the wearer's own HP consumption is assumed at
-    // the start of the ability kinds that consume it (HP costs precede the
-    // DMG). Known consumers default on, as in The Unreachable Side: Blade
-    // (Skill, Forest of Swords, Ultimate), Arlan and Mydei (Skills). Other
-    // wearers default off and, when enabled, consume HP with every Basic
-    // ATK, Skill, and Ultimate. HP consumed by allies is not modelled.
-    const ownHpCosts: Readonly<Record<string, readonly AbilityKind[]>> = {
-      "1205": ["basic", "skill", "ultimate"],
-      "1008": ["skill"],
-      "1404": ["skill"],
-    };
-    const knownCosts = ownHpCosts[k.wearer.characterId];
-    const consumesHp = k.toggle(
-      "own-hp-consumed",
+    // HP consumed by the wearer or any ally.
+    k.on(
+      "hpChanged",
       "relic4pc",
-      "active",
-      knownCosts !== undefined
+      { when: (event) => event.hpCause === "consume" },
+      (ctx) => ctx.applyStatus(ctx.self, critRate, { stacks: ctx.weight })
     );
-    if (consumesHp) {
-      k.on(
-        "actionStart",
-        "relic4pc",
-        { abilityKinds: knownCosts ?? ["basic", "skill", "ultimate"] },
-        (ctx) => ctx.applyStatus(ctx.self, critRate, { stacks: ctx.weight })
-      );
-    }
   },
 });

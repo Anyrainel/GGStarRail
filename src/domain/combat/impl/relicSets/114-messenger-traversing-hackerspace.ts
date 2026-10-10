@@ -1,4 +1,3 @@
-import { isEnemy } from "../../kit/api";
 import { defineRelicSet } from "../../kit/equipment";
 
 /**
@@ -13,16 +12,16 @@ export default defineRelicSet("114", {
       modifiers: [{ stat: "spdPct", value: k.param(1) }],
       unique: true,
     });
-    // Events do not carry an ability's target type: an Ultimate counts as
-    // used "on an ally" when it aims at an ally or deals no DMG (see tracker).
+    // "On an ally" (对我方目标): one ally, all allies, or the wearer.
     k.on(
       "actionStart",
       "relic4pc",
       {
         abilityKinds: ["ultimate"],
         when: (event) =>
-          !event.attack ||
-          (event.target !== undefined && !isEnemy(event.target)),
+          event.abilityTarget === "ally" ||
+          event.abilityTarget === "allies" ||
+          event.abilityTarget === "self",
       },
       (ctx) => {
         for (const ally of ctx.allies) ctx.applyStatus(ally, spd);

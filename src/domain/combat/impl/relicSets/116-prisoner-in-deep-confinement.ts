@@ -5,12 +5,13 @@ import { defineRelicSet } from "../../kit/equipment";
  */
 export default defineRelicSet("116", {
   fourPiece: (k) => {
-    // Hit filters cannot count the DoTs on a target (engine-gap), so only
-    // the first DoT counts, recognized by its family; #2 is unused.
-    k.stat("relic4pc", {
-      stat: "defIgnore",
-      value: k.param(1),
-      filter: { targetFamilies: ["burn", "shock", "bleed", "windShear"] },
-    });
+    // One tier per DoT on the target, up to #2 DoTs.
+    for (let dots = 1; dots <= k.param(2); dots += 1) {
+      k.stat("relic4pc", {
+        stat: "defIgnore",
+        value: k.param(1),
+        filter: { minTargetDots: dots },
+      });
+    }
   },
 });

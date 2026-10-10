@@ -9,10 +9,9 @@ export default defineRelicSet("104", {
       duration: { turns: k.param(2) },
       modifiers: [{ stat: "critDmg", value: k.param(1) }],
     });
-    // EN: "After the wearer uses their Ultimate"; ZH reads "when" (施放终结技
-    // 时). Applied after the Ultimate resolves, so the triggering Ultimate is
-    // not boosted (see tracker).
-    k.on("actionEnd", "relic4pc", { abilityKinds: ["ultimate"] }, (ctx) =>
+    // EN "After the wearer uses"; ZH "when" (施放终结技时), followed: the
+    // triggering Ultimate is boosted.
+    k.on("actionStart", "relic4pc", { abilityKinds: ["ultimate"] }, (ctx) =>
       ctx.applyStatus(ctx.self, critDmg)
     );
   },
