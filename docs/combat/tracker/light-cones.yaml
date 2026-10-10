@@ -125,3 +125,183 @@
     procs, and Break DoT ticks, but Super Break DMG emits no event, so Super
     Break DMG dealt by the wearer does not trigger it.
   detail: "Needs a hit (or break-damage) event for Super Break instances recorded in applyToughness."
+- id: but-the-battle-isnt-over-sp-timing
+  entity: "23003"
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    The Skill Point fires on the 1st, 3rd, 5th... Ultimate ("once after every
+    2 uses"), and only for Ultimates that attack no enemy (read as "on an
+    ally"). Verify whether the game recovers it on the 2nd, 4th... use instead.
+  detail: ""
+- id: but-the-battle-isnt-over-next-ally
+  entity: "23003"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    The DMG buff goes to the next teammate (Character or memosprite) whose
+    turn starts after the wearer's Skill and lasts until the end of that
+    turn; Ultimates cast in between do not count as "taking action". Past and
+    Future (21025) instead predicts the next ally from the Action Order.
+  detail: ""
+- id: earthly-escapade-sp-overflow
+  entity: "23021"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Radiant Flame counts "Skill Points that exceed the limit", but
+    skillPointsChanged reports the change after the cap, so Skill Points the
+    wearer recovers at the cap give no stacks.
+  detail: "Needs the uncapped amount (or the overflow) on skillPointsChanged for gains."
+- id: earthly-escapade-late-memosprites
+  entity: "23021"
+  rule: U3
+  status: open
+  category: approximation
+  summary: >
+    Mask's teammate CRIT buff is a status applied when Mask is gained, so a
+    memosprite summoned while Mask is active lacks it until the next Mask.
+  detail: "A team modifier conditioned on a status of its provider would model the aura exactly."
+- id: flowing-nightglow-concerto-atk
+  entity: "23026"
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Cadenza's ATK bonus reaches the wearer's own hits, but applier-scaled
+    modifiers read the applier's steady panel, so Robin's Concerto ATK bonus
+    to allies ignores Cadenza (in game it follows Robin's current ATK).
+  detail: ""
+- id: a-grounded-ascent-ultimate-target
+  entity: "23034"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Ultimates carry no ally target, so an Ultimate counts as "on one ally
+    character" when the statuses the wearer applies during it reach exactly
+    one other Character; that Character receives Hymn. Skills use the turn
+    choice's ally target.
+  detail: "An ally target on Ultimate actions (see engine-ally-option-vocabulary) would replace the heuristic."
+- id: if-time-were-a-flower-late-memosprites
+  entity: "23038"
+  rule: U3
+  status: open
+  category: approximation
+  summary: >
+    Presage's CRIT DMG for all ally targets is a status applied when Presage is
+    gained, so a memosprite summoned while Presage is active lacks it until
+    the wearer's next Follow-up ATK.
+  detail: "A team modifier conditioned on a status of its provider would model the aura exactly."
+- id: sleep-like-the-dead-crit-chance
+  entity: "23012"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    CRIT is an expected value, so the trigger chance of a Basic ATK or Skill
+    is 1 minus the chance that all its DMG instances CRIT, read from the
+    wearer's steady-panel CRIT Rate (momentary CRIT Rate buffs and the
+    per-target CRIT Rate of other effects are ignored); the buff is applied
+    after the action rather than mid-action.
+  detail: "Cooldown and buff windows are tracked as trigger chances of the last own turns (counters on the wearer); triggers inside one cooldown window are mutually exclusive, so their chances add up exactly."
+- id: sleep-like-the-dead-trigger-scope
+  entity: "23012"
+  rule: U9
+  status: open
+  category: verify
+  summary: >
+    The kit triggers when any DMG instance of a Basic ATK or Skill (every
+    target of a Blast included) does not CRIT, and lets the effect trigger
+    again on the third own turn after triggering. Confirm per-instance versus
+    per-action checking and how the 3-turn cooldown is counted.
+  detail: ""
+- id: worrisome-blissful-tame-stacks
+  entity: "23016"
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    Hit filters see whether a target holds a status, not its stacks, so each
+    Tame stack beyond the first also places a marker status (tame-2) that a
+    second team CRIT DMG modifier filters on.
+  detail: "A stack-aware target filter (or target-status stacks as a scaling source) would replace the marker statuses."
+- id: worrisome-blissful-tame-debuff
+  entity: "23016"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    Tame is modeled as a debuff ("inflicts the target"), so it counts for
+    debuff-count effects (e.g. Baptism of Pure Thought, Dr. Ratio); it never
+    expires and targets the Follow-up ATK's designated target. Confirm its
+    debuff status in game.
+  detail: ""
+- id: the-finale-of-a-lie-vulnerability
+  entity: "23056"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    "DMG taken by all enemies +20%" is a non-debuff status placed on every
+    enemy present when Umbra Devourer is gained, timed by the wearer's turns;
+    enemies that appear later miss it until the next gain. Confirm whether
+    the game counts it as a debuff.
+  detail: "A team-side enemy aura conditioned on a status of its provider would model it exactly."
+- id: sailing-towards-a-second-life-spd
+  entity: "23027"
+  rule: E3
+  status: open
+  category: engine-gap
+  summary: >
+    Turn order ignores permanent (k.stat) SPD modifiers with scaling, so the
+    Break-Effect-gated SPD is a status applied at battle start instead.
+  detail: "When unit speed reads scaled permanent modifiers, the status can become k.stat with scaling.atLeast."
+- id: the-hell-where-ideals-burn-sp-limit
+  entity: "23046"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Battle-start listeners run in team-slot order, so a teammate later in the
+    team (Sparkle) raises the Skill Point limit after the wearer's check; the
+    kit repeats the check before the first turn of the battle.
+  detail: "A post-battle-start phase (or a Skill Point limit change event) would make the re-check unnecessary."
+- id: into-the-unreachable-veil-energy-cost
+  entity: "23037"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Into the Unreachable Veil recovers a Skill Point when the Ultimate
+    consumed 140 or more Energy, but Ultimate events do not report the Energy
+    spent, so the kit compares the wearer's max Energy at build time. Ultimate
+    variants with a lower cost (Argenti's 90-Energy Ultimate) or paid from a
+    counter still recover the Skill Point.
+  detail: "Fix: expose the Energy an Ultimate consumed on its actionStart/actionEnd event."
+- id: life-should-be-cast-to-flames-implanter
+  entity: "23041"
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    Life Should Be Cast to Flames boosts DMG against enemies with a Weakness
+    implanted by the wearer, but implantWeakness does not record who added a
+    Weakness. The kit treats Weaknesses that appear during the wearer's own
+    actions as the wearer's (a marker status on the enemy); implants made
+    outside them (Anaxa's E2 at battle start) are missed.
+  detail: "Fix: record the implanter and offer a target filter such as `targetImplantedBy: \"self\"`."
+- id: life-should-be-cast-to-flames-def-timing
+  entity: "23041"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Life Should Be Cast to Flames lowers DEF "when an enemy gets attacked by
+    the wearer". The designated target receives it at the start of the
+    attack; other enemies receive it once a hit lands on them, so the first
+    hit on each of them is not reduced.
+  detail: ""
