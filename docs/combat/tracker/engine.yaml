@@ -709,3 +709,124 @@
     trigger's weight would cover them. Equipment kits keep hitByEnemy (aggro
     weight) for "when attacked", since hpChanged with hpCause enemy fires for
     every ally on every enemy attack.
+- id: engine-break-recovery-hook
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies recover from Weakness Break at their turn start with no hook, so
+    an effect that extends the Broken state and replaces that turn with an
+    action delay (Ruan Mei's Thanatoplum Rebloom) cannot be expressed.
+  detail: >
+    Needs an event or callback at the recovery attempt that lets a kit keep
+    the enemy Broken (cancelling recovery and its turn) and delay it. The
+    game flags such statuses with the BreakExtend behaviour. Affects Ruan Mei
+    (1303, ruan-mei-rebloom-break-extension).
+- id: engine-summon-kind
+  entity: engine
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    SummonDef cannot mark an in-game summon (Lightning-Lord, Numby, Fuyuan,
+    Souldragon) apart from countdowns (Concerto, Complete Combustion,
+    Supreme Stance, Infinite Fury), so effects on "their summon" hard-code
+    summon IDs.
+  detail: >
+    A flag on SummonDef (and UnitView) for summons versus countdowns, plus a
+    way to list an ally's summons, would let Sunday (1313, sunday-summon-ids)
+    drop SUMMON_IDS.
+- id: engine-queued-action-options
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    queueAction always runs after the current action, charges and refunds the
+    queued ability's Skill Points like a normal use, and lets its Elation hits
+    read the team Punchline.
+  detail: >
+    Needs options to run a queued ability before the current one, without
+    Skill Point cost (and without emitting a spend), and with a fixed
+    Punchline for its Elation hits. Affects Cerydra's Coup de Main (1412,
+    cerydra-coup-de-main-order) and Trailblazer • Elation's Ultimate making an
+    ally use their Elation Skill at 20 Punchline (8009,
+    trailblazer-elation-ult-punchline).
+- id: engine-memosprite-enemy-targets
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy attacks only target Characters, so memosprites never lose HP or
+    trigger "when attacked" effects, although some draw extra aggro.
+  detail: >
+    Needs memosprites in the enemy-attack aggro split (with their own base
+    aggro and aggro bonuses such as Evey's "increased chance of getting
+    attacked"), their HP changes, and hitByEnemy. Affects Evernight (1413,
+    evernight-evey-hp-loss); other memosprite kits gain HP loss from it too.
+- id: engine-sp-equivalent-spend
+  entity: engine
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot report spending its own resource as Skill Point consumption,
+    so "considered as consuming Skill Points" spends are invisible to
+    skillPointsChanged listeners.
+  detail: >
+    Needs a call that emits skillPointsChanged (negative delta) without
+    changing the team's Skill Points. Affects Sparxie's Thrill (1501,
+    sparxie-thrill-sp-event).
+- id: engine-mixed-attacker-stats
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    A hit takes all its stats from one unit, so "deals Elation DMG with the
+    attacker's stats, using Yao Guang's Elation when it is higher" cannot be
+    expressed.
+  detail: >
+    Needs a per-hit stat override (one stat from another unit, or the higher
+    of two units). Affects Yao Guang's Great Boon (1502,
+    yao-guang-great-boon-stats).
+- id: engine-banger-holder-rules
+  entity: engine
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    Certified Banger has fixed rules for every holder: no cap, a set duration,
+    and no removal. Pearl's lasts indefinitely, caps at 50, and is spent as
+    Repellency.
+  detail: >
+    Needs per-holder banger rules (cap, no expiry) and a way to remove banger
+    value. Affects Pearl (1503, pearl-banger-rules). Related:
+    engine-elation-banger-events (gain/expiry events and duration bonuses).
+- id: engine-elation-skill-variants
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    The Aha Instant always runs the "elationSkill" ability and an ability's
+    `attack` flag is static, so Elation Skill variants cannot differ in
+    whether they attack.
+  detail: >
+    Needs Elation Skill variants chosen per Instant (like Ultimate variants)
+    or a per-use attack flag. Affects Silver Wolf LV.999 (1506,
+    silver-wolf-lv999-elation-attack: Pro-Gamer Move vs Honkai-DMG Demo).
+- id: engine-aha-handle
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Kits have no handle on the Aha unit (an ownerless summon), so they cannot
+    apply statuses to it, such as SPD buffs, before an Aha event names it.
+  detail: >
+    Aha's SPD already reads SPD statuses on Aha. Expose Aha (for example
+    `ctx.aha`) so kits can apply them. Affects Aventurine • Waveflair's A4
+    (1513, aventurine-waveflair-aha-spd).
