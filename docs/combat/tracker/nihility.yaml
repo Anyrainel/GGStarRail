@@ -1,0 +1,937 @@
+# Combat translation tracker: nihility. Schema: .agents/skills/hsr-combat/tracking.md
+- id: jiaoqiu-e1-target-filter
+  entity: "1218"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    E1 "Allies deal 40% more DMG to enemies with Ashen Roast" needs an outgoing
+    DMG Boost filtered by target state; the kit toggles a status on each
+    attacking ally from its main target at actionStart, so Blast/AoE secondary
+    targets and later DoT ticks use the attacker's last state.
+  detail: >
+    E1 is k.teamStat("e1", dmgBoost k.rankParam(1, 1), filter {
+    targetStatuses: [ashenRoast.id] }) for all allies; the actionStart sync
+    and its self status are gone, so Blast and AoE targets and DoT ticks use
+    their own target's Ashen Roast.
+- id: jiaoqiu-zone-modeling
+  entity: "1218"
+  rule: U3
+  status: wont-do
+  category: verify
+  summary: >
+    The Zone's Ultimate DMG taken is a non-debuff field status on enemies, the
+    Ultimate's stack sync is guaranteed (no base chance), and the Zone stack
+    trigger fires on the enemy's attack (after DoTs, skipped while Frozen).
+  detail: >
+    Settled where the text decides. The Ultimate "Sets the number of Ashen
+    Roast stacks" (ZH 统一设置) with no base chance, so the sync is guaranteed.
+    The Zone's stack is gained "when taking action" (ZH 行动时), which a Frozen
+    enemy skips, so the enemyAttack trigger fits. Whether a Zone's effects
+    on enemies count as debuffs is the same question as
+    hysilens-field-effects, which carries it.
+- id: jiaoqiu-burn-family
+  entity: "1218"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Ashen Roast "is also considered Burned", but the engine has no shared DoT
+    family, so other kits' Burn checks cannot see it.
+  detail: >
+    Ashen Roast's Burn status declares `family: "burn"`. The same pass added
+    families to the DoTs, Slows, and Imprisonment of Dan Heng, Himeko, Welt,
+    Kafka, Serval, Sampo, Hook, Luka, Guinaifen, and Hysilens. Misha's and
+    Yanqing's Freezes, and Black Swan's Arcana under Epiphany, still need
+    kit changes.
+- id: jiaoqiu-a6-reinforcements
+  entity: "1218"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    A6 (enemies entering combat while the Zone exists gain Ashen Roast) and the
+    E6 stack transfer on defeat are not modeled: scenarios have no
+    reinforcements or kills.
+  detail: >
+    Blocked on engine-kill-triggers: scenarios have no kills or
+    reinforcements. Once enemies can enter mid-battle or be defeated, A6
+    inflicts Ashen Roast on entering enemies at the highest stack count held
+    during the Zone (minimum 1), and E6 moves a defeated enemy's stacks to
+    the enemy with the fewest.
+- id: fugue-weakness-ignore
+  entity: "1225"
+  rule: C2
+  status: completed
+  category: engine-gap
+  summary: >
+    Foxian Prayer (Toughness reduction at 50% against enemies without the
+    matching Weakness, not stacking with other such effects) and the Ultimate's
+    full Weakness-ignoring reduction are not modeled; the engine only reduces
+    Toughness on matching Weaknesses.
+  detail: >
+    The Ultimate's AoE hit has toughnessWithoutWeakness: 1 and breaks with
+    Fire. Foxian Prayer's 50% on other allies' hits stays with
+    engine-weakness-ignore-modifier.
+- id: fugue-cloudflame-luster
+  entity: "1225"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Cloudflame Luster (an extra 40% of Max Toughness reducible while Broken that
+    deals Weakness Break DMG again at 0) is not modeled, so Fugue's second
+    Break DMG instance is missing.
+  detail: >
+    Blocked on engine-secondary-toughness. Once enemies can hold a second
+    Toughness bar: while Fugue is on the field, each enemy gets Cloudflame
+    Luster equal to 40% (k.param("04", 2)) of its Max Toughness, which can
+    only be reduced while it is Broken and deals Weakness Break DMG again
+    when it reaches 0.
+- id: fugue-prayer-target
+  entity: "1225"
+  rule: C3
+  status: completed
+  category: engine-gap
+  summary: >
+    The Skill's designated ally is chosen by heuristic (highest panel Break
+    Effect, then non-support Path, then team order); there is no way for the
+    user to choose a single-ally target.
+  detail: >
+    Foxian Prayer's holder is k.ally("foxian-prayer", "skill", ...), whose
+    default is the first teammate not on a support Path, then team order;
+    the turn policy aims the Skill at it. The default no longer compares
+    panel Break Effect, which k.ally's build-time pick cannot read.
+- id: fugue-def-timing
+  entity: "1225"
+  rule: U8
+  status: open
+  category: bug
+  summary: >
+    Foxian Prayer's DEF reduction is applied to the main target when the
+    holder's attack starts and to other enemies after their first hit; confirm
+    whether it lands before the attack's damage on every target.
+  detail: >
+    Settled reading, kit partly wrong: ZH
+    持有【狐祈】的我方目标每次施放攻击时...使受到攻击的敌方目标防御力降低 uses 施放攻击时 ("when using an attack",
+    not 攻击后 "after attacking"), so the DEF reduction lands before the
+    attack's damage on every attacked enemy. The kit debuffs the secondary
+    targets only after their first hit. Blocked on engine-action-targets:
+    once actionStart says which enemies the action will hit, apply the
+    debuff to all of them there.
+- id: welt-slow-family
+  entity: "1004"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    The Talent's "already Slowed" only sees Welt's own Skill Slow and
+    Ultimate Imprisonment; other kits' SPD reductions and Imaginary Break
+    Imprisonment are invisible, and enemy SPD reductions never change enemy
+    action timing (enemies have fixed SPD).
+  detail: >
+    "Already Slowed" reads enemy.hasFamily("slow") ||
+    enemy.hasFamily("imprisonment"), so other kits' Slows (including Silver
+    Wolf's SPD Bug) and Imaginary Break Imprisonment count. The stale "Enemy
+    SPD is fixed" comment is gone.
+- id: welt-a6-broken-filter
+  entity: "1004"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    A6 "+20% DMG to Weakness Broken enemies" toggles a DMG Boost from the
+    action's main target at actionStart; Bounce and AoE hits on other enemies
+    use that state.
+  detail: >
+    A6 is k.stat("a6", dmgBoost k.traceParam(3, 1), filter { targetBroken:
+    true }); the punishment actionStart sync is gone.
+- id: welt-chance-gated
+  entity: "1004"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Debuffs with a base chance are binary for `has()`: the Talent's Additional
+    DMG fires at full weight on a 75% base chance Slow, and the Imprisonment
+    action delay applies whether or not it lands.
+  detail: >
+    Blocked on engine-debuff-landing-chance. Once presence can be weighted
+    by the gating debuff's landing chance, scale the Talent's Additional DMG
+    and E2's Energy on a Slowed target by that chance. The Imprisonment
+    delay has a 100% base chance at the normal level, so it barely matters.
+- id: welt-bounce-energy
+  entity: "1004"
+  rule: U1
+  status: wont-do
+  category: verify
+  summary: >
+    The Skill's facts list 10 Energy for a Bounce Skill; the kit reads it as per
+    hit (30 at E0, 40 at E6), as with Sampo (6 per hit) and Asta.
+  detail: >
+    The kit is right. Reading SPBase per hit makes every Bounce Skill total
+    the standard Skill's 30 Energy: Welt 3 x 10, Sampo 5 x 6, Asta 5 x 6,
+    and Anaxa 5 x 6.
+- id: sampo-bounce-stacks
+  entity: "1108"
+  rule: U6
+  status: open
+  category: engine-gap
+  summary: >
+    applyStatus ignores event weight, so the kit passes the Bounce placement's
+    expected hit count as Wind Shear stacks; and base-chance stacking DoTs scale
+    the capped stack count by the landing chance, underestimating saturation.
+  detail: >
+    The weight part is the documented construct (Weights: applyStatus stacks
+    are not scaled, so pass the expected count). What remains: a base-chance
+    stacking DoT scales min(cap, applied stacks) by its landing chance
+    instead of E[min(cap, landed stacks)]. Blocked on
+    engine-debuff-landing-chance; then apply one stack per hit with its base
+    chance and let the engine combine them. The error vanishes as the
+    landing chance nears 100%.
+- id: sampo-bounce-energy
+  entity: "1108"
+  rule: U1
+  status: wont-do
+  category: verify
+  summary: >
+    The Skill's facts list 6 Energy for a Bounce Skill; the kit reads it as per
+    hit (30 at E0, 36 at E1).
+  detail: >
+    The kit is right; see welt-bounce-energy (Sampo 5 x 6, the standard 30).
+- id: acheron-slashed-dream-energy
+  entity: "1308"
+  rule: U10
+  status: completed
+  category: engine-gap
+  summary: >
+    Slashed Dream is mirrored into Energy from a kit counter and resynced on
+    hitByEnemy and every ally actionEnd, because the engine always grants enemy
+    hit Energy and ally Energy effects; Energy granted in another listener after
+    that resync lingers until the next one.
+  detail: >
+    The Ultimate declares resource: { counter: DREAM, amount: k.param("04",
+    1) }; the engine spends the counter. setEnergy, resync, and the
+    hitByEnemy and actionEnd resync listeners are gone, so Energy from enemy
+    hits and allies no longer matters.
+- id: acheron-talent-window
+  entity: "1308"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    "Inflicts debuffs while using their ability" is a window opened at each ally
+    actionStart and closed at enemy turnStart; debuffs applied by an earlier-slot
+    kit's actionStart listener are missed, and base-chance debuffs always count
+    as landed.
+  detail: >
+    statusApplied with abilityId (limitPerAction 1) grants Slashed Dream on
+    the first debuff of each ability use by any unit; debuffs outside
+    ability use (DoT-time Arcana) do not count. The window counters are
+    gone.
+- id: acheron-knot-placement
+  entity: "1308"
+  rule: U9
+  status: completed
+  category: approximation
+  summary: >
+    Crimson Knot placed on "a random enemy" (A2, Quadrivalent Ascendance) goes
+    to the designated target, and the Talent's stack goes to the enemy with the
+    most Knots overall (ties to the debuffed enemy) because only the first
+    debuff of an ability is seen.
+  detail: >
+    The Talent's Knot goes to the enemy with the most Knots among those the
+    ability use debuffed, placed at its actionEnd (or at the next use, for
+    debuffs from listeners after it). A2's battle-start placement on the
+    designated target stays as the stand-in for "a random enemy".
+- id: acheron-ult-toughness
+  entity: "1308"
+  rule: U1
+  status: wont-do
+  category: verify
+  summary: >
+    The Ultimate's facts show 0 Toughness; the kit reads hidden sub-skills
+    130814-130817 as Rainblade 5 (target) plus 5 to every enemy per Crimson Knot
+    burst, and Stygian Resurge 5 to every enemy, with none on the A6 hits.
+  detail: >
+    Moot. When no Knot is removed, the burst deals no DMG and no Toughness
+    (acheron-knotless-burst, settled from the text). The per-part values
+    come from the hidden sub-skills.
+- id: acheron-weakness-ignore
+  entity: "1308"
+  rule: C2
+  status: completed
+  category: engine-gap
+  summary: >
+    Toughness reduction "regardless of Weakness Types" (Talent during the
+    Ultimate, E6 Basic ATK/Skill, with Lightning Break) is not modeled; the
+    engine only reduces Toughness on matching Weaknesses.
+  detail: >
+    Rainblade, the Crimson Knot bursts, and Stygian Resurge carry
+    toughnessWithoutWeakness: 1 (Talent: "During the Ultimate, reduces
+    enemies' Toughness regardless of Weakness Types"). At E6 the Basic ATK
+    and Skill hits carry it too, alongside the ultimate tag. Breaks use her
+    Lightning type.
+- id: acheron-e1-target-filter
+  entity: "1308"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    E1 (CRIT Rate against debuffed enemies) is synced per enemy before each
+    Ultimate hit, but the Skill's adjacent targets use the main target's state.
+  detail: >
+    E1 is k.stat("e1", critRate k.rankParam(1, 1), filter {
+    minTargetDebuffs: 1 }); the e1Crit aim() sync is gone. A6's extra hits
+    are one Bounce over all enemies instead of debuffed/clean groups, since
+    each hit now reads its own target.
+- id: acheron-e2-abyss-floor
+  entity: "1308"
+  rule: C4
+  status: wont-do
+  category: verify
+  summary: >
+    With E2 and no other Nihility Character the kit grants no A4 bonus (E2 only
+    lowers the 160% tier to 1 teammate); confirm whether the game grants 115%.
+  detail: >
+    The kit is right. E2 lowers only the requirement of the highest tier (ZH
+    行迹【奈落】最高数值所需求「虚无」命途角色的数量减少1名), so with no other Nihility Character
+    neither tier applies.
+- id: acheron-quadrivalent-spend
+  entity: "1308"
+  rule: U6
+  status: open
+  category: verify
+  summary: >
+    After the Ultimate every Quadrivalent Ascendance stack is spent at once, each
+    granting 1 Slashed Dream and 1 Crimson Knot; confirm against the game.
+  detail: >
+    Not settled. A2 lets Quadrivalent Ascendance stack to 3, and under U6
+    each stack's effect ("gains 1 Slashed Dream and inflicts 1 Crimson
+    Knot") applies per stack, but the text does not say whether one Ultimate
+    spends all stacks. Low impact.
+- id: black-swan-arcana-split
+  entity: "1307"
+  rule: U6
+  status: open
+  category: engine-gap
+  summary: >
+    Arcana's #1 + #3 × stacks DoT is two statuses (a stacking 12%/stack debuff
+    and a flat 240% companion), so Arcana emits two dotTick events and the
+    breakdown can label the pair as `arcana-base`.
+  detail: >
+    Blocked on engine-dot-flat-plus-stacks. U6's companion pattern works for
+    modifiers, but a companion DoT ticks as a second DoT instance, which
+    shows up in per-DoT triggers (Hysilens' Zone, a second Black Swan's
+    Talent and A4). Once a DoT can carry a flat part plus a per-stack part,
+    merge arcanaBase into arcana (#1 + #3 x stacks).
+- id: black-swan-dot-types
+  entity: "1307"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Wind Shear, Bleed, Burn, and Shock are recognized by the Combat Type of DoT
+    statuses learned from statusApplied events, since kits cannot list a unit's
+    statuses or ask a status's family.
+  detail: >
+    afflictions(enemy) reads hasFamily for windShear, bleed, burn, and shock
+    (Wind, Physical, Fire, Thunder for E1); the dotTypes map and its learner
+    are gone, and E1 resyncs on statusApplied of those families. The
+    Talent's DoT check takes any DoT except Frozen and Entanglement (and
+    Arcana's flat companion). Four family markers (no modifiers, no DoT, not
+    debuffs) are applied while an enemy holds Epiphany and Arcana (after
+    Epiphany in the Ultimate, and in inflictArcana) and removed on
+    statusRemoved of Epiphany or Arcana, so other kits' Burned/Shocked
+    checks see Arcana under Epiphany.
+- id: black-swan-tick-source
+  entity: "1307"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    dotTick does not say whether it is a turn-start tick or a detonation, so the
+    kit treats ticks during an enemy's own turn as turn-start DoT (Talent, ≥7
+    DEF ignore, reset) and others as in-attack DoT (A4).
+  detail: >
+    dotTick reads event.detonation: turn-start ticks give the Talent's stack
+    (with the DEF ignore at 7+ and the reset), detonations during an ally
+    attack feed A4. The OWN_TURN counter is gone; Epiphany's "in their turn"
+    vulnerability keeps its turnStart/turnEnd status.
+- id: black-swan-turn-order
+  entity: "1307"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    At turn start, DoTs ticking before Arcana add stacks to that tick; Arcana
+    resets to 1 and then its own tick adds the Talent's stack; the ≥7 DEF ignore
+    uses the stack count when the turn starts.
+  detail: >
+    Not settled: the Talent text gives no tick order. Needs an in-game
+    check.
+- id: black-swan-arcana-chance
+  entity: "1307"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Every base-chance Arcana application adds its stack in the timeline and the
+    DoT is scaled by the strongest landing chance; E6's 50% fixed chance of +1 is
+    +0.5 expected stacks, so stack thresholds see fractions.
+  detail: >
+    Blocked on engine-debuff-landing-chance. Once stack counts can be
+    expected landed stacks, Arcana's thresholds (3 and 7) and its reset read
+    them, and the reset no longer needs the tiny base-chance trick. E6's
+    +0.5 expected stack is the U9 expected-value construct and stays.
+- id: black-swan-e4-effect-res
+  entity: "1307"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    E4's Effect RES −10% under Epiphany is not modeled; enemy Effect RES is a
+    scenario constant with no modifier.
+  detail: >
+    Blocked on engine-enemy-effect-res. Once enemy statuses can lower Effect
+    RES for landing chances, add an effectRes modifier of -k.rankParam(4, 1)
+    to Epiphany.
+- id: silver-wolf-implant
+  entity: "1006"
+  rule: U11
+  status: completed
+  category: engine-gap
+  summary: >
+    The implanted Weakness is permanent and always lands (the Engine cannot
+    remove a Weakness or gate it by base chance); its Type is the first ally
+    Type, in team order, that the enemy is not natively weak to.
+  detail: >
+    The implant uses { turns: implantTurns } (Skill #3 plus A4), so it ends
+    with its RES reduction, and the previous Silver Wolf implant
+    (IMPLANT_COUNTER) is removed with removeWeakness when another Type is
+    implanted. The Type stays the first eligible ally Type; the 85% base
+    chance stays ungated (engine-debuff-landing-chance).
+- id: silver-wolf-bug-rotation
+  entity: "1006"
+  rule: U9
+  status: completed
+  category: approximation
+  summary: >
+    Random Bugs are implanted in a DEF, ATK, SPD rotation per enemy, so an enemy
+    attacked three times holds all three; random picks average about 2.4.
+  detail: >
+    The SPD Bug has spdPct -k.param("04", 3) and family "slow", so it moves
+    enemy turns and counts for Slowed checks. The ATK Bug stays a bare
+    debuff and the DEF, ATK, SPD rotation stays, as planned.
+- id: silver-wolf-e2-effect-res
+  entity: "1006"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    E2's Effect RES −20% on enemies is not modeled; enemy Effect RES is a
+    scenario constant with no modifier.
+  detail: >
+    Blocked on engine-enemy-effect-res. Once it is supported, E2 puts a
+    permanent enemy status with effectRes -k.rankParam(2, 1) on every enemy
+    at battle start.
+- id: silver-wolf-ult-debuff-count
+  entity: "1006"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    E1 and E4 count the target's debuffs after the Ultimate's DEF reduction but
+    before the Talent's Bug from the same attack.
+  detail: >
+    Not settled. E1 and E4 ("After using her Ultimate to attack enemies ...
+    for every debuff that the target enemy currently has") and the Talent
+    ("Every time Silver Wolf attacks ... implant a random Bug") give no
+    order.
+- id: pela-e6-aoe-targets
+  entity: "1106"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    E6 Additional DMG after the Ultimate is dealt to every debuffed enemy hit;
+    confirm whether "the enemy target" means all targets or one.
+  detail: >
+    Not settled. EN "if the enemy target is debuffed, deals Ice Additional
+    DMG ... to the enemy" (ZH 若敌方目标处于负面效果，则对其造成) does not say whether an AoE
+    attack checks each target. fribbels evaluates a single target.
+- id: pela-dispel-option
+  entity: "1106"
+  rule: U8
+  status: wont-do
+  category: engine-gap
+  summary: >
+    Enemy buffs are not simulated, so whether the Skill dispels is an option
+    (default off) gating A6, E2, and the Skill in the turn policy.
+  detail: >
+    Enemy buffs are unmodelled environment, so a U8 option (default off) is
+    the prescribed construct. No engine change is planned for enemy buffs.
+- id: dahlia-zone-unbroken-super-break
+  entity: "1321"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    The Skill Zone's "Toughness Reduction taken while not Weakness Broken can
+    also be converted into Super Break DMG" is not modeled: the Engine only
+    records Super Break for Toughness reduced on Broken enemies.
+  detail: >
+    Blocked on engine-super-break-unbroken. Once Toughness reduced on
+    unbroken enemies can also record Super Break, enable it while the
+    Skill's Zone lasts, for every ally's attacks at their own superBreakDmg.
+- id: dahlia-weakness-implant
+  entity: "1321"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Wilt's implanted Weakness is permanent (the Engine cannot remove it when
+    Wilt ends), and A6 (SPD, fixed Fire Toughness Reduction, Energy) only
+    reacts to her own Wilt: there is no event for Weakness implanted by allies.
+  detail: >
+    Wilt implants each Dance Partner Type with { turns: k.param("03", 2) }
+    (native Weaknesses are kept by the engine), and the Ultimate is one
+    split HitDef with toughness { each: 20 }. A6 now listens to
+    weaknessImplanted: the implanting ally gains the SPD, and Weaknesses a
+    Fire ally character adds during its own attack get the fixed 20
+    Toughness Reduction and the Energy after that attack. Implants that add
+    nothing new (a native or still-implanted Type) trigger nothing, so in
+    "weak to the team" scenarios A6 no longer fires after her Ultimate.
+- id: dahlia-fixed-toughness
+  entity: "1321"
+  rule: U2
+  status: completed
+  category: bug
+  summary: >
+    A6's fixed 20 Toughness Reduction and E1's fixed reduction (25% of Max
+    Toughness, 10-300) use reduceToughness, which applies Weakness Break
+    Efficiency (e.g. the Zone's +50%) and requires a Fire Weakness.
+  detail: >
+    A6's 20 and E1's 25% of Max Toughness (10 to 300) pass { fixed: true }
+    to reduceToughness, so Weakness Break Efficiency (the Zone's +50%) no
+    longer raises them. The Weakness requirement stays.
+- id: dahlia-partner-choice
+  entity: "1321"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    The Dance Partner is the teammate with the highest panel Break Effect (team
+    order breaks ties); which teammate triggered combat is not part of the
+    scenario.
+  detail: >
+    The Dance Partner is k.ally("dance-partner", "talent", ...), whose
+    default is the first teammate not on a support Path, then team order (it
+    was the highest panel Break Effect, then team order, which picked Robin
+    over Kafka in the kit check).
+- id: dahlia-a2-heal-trigger
+  entity: "1321"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    A2's retrigger on teammate healing or Shields (3 turns) is the toggle
+    a2-heal-or-shield (default on), which refreshes the buff at the start of
+    each of her turns; healing and Shields are not simulated.
+  detail: >
+    The a2-heal-or-shield toggle is gone: an hpChanged listener (subject
+    self, hpCause heal from another unit, limitPerTurn 1) re-applies the A2
+    buff for k.traceParam(1, 4) turns. Shields stay unmodelled
+    (engine-shield-state). The A2 status also had no duration, so { turns }
+    was ignored and the buff never expired; it now has duration { turns:
+    k.traceParam(1, 2) }, with each grant setting its own.
+- id: dahlia-e1-partner-boost
+  entity: "1321"
+  rule: U2
+  status: wont-do
+  category: verify
+  summary: >
+    E1 "Dance Partners additionally receiving a 40% boost" is read as +40
+    percentage points on the Talent's 60% Super Break multiplier (100% total),
+    not 60% x 1.4.
+  detail: >
+    The kit is right. ZH 其中【共舞者】的倍率额外提高40% raises the multiplier by 40
+    points, as in U2's "increases the DMG multiplier by X%". fribbels
+    (TheDahlia.ts) also adds 0.40 to the Super Break modifier for Dance
+    Partners.
+- id: cipher-tally
+  entity: "1406"
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    The tally released by the Ultimate is modeled as True DMG (trueDmg) on
+    every ally hit when dealt, credited to the attacker instead of Cipher;
+    non-Patron enemies use the Patron rate (A4 tallies them lower, nothing
+    without A4), and E6's 20% return is folded in as 1/(1 - 20%).
+  detail: >
+    Blocked on engine-damage-tally. Once evaluated hit DMG can be tallied on
+    a unit: tally 12% of allies' non-True DMG to the Patron and, with A4, 8%
+    to other enemies, scaled by E1 and A2. Release it as True DMG in
+    Cipher's Ultimate (25% to the target, 75% split over the Blast targets),
+    with E6's 20% return. Until then, the per-target rates can already use
+    targetStatuses: [patron.id]: put the A4 rate on every hit and the
+    difference on Patron hits only (without A4, only the Patron rate on
+    Patron hits).
+- id: hysilens-zone-trigger-cap
+  entity: "1410"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    The Zone's Physical DoT fires once per DoT instance an enemy takes, capped
+    at 8 (E6: 12) per enemy per window (its turn start, or one ally attack);
+    whether the per-attack cap is per enemy or shared by all enemies is unclear.
+  detail: >
+    Not settled. ZH
+    处于结界中的敌方目标每受到1次持续伤害，海瑟音对其造成...该伤害在每回合开始时或我方目标单次攻击后触发，且最多触发8次 makes the
+    enemy the subject, which leans toward a cap per enemy, but does not say
+    so. fribbels evaluates one target (ultDotStacks up to 8, or 12 at E6).
+    The ignored landing chance of the triggering DoT is tracked by
+    engine-debuff-landing-chance.
+- id: hysilens-state-priority
+  entity: "1410"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Talent states go to the first of Wind Shear, Bleed, Burn, and Shock the
+    enemy lacks from Hysilens; once it has all four they are refreshed in
+    rotation. Bleed always deals its ATK cap (enemy Max HP is not modeled).
+  detail: >
+    Not exact, but the impact is low. All four states deal 25% of ATK at the
+    Bleed cap, so Hysilens' own damage does not depend on the order. Random
+    states with priority to a missing one cannot be expressed in expectation
+    with binary presence, so other kits' family checks see the fixed order.
+    The Bleed cap needs enemy Max HP; engine-kill-triggers covers enemy HP.
+- id: hysilens-field-effects
+  entity: "1410"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    Zone DEF/RES reductions are enemy statuses that are not debuffs (field
+    effects), so per-debuff effects do not count them.
+  detail: >
+    This item carries the question of whether Zone effects count as debuffs,
+    for Hysilens, Jiaoqiu (jiaoqiu-zone-modeling), Cipher's A6, The Dahlia's
+    E2, and Mortenax Blade's E1. Not settled: none of the texts call these
+    effects debuffs. fribbels models Hysilens' Zone DEF reduction as
+    attacker-side DEF PEN for the team (the same DEF zone), which does not
+    say whether per-debuff effects count it. Needs an in-game check, such as
+    Acheron's Slashed Dream or Pioneer Diver stacks when the Zone deploys.
+- id: mortenax-blade-overflow-energy
+  entity: "1507"
+  rule: U10
+  status: completed
+  category: engine-gap
+  summary: >
+    A2 overflow Energy (up to 80, refunded after the Ultimate) is tracked only
+    for Energy the kit grants itself; Energy from enemy hits and other units is
+    clamped at max by the Engine and lost.
+  detail: >
+    An energyGained listener (subject self) adds event.overflow to OVERFLOW
+    (cap k.traceParam(1, 2)), so overflow from enemy hits and other units
+    counts. The hand-rolled regenerate helper is gone: Basic ATK and Skill
+    use their default Energy, and the extra Skill declares 30.
+- id: mortenax-blade-rotation
+  entity: "1507"
+  rule: C3
+  status: open
+  category: verify
+  summary: >
+    Fornax Ex Corpore is cast as soon as Energy is full, so Tenax Per Ignem
+    (160 Energy inside Infinite Fury) rarely fires in 3-cycle runs; holding
+    Fornax to bank A2 overflow makes Tenax reachable but delays Fury past 3
+    cycles.
+  detail: >
+    Not settled by the text: this is a play-pattern choice between casting
+    Fornax as soon as Energy is full and holding it to bank A2 overflow.
+    Needs a human decision; engine-policy-battle-end would let the hold
+    depend on the time left.
+- id: mortenax-blade-e2-ult-follow-up
+  entity: "1507"
+  rule: U4
+  status: open
+  category: engine-gap
+  summary: >
+    E2 "Ultimate DMG is considered Follow-Up ATK" only gives allies' Ultimate DMG
+    the E2 +75% bonus; other Follow-Up effects and "after a Follow-Up ATK"
+    triggers do not see those Ultimates.
+  detail: >
+    Blocked on engine-ally-tag-rewrite. Once a kit can add tags to allies'
+    abilities, E2 adds followUp to allies' Ultimate actions and hits, so
+    Follow-Up effects and "after a Follow-Up ATK" triggers see them, and the
+    teamStat filter reads only the followUp tag.
+- id: mortenax-blade-a4-aggro
+  entity: "1507"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    A4's higher chance of being attacked in the Zone is not modeled, which
+    understates Charge (A4, E6) and Energy from enemy hits.
+  detail: >
+    Blocked on engine-aggro-modifiers. Once a status can raise aggro, A4's
+    Zone raises Mortenax Blade's chance of being attacked, which feeds A4/E6
+    Charge and Energy from enemy hits.
+- id: guinaifen-a6-target-filter
+  entity: "1210"
+  rule: U2
+  status: completed
+  category: engine-gap
+  summary: >
+    A6 "more DMG to Burned enemies" applies to her direct hits when the main
+    target is Burned at action start (Blast/AoE targets follow it); her own
+    Burn ticks always qualify.
+  detail: >
+    A6 is k.stat("a6", dmgBoost k.traceParam(3, 1), filter { targetFamilies:
+    ["burn"] }) for all her DMG; the walking-on-knives status, its sync, and
+    the separate DoT stat are gone.
+- id: guinaifen-e1-effect-res
+  entity: "1210"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    E1's Effect RES -10% on Skill targets is not modeled; enemy Effect RES is a
+    scenario constant.
+  detail: >
+    Blocked on engine-enemy-effect-res. Once it is supported, E1's Skill
+    applies an enemy status with effectRes -k.rankParam(1, 2), with its base
+    chance.
+- id: guinaifen-burn-family
+  entity: "1210"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    "Burn" (Firekiss, Ultimate detonation, E2, A6) is any Fire DoT status seen
+    through statusApplied; another kit's Burn without an explicit Fire
+    combatType on its DoT hit is not recognized.
+  detail: >
+    Guinaifen uses hasFamily("burn") for Burned (E2, Firekiss target) and
+    status.family === "burn" for the Ultimate's detonation and the Firekiss
+    dotTick check; knownBurns and its statusApplied learner are gone. Luka
+    uses hasFamily("bleed") and family === "bleed" the same way; knownBleeds
+    is gone.
+- id: luka-enhanced-basic-split
+  entity: "1111"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    Sky-Shatter Fist's 20 Toughness is split across its hits in proportion to
+    their multipliers (3 x 20% punches, 80% uppercut); the real per-hit split
+    is not in the data.
+  detail: >
+    Still missing per-hit data; fribbels (Luka.ts) uses the 20 total. The
+    proportional split stays.
+- id: luka-bleed-hp-cap
+  entity: "1111"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Bleed (24% of enemy Max HP, capped at 338% of ATK) always deals the ATK cap
+    because enemy HP is not modeled; low-HP enemies would take less.
+  detail: >
+    Needs enemy Max HP, which is not simulated (engine-kill-triggers). The
+    cap applies whenever enemy Max HP exceeds about 14 times Luka's ATK,
+    which is true of endgame enemies, so the error is small.
+- id: welt-ult-hit-count
+  entity: "1004"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels (WeltB1) splits the Ultimate into 2 hits (10%/90%), so the
+    Talent's Additional DMG procs twice per Slowed enemy; our kit deals the
+    Ultimate as one AoE hit, so the Talent procs once. Which hit count matches
+    the game?
+  detail: >
+    Not settled. WeltB1 is fribbels' rebalanced kit (Talent 100% against the
+    pinned 60%), so its 10/90 split may not hold for the pinned Welt, and
+    fribbels' Welt.ts is a stub. The facts give no split for 100403. See the
+    Data currency note in the triage report.
+- id: pela-a6-scope
+  entity: "1106"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    fribbels limits Wipe Out's +20% to Basic ATK, Skill, and Ultimate DMG
+    (E6's Additional DMG excluded) and grants it to the dispelling Skill
+    itself; our kit gives an unfiltered DMG Boost to the next attack after the
+    Skill, so E6's Additional DMG in that attack also gets it. Which matches
+    the text?
+  detail: >
+    Not settled. "Next attack" (ZH 下一次攻击) supports the kit's timing. Whether
+    Additional DMG triggered by that attack counts is not stated, and it
+    matters only at E6 with the dispel option on.
+- id: sampo-skill-bounce-toughness
+  entity: "1108"
+  rule: U1
+  status: completed
+  category: bug
+  summary: >
+    fribbels gives the Skill 10 Toughness for the first hit and 5 for each
+    extra bounce (30 on one target at E0, 35 at E1); our kit applies 10 to
+    every hit (50 at E0, 60 at E1). Which per-hit value matches the game?
+  detail: >
+    The Skill's bounce HitDef has toughness { each: 5 } (E1's extra bounce
+    included); the first hit keeps 10.
+- id: sampo-ult-hit-count
+  entity: "1108"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels splits the Ultimate into 4 hits of 25%; our kit deals it as one
+    AoE hit, so the per-hit Talent rolls Wind Shear once per enemy instead of
+    up to four times. Which hit count matches the game?
+  detail: >
+    Needs a decision. fribbels (Sampo.ts ultHitMulti) splits the Ultimate
+    into 4 x 25%, which is likely the instance count in the game data. What
+    is not settled is whether the Talent rolls Wind Shear per instance or
+    once per target per attack: EN "Sampo's attacks have a 65% base chance
+    to inflict Wind Shear" (ZH 桑博击中敌方目标后有65%的基础概率) does not say. Per
+    instance means up to 4 stacks per enemy per Ultimate.
+- id: luka-a6-extra-toughness
+  entity: "1111"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels keeps Sky-Shatter Fist at 20 Toughness when A6 adds extra Direct
+    Punch hits; our kit gives each expected extra punch a punch's share of
+    Toughness (about 24.3 in total with A6). Do A6's extra hits reduce
+    Toughness?
+  detail: >
+    Not settled. The text does not say, and fribbels keeps 20 without
+    modeling Toughness for A6's extra hits either way.
+- id: fugue-e4-super-break
+  entity: "1225"
+  rule: U2
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels applies E4's "Break DMG +20%" to Weakness Break DMG only; our
+    kit's `break` filter also reaches Super Break DMG (which carries the break
+    tag), the Prayer holder's main damage with Fugue. Which matches the text?
+  detail: >
+    Duplicate of engine-break-dmg-super-break. Whether "Break DMG +X%"
+    reaches Super Break is an engine-wide question, and the kit follows U2.
+- id: acheron-knotless-burst
+  entity: "1308"
+  rule: C1
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels gives every Rainblade a 15% AoE Crimson Knot burst even when it
+    removes no Knot (3 x 15% plus 15% per Knot); our kit deals the burst only
+    when the Rainblade removes at least one Knot. Which matches the text?
+  detail: >
+    The kit is right. EN "When Crimson Knot is removed, immediately deals
+    ..." (ZH 消去【集真赤】时，立即对敌方全体造成) makes the burst depend on a removal. Both
+    readings give the dossier's maxima (372% and 300% at L10) with 3 Knots
+    per Rainblade.
+- id: acheron-e6-talent-res
+  entity: "1308"
+  rule: U5
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels applies the Talent's All-Type RES -20% to every Ultimate-typed
+    hit, so at E6 Basic ATK and Skill (considered Ultimate DMG) also get it;
+    our kit applies it only while the Ultimate is in progress. Which matches
+    the text?
+  detail: >
+    The kit is right. "During the Ultimate, ... reduces all enemies'
+    All-Type RES by 20%, lasting until the end of the Ultimate" (ZH
+    终结技期间...持续至终结技结束). E6 makes Basic ATK and Skill DMG count as Ultimate
+    DMG; it does not put them inside the Ultimate.
+- id: dahlia-ult-toughness
+  entity: "1321"
+  rule: U1
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels gives the Ultimate 30 Toughness and the full 300% on the main
+    target whatever the enemy count; our kit uses 20 Toughness on every enemy
+    and splits 300% evenly across all enemies. Which matches the game?
+  detail: >
+    The kit is right. The facts for 132103 (ShowStanceList [0, 60, 0]) give
+    20 to each enemy, and EN "distributed evenly across all enemies"
+    supports the split. The dossier wins over fribbels.
+- id: dahlia-a6-spd-recipient
+  entity: "1321"
+  rule: U3
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels gives A6's SPD +30% to the ally who implants the Weakness
+    (Firefly, Boothill, Phainon, Anaxa, Silver Wolf, and The Dahlia herself
+    for Wilt); our kit only ever buffs The Dahlia, after her own Wilt. Whose
+    SPD does A6 increase?
+  detail: >
+    Duplicate of dahlia-weakness-implant for the remaining work. The reading
+    is settled: ZH 我方目标为敌方目标添加弱点时，速度提高30% keeps the implanting ally as the
+    subject, and fribbels (TheDahlia.ts IMPLANT_CHARACTERS) buffs the
+    implanter. Both readings agree for Wilt, the only implant the kit sees.
+    engine-weakness-implanted-event records the ally case.
+- id: cipher-skill-atk-scaling
+  entity: "1406"
+  rule: U1
+  status: wont-do
+  category: verify
+  summary: >
+    fribbels scales the Skill's ATK +30% with Skill level (33% at Lv. 12);
+    our kit reads Skill #5, which is 30% at every level. Which matches the
+    game?
+  detail: >
+    The kit is right. The AvatarSkillConfig ParamList for 140602 gives #5 =
+    0.3 at Lv. 1-15; the dossier wins over fribbels' 30%/33%.
+- id: fugue-ally-target-event
+  entity: "1225"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Fugue's Skill declares target "ally", but the turn policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (Sacerdos' Relived Ordeal, Wavestrider Captain, Dreamlit Actor) cannot see it.
+  detail: >
+    The turn policy returns { ability: "skill", target } with the designated
+    ally, and the Skill reads ctx.target, so action events report the ally.
+- id: mortenax-blade-killing-blow
+  entity: "1507"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    In Infinite Fury a killing blow dispels the Zone, exits Infinite Fury, and
+    restores 50% HP; HP stops at 1%, so at 1 HP he keeps Infinite Fury on
+    Enhanced Basic ATK until the countdown ends instead.
+  detail: >
+    Blocked on engine-ally-killing-blow. Once a killing blow can be detected,
+    end the Zone as the countdown does (endZone, with A2's Energy floor),
+    dismiss the countdown, and restore HP to k.param("03", 6).
+- id: mortenax-blade-a4-hp
+  entity: "1507"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    A4's DMG taken -50% and Incoming Healing +50% while the Zone lasts do not
+    change his simulated HP, so the HP his Skill spends runs out sooner than
+    in game, and heals restore less.
+  detail: >
+    Blocked on engine-ally-hp-modifiers. Once allies can reduce HP lost to
+    enemy hits and raise HP restored, give the Zone's self status A4's
+    reduction (k.traceParam(2, 2)) and Incoming Healing (k.traceParam(2, 3)).

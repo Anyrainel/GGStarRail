@@ -1,0 +1,374 @@
+# Combat translation tracker: elation. Schema: .agents/skills/hsr-combat/tracking.md
+- id: sparxie-farming-odds
+  entity: "1501"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Engagement Farming is played as "farm while Thrill or Skill Points remain,
+    up to 20 triggers". The Skill queues each further trigger weighted by its
+    probability under that policy (a random walk on SP), with gift odds
+    assumed 50/50 and each gift at its expected value.
+  detail: >
+    farmingOdds() in the kit computes the odds from the Skill Points and Thrill
+    at Skill time (fractional values mixed between floor and ceil). From 2 SP
+    with a 5 SP cap this averages about 10.6 triggers. The game draws the gift
+    with RPG.GameCore.RandomConfig over two dynamic odds (keys 1534702343 and
+    -361545546, not in the text) and forces the Grand Prize under a condition
+    checked first; the odds values are still unknown. A reserve for
+    teammates would change the count.
+- id: sparxie-thrill-sp-event
+  entity: "1501"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Thrill is a kit counter spent through separate `skillThrill`/`farmThrill`
+    abilities. "Consuming Thrill is considered as consuming Skill Points", but
+    spending it emits no skillPointsChanged, so other kits' SP-consumption
+    triggers miss it.
+  detail: >
+    Blocked on engine-sp-equivalent-spend. Once a kit can report a spend as
+    Skill Point consumption, report each Thrill spent so `skillPointsChanged`
+    listeners (Yao Guang's Great Boon, Sparkle) see it.
+- id: sparxie-elation-toughness
+  entity: "1501"
+  rule: U1
+  status: completed
+  category: bug
+  summary: >
+    The Talent's 5 Toughness is put on the Enhanced Basic ATK's main-target
+    Elation hit; the game puts it on each Engagement Farming instance.
+  detail: >
+    The Talent's main/adjacent Elation hit on the Enhanced Basic ATK
+    carries no Toughness, and each per-farm Elation instance (the bounce
+    dealt after the Enhanced Basic ATK) carries 5. More Toughness lands
+    per Enhanced Basic ATK, so the enemies break earlier in the kit check
+    (E0 team damage +2%).
+- id: yao-guang-aha-extra-turn
+  entity: "1502"
+  rule: C1
+  status: completed
+  category: engine-gap
+  summary: >
+    The Ultimate's Aha extra turn (fixed 20 Punchline, 40 at E1, consumes
+    none) is emulated: the kit queues every Elation Character's Elation Skill
+    (reading the team Punchline), then grants Certified Banger worth the
+    fixed amount; ahaInstantStart/ahaInstantEnd do not fire.
+  detail: >
+    The Ultimate's `after` calls `ctx.ahaExtraTurn(fixedPunchline)` (20,
+    40 at E1); the queued Elation Skills and the `ahaExtraTurn` ability
+    are gone. E4: the Ultimate sets a pending counter; the next
+    `ahaInstantStart` with `extraTurn` applies Feathered Fortune to the
+    ally Characters and `ahaInstantEnd` removes it (Great Boon inside that
+    window is boosted too). A6's +1 turn now reaches no Certified Banger
+    (see yao-guang-a6-banger-duration).
+- id: yao-guang-a6-banger-duration
+  entity: "1502"
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    A6 extends each Certified Banger Yao Guang gains by 1 turn. The engine
+    grants Aha Instant bangers directly (2 turns), including those of her
+    Ultimate's Aha extra turn, with no gain event or way to extend them,
+    so A6 has no effect.
+  detail: >
+    Blocked on engine-elation-banger-events. Once a per-holder banger
+    duration bonus exists, give Yao Guang +1 turn on every banger she gains.
+- id: yao-guang-great-boon-stats
+  entity: "1502"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    Great Boon deals Elation DMG of the attacker's Type with Yao Guang's
+    stats. The text uses the attacker's stats and swaps in Yao Guang's
+    Elation only when it is higher; a stat maximum across two units cannot
+    be expressed.
+  detail: >
+    Blocked on engine-mixed-attacker-stats. Usually Yao Guang has the highest
+    Elation, so the Elation term is right and CRIT and Merrymake come from her
+    instead of the attacker. Once a hit can take the attacker's stats with
+    max(attacker, Yao Guang) Elation, deal Great Boon that way.
+- id: pearl-missing-facts
+  entity: "1503"
+  rule: U1
+  status: completed
+  category: needs-data
+  summary: >
+    Pearl (4.6) is not in the pinned TurnBasedGameData, so Energy, Skill
+    Points, and Toughness use kind conventions; both AoE Enhanced Basic ATKs
+    assume 10 Toughness per enemy.
+  detail: >
+    The kit uses the TurnBasedGameData 312b459 (4.6.0) AvatarSkillConfig
+    values, cited in a comment: the Enhanced Basic ATKs deal 30 Toughness
+    per enemy and regenerate 30 Energy; the Basic ATK, Skill, Ultimate,
+    and Elation Skill match the kind defaults. Checked against a local
+    copy of that AvatarSkillConfig (ShowStanceList each 90, SPBase 30).
+- id: pearl-banger-rules
+  entity: "1503"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Pearl's Certified Banger lasts indefinitely, caps at 50, and is spent as
+    Repellency. The kit caps its own grants, but Aha Instant bangers (2 turns)
+    stack past the cap, and Repellency spending is not simulated. Starry
+    Night's Elation DMG therefore sees a high Punchline (over 100 in a full
+    Elation team).
+  detail: >
+    Blocked on engine-banger-holder-rules. The 4-Elation extra turn's 30
+    Certified Banger is granted at Ultimate time for 1 turn so it expires with
+    the extra turn, because a banger cannot be removed at turn end. Once
+    per-holder rules exist, set Pearl's cap (50) and no expiry, spend
+    Repellency by removing banger value, and remove the extra turn's banger
+    when it ends.
+- id: pearl-elation-targets
+  entity: "1503"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    Several Elation DMG instances name no target. Starry Night's 15%, the
+    Ultimate's 60%, and E6's 240% (from the Aesthetic Archetype's stats) are
+    assumed to hit every enemy the AoE hit. The Elation Skill's proc hits
+    only the attack's designated target.
+  detail: >
+    TurnBasedGameData 312b459 lists Pearl's skills but has no Pearl ability
+    config to check targets against.
+- id: pearl-archetype-choice
+  entity: "1503"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    The Ultimate's Aesthetic Archetype is the first other Elation Character,
+    else the first other Character. No option type exists for choosing a
+    teammate.
+  detail: >
+    The Archetype comes from an `aesthetic-archetype` option (k.ally,
+    origin ultimate, other Characters only) whose default is the first
+    other Elation Character, else the first other Character. The Ultimate
+    policy names that ally, and the Ultimate reads ctx.target.
+- id: trailblazer-elation-ult-punchline
+  entity: "8009"
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    The Ultimate makes the designated ally use their Elation Skill with a fixed
+    20 Punchline. A queued Elation Skill from another kit reads the team's
+    Punchline instead; only a self-designated Ultimate uses the fixed amount.
+  detail: >
+    Blocked on engine-queued-action-options. ahaExtraTurn does not fit (it
+    runs every participant and grants Certified Banger). Once queueAction can
+    fix the Punchline its Elation hits read, queue the ally's Elation Skill
+    with Punchline 20.
+- id: trailblazer-elation-ult-target
+  entity: "8009"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    The Ultimate's designated ally is the first Elation teammate, else the
+    first damage dealer, else a Nihility teammate, else the first teammate.
+    "Has an Elation Skill" is read as the Elation Path.
+  detail: >
+    The designated ally comes from an `ultimate-target` option (k.ally,
+    includeSelf) with the old heuristic as its default (first Elation
+    teammate, else the first damage dealer, else a Nihility teammate, else
+    the first teammate). The Ultimate policy returns { ability:
+    "ultimate", target } and the Ultimate reads ctx.target. "Has an
+    Elation Skill" is still read as the Elation Path.
+- id: trailblazer-elation-readings
+  entity: "8009"
+  rule: C2
+  status: completed
+  category: bug
+  summary: >
+    A6's +2 Certified Banger accumulates once per ally Elation Skill until the
+    next Skill; the game grants a flat +2 once, before the Skill's damage.
+  detail: >
+    A6 is a mark (counter capped at 1, weighted by the Elation Skill's
+    probability) set after any ally Elation Skill. The Skill's `before`
+    spends it for +2 Certified Banger, so it counts for the Talent's check
+    and Punchline; the Skill's own 20 is granted after its DMG.
+- id: evanescia-banger-conversions
+  entity: "1505"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    The Talent's Certified Banger to Energy conversion, A2, and A6 only see the
+    kit's own grants and Aha Instant grants (read from ahaInstantStart/End).
+    A6 mirrors the 2-turn expiry of teammates' Aha bangers in counters;
+    teammates' kit-granted bangers and Certified Banger from other kits
+    (Trailblazer's Ultimate) are missed.
+  detail: >
+    Blocked on engine-elation-banger-events. E6's +1 turn applies to the kit's
+    own grants only; Aha Instant bangers last 2 turns. Participant ID order is
+    team slot order. Once gain/expiry events exist, convert every banger gain
+    and expiry from them and drop the counters.
+- id: evanescia-energy-sources
+  entity: "1505"
+  rule: U10
+  status: completed
+  category: approximation
+  summary: >
+    The Talent's Energy to Certified Banger conversion and the Master Fox
+    accumulation only see Energy the kit regenerates itself (ability Energy is
+    set to 0 and regenerated in `after` with the facts values, plus Master Fox,
+    E6, and conversions). Energy from enemy hits and teammates is missed.
+  detail: >
+    The Talent listens to `energyGained` (self): every gain, from any
+    source (abilities, enemy hits, teammates), grants as much Certified
+    Banger and counts toward Master Fox (up to 240 per gain). Energy
+    converted from Certified Banger is marked with a counter while it is
+    gained, so it counts toward Master Fox but does not convert back. The
+    abilities' own Energy is restored (kind defaults; Master Fox's
+    follow-up regenerates #4 = 10).
+- id: evanescia-readings
+  entity: "1505"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: A2 copies 50% of the teammate's Certified Banger
+    without removing it; the 100-point cap applies only to Certified Banger
+    converted into Energy.
+  detail: >
+    Confirmed from Avatar_Evanescia_00_Ability: the Ultimate's 28% Elation DMG
+    hits once per bounce instance (it is inside the per-instance template),
+    and A4's Vulnerability (MAvatar_Evanescia_00_BeDamageAddedRatio) is added
+    before Master Fox's damage in Insert_Phase02. The A2 and cap readings
+    were not found in the config.
+- id: silver-wolf-lv999-elation-attack
+  entity: "1506"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    The Aha Instant always uses "elationSkill", so one ability serves both
+    variants: Pro-Gamer Move deals no DMG while Honkai-DMG Demo attacks.
+    `attack` is static, so the kit marks it as not an attack and "after an
+    ally attacks" effects miss Honkai-DMG Demo.
+  detail: >
+    Blocked on engine-elation-skill-variants. Once the Aha Instant can run an
+    Elation Skill variant (or `attack` can depend on the use), mark
+    Honkai-DMG Demo as an attack and Pro-Gamer Move as not one.
+- id: silver-wolf-lv999-loot-box
+  entity: "1506"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    The Zone's Top Loot Box chance is tracked as its expected value (mean
+    field) and reset to 100% on each Godmode entry (assumption). Each random
+    effect has a 1/3 share; Big Flipping Sword's 20% True DMG is folded into
+    the multiplier. The Enhanced Basic ATK's 3 boxes are certain and leave
+    the chance unchanged.
+  detail: >
+    E2 extra turns from chance-weighted Hidden MMR gains are granted at the
+    next whole gain or at the end of an Enhanced Basic ATK.
+- id: silver-wolf-lv999-enhanced-toughness
+  entity: "1506"
+  rule: U1
+  status: wont-do
+  category: needs-data
+  summary: >
+    Enhanced Basic ATK facts give 10/10 Toughness for 100 bounces and a Final
+    Hit; the kit reads 10 in total spread over the bounces and 10 per enemy
+    for the Final Hit.
+  detail: >
+    Kit is right. Avatar_SilverWolf999_00_Ability GlobalTemplates[7] gives
+    each bounce StanceValue = total / bounce count (the same divisor as its
+    multiplier), and the Final Hit uses the "each" key on all enemies.
+- id: silver-wolf-lv999-readings
+  entity: "1506"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: E4 counts the Punchline plus 5 times it (6P); the
+    Enhanced Basic ATK is a Basic ATK for the Talent's 40% Elation DMG (to
+    every enemy); Hidden MMR CRIT DMG is 2 x (CRIT Rate - 100%), which also
+    converts CRIT Rate above 100% from other sources; E2's "extends all buffs
+    on this unit by 1 turn" is not modeled.
+  detail: >
+    E2: her own statuses can now use `ctx.extendStatus`; buffs from other kits
+    need engine-cross-kit-state.
+- id: aventurine-waveflair-aha-spd
+  entity: "1513"
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    A4 (only Elation Character) raises Aha's SPD by 25 per teammate attack
+    until the Aha Instant ends. Kits cannot reach the Aha unit to apply the
+    status.
+  detail: >
+    Blocked on engine-aha-handle. Aha's SPD now reads SPD statuses on Aha;
+    once kits can reach Aha, apply a stacking +25 spdFlat status on it per
+    teammate attack (only Elation Character) and remove it on
+    `ahaInstantEnd`.
+- id: aventurine-waveflair-readings
+  entity: "1513"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Readings to confirm: A4's second sentence (2 Certified Banger, 1
+    Punchline, Aha SPD per teammate attack) applies only when he is the only
+    Elation Character; All In's Fervor instances take 5 Toughness like its
+    other bounces; the Talent's +1 turn reaches Aha Instant bangers in game
+    but not in the engine.
+  detail: >
+    The Talent's +1 turn on Aha Instant bangers is blocked on
+    engine-elation-banger-events.
+- id: pearl-ally-target-event
+  entity: "1503"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    The Ultimate ("Deep Learning on one designated ally character")
+    declared target "ally" but chose the Archetype inside the ability, so
+    its action events reported the main enemy and equipment reading "an
+    ability on one ally" could not see it.
+  detail: >
+    The Ultimate policy returns { ability: "ultimate", target } with the
+    Archetype from pearl-archetype-choice, and the Ultimate reads
+    ctx.target (another ally Character). With Sacerdos' Relived Ordeal on
+    Pearl, the Archetype now receives the stack.
+- id: trailblazer-elation-ally-target-event
+  entity: "8009"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    The Ultimate declared target "ally" but picked the ally inside the
+    ability, so its action events reported the main enemy and equipment
+    reading "an ability on one ally" could not see it.
+  detail: >
+    The Ultimate policy names the ally (trailblazer-elation-ult-target)
+    and the Ultimate reads ctx.target. The Light Cone triage
+    (light-cones.yaml) refers to this ID.
+- id: pearl-healing
+  entity: "1503"
+  rule: U12
+  status: completed
+  category: missing-ability
+  summary: >
+    Pearl's heals (Skill, both Enhanced Basic ATKs) and A2's Outgoing
+    Healing Boost were not modeled, and her policy assumed healing was not
+    simulated.
+  detail: >
+    The Skill and Enhanced Basic ATKs heal every ally target (#2 of DEF +
+    #3/#4, times 1 + Outgoing Healing) and the ally with the lowest HP
+    share (chosen before the first heal) again. A2's Outgoing Healing
+    Boost (20% of Elation) is three holder-scaled modifiers: base Elation,
+    plus the DEF-based A2 Elation repeated in DEF terms, since scaling
+    never reads scaling. The Skill is also used when an ally Character is
+    at 50% HP or lower (the Talent's threshold). The Talent's damage
+    reduction, A4's cleanse, and E1's revive stay unmodeled (U12).

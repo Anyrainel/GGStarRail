@@ -18,7 +18,7 @@ describe("GGArtifact Star Rail home", () => {
       screen.getByRole("heading", { level: 1, name: "GGArtifact" })
     ).toBeInTheDocument();
     const index = screen.getByRole("region", { name: "Find your next step" });
-    expect(within(index).getAllByRole("link")).toHaveLength(14);
+    expect(within(index).getAllByRole("link")).toHaveLength(15);
     expect(
       within(index).getByRole("link", { name: /Currency War lookup/ })
     ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);

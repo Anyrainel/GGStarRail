@@ -34,7 +34,8 @@
     "depcheck": "depcruise src tests worker --config .dependency-cruiser.cjs",
     "check:worker-config": "node scripts/check-worker-config.mjs",
     "check:worker": "npm run check:worker-config && npm run type-check:worker && npm run test:worker",
-    "check": "npm run data:check && npm run assets:check && npm run data:website:check && npm run test:data-sources && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker"
+    "check": "npm run data:check && npm run assets:check && npm run data:website:check && npm run test:data-sources && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker",
+    "combat:dossier": "node scripts/combat-dossier.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

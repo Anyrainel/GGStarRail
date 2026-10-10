@@ -83,6 +83,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // The combat worker lazy-loads catalogs, which needs module workers.
+  worker: {
+    format: "es",
+  },
   build: {
     copyPublicDir: false,
     manifest: true,

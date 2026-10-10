@@ -10,6 +10,7 @@ export interface RouteDefinition {
     | "resources"
     | "builds"
     | "filters"
+    | "team-damage"
     | "triage"
     | "tier-characters"
     | "tier-light-cones"
@@ -72,6 +73,12 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.filters,
     titleKey: "route.filters.title",
     descriptionKey: "route.filters.description",
+  },
+  {
+    id: "team-damage",
+    path: APP_PATHS.teamDamage,
+    titleKey: "route.teamDamage.title",
+    descriptionKey: "route.teamDamage.description",
   },
   {
     id: "tier-characters",

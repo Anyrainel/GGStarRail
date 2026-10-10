@@ -10,6 +10,7 @@ import {
   Library,
   Lightbulb,
   SlidersHorizontal,
+  Swords,
   Trophy,
   UserRound,
   UsersRound,
@@ -26,6 +27,7 @@ export const APP_PATHS = {
   triage: "/account-data/triage",
   builds: "/builds/configure",
   filters: "/builds/filters",
+  teamDamage: "/builds/team-damage",
   tierCharacters: "/tier-list/characters",
   tierLightCones: "/tier-list/light-cones",
   tierRelics: "/tier-list/relics",
@@ -79,6 +81,11 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         icon: SlidersHorizontal,
       },
       { path: APP_PATHS.filters, labelKey: "nav.filters", icon: Filter },
+      {
+        path: APP_PATHS.teamDamage,
+        labelKey: "nav.teamDamage",
+        icon: Swords,
+      },
     ],
   },
   {

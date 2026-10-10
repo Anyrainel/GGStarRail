@@ -1,0 +1,310 @@
+# Combat translation tracker: abundance. Schema: .agents/skills/hsr-combat/tracking.md
+- id: natasha-skill-policy
+  entity: "1105"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    HP was not simulated, so Natasha uses Basic ATK and only Skills when a
+    Basic ATK would overflow the Skill Point cap; real play spends Skill
+    Points on heals as damage comes in.
+  detail: >
+    Natasha heals through ctx.heal: (ratio x her panel Max HP + flat) x (1 +
+    Outgoing Healing, A4 included, + the Talent's #2 when the target is at #1
+    HP or lower) / the target's panel Max HP. Skill: immediate heal (#1, #4)
+    and a continuous-healing status (#3 turns, +1 with A6) that heals (#2,
+    #5) at the start of the holder's turns. Ultimate: heals all allies (#1,
+    #2); E2 gives allies at #1 HP or lower its continuous healing (checked
+    before the heal). E1: hpChanged (hpCause enemy) on Natasha at 30% HP or
+    lower heals her, once per battle as weighted triggers adding up to one.
+    Turn policy: Skill on the ally Character with the lowest hpRatio when it
+    is at 50% or lower, else on a Skill Point overflow; Basic ATK otherwise.
+- id: natasha-e6-instance
+  entity: "1105"
+  rule: C2
+  status: completed
+  category: bug
+  summary: >
+    E6's Max-HP-scaled Physical DMG is a silent second scaling part of the
+    Basic ATK instance; the game deals it as a separate damage instance.
+  detail: >
+    E6 is its own HitDef after the Basic ATK's hit (stat hp, no Toughness,
+    not silent).
+- id: lynx-survival-response-target
+  entity: "1110"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Survival Response goes to a heuristic carry (Destruction, then other damage
+    Paths, then Nihility, then the highest Max HP) and is renewed when missing;
+    the player's actual target cannot be expressed.
+  detail: >
+    Survival Response goes to a teammate chosen with k.ally
+    ("survival-response-target", Lynx included); the default is the Path
+    heuristic on the team (Destruction, other damage Paths, Nihility, then
+    the earliest slot). The turn policy keeps it on that ally (Skill when it
+    lacks it or Skill Points would overflow) after healing a low ally.
+- id: lynx-survival-response-aggro
+  entity: "1110"
+  rule: U12
+  status: completed
+  category: engine-gap
+  summary: >
+    Survival Response's aggro increase on Destruction/Preservation targets is
+    not modelled, so A2's Energy from hits on the target uses its base aggro
+    share.
+  detail: >
+    Destruction and Preservation targets also receive a companion status with
+    aggroPct = Skill #6 (+500%) for Survival Response's duration, so enemy
+    attacks (and A2's Energy) follow it.
+- id: luocha-auto-skill
+  entity: "1203"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    The Skill's automatic trigger at 50% ally HP is an option (default off);
+    when on, every enemy attack off cooldown triggers it, the 2-turn cooldown
+    counts Luocha's turn ends, and it regenerates no Energy.
+  detail: >
+    The option is gone. hpChanged (subject ally, delta < 0, the ally's
+    hpRatio <= #3, no cooldown status) applies the Skill's effect to that
+    ally without Skill Points or Energy. Each trigger counts with the loss's
+    weight (an aggro share); once the triggers add up to one, a #4-turn
+    cooldown status starts on Luocha (counted on his turn ends). Every heal
+    (manual and automatic Skill, the Zone's heal on the attacker, A4's heal
+    on the other allies) calls ctx.heal with (ratio x Luocha's panel ATK +
+    flat) x (1 + Outgoing Healing) / the target's panel Max HP; E2 adds its
+    Outgoing Healing on targets below 50% and otherwise gives a 2-turn
+    status of the shield family. Turn policy: Skill on the ally Character
+    with the lowest hpRatio when it is at 50% or lower or (E1) when it
+    completes a missing Zone.
+- id: luocha-zone-stacks
+  entity: "1203"
+  rule: U5
+  status: completed
+  category: bug
+  summary: >
+    Abyss Flower stacks are still gained while the Zone is active, refreshing
+    it at 2 stacks; the game gives no Abyss Flower while the Zone exists.
+  detail: >
+    Skill, automatic Skill, and Ultimate gain no Abyss Flower while the Zone
+    is on Luocha.
+- id: bailu-invigoration-counters
+  entity: "1211"
+  rule: U12
+  status: completed
+  category: approximation
+  summary: >
+    Invigoration is tracked as per-Character counters (turns and heals) and
+    ends only when its duration runs out, not when its heals are used up. A2
+    (overheal) and E1 (full HP at the end) are HP options, and Skill heals on
+    random allies are expected values.
+  detail: >
+    Invigoration is a unique 2-turn status whose stacks are its remaining
+    heals (#5, +1 with A4). The Ultimate heals all allies (#1, #2), applies
+    it to allies without it and extends it by 1 turn on holders. On
+    hpChanged (hpCause enemy, after the HP loss) a holder heals (Talent #1,
+    #2) and loses the hit's weight in stacks; it is removed at 0. E1: on
+    statusRemoved, a Character at full HP regenerates #1 fixed Energy. A2:
+    a heal whose amount exceeds the missing HP applies the Max HP status
+    (weighted). E2's Outgoing Healing status is added to heal amounts. The
+    HP options and counters are gone.
+- id: bailu-skill-policy
+  entity: "1211"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    HP was not simulated, so Bailu uses Basic ATK; at E4 she Skills with 3+
+    Skill Points on the lowest-slot teammate for Evil Excision.
+  detail: >
+    Skill on the ally Character with the lowest hpRatio when it is at 50% or
+    lower; else, at E4, Skill with 3+ Skill Points on a teammate chosen with
+    k.ally ("evil-excision-target", default the first damage-Path teammate,
+    then Nihility); else Basic ATK. The Skill heals the target (#1, #2),
+    then #4 random heals, each (1 - #3) times the last, spread over all
+    ally targets as expected values.
+- id: huohuo-ultimate-energy-err
+  entity: "1217"
+  rule: U10
+  status: completed
+  category: bug
+  summary: >
+    The Ultimate's Energy for teammates (20% of their max Energy) is scaled by
+    the receiver's ERR; the game gives a fixed amount.
+  detail: >
+    Teammates gain maxEnergy x #1 with { fixed: true }.
+- id: huohuo-skill-target
+  entity: "1217"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    The Skill targets the Character whose heal also reaches the most adjacent
+    allies by slot, ignoring who needs healing.
+  detail: >
+    The Skill aims at the ally Character with the lowest hpRatio (ties: the
+    adjacency rule) and heals it (#1, #2) and adjacent Characters (#3, #4)
+    with ctx.heal. Huohuo also Skills when that ally is at 50% HP or lower.
+    The Talent heals the triggering ally and each ally at #6 HP or lower,
+    E4 adds up to #1 Outgoing Healing linearly with HP lost, and E6 buffs
+    every healed ally. No designated target is needed: E6 reaches every
+    ally through the Talent's turn-start heals.
+- id: lingsha-a6-low-hp
+  entity: "1222"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    A6's extra Fuyuan attack is an HP option (default off); when on, every
+    enemy attack while Fuyuan is present and off cooldown queues it, and the
+    2-turn cooldown counts Lingsha's turn ends.
+  detail: >
+    The option is gone. hpChanged (an ally Character losing HP to an enemy
+    or a cost, Fuyuan present, no cooldown status) queues Fuyuan's
+    embers-echo (no action used) when any ally Character is at #1 HP or
+    lower, then applies a #2-turn cooldown status on Lingsha. An enemy
+    attack always damages some Character, so the follow-up is queued at
+    full weight. Skill, Ultimate, and every Fuyuan attack heal all allies
+    with ctx.heal (Lingsha's panel ATK; A2's Outgoing Healing from Break
+    Effect added), and E4 heals the ally with the lowest current HP when
+    Fuyuan takes its own action.
+- id: lingsha-fuyuan-extra-toughness
+  entity: "1222"
+  rule: C2
+  status: completed
+  category: needs-data
+  summary: >
+    Fuyuan's extra hit on one random enemy has no Toughness reduction in the
+    facts (only the AoE's 10 is listed); the kit uses 0.
+  detail: >
+    The extra random hit reduces 10 Toughness.
+- id: lingsha-e1-e6-scope
+  entity: "1222"
+  rule: U3
+  status: completed
+  category: bug
+  summary: >
+    E1's DEF reduction is kept only while the enemy stays Weakness Broken,
+    and E6's RES reduction is applied when the Skill summons Fuyuan before
+    the Skill's hits; neither matches the game.
+  detail: >
+    E1's DEF reduction is no longer removed on recovery. E6's RES reduction
+    is applied after the Skill's hits and still removed when Fuyuan
+    leaves.
+- id: natasha-ally-target-event
+  entity: "1105"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Natasha's Skill declares target "ally", but the turn policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (Sacerdos' Relived Ordeal, Wavestrider Captain, Dreamlit Actor) cannot see it.
+  detail: >
+    The turn policy returns { ability: "skill", target } with the ally
+    Character with the lowest hpRatio, and the Skill heals ctx.target.
+- id: luocha-ally-target-event
+  entity: "1203"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Luocha's Skill declares target "ally", but the turn policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (Sacerdos' Relived Ordeal, Wavestrider Captain, Dreamlit Actor) cannot see it.
+  detail: >
+    The turn policy returns { ability: "skill", target } with the ally
+    Character with the lowest hpRatio, and the Skill heals ctx.target.
+- id: gallagher-ally-target-event
+  entity: "1301"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Gallagher's Skill declares target "ally", but the turn policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (Sacerdos' Relived Ordeal, Wavestrider Captain, Dreamlit Actor) cannot see it.
+  detail: >
+    The turn policy returns { ability: "skill", target } with the ally
+    Character with the lowest hpRatio when it is at 50% HP or lower, and the
+    Skill heals ctx.target (#1 x (1 + Outgoing Healing + A2's share of Break
+    Effect)). The Talent heals the attacker once per Besotted enemy an ally
+    attack hits, and A6's Nectar Blitz heals the teammates too.
+- id: bailu-talent-killing-blow
+  entity: "1211"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The Talent's heal on a teammate receiving a killing blow (once per battle,
+    +1 with E6) never triggers, because the HP model keeps allies at 1% HP or
+    more.
+  detail: >
+    Blocked on engine-ally-killing-blow. Once a killing-blow event exists,
+    Bailu answers it for a teammate: the ally is not knocked down and heals
+    (Talent #3 x Bailu's Max HP + #4), up to 1 time per battle (E6: #1 more).
+- id: huohuo-e2-killing-blow
+  entity: "1217"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    E2 (while Huohuo has Divine Provision, an ally receiving a killing blow
+    is not knocked down, restores 50% of its Max HP, and Divine Provision
+    loses 1 turn; 2 times per battle) never triggers under the HP model.
+  detail: >
+    Blocked on engine-ally-killing-blow. Once the event exists: setHp to
+    E2 #1 on that ally, shorten Divine Provision (and E1's SPD status) by one
+    turn, at most #2 times per battle.
+- id: huohuo-e4-heal-curve
+  entity: "1217"
+  rule: U12
+  status: open
+  category: verify
+  summary: >
+    E4's healing bonus ("the less HP the target has, the higher the healing,
+    up to +80%") is taken as linear in HP lost: #1 x (1 - hpRatio).
+  detail: >
+    To verify: the game's curve (linear in lost HP, from 0% at full HP to
+    the maximum at 0 HP, or another shape or threshold).
+- id: huohuo-talent-low-hp-heal
+  entity: "1217"
+  rule: U12
+  status: open
+  category: verify
+  summary: >
+    The Talent's extra heal on "every ally with 50% HP or lower" is read when
+    it triggers, so a triggering ally at 50% or lower is healed twice (its
+    own heal and the low-HP heal).
+  detail: >
+    To verify in Avatar_Huohuo_00 Talent data whether the low-HP heal skips
+    the ally whose turn or Ultimate triggered it, and whether HP is checked
+    before or after that ally's own heal.
+- id: lingsha-heal-a2-atk
+  entity: "1222"
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Lingsha's heal amounts read her panel ATK, which leaves out A2's ATK from
+    Break Effect (a scaled permanent modifier), so her heals (and Fuyuan's)
+    are too small when A2 is active.
+  detail: >
+    Blocked on engine-momentary-stat-read. A stat read that includes scaled
+    modifiers would give the heals Lingsha's full ATK. A2's Outgoing Healing
+    share is already added to the heal amount by hand.
+- id: lingsha-e1-before-break
+  entity: "1222"
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    E1's DEF reduction is added on weaknessBreak, which the engine emits after
+    the breaking hit's Break DMG; the game adds it OnBeforeBeingBreak, so
+    that Break DMG already sees it.
+  detail: >
+    Blocked on engine-before-break-event. Apply the status from a hook that
+    runs when Toughness reaches 0, before the Break DMG resolves.

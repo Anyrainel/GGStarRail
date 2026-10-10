@@ -12,8 +12,9 @@
 - Authentication-cookie material is memory-only for one request. Never persist,
   export, back up, log, place in a URL, or attach it to an error object.
 - Provider DTOs stay in `src/providers`; canonical state must not import them.
-- Do not add team damage optimization, Genshin formula engines, or energy
-  calculators without an explicit scope change.
+- Team damage simulation and optimization are in scope (`src/domain/combat`,
+  `docs/combat/`). Energy and Skill Points belong inside the battle timeline,
+  not in standalone calculators. Do not add Genshin formula engines.
 - Production uses the `ggstarrail` Worker and `hsr.ggartifact.com`, with
   Cloudflare Git builds from `main`. Do not reuse GenshinTools cloud resources.
 - Normal production publication is a validated push to `origin/main` when
@@ -33,8 +34,16 @@ Zustand persist. Check `package.json` for the current command definitions.
 - `npm run test` runs app/domain tests; `npm run test:worker` runs Worker tests.
 - `npm run build` prepares WebP assets and builds the production app.
 - `npm run check` runs the complete validation stack required before commits.
-- `src/domain/` owns framework-free account, build, and Relic logic. Keep it
-  independent of UI, stores, and providers.
+- `src/domain/` owns framework-free account, build, Relic, and combat logic.
+  Keep it independent of UI, stores, and providers.
+- `src/domain/combat/` holds the combat engine and optimizer; `impl/` holds one
+  translated kit per Character, Light Cone, or Relic set. Kits follow
+  `.agents/skills/hsr-combat/` (translator rules, kit authoring, tracker). Use
+  the `combat-agents` skill to launch translator agents.
+- `src/lib/combat/` connects the engine to catalogs, the account, persisted
+  teams, and the combat worker.
+- `npm run combat:dossier -- C|L|R <id>` prints everything a kit translation
+  needs; `docs/combat/tracker/` records approximations and engine gaps.
 - `src/providers/` owns external formats, adapters, and reference catalogs.
   Providers must not own UI or persisted state.
 - `src/stores/` owns persisted state; `src/stores/migration/` owns store migrations.
@@ -60,6 +69,7 @@ labels, and `src/App.tsx` for the actual route components.
 | Relic Triage | `/account-data/triage` | `src/pages/account-data/TriageView.tsx` |
 | Character Builds | `/builds/configure` | `src/pages/builds/CharacterBuildView.tsx` |
 | Relic Filters | `/builds/filters` | `src/pages/builds/RelicFiltersView.tsx` |
+| Team Damage | `/builds/team-damage` | `src/pages/damage/TeamDamageView.tsx` |
 | Character Priority | `/tier-list/characters` | `src/pages/tier-list/CharacterTierListView.tsx` |
 | Light Cone Priority | `/tier-list/light-cones` | `src/pages/tier-list/LightConeTierListView.tsx` |
 | Relic Priority | `/tier-list/relics` | `src/pages/tier-list/RelicTierListView.tsx` |
