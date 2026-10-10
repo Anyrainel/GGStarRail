@@ -2,6 +2,7 @@ import { BREAK_EFFECT_USES_TOUGHNESS } from "../battle/breakEffects";
 import type { CombatLog, HitRecord } from "../battle/log";
 import type { AppliedModifier, CombatUnit, EnemyUnit } from "../battle/units";
 import type { StatScaling } from "../kit/model";
+import { scaledValue } from "../kit/scaling";
 import {
   BREAK_COEFFICIENT,
   breakLevelBase,
@@ -537,16 +538,6 @@ function readScalingInput(
   }
   if (stat === "maxEnergy") return unit.maxEnergy;
   return readStat(vector, stat);
-}
-
-function scaledValue(input: number, scaling: StatScaling): number {
-  if (scaling.atLeast !== undefined) {
-    return input + 1e-9 >= scaling.atLeast ? scaling.ratio : 0;
-  }
-  let amount = Math.max(0, input - (scaling.threshold ?? 0));
-  if (scaling.step) amount = Math.floor(amount / scaling.step + 1e-9);
-  const value = amount * scaling.ratio;
-  return scaling.cap === undefined ? value : Math.min(scaling.cap, value);
 }
 
 /** Default panels: each unit's own assembled panel. */

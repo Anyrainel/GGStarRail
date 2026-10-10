@@ -280,6 +280,36 @@ describe("combat engine features", () => {
     expect(enemyTurns(false, true)).toBeCloseTo(normal / 2, 6);
   });
 
+  it("applies stat-scaled SPD buffs to turn order", () => {
+    const turns = (scaled: boolean) =>
+      run(
+        (k) => {
+          const haste = k.status({
+            id: "haste",
+            origin: "ultimate",
+            modifiers: [
+              {
+                stat: "spdFlat",
+                scaling: { source: "applier", stat: "spd", ratio: 0.5 },
+              },
+            ],
+          });
+          basic(k);
+          k.on(
+            "battleStart",
+            "talent",
+            { subject: "any" },
+            (ctx: BattleApi) => {
+              if (scaled) ctx.applyStatus(ctx.self, haste);
+            }
+          );
+          k.policy({ turn: () => "basic", ultimate: () => false });
+        },
+        { cycles: 3 }
+      ).result.log.actions.filter((action) => action.mode === "turn").length;
+    expect(turns(true)).toBeGreaterThan(turns(false));
+  });
+
   it("removes timed Weakness implants after the enemy's turns", () => {
     const weak: boolean[] = [];
     run(

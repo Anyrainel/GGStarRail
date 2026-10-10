@@ -112,8 +112,9 @@ unit.has(s); unit.stacks(s); unit.hasFamily("burn"); unit.debuffCount();
   statuses carry their families, so "Burned" checks see Break Burn too.
 - Re-applying a debuff without `baseChance` makes it certain. To change
   stacks of an existing debuff use `setStatusStacks`.
-- SPD modifiers on enemy statuses (Slow, Imprisonment) change enemy turn
-  order; a debuff with a base chance counts with that chance.
+- SPD modifiers on statuses change turn order, including stat-scaled ones
+  ("SPD +20% of Hanya's SPD": `spdFlat` with `scaling`). On enemy statuses
+  (Slow, Imprisonment) a debuff with a base chance counts with that chance.
 
 ## Abilities and hits
 

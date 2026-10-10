@@ -6,7 +6,13 @@ import type {
   UltimatePolicy,
   UnitView,
 } from "../kit/api";
-import type { EffectOrigin, ModifierDef, StatusDef } from "../kit/model";
+import type {
+  EffectOrigin,
+  ModifierDef,
+  StatScaling,
+  StatusDef,
+} from "../kit/model";
+import { scaledValue } from "../kit/scaling";
 import {
   type CombatStat,
   type CombatType,
@@ -244,13 +250,15 @@ export class CombatUnit implements UnitView {
       if (status.stacks <= 0) continue;
       const chance = Math.min(1, status.baseChance ?? 1);
       for (const modifier of status.modifiers()) {
-        if (
-          modifier.def.stat === stat &&
-          !modifier.def.filter &&
-          !modifier.def.scaling
-        ) {
-          total += (modifier.def.value ?? 0) * modifier.scale * chance;
+        const { def } = modifier;
+        if (def.stat !== stat || def.filter) continue;
+        let value = def.value ?? 0;
+        if (def.scaling) {
+          const source =
+            def.scaling.source === "applier" ? status.applier : this;
+          value += scaledValue(source.scalingInput(def.scaling), def.scaling);
         }
+        total += value * modifier.scale * chance;
       }
     }
     if (!withTeamAuras) return total;
@@ -310,6 +318,15 @@ export class CombatUnit implements UnitView {
       if (status.def.debuff && status.stacks > 0) count += 1;
     }
     return count;
+  }
+
+  /**
+   * A scaling input read from the steady panel (as damage evaluation does
+   * for appliers). Recorded like `panelStat`, so optimizer caches see it.
+   */
+  scalingInput(scaling: StatScaling): number {
+    if (scaling.stat === "maxEnergy") return this.maxEnergy;
+    return this.panelStat(scaling.stat);
   }
 
   panelStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number {
