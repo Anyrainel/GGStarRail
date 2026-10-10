@@ -732,3 +732,97 @@
     the wearer applies during it reach exactly one other Character, which
     receives the Elation bonus (Trailblazer's Ultimate).
   detail: "Ally targets on Skill and Ultimate actions (see a-grounded-ascent-ultimate-target) would replace the heuristic."
+- id: shadowburn-summon-events
+  entity: "20021"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    There is no event when a memosprite is summoned or disappears, so
+    Shadowburn, Reminiscence, Sweat Now Cry Less, Make Farewells More
+    Beautiful, and To Evernight's Stars check the wearer's memosprite at
+    turn and action boundaries. Effects land at the end of the summoning
+    action, and a memosprite that deals DMG in the action that summoned it
+    (Trailblazer's or Evernight's Ultimate) misses mirrored wearer buffs.
+  detail: "A summoned/dismissed event (owner, memosprite) would make these exact."
+- id: the-storys-next-page-healing-tally
+  entity: "21054"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The Outgoing Healing buff is a status, but Hyacine's healing tally reads
+    her steady panel (panelStat), so the buff does not raise Little Ica's
+    Rainclouds DMG as it does in game.
+  detail: "Needs a momentary stat read for kits, or a healing model the tally can follow (engine-hp-model)."
+- id: fly-into-a-pink-tomorrow-enhanced-basic
+  entity: "22006"
+  rule: C1
+  status: open
+  category: needs-data
+  summary: >
+    The +60% DMG to the Enhanced Basic ATK "Together, We Script Tomorrow!"
+    is not modelled: the Trailblazer (Remembrance) kit lacks that ability
+    (trace 8007501 "Unfinished Epilogue") and the data has no skill row
+    for it. Only the all-ally DMG aura is applied.
+  detail: "Once the Enhanced Basic ATK exists, the bonus also needs a way to scope a modifier to one ability (no ability filter exists)."
+- id: make-farewells-more-beautiful-hp-loss
+  entity: "23040"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated, so HP lost during own turns is assumed at the start
+    of the abilities that consume it: Castorice's Skills and every
+    Netherwing Memosprite Skill (Claw included), Evernight's Basic ATK (A2
+    assumed) and Skill. Other wearers default off and, when the option is
+    enabled, lose HP with every Basic ATK and Skill.
+  detail: "Needs HP-consume events (engine-hp-model)."
+- id: long-may-rainbows-adorn-the-sky-hp
+  entity: "23042"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Consumed HP assumes allies at 80% of Max HP and leaves memosprites out
+    (their HP is unknown), and the consumption does not feed allies'
+    HP-loss mechanics (Castorice's and Evernight's Talents).
+  detail: "Needs a shared HP model (engine-hp-model, engine-memosprite-max-hp)."
+- id: long-may-rainbows-adorn-the-sky-target
+  entity: "23042"
+  rule: U14
+  status: open
+  category: verify
+  summary: >
+    The Additional DMG after the memosprite's attack goes to the attack's
+    designated target only. Little Ica's Rainclouds is AoE; confirm whether
+    "the attacked target" means every enemy hit.
+  detail: ""
+- id: this-love-forever-blank-verse
+  entity: "23052"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    Blank and Verse have no duration in the text and are kept until the
+    memosprite disappears; Blank's DMG taken is an aura, not a debuff, so it
+    does not count toward debuff counts. Confirm both in game.
+  detail: ""
+- id: victory-in-a-blink-late-memosprites
+  entity: "21050"
+  rule: U3
+  status: open
+  category: approximation
+  summary: >
+    The all-ally DMG buff is a status applied to every ally when it
+    triggers, so a memosprite summoned during its 3 turns lacks it.
+  detail: "Needs a read of a status's remaining turns (engine-status-lifecycle) to copy it with the right duration."
+- id: memorys-curtain-never-falls-late-memosprites
+  entity: "24005"
+  rule: U3
+  status: open
+  category: approximation
+  summary: >
+    The all-ally DMG buff is a status applied to every ally after the
+    wearer's Skill, so a memosprite summoned during its 3 turns lacks it.
+  detail: "Needs a read of a status's remaining turns (engine-status-lifecycle) to copy it with the right duration."
