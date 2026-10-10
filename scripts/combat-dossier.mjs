@@ -98,7 +98,7 @@ function slug(name) {
 /** Trailblazer forms share the Caelus (odd) ID's kit, as in characterIdentity. */
 function kitId(kind, id) {
   const number = Number(id);
-  return kind === "C" && /^800\d$/.test(id) && number % 2 === 0
+  return kind === "C" && /^80\d\d$/.test(id) && number % 2 === 0
     ? String(number - 1)
     : id;
 }

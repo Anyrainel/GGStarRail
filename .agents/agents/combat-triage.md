@@ -22,9 +22,14 @@ consistent decisions. Optional: `Entities: <id>, ...` and `--retriage`
 | `bug` | Rule correctly applied, text confirms it → `actionable`. Rule misapplied → `wont-do`, with why. |
 | `missing-ability` | Meaningful damage, or a trigger other effects depend on → `actionable`. Negligible → `wont-do`. |
 | `approximation` | Exact approach clear within the current API → `actionable` (describe it). Otherwise leave `open` with notes. |
-| `engine-gap` | First check whether an existing pattern expresses it: statuses with synced stacks, listeners, `deal`, summons, team composition. If one does → `actionable`. If it truly needs an engine change, move it to `engine.yaml` (copy it, delete the original) for the engine owner. |
+| `engine-gap` | First check whether an existing construct expresses it (read `kit-authoring.md`: the API grows between waves, so many gaps are already closed). If one does → `actionable`. If it truly needs an engine change, link it to one item in `engine.yaml`: reuse a matching item, or append a new one naming every affected entity. Keep the kit item `open` with `detail: "Blocked on <engine item id>. <what the kit should do once it exists>"`, so the kit change is not lost. |
 | `needs-data` | Find the data: dossier facts, glossary, TurnBasedGameData. Found → `actionable`. Otherwise `open` with what is missing. |
-| `verify` | Leave `open` unless evidence settles it. |
+| `verify` | Settle it with evidence: dossier text (EN and ZH), the fribbels optimizer source, or a community source you cite. Settled and the kit is wrong → `bug`, `actionable`. Settled and the kit is right → `wont-do` with the evidence. Otherwise leave `open`. |
+
+Duplicates: when several items describe one problem, keep one, mark the others
+`wont-do` with `detail: "Duplicate of <id>."`. Items made obsolete by an engine
+change are `wont-do` with the change named. Never edit `engine.yaml` items
+other agents wrote; only append.
 
 For `actionable` items, write the expected behaviour in `detail`, with enough
 context that the implementer does not re-research. Leave anything ambiguous
