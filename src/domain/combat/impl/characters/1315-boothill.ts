@@ -28,6 +28,7 @@ export default defineCharacter("1315", (k) => {
     id: "standoff",
     origin: "skill",
     debuff: true,
+    taunt: true,
     duration: standoffDuration,
   });
   const standoffSelf = k.status({
@@ -206,11 +207,14 @@ export default defineCharacter("1315", (k) => {
     });
   }
 
-  // The Skill does not end the turn: the Enhanced Basic ATK follows in it.
+  // "After using this Skill, the current turn does not end": the turn
+  // policy follows it with the Enhanced Basic ATK.
   k.ability({
     id: "skill",
     kind: "skill",
+    target: "enemy",
     energy: 0,
+    endsTurn: false,
     after: (ctx) => {
       const target = ctx.target;
       if (!isEnemy(target)) return;
@@ -218,18 +222,18 @@ export default defineCharacter("1315", (k) => {
       ctx.applyStatus(target, standoff);
       ctx.applyStatus(ctx.self, standoffSelf);
       ctx.setCounter(ctx.self, "standoff-ending", 0);
-      ctx.queueAction(ctx.self, enhancedBasicId(ctx.self.stacks(trickshot)), {
-        target,
-      });
     },
   });
 
-  // The implanted Physical Weakness has no duration in the engine.
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     before: (ctx) => {
-      if (isEnemy(ctx.target)) ctx.implantWeakness(ctx.target, "Physical");
+      if (isEnemy(ctx.target)) {
+        ctx.implantWeakness(ctx.target, "Physical", {
+          turns: k.param("03", 3),
+        });
+      }
       engage(ctx);
     },
     hits: [
@@ -259,12 +263,17 @@ export default defineCharacter("1315", (k) => {
   });
 
   k.policy({
-    // Enhanced Basic ATK in the Standoff, otherwise open one with the Skill.
-    turn: (view) =>
-      view.self.has(standoffSelf)
-        ? enhancedBasicId(view.self.stacks(trickshot))
-        : view.skillPoints >= 1
-          ? "skill"
-          : "basic",
+    // Enhanced Basic ATK on the Standoff target while it lasts, otherwise
+    // open one with the Skill.
+    turn: (view) => {
+      if (!view.self.has(standoffSelf)) {
+        return view.skillPoints >= 1 ? "skill" : "basic";
+      }
+      const ability = enhancedBasicId(view.self.stacks(trickshot));
+      const target = view.enemies.find((enemy) =>
+        enemy.has(standoff, view.self)
+      );
+      return target ? { ability, target } : ability;
+    },
   });
 });

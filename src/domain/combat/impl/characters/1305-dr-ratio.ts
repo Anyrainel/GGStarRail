@@ -1,4 +1,4 @@
-import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
+import { isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 
 /** Dr. Ratio — The Hunt, Imaginary. */
@@ -25,32 +25,24 @@ export default defineCharacter("1305", (k) => {
     modifiers: [{ stat: "effectRes", value: -k.traceParam(2, 2) }],
   });
 
-  const deductionPerDebuff = k.traceParam(3, 2);
-  const deduction = k.status({
-    id: "deduction",
-    origin: "a6",
-    maxStacks: Math.round(k.traceParam(3, 3) / deductionPerDebuff),
-    modifiers: [{ stat: "dmgBoost", value: deductionPerDebuff }],
-  });
-  // A6 depends on the target's debuffs. Every Dr. Ratio hit is single-target,
-  // so the stacks are synced to the target before each damaging action.
-  const syncDeduction = (ctx: BattleApi, target: UnitView | null) => {
-    if (!k.a(3)) return;
-    const debuffs = isEnemy(target) ? target.debuffCount() : 0;
-    if (debuffs >= k.traceParam(3, 1)) {
-      ctx.applyStatus(ctx.self, deduction, { setStacks: debuffs });
-    } else {
-      ctx.removeStatus(ctx.self, deduction);
+  // A6: "for each debuff the target has" from #1 debuffs on, capped at #3:
+  // one tier per debuff count, read from the target when each hit lands.
+  if (k.a(3)) {
+    const perDebuff = k.traceParam(3, 2);
+    const minDebuffs = k.traceParam(3, 1);
+    const maxDebuffs = Math.round(k.traceParam(3, 3) / perDebuff);
+    for (let debuffs = minDebuffs; debuffs <= maxDebuffs; debuffs += 1) {
+      k.stat("a6", {
+        stat: "dmgBoost",
+        value: debuffs === minDebuffs ? perDebuff * minDebuffs : perDebuff,
+        filter: { minTargetDebuffs: debuffs },
+      });
     }
-  };
+  }
 
-  // Treated as a debuff (it counts toward his per-debuff effects) that is
-  // removed once its triggers are used up; tracked as verify.
-  const wisemansFolly = k.status({
-    id: "wisemans-folly",
-    origin: "ultimate",
-    debuff: true,
-  });
+  // Not a debuff (StatusType Other in the game's status config); removed
+  // once its triggers are used up.
+  const wisemansFolly = k.status({ id: "wisemans-folly", origin: "ultimate" });
   const follyCharges = k.param("03", 2) + (k.e(6) ? k.rankParam(6, 1) : 0);
 
   if (k.e(1) && k.a(1)) {
@@ -70,7 +62,6 @@ export default defineCharacter("1305", (k) => {
   k.ability({
     id: "basic",
     kind: "basic",
-    before: (ctx) => syncDeduction(ctx, ctx.target),
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
@@ -86,7 +77,6 @@ export default defineCharacter("1305", (k) => {
           ctx.applyStatus(ctx.self, summation, { stacks: debuffs });
         }
       }
-      syncDeduction(ctx, ctx.target);
     },
     hits: [
       { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
@@ -113,7 +103,6 @@ export default defineCharacter("1305", (k) => {
     id: "followUp",
     kind: "followUp",
     energy: 5,
-    before: (ctx) => syncDeduction(ctx, ctx.target),
     hits: [
       { shape: "single", main: k.param("04", 1), toughness: { main: 10 } },
     ],
@@ -138,7 +127,6 @@ export default defineCharacter("1305", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    before: (ctx) => syncDeduction(ctx, ctx.target),
     hits: [
       { shape: "single", main: k.param("03", 1), toughness: { main: 30 } },
     ],

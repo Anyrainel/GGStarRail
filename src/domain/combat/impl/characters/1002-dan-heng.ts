@@ -3,7 +3,8 @@ import { defineCharacter } from "../../kit/character";
 
 /** Dan Heng — The Hunt, Wind. */
 export default defineCharacter("1002", (k) => {
-  // Enemy SPD is fixed in the engine; the Slow matters for its presence.
+  const REACH_COOLDOWN = "reach-cooldown";
+  // Lowers the enemy's SPD (turn order) and marks it Slowed.
   const slow = k.status({
     id: "torrent-slow",
     family: "slow",
@@ -18,33 +19,23 @@ export default defineCharacter("1002", (k) => {
     ],
   });
 
-  const etherealDream = k.status({
-    id: "ethereal-dream",
-    origin: "ultimate",
-    modifiers: [
-      {
-        stat: "multiplierBoost",
-        value: k.param("03", 2),
-        filter: { tags: ["ultimate"] },
-      },
-    ],
+  // Ultimate: "If the attacked enemy is Slowed" (any source).
+  k.stat("ultimate", {
+    stat: "multiplierBoost",
+    value: k.param("03", 2),
+    filter: { tags: ["ultimate"], targetFamilies: ["slow"] },
   });
+  if (k.a(3)) {
+    k.stat("a6", {
+      stat: "dmgBoost",
+      value: k.traceParam(3, 1),
+      filter: { tags: ["basic"], targetFamilies: ["slow"] },
+    });
+  }
 
-  const highGale = k.status({
-    id: "high-gale",
-    origin: "a6",
-    modifiers: [
-      {
-        stat: "dmgBoost",
-        value: k.traceParam(3, 1),
-        filter: { tags: ["basic"] },
-      },
-    ],
-  });
-
-  // Talent: the engine does not expose which ally an ability targets, so
-  // the option assumes an ally targets Dan Heng whenever it is off
-  // cooldown, checked at the start of his turns.
+  // Talent: "When Dan Heng becomes the target of an ally's ability", off
+  // cooldown (#2 of his turns, 1 fewer at E2); it lasts until his next
+  // attack.
   const reach = k.status({
     id: "superiority-of-reach",
     origin: "talent",
@@ -56,22 +47,46 @@ export default defineCharacter("1002", (k) => {
       },
     ],
   });
-  if (k.toggle("talent-ally-target", "talent", "active", true)) {
-    // E2: "Reduces Talent cooldown by 1 turn."
-    const cooldown = k.param("04", 2) - (k.e(2) ? 1 : 0);
-    k.on("turnStart", "talent", {}, (ctx) => {
-      if (ctx.self.counter("reach-cooldown") > 0) return;
+  const cooldown = k.param("04", 2) - (k.e(2) ? 1 : 0);
+  k.on(
+    "actionStart",
+    "talent",
+    {
+      subject: "otherAlly",
+      when: (event, self) =>
+        event.abilityTarget === "allies" ||
+        (event.abilityTarget === "ally" && event.target === self),
+    },
+    (ctx) => {
+      if (ctx.self.counter(REACH_COOLDOWN) > 0) return;
       ctx.applyStatus(ctx.self, reach);
-      ctx.setCounter(ctx.self, "reach-cooldown", cooldown);
+      ctx.setCounter(ctx.self, REACH_COOLDOWN, cooldown);
+    }
+  );
+  k.on("turnEnd", "talent", {}, (ctx) => {
+    const remaining = ctx.self.counter(REACH_COOLDOWN);
+    if (remaining > 0) ctx.setCounter(ctx.self, REACH_COOLDOWN, remaining - 1);
+  });
+  k.on("actionEnd", "talent", { attack: true }, (ctx) =>
+    ctx.removeStatus(ctx.self, reach)
+  );
+
+  if (k.a(1)) {
+    // "When current HP is #1 or lower, reduces the chance of being
+    // attacked": #2 is the aggro reduction.
+    const hiddenDragon = k.status({
+      id: "hidden-dragon",
+      origin: "a2",
+      modifiers: [{ stat: "aggroPct", value: -k.traceParam(1, 2) }],
     });
-    k.on("turnEnd", "talent", {}, (ctx) => {
-      const remaining = ctx.self.counter("reach-cooldown");
-      if (remaining > 0)
-        ctx.setCounter(ctx.self, "reach-cooldown", remaining - 1);
+    k.on("hpChanged", "a2", {}, (ctx) => {
+      const low = ctx.self.hpRatio <= k.traceParam(1, 1) + 1e-9;
+      if (low && !ctx.self.has(hiddenDragon)) {
+        ctx.applyStatus(ctx.self, hiddenDragon);
+      } else if (!low && ctx.self.has(hiddenDragon)) {
+        ctx.removeStatus(ctx.self, hiddenDragon);
+      }
     });
-    k.on("actionEnd", "talent", { attack: true }, (ctx) =>
-      ctx.removeStatus(ctx.self, reach)
-    );
   }
 
   if (k.a(2)) {
@@ -106,15 +121,9 @@ export default defineCharacter("1002", (k) => {
   k.ability({
     id: "basic",
     kind: "basic",
-    before: (ctx) => {
-      if (k.a(3) && isEnemy(ctx.target) && ctx.target.has(slow)) {
-        ctx.applyStatus(ctx.self, highGale);
-      }
-    },
     hits: [
       { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
     ],
-    after: (ctx) => ctx.removeStatus(ctx.self, highGale),
   });
 
   k.ability({
@@ -135,16 +144,10 @@ export default defineCharacter("1002", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    before: (ctx) => {
-      if (isEnemy(ctx.target) && ctx.target.has(slow)) {
-        ctx.applyStatus(ctx.self, etherealDream);
-      }
-    },
     hits: [
       { shape: "single", main: k.param("03", 1), toughness: { main: 30 } },
     ],
     after: (ctx) => {
-      ctx.removeStatus(ctx.self, etherealDream);
       if (ultimateKill) ctx.advanceAction(ctx.self, 1);
     },
   });
@@ -152,6 +155,6 @@ export default defineCharacter("1002", (k) => {
   k.policy({
     // Hold the Ultimate for a Slowed target unless no Skill Point can apply it.
     ultimate: (view) =>
-      view.enemies.some((enemy) => enemy.has(slow)) || view.skillPoints < 1,
+      view.mainTarget?.hasFamily("slow") === true || view.skillPoints < 1,
   });
 });

@@ -1,5 +1,11 @@
-import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
+import {
+  type BattleApi,
+  type EnemyView,
+  isEnemy,
+  type UnitView,
+} from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
+import type { HitDef } from "../../kit/model";
 
 /** Topaz & Numby — The Hunt, Fire. */
 export default defineCharacter("1112", (k) => {
@@ -8,7 +14,6 @@ export default defineCharacter("1112", (k) => {
   // Per-action latches for "receives a Follow-Up ATK" style triggers.
   const FOLLOW_UP_LATCH = "debt-follow-up";
   const WINDFALL_LATCH = "debt-windfall";
-  const DEBTOR_LATCH = "debt-debtor";
 
   const proofOfDebt = k.status({
     id: "proof-of-debt",
@@ -23,17 +28,13 @@ export default defineCharacter("1112", (k) => {
     ],
   });
   // Numby attacks with Topaz's stats, so its buffs sit on Topaz, scoped to
-  // the summon. The Skill's DMG (dealt by Numby in the text) is credited to
-  // Topaz and does not receive them.
+  // the summon. The Skill's DMG is dealt by Numby (the game adds the
+  // Windfall Bonanza! multiplier to it and counts it as one of its attacks).
+  // The multiplier increase is part of the hits (see numbyHits).
   const windfall = k.status({
     id: "windfall-bonanza",
     origin: "ultimate",
     modifiers: [
-      {
-        stat: "multiplierBoost",
-        value: k.param("03", 1),
-        filter: { attackerKinds: ["summon"] },
-      },
       {
         stat: "critDmg",
         value: k.param("03", 2),
@@ -41,27 +42,24 @@ export default defineCharacter("1112", (k) => {
       },
     ],
   });
-  const debtor = k.status({
-    id: "debtor",
-    origin: "e1",
-    debuff: true,
-    maxStacks: k.rankParam(1, 2),
-  });
-  // Approximation: Debtor's CRIT DMG is incoming, which the engine cannot
-  // express; allies hold it for all Follow-Up ATKs while the Proof of Debt
-  // target has Debtor stacks.
-  const debtorCritDmg = k.status({
-    id: "debtor-crit-dmg",
-    origin: "e1",
-    maxStacks: k.rankParam(1, 2),
-    modifiers: [
-      {
+  // E1 Debtor: one status per stack (only the first is the debuff), so
+  // allies' Follow-Up CRIT DMG can follow the target's stacks.
+  const debtorStacks = Array.from({ length: k.rankParam(1, 2) }, (_, index) =>
+    k.status({
+      id: `debtor-${index + 1}`,
+      origin: "e1",
+      debuff: index === 0,
+    })
+  );
+  if (k.e(1)) {
+    for (const stack of debtorStacks) {
+      k.teamStat("e1", {
         stat: "critDmg",
         value: k.rankParam(1, 1),
-        filter: { tags: ["followUp"] },
-      },
-    ],
-  });
+        filter: { tags: ["followUp"], targetStatuses: [stack.id] },
+      });
+    }
+  }
 
   if (k.a(2)) {
     k.stat("a4", {
@@ -78,23 +76,16 @@ export default defineCharacter("1112", (k) => {
     });
   }
 
-  const debtTarget = (ctx: BattleApi) =>
-    ctx.enemies.find((enemy) => enemy.has(proofOfDebt));
-
-  const syncDebtorCritDmg = (ctx: BattleApi) => {
-    const stacks = debtTarget(ctx)?.stacks(debtor) ?? 0;
-    for (const ally of ctx.allies) {
-      if (stacks > 0) {
-        ctx.applyStatus(ally, debtorCritDmg, { setStacks: stacks });
-      } else {
-        ctx.removeStatus(ally, debtorCritDmg);
-      }
-    }
+  const debtTarget = (enemies: readonly EnemyView[]) =>
+    enemies.find((enemy) => enemy.has(proofOfDebt));
+  const removeDebt = (ctx: BattleApi, enemy: EnemyView) => {
+    ctx.removeStatus(enemy, proofOfDebt);
+    for (const stack of debtorStacks) ctx.removeStatus(enemy, stack);
   };
 
   // "A random enemy": the engine's main target, which the Skill also marks.
   const ensureDebt = (ctx: BattleApi) => {
-    if (debtTarget(ctx)) return;
+    if (debtTarget(ctx.enemies)) return;
     const target = ctx.enemies[Math.floor((ctx.enemies.length - 1) / 2)];
     if (target) ctx.applyStatus(target, proofOfDebt);
   };
@@ -110,23 +101,80 @@ export default defineCharacter("1112", (k) => {
     ],
   });
 
+  // Numby's attacks (and the Skill's DMG) land in 7 equal hits, or in
+  // Windfall Bonanza! in 8 hits of 7 × 10% + 30% of the increased
+  // multiplier (the game's ability config); Toughness splits the same way.
+  const numbyHits = (topaz: UnitView, multiplier: number): HitDef[] => {
+    const boosted = topaz.has(windfall);
+    const total = multiplier + (boosted ? k.param("03", 1) : 0);
+    const shares = boosted
+      ? [...Array.from({ length: 7 }, () => 0.1), 0.3]
+      : Array.from({ length: 7 }, () => 1 / 7);
+    return shares.map((share) => ({
+      shape: "single",
+      main: total * share,
+      toughness: { main: 20 * share },
+    }));
+  };
+  // After each attack of Numby's in Windfall Bonanza!: A6's Energy and one
+  // of its #4 attacks.
+  const windfallAttack = (ctx: BattleApi, topaz: UnitView) => {
+    if (!topaz.has(windfall)) return;
+    if (k.a(3)) ctx.gainEnergy(topaz, k.traceParam(3, 1));
+    ctx.addCounter(topaz, WINDFALL_ATTACKS, -1);
+    if (topaz.counter(WINDFALL_ATTACKS) <= 1e-9) {
+      ctx.removeStatus(topaz, windfall);
+    }
+  };
+
+  const numbyDef = k.summon({
+    id: "numby",
+    speed: k.param("04", 1),
+    // Numby attacks the Proof of Debt target.
+    policy: (view) => {
+      const target = debtTarget(view.enemies);
+      return target ? { ability: "numbyFollowUp", target } : "numbyFollowUp";
+    },
+    abilities: [
+      {
+        id: "numbyFollowUp",
+        kind: "followUp",
+        hits: (ctx) =>
+          ctx.self.owner ? numbyHits(ctx.self.owner, k.param("04", 2)) : [],
+        after: (ctx) => {
+          const topaz = ctx.self.owner;
+          if (!topaz) return;
+          windfallAttack(ctx, topaz);
+          if (k.e(2)) ctx.gainEnergy(topaz, k.rankParam(2, 1));
+        },
+      },
+    ],
+  });
+
+  // "Numby deals Fire DMG to this target ... considered as launching a
+  // Follow-Up ATK."
   k.ability({
     id: "skill",
     kind: "skill",
     tags: ["skill", "followUp"],
+    attack: true,
     before: (ctx) => {
-      if (!isEnemy(ctx.target)) return;
+      const target = ctx.target;
+      if (!isEnemy(target)) return;
       for (const enemy of ctx.enemies) {
-        if (enemy === ctx.target) continue;
-        ctx.removeStatus(enemy, proofOfDebt);
-        ctx.removeStatus(enemy, debtor);
+        if (enemy !== target) removeDebt(ctx, enemy);
       }
-      ctx.applyStatus(ctx.target, proofOfDebt);
-      if (k.e(1)) syncDebtorCritDmg(ctx);
+      ctx.applyStatus(target, proofOfDebt);
+      const numby = ctx.findSummon(ctx.self, numbyDef.id);
+      for (const hit of numbyHits(ctx.self, k.param("02", 1))) {
+        ctx.deal(hit, {
+          targets: [target],
+          attacker: numby ?? undefined,
+          tags: ["skill", "followUp"],
+        });
+      }
+      if (numby) windfallAttack(ctx, ctx.self);
     },
-    hits: [
-      { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
-    ],
   });
 
   k.ability({
@@ -143,44 +191,8 @@ export default defineCharacter("1112", (k) => {
     },
   });
 
-  // Numby attacks the Proof of Debt target, which is always the engine's
-  // main target (see ensureDebt and the Skill).
-  const numbyDef = k.summon({
-    id: "numby",
-    speed: k.param("04", 1),
-    policy: () => "numbyFollowUp",
-    abilities: [
-      {
-        id: "numbyFollowUp",
-        kind: "followUp",
-        hits: [
-          {
-            shape: "single",
-            main: k.param("04", 2),
-            toughness: { main: 20 },
-          },
-        ],
-        after: (ctx) => {
-          const topaz = ctx.self.owner;
-          if (!topaz) return;
-          if (topaz.has(windfall)) {
-            if (k.a(3)) ctx.gainEnergy(topaz, k.traceParam(3, 1));
-            ctx.addCounter(topaz, WINDFALL_ATTACKS, -1);
-            if (topaz.counter(WINDFALL_ATTACKS) <= 1e-9) {
-              ctx.removeStatus(topaz, windfall);
-            }
-          }
-          if (k.e(2)) ctx.gainEnergy(topaz, k.rankParam(2, 1));
-        },
-      },
-    ],
-  });
-
-  // The API cannot look up summons, so the battle-start summon keeps a
-  // handle for the Action Advance effects.
-  let numby: UnitView | null = null;
   k.on("battleStart", "talent", { subject: "any" }, (ctx) => {
-    numby = ctx.summon(ctx.self, numbyDef.id);
+    ctx.summon(ctx.self, numbyDef.id);
   });
 
   const isNumby = (ctx: BattleApi, unit: UnitView) =>
@@ -196,14 +208,14 @@ export default defineCharacter("1112", (k) => {
 
   const advanceNumby = (ctx: BattleApi, fraction: number) => {
     // "Cannot be triggered during Numby's own turn."
-    if (!numby || ctx.self.counter(NUMBY_TURN) > 0) return;
-    ctx.advanceAction(numby, fraction);
+    if (ctx.self.counter(NUMBY_TURN) > 0) return;
+    const numby = ctx.findSummon(ctx.self, numbyDef.id);
+    if (numby) ctx.advanceAction(numby, fraction);
   };
 
   k.on("actionStart", "talent", { subject: "ally" }, (ctx) => {
     ctx.setCounter(ctx.self, FOLLOW_UP_LATCH, 0);
     ctx.setCounter(ctx.self, WINDFALL_LATCH, 0);
-    ctx.setCounter(ctx.self, DEBTOR_LATCH, 0);
   });
 
   // Once per attack that hits the Proof of Debt target. The Talent and the
@@ -234,12 +246,19 @@ export default defineCharacter("1112", (k) => {
   );
 
   if (k.e(1)) {
-    k.on("hit", "e1", { subject: "ally", tags: ["followUp"] }, (ctx, event) => {
-      if (!isEnemy(event.target) || !event.target.has(proofOfDebt)) return;
-      if (ctx.self.counter(DEBTOR_LATCH) > 0) return;
-      ctx.setCounter(ctx.self, DEBTOR_LATCH, 1);
-      ctx.applyStatus(event.target, debtor);
-      syncDebtorCritDmg(ctx);
-    });
+    // The game adds a Debtor stack before a Follow-Up ATK lands on Proof of
+    // Debt (OnBeforeBeingAttacked), once per attack, so that attack already
+    // has it.
+    k.on(
+      "actionStart",
+      "e1",
+      { subject: "ally", tags: ["followUp"], attack: true },
+      (ctx, event) => {
+        const target = event.target;
+        if (!isEnemy(target) || !target.has(proofOfDebt)) return;
+        const next = debtorStacks.find((stack) => !target.has(stack));
+        if (next) ctx.applyStatus(target, next);
+      }
+    );
   }
 });

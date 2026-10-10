@@ -1,13 +1,14 @@
 import { type BattleApi, type EnemyView, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { ModifierDef } from "../../kit/model";
+import type { HitDef, ModifierDef } from "../../kit/model";
 
 /** Ashveil — The Hunt, Lightning. */
 export default defineCharacter("1504", (k) => {
   const maxCharge = k.param("04", 2);
   const gluttonyCost = k.param("03", 3);
 
-  const bait = k.status({ id: "bait", origin: "skill", debuff: true });
+  // StatusType Other in the game's status config: not a debuff.
+  const bait = k.status({ id: "bait", origin: "skill" });
   // Bait always exists (a new one is chosen whenever none is left), so the
   // field effects that require it last the whole battle.
   const baitDefReduction = k.status({
@@ -163,6 +164,19 @@ export default defineCharacter("1504", (k) => {
     },
   });
 
+  // Hit splits from the game's ability config: the Ultimate lands in 20 × 5%,
+  // the Talent's Follow-Up ATK in 10 × 10% (its Toughness spread over them),
+  // and each extra 200% instance of the enhanced one in 10 × 10% more.
+  const split = (multiplier: number, count: number, toughness = 0) =>
+    Array.from(
+      { length: count },
+      (): HitDef => ({
+        shape: "single",
+        main: multiplier / count,
+        ...(toughness > 0 ? { toughness: { main: toughness / count } } : {}),
+      })
+    );
+
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -171,9 +185,7 @@ export default defineCharacter("1504", (k) => {
       if (k.a(1)) gainGluttony(ctx, k.traceParam(1, 2));
       if (e4Atk) ctx.applyStatus(ctx.self, e4Atk);
     },
-    hits: [
-      { shape: "single", main: k.param("03", 1), toughness: { main: 30 } },
-    ],
+    hits: split(k.param("03", 1), 20, 30),
     after: (ctx) => {
       ctx.addCounter(ctx.self, "charge", k.param("03", 2), maxCharge);
       ctx.queueAction(ctx.self, "enhancedFollowUp", {
@@ -182,22 +194,24 @@ export default defineCharacter("1504", (k) => {
     },
   });
 
+  const followUpHits = split(k.param("04", 4), 10, 5);
+  const extraInstance = split(k.param("03", 4), 10);
   k.ability({
     id: "followUp",
     kind: "followUp",
     energy: 5,
-    hits: [{ shape: "single", main: k.param("04", 4), toughness: { main: 5 } }],
+    hits: followUpHits,
     after: (ctx) => gainGluttony(ctx, k.param("04", 5)),
   });
 
   // Enhanced Talent Follow-Up ATK (from the Ultimate): no Charge cost; each
-  // 4 Gluttony consumed adds one more 200% instance. Without kills it never
-  // moves to a new Bait. The extra instances' Toughness is not in the data.
+  // 4 Gluttony consumed adds one more 200% instance, which reduces no
+  // Toughness. Without kills it never moves to a new Bait.
   k.ability({
     id: "enhancedFollowUp",
     kind: "followUp",
     energy: 5,
-    hits: [{ shape: "single", main: k.param("04", 4), toughness: { main: 5 } }],
+    hits: followUpHits,
     after: (ctx) => {
       const target = ctx.target;
       if (!isEnemy(target)) return;
@@ -205,15 +219,14 @@ export default defineCharacter("1504", (k) => {
       while (ctx.self.stacks(gluttony) >= gluttonyCost - 1e-9) {
         ctx.consumeStacks(ctx.self, gluttony, gluttonyCost);
         removed += gluttonyCost;
-        ctx.deal(
-          { shape: "single", main: k.param("03", 4) },
-          {
+        for (const hit of extraInstance) {
+          ctx.deal(hit, {
             targets: [target],
             tags: ["followUp"],
             abilityKind: "followUp",
             origin: "ultimate",
-          }
-        );
+          });
+        }
       }
       // It is still the Talent's Follow-Up ATK: "Afterwards, gains 2 stacks".
       gainGluttony(ctx, k.param("04", 5));

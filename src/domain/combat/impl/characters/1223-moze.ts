@@ -1,6 +1,6 @@
 import { type BattleApi, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { AbilityKind } from "../../kit/model";
+import type { AbilityKind, HitDef } from "../../kit/model";
 
 /** Moze — The Hunt, Lightning. */
 export default defineCharacter("1223", (k) => {
@@ -18,11 +18,13 @@ export default defineCharacter("1223", (k) => {
     "talent",
   ];
 
-  // "Prey" is a mark ("成为【猎物】"), not an inflicted debuff.
-  const prey = k.status({ id: "prey", origin: "skill" });
+  // Prey and A6's Follow-Up vulnerability are Debuffs in the game's status
+  // config.
+  const prey = k.status({ id: "prey", origin: "skill", debuff: true });
   const vengewise = k.status({
     id: "vengewise",
     origin: "a6",
+    debuff: true,
     modifiers: [
       {
         stat: "vulnerability",
@@ -31,13 +33,13 @@ export default defineCharacter("1223", (k) => {
       },
     ],
   });
-  // Approximation: the CRIT DMG is held by allies while Prey exists, so it
-  // also reaches their hits on other enemies.
-  const wrathbearer = k.status({
-    id: "wrathbearer",
-    origin: "e2",
-    modifiers: [{ stat: "critDmg", value: k.rankParam(2, 1) }],
-  });
+  if (k.e(2)) {
+    k.teamStat("e2", {
+      stat: "critDmg",
+      value: k.rankParam(2, 1),
+      filter: { targetStatuses: [prey.id] },
+    });
+  }
   const heathprowler = k.status({
     id: "heathprowler",
     origin: "e4",
@@ -53,11 +55,10 @@ export default defineCharacter("1223", (k) => {
       ctx.removeStatus(enemy, prey);
       ctx.removeStatus(enemy, vengewise);
     }
-    for (const ally of ctx.allies) ctx.removeStatus(ally, wrathbearer);
     ctx.setCounter(ctx.self, CHARGE, 0);
     ctx.setCounter(ctx.self, TALLY, 0);
-    if (!ctx.self.inActionOrder) {
-      ctx.setInActionOrder(ctx.self, true);
+    if (ctx.self.departed) {
+      ctx.setDeparted(ctx.self, false);
       if (k.a(2)) ctx.advanceAction(ctx.self, k.traceParam(2, 1));
     }
   };
@@ -70,6 +71,19 @@ export default defineCharacter("1223", (k) => {
     ],
   });
 
+  // Hit splits from the game's ability config: Skill 15/15/70%, Talent
+  // Follow-Up ATK 5 × 8% + 60%, Toughness in the same ratio.
+  const split = (
+    multiplier: number,
+    toughness: number,
+    shares: readonly number[]
+  ): HitDef[] =>
+    shares.map((share) => ({
+      shape: "single",
+      main: multiplier * share,
+      toughness: { main: toughness * share },
+    }));
+
   k.ability({
     id: "skill",
     kind: "skill",
@@ -81,19 +95,15 @@ export default defineCharacter("1223", (k) => {
       }
       ctx.applyStatus(ctx.target, prey);
       if (k.a(3)) ctx.applyStatus(ctx.target, vengewise);
-      if (k.e(2)) {
-        for (const ally of ctx.allies) ctx.applyStatus(ally, wrathbearer);
-      }
     },
-    hits: [
-      { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
-    ],
+    hits: split(k.param("02", 1), 20, [0.15, 0.15, 0.7]),
+    // Departed: Moze leaves the field while Prey exists. In the game the
+    // Charge is set after the Skill's own Prey trigger, which spends none.
     after: (ctx) => {
       if (!preyTarget(ctx)) return;
       ctx.setCounter(ctx.self, CHARGE, k.param("02", 2));
       ctx.setCounter(ctx.self, TALLY, 0);
-      // Departed: Moze leaves the Action Order while Prey exists.
-      ctx.setInActionOrder(ctx.self, false);
+      ctx.setDeparted(ctx.self, true);
     },
   });
 
@@ -101,24 +111,18 @@ export default defineCharacter("1223", (k) => {
     id: "followUp",
     kind: "followUp",
     energy: 10,
-    hits: [
-      {
-        shape: "single",
-        main: k.param("04", 3) + (k.e(6) ? k.rankParam(6, 1) : 0),
-        toughness: { main: 10 },
-      },
-    ],
-    // The Charge-launched Follow-Up ATK on the last Charge resolves against
-    // Prey before Prey is dispelled.
-    after: (ctx) => {
-      if (ctx.self.counter(CHARGE) <= 1e-9 && preyTarget(ctx)) dispelPrey(ctx);
-    },
+    hits: split(
+      k.param("04", 3) + (k.e(6) ? k.rankParam(6, 1) : 0),
+      10,
+      [0.08, 0.08, 0.08, 0.08, 0.08, 0.6]
+    ),
   });
 
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     tags: k.a(3) ? ["ultimate", "followUp"] : ["ultimate"],
+    castOutsideActionOrder: true,
     before: (ctx) => {
       if (k.e(4)) ctx.applyStatus(ctx.self, heathprowler);
     },
@@ -132,8 +136,10 @@ export default defineCharacter("1223", (k) => {
   });
 
   // "After ally targets attack Prey": an attack action whose hits landed on
-  // Prey (AoE included). Moze's own Skill marks Prey and grants the Charge,
-  // so it does not consume one; his Ultimate does.
+  // Prey (AoE included) triggers the Additional DMG (and E1's Energy). It
+  // spends a Charge except for Moze's own Follow-Up ATKs ("Talent's
+  // Follow-Up ATK does not consume Charge") and the Skill that marks Prey,
+  // which runs before the Charge is set.
   k.on("actionStart", "talent", { subject: "ally" }, (ctx) =>
     ctx.setCounter(ctx.self, PREY_ATTACKED, 0)
   );
@@ -152,21 +158,24 @@ export default defineCharacter("1223", (k) => {
     "talent",
     { subject: "ally", attack: true },
     (ctx, event) => {
-      if (ctx.self.counter(PREY_ATTACKED) <= 0) return;
+      const attacked = ctx.self.counter(PREY_ATTACKED) > 0;
       ctx.setCounter(ctx.self, PREY_ATTACKED, 0);
-      if (
-        event.unit === ctx.self &&
-        (event.abilityId === "skill" || event.abilityId === "followUp")
-      ) {
-        return;
-      }
       const target = preyTarget(ctx);
-      if (!target || ctx.self.counter(CHARGE) <= 1e-9) return;
+      if (!attacked || !target) return;
       ctx.deal(
         { shape: "single", main: k.param("04", 1), onlyTags: ["additional"] },
         { targets: [target], origin: "talent" }
       );
       if (k.e(1)) ctx.gainEnergy(ctx.self, k.rankParam(1, 1));
+      const own = event.unit === ctx.self;
+      if (own && event.abilityId === "followUp") {
+        // The Follow-Up ATK on the last Charge resolves against Prey (A6
+        // included) before Prey is dispelled.
+        if (ctx.self.counter(CHARGE) <= 1e-9) dispelPrey(ctx);
+        return;
+      }
+      if (own && event.abilityId === "skill") return;
+      if (ctx.self.counter(CHARGE) <= 1e-9) return;
       ctx.addCounter(ctx.self, CHARGE, -1);
       ctx.addCounter(ctx.self, TALLY, 1);
       const tally = ctx.self.counter(TALLY);

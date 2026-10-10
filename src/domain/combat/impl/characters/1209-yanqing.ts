@@ -1,10 +1,11 @@
 import { BREAK_EFFECT_STATUS } from "../../battle/breakEffects";
-import { isEnemy } from "../../kit/api";
+import { type BattleApi, type EventFilter, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
-import type { ModifierDef } from "../../kit/model";
+import type { HitDef, ModifierDef } from "../../kit/model";
 
 /** Yanqing — The Hunt, Ice. */
 export default defineCharacter("1209", (k) => {
+  const SYNC_BEFORE = "sync-before-attack";
   // E6 needs a kill; when the user assumes one per buff window, Soulsteel
   // Sync and the Ultimate buffs last 1 extra turn.
   const e6Extension =
@@ -20,8 +21,11 @@ export default defineCharacter("1209", (k) => {
   if (k.e(2)) {
     syncModifiers.push({ stat: "energyRegen", value: k.rankParam(2, 1) });
   }
-  // Stacks hold the probability that Soulsteel Sync is still up: each enemy
-  // attack removes it with Yanqing's aggro share of that attack.
+  // "Less likely to be attacked": the game's config lowers his AggroBase by
+  // 60% while it is held (no text parameter).
+  syncModifiers.push({ stat: "aggroPct", value: -0.6 });
+  // Stacks hold the probability that Soulsteel Sync is still up: each HP
+  // loss removes it with that loss's probability.
   const soulsteelSync = k.status({
     id: "soulsteel-sync",
     origin: "talent",
@@ -60,36 +64,53 @@ export default defineCharacter("1209", (k) => {
   });
 
   if (k.e(4)) {
-    const healthy = k.toggle(
-      "e4-hp",
-      "e4",
-      "selfHpAbove",
-      true,
-      k.rankParam(4, 1)
-    );
-    if (healthy) {
-      k.stat("e4", {
-        stat: "resPen",
-        value: k.rankParam(4, 2),
-        filter: { combatTypes: ["Ice"] },
-      });
-    }
+    const searingSting = k.status({
+      id: "searing-sting",
+      origin: "e4",
+      modifiers: [
+        {
+          stat: "resPen",
+          value: k.rankParam(4, 2),
+          filter: { combatTypes: ["Ice"] },
+        },
+      ],
+    });
+    // Held while his (expected) HP is at #1 or higher.
+    const syncSearingSting = (ctx: BattleApi) => {
+      const healthy = ctx.self.hpRatio >= k.rankParam(4, 1) - 1e-9;
+      if (healthy && !ctx.self.has(searingSting)) {
+        ctx.applyStatus(ctx.self, searingSting);
+      } else if (!healthy && ctx.self.has(searingSting)) {
+        ctx.removeStatus(ctx.self, searingSting);
+      }
+    };
+    k.on("battleStart", "e4", { subject: "any" }, syncSearingSting);
+    k.on("hpChanged", "e4", {}, syncSearingSting);
   }
+
+  // Hit splits from the game's ability config: Basic ATK 50/25/25%, Skill
+  // 4 × 25%, Follow-Up ATK 30/70%; Toughness splits the same way.
+  const split = (
+    multiplier: number,
+    toughness: number,
+    shares: readonly number[]
+  ): HitDef[] =>
+    shares.map((share) => ({
+      shape: "single",
+      main: multiplier * share,
+      toughness: { main: toughness * share },
+    }));
 
   k.ability({
     id: "basic",
     kind: "basic",
-    hits: [
-      { shape: "single", main: k.param("01", 1), toughness: { main: 10 } },
-    ],
+    hits: split(k.param("01", 1), 10, [0.5, 0.25, 0.25]),
   });
 
   k.ability({
     id: "skill",
     kind: "skill",
-    hits: [
-      { shape: "single", main: k.param("02", 1), toughness: { main: 20 } },
-    ],
+    hits: split(k.param("02", 1), 20, [0.25, 0.25, 0.25, 0.25]),
     // Text order: the DMG lands, then Soulsteel Sync activates.
     after: (ctx) => ctx.applyStatus(ctx.self, soulsteelSync, { setStacks: 1 }),
   });
@@ -113,9 +134,7 @@ export default defineCharacter("1209", (k) => {
     id: "followUp",
     kind: "followUp",
     energy: 10,
-    hits: [
-      { shape: "single", main: k.param("04", 4), toughness: { main: 10 } },
-    ],
+    hits: split(k.param("04", 4), 10, [0.3, 0.7]),
     after: (ctx) => {
       if (!isEnemy(ctx.target)) return;
       // applyStatus ignores the action's weight, so the presence is passed
@@ -128,26 +147,45 @@ export default defineCharacter("1209", (k) => {
   });
 
   // The Follow-Up ATK is part of Soulsteel Sync; it does not chain itself.
+  // The game rolls it before the attack from the Soulsteel Sync held then,
+  // so the Skill that first applies it does not trigger one.
+  const ownAttacks: EventFilter = {
+    abilityKinds: ["basic", "skill", "ultimate"],
+    attack: true,
+  };
+  k.on("actionStart", "talent", ownAttacks, (ctx) =>
+    ctx.setCounter(ctx.self, SYNC_BEFORE, ctx.self.stacks(soulsteelSync))
+  );
+  k.on("actionEnd", "talent", ownAttacks, (ctx, event) => {
+    const sync = ctx.self.counter(SYNC_BEFORE);
+    ctx.setCounter(ctx.self, SYNC_BEFORE, 0);
+    if (sync <= 0) return;
+    ctx.queueAction(ctx.self, "followUp", {
+      target: isEnemy(event.target) ? event.target : undefined,
+      weight: k.param("04", 3) * sync,
+    });
+  });
+
+  // "When Yanqing receives DMG, Soulsteel Sync disappears": the game removes
+  // it on any HP decrease, so a Shield that absorbs an enemy hit keeps it
+  // (Shield HP is not modeled; a Shield is assumed to absorb the hit).
+  // consumeStacks is not weighted by the API, so the loss's probability is
+  // applied here.
   k.on(
-    "actionEnd",
+    "hpChanged",
     "talent",
-    { abilityKinds: ["basic", "skill", "ultimate"], attack: true },
-    (ctx, event) => {
+    {
+      when: (event, self) =>
+        (event.delta ?? 0) < 0 &&
+        !(event.hpCause === "enemy" && self.hasFamily("shield")),
+    },
+    (ctx) => {
       const sync = ctx.self.stacks(soulsteelSync);
-      if (sync <= 0) return;
-      ctx.queueAction(ctx.self, "followUp", {
-        target: isEnemy(event.target) ? event.target : undefined,
-        weight: k.param("04", 3) * sync,
-      });
+      if (sync > 0) {
+        ctx.consumeStacks(ctx.self, soulsteelSync, sync * ctx.weight);
+      }
     }
   );
-
-  // "When Yanqing receives DMG, Soulsteel Sync disappears." consumeStacks is
-  // not weighted by the API, so the aggro share is applied here.
-  k.on("hitByEnemy", "talent", {}, (ctx) => {
-    const sync = ctx.self.stacks(soulsteelSync);
-    if (sync > 0) ctx.consumeStacks(ctx.self, soulsteelSync, sync * ctx.weight);
-  });
 
   if (k.a(1)) {
     k.on("actionEnd", "a2", { attack: true }, (ctx, event) => {

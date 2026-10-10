@@ -1,12 +1,12 @@
 import { type BattleApi, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
+import type { DamageTag } from "../../model/tags";
 
 /** Feixiao — The Hunt, Wind. */
 export default defineCharacter("1220", (k) => {
-  // "Flying Aureus" replaces Energy. It lives in a counter so that Energy
-  // from enemy hits, ERR, or ally effects cannot fill it; the Energy bar only
-  // mirrors it for the timeline, and the Ultimate is gated by `usable`.
+  // "Flying Aureus" replaces Energy: the Ultimate is paid from this counter,
+  // so Energy from enemy hits, ERR, or ally effects never fills it.
   const AUREUS = "flying-aureus";
   const ATTACKS = "aureus-attacks";
   const TALENT_READY = "thunderhunt-ready";
@@ -18,11 +18,8 @@ export default defineCharacter("1220", (k) => {
 
   k.startingEnergy(0);
 
-  const setAureus = (ctx: BattleApi, value: number) => {
-    const next = Math.min(aureusCap, Math.max(0, value));
-    ctx.setCounter(ctx.self, AUREUS, next);
-    ctx.setEnergy(ctx.self, next);
-  };
+  const setAureus = (ctx: BattleApi, value: number) =>
+    ctx.setCounter(ctx.self, AUREUS, Math.min(aureusCap, Math.max(0, value)));
   const countAttack = (ctx: BattleApi) => {
     ctx.addCounter(ctx.self, ATTACKS, 1);
     const attacks = ctx.self.counter(ATTACKS);
@@ -129,39 +126,50 @@ export default defineCharacter("1220", (k) => {
     ],
   });
 
-  // The Ultimate picks Boltsunder Blitz on a Broken target and Waraxe
-  // Skyward otherwise, so every strike gets its +#2 bonus ("up to 700%").
-  // The 30 displayed Toughness of the Ultimate is the six strikes' 6 × 5;
-  // the finishing hit's own entry (122014) shows none.
-  const strike: HitDef = {
+  // Each strike is Boltsunder Blitz on a Broken target and Waraxe Skyward
+  // otherwise, so every strike gets its +#2 bonus ("up to 700%"). The target
+  // can break during the Ultimate, so the strikes are dealt one by one: a
+  // Blitz lands in two hits of 10%/90%, a Skyward in one. The 30 displayed
+  // Toughness is the six strikes' 6 × 5 (122008/122009 facts); the finishing
+  // hit's own entry (122014) shows none.
+  const ultimateTags: DamageTag[] = k.a(2)
+    ? ["ultimate", "followUp"]
+    : ["ultimate"];
+  const strikeMultiplier = k.param("09", 1) + k.param("09", 2);
+  const strikePart = (share: number): HitDef => ({
     shape: "single",
-    main: k.param("09", 1) + k.param("09", 2),
-    toughness: { main: 5 },
-  };
-  const strikes = Array.from({ length: k.param("03", 3) }, () => strike);
+    main: strikeMultiplier * share,
+    toughness: { main: 5 * share },
+    toughnessWithoutWeakness: 1,
+  });
+  const blitzParts = [strikePart(0.1), strikePart(0.9)];
+  const skywardParts = [strikePart(1)];
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    tags: k.a(2) ? ["ultimate", "followUp"] : ["ultimate"],
+    tags: ultimateTags,
     energy: 0,
-    energyCost: 0,
-    usable: (view) => view.self.counter(AUREUS) + 1e-9 >= ultimateCost,
+    resource: { counter: AUREUS, amount: ultimateCost },
     before: (ctx) => {
-      setAureus(ctx, ctx.self.counter(AUREUS) - ultimateCost);
-      if (isEnemy(ctx.target) && !ctx.target.broken) {
-        ctx.applyStatus(ctx.self, terrasplitEfficiency);
+      const target = ctx.target;
+      if (!isEnemy(target)) return;
+      if (!target.broken) ctx.applyStatus(ctx.self, terrasplitEfficiency);
+      for (let strike = 0; strike < k.param("03", 3); strike += 1) {
+        const parts = target.broken ? blitzParts : skywardParts;
+        for (const part of parts) {
+          ctx.deal(part, { targets: [target], tags: ultimateTags });
+        }
+        if (k.e(1)) ctx.applyStatus(ctx.self, skywardQuell);
       }
     },
-    hits: [
-      ...strikes,
-      { shape: "single", main: k.param("03", 1), toughness: { main: 0 } },
-    ],
+    hits: [{ shape: "single", main: k.param("03", 1) }],
     after: (ctx) => {
       ctx.removeStatus(ctx.self, terrasplitEfficiency);
       ctx.removeStatus(ctx.self, skywardQuell);
     },
   });
 
+  // "When the target is not Weakness Broken": dropped once a hit breaks it.
   k.on(
     "hit",
     "ultimate",
@@ -170,8 +178,6 @@ export default defineCharacter("1220", (k) => {
       if (isEnemy(event.target) && event.target.broken) {
         ctx.removeStatus(ctx.self, terrasplitEfficiency);
       }
-      // A stack after each strike; one after the finishing hit is moot.
-      if (k.e(1)) ctx.applyStatus(ctx.self, skywardQuell);
     }
   );
 
@@ -236,10 +242,5 @@ export default defineCharacter("1220", (k) => {
       }
       countAttack(ctx);
     }
-  );
-
-  // Enemy hits regenerate Energy; keep the bar mirroring Flying Aureus.
-  k.on("hitByEnemy", "talent", { subject: "self" }, (ctx) =>
-    ctx.setEnergy(ctx.self, ctx.self.counter(AUREUS))
   );
 });

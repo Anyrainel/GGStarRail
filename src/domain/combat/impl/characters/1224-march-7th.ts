@@ -1,4 +1,3 @@
-import { canonicalCharacterId } from "@/domain/characterIdentity";
 import { isCombatTypeId } from "@/domain/stats";
 import {
   type BattleApi,
@@ -7,6 +6,7 @@ import {
   type UnitView,
 } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
+import type { HitDef } from "../../kit/model";
 
 /** March 7th — The Hunt, Imaginary. */
 export default defineCharacter("1224", (k) => {
@@ -15,23 +15,25 @@ export default defineCharacter("1224", (k) => {
 
   // Erudition, Destruction, The Hunt, Remembrance, Elation.
   const damagePaths = ["Mage", "Warrior", "Rogue", "Memory", "Elation"];
-  const others = k.team.filter((member) => member.characterId !== k.id);
-  // The engine cannot pick an ally target: Shifu is the first damage
-  // dealer, else a Nihility ally, else the first teammate.
-  const shifuMember =
-    others.find((member) => damagePaths.includes(member.pathId)) ??
-    others.find((member) => member.pathId === "Warlock") ??
-    others[0];
+  // The player designates Shifu; by default the first damage dealer, else a
+  // Nihility ally, else the first teammate.
+  const shifuMember = k.ally(
+    "shifu",
+    "skill",
+    (candidates) =>
+      candidates.find((member) => damagePaths.includes(member.pathId)) ??
+      candidates.find((member) => member.pathId === "Warlock")
+  );
   const shifuAddsDamage =
-    shifuMember !== undefined && damagePaths.includes(shifuMember.pathId);
+    shifuMember !== null && damagePaths.includes(shifuMember.pathId);
   const shifuType =
     shifuMember && isCombatTypeId(shifuMember.combatType)
       ? shifuMember.combatType
       : k.combatType;
   const isShifu = (unit: UnitView) =>
-    shifuMember !== undefined &&
+    shifuMember !== null &&
     unit.kind === "character" &&
-    canonicalCharacterId(unit.definitionId) === shifuMember.characterId;
+    unit.slot === shifuMember.slot;
 
   const threshold = k.param("04", 1);
   const enhancedPerHit = k.param("08", 1);
@@ -85,64 +87,65 @@ export default defineCharacter("1224", (k) => {
 
   // Erudition/Destruction/The Hunt/Remembrance/Elation Shifu: Additional
   // DMG of Shifu's Combat Type per Basic ATK or Enhanced Basic ATK hit.
-  const shifuAdditional = (
-    ctx: BattleApi,
-    target: EnemyView,
-    scales: readonly number[]
-  ) => {
+  const shifuAdditional = (ctx: BattleApi, target: EnemyView, weight = 1) => {
     if (!shifuAddsDamage || !designatedShifu(ctx.allies)) return;
-    for (const scale of scales) {
-      ctx.deal(
-        {
-          shape: "single",
-          main: k.param("02", 2) * scale,
-          combatType: shifuType,
-          onlyTags: ["additional"],
-        },
-        { targets: [target], origin: "skill" }
-      );
-    }
+    ctx.deal(
+      {
+        shape: "single",
+        main: k.param("02", 2),
+        combatType: shifuType,
+        onlyTags: ["additional"],
+      },
+      { targets: [target], origin: "skill", weight }
+    );
   };
-  // Harmony/Nihility/Preservation/Abundance Shifu: +100% Toughness Reduction
-  // per hit, kept on the hits so a break lands on the right one. Shifu is
-  // designated on March's first turn, so only Basic ATKs before it overstate.
-  const toughnessScale =
-    shifuMember !== undefined && !shifuAddsDamage ? 1 + k.param("02", 3) : 1;
+  // A single-target hit with the designated Shifu's effects on Toughness:
+  // on Basic ATK hits (`pathEffect`), a Harmony/Nihility/Preservation/
+  // Abundance Shifu raises it by #3; A4 lets every attack reduce it on
+  // enemies weak to Shifu's Combat Type (Imaginary Break).
+  const shifuHit = (
+    ctx: BattleApi,
+    target: UnitView | null,
+    main: number,
+    toughness: number,
+    pathEffect = true
+  ): HitDef => {
+    const designated = designatedShifu(ctx.allies) !== undefined;
+    const scale =
+      pathEffect && designated && !shifuAddsDamage ? 1 + k.param("02", 3) : 1;
+    const weakToShifu =
+      k.a(2) &&
+      designated &&
+      isEnemy(target) &&
+      target.weaknesses.has(shifuType);
+    return {
+      shape: "single",
+      main,
+      toughness: { main: toughness * scale },
+      ...(weakToShifu ? { toughnessWithoutWeakness: 1 } : {}),
+    };
+  };
 
   k.ability({
     id: "basic",
     kind: "basic",
-    hits: [
-      {
-        shape: "single",
-        main: k.param("01", 1),
-        toughness: { main: 10 * toughnessScale },
-      },
-    ],
+    hits: (ctx) => [shifuHit(ctx, ctx.target, k.param("01", 1), 10)],
     after: (ctx) => {
-      if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target, [1]);
+      if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target);
       gainCharge(ctx, k.param("01", 2));
     },
   });
 
-  // Extra hits roll after each final hit: the i-th lands with chance^i, so
-  // each extra hit carries its probability in its multiplier and Toughness.
-  const enhancedScales = (bonusHits: number, bonusChance: number) => {
-    const chance = Math.min(1, k.param("08", 2) + bonusChance);
-    const scales: number[] = Array.from(
-      { length: k.param("08", 4) + bonusHits },
-      () => 1
-    );
-    for (let extra = 1; extra <= k.param("08", 3); extra += 1) {
-      scales.push(chance ** extra);
-    }
-    return scales;
-  };
-
+  // Enhanced Basic ATK: the initial hits land; each extra hit rolls after
+  // the previous final hit, so the i-th extra lands with chance^i and is
+  // dealt with that weight (its Shifu Additional DMG too).
   const enhancedBasic = (id: string, afterUltimate: boolean) => {
-    const scales = afterUltimate
-      ? enhancedScales(k.param("03", 2), k.param("03", 3))
-      : enhancedScales(0, 0);
+    const initialHits =
+      k.param("08", 4) + (afterUltimate ? k.param("03", 2) : 0);
+    const chance = Math.min(
+      1,
+      k.param("08", 2) + (afterUltimate ? k.param("03", 3) : 0)
+    );
     k.ability({
       id,
       kind: "basic",
@@ -151,14 +154,27 @@ export default defineCharacter("1224", (k) => {
       before: (ctx) => {
         if (afterUltimate && k.e(6)) ctx.applyStatus(ctx.self, bestGirl);
       },
-      hits: scales.map((scale) => ({
-        shape: "single" as const,
-        main: enhancedPerHit * scale,
-        toughness: { main: enhancedToughness * toughnessScale * scale },
-      })),
+      hits: (ctx) =>
+        Array.from({ length: initialHits }, () =>
+          shifuHit(ctx, ctx.target, enhancedPerHit, enhancedToughness)
+        ),
+      afterHit: (ctx) => {
+        if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target);
+      },
       after: (ctx) => {
+        const target = ctx.target;
+        if (isEnemy(target)) {
+          for (let extra = 1; extra <= k.param("08", 3); extra += 1) {
+            const weight = chance ** extra;
+            ctx.deal(shifuHit(ctx, target, enhancedPerHit, enhancedToughness), {
+              targets: [target],
+              tags: ["basic"],
+              weight,
+            });
+            shifuAdditional(ctx, target, weight);
+          }
+        }
         ctx.removeStatus(ctx.self, bestGirl);
-        if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target, scales);
         ctx.setCounter(
           ctx.self,
           CHARGE,
@@ -181,7 +197,10 @@ export default defineCharacter("1224", (k) => {
     kind: "skill",
     target: "ally",
     before: (ctx) => {
-      const master = ctx.allies.find(isShifu);
+      const master =
+        ctx.target && !isEnemy(ctx.target) && ctx.target !== ctx.self
+          ? ctx.target
+          : ctx.allies.find(isShifu);
       if (!master) return;
       for (const ally of ctx.allies) {
         if (ally !== master) ctx.removeStatus(ally, shifu);
@@ -194,9 +213,7 @@ export default defineCharacter("1224", (k) => {
   k.ability({
     id: "ultimate",
     kind: "ultimate",
-    hits: [
-      { shape: "single", main: k.param("03", 1), toughness: { main: 30 } },
-    ],
+    hits: (ctx) => [shifuHit(ctx, ctx.target, k.param("03", 1), 30, false)],
     after: (ctx) => ctx.applyStatus(ctx.self, apexHeroine),
   });
 
@@ -207,14 +224,19 @@ export default defineCharacter("1224", (k) => {
   });
 
   if (k.e(2)) {
-    // The talent's facts (122404) carry this attack's Energy and Toughness.
+    // No facts row: Energy from the Talent's (122404); the game's ability
+    // config gives it Basic ATK Toughness (10) with Shifu's bonus, in two
+    // hits of 40%/60%. Shifu's Additional DMG is one instance.
     k.ability({
       id: "followUp",
       kind: "followUp",
       energy: 5,
-      hits: [{ shape: "single", main: k.rankParam(2, 1) }],
+      hits: (ctx) =>
+        [0.4, 0.6].map((share) =>
+          shifuHit(ctx, ctx.target, k.rankParam(2, 1) * share, 10 * share)
+        ),
       after: (ctx) => {
-        if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target, [1]);
+        if (isEnemy(ctx.target)) shifuAdditional(ctx, ctx.target);
         gainCharge(ctx, k.rankParam(2, 3));
       },
     });
@@ -255,7 +277,9 @@ export default defineCharacter("1224", (k) => {
           : "enhancedBasic";
       }
       const master = view.allies.find(isShifu);
-      if (master && !master.has(shifu) && view.skillPoints >= 1) return "skill";
+      if (master && !master.has(shifu) && view.skillPoints >= 1) {
+        return { ability: "skill", target: master };
+      }
       return "basic";
     },
   });
