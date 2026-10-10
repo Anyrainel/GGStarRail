@@ -631,3 +631,43 @@
     This supersedes the panelStat("hp") note in mydei-hp-model; A6's CRIT Rate
     still scales with the evaluated Max HP.
   detail: "Builds below 8000 Max HP at battle start get slightly too much Charge from enemy attacks."
+- id: yunli-intuit-followup-tag
+  entity: "1221"
+  rule: U4
+  status: open
+  category: bug
+  summary: >
+    fribbels types Intuit: Cull DMG as Ultimate + Follow-Up ATK (and Intuit:
+    Slash as Follow-Up only); our kit gives both abilities tags ["ultimate"],
+    which replaces the followUp default of their kind, so Follow-Up ATK DMG
+    effects (Dance at Sunset's Firedance, Follow-Up vulnerability) miss Slash
+    and Cull. Which matches the text?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Yunli.ts). The text supports Ultimate on
+    both (EN "When Yunli deals DMG via this ability, it's considered as dealing
+    Ultimate DMG"; ZH 云璃通过此技能造成伤害时，被视为造成了终结技伤害), so
+    fribbels' Follow-Up-only Slash is wrong on that point. Both are Counters
+    (ZH 发动反击【勘破•斩】/【勘破•灭】), which the kit declares as kind
+    followUp like the Talent Counter, and U4 maps "considered as X DMG" to
+    adding X, not replacing the type. The text therefore supports tags
+    ["followUp", "ultimate"] on intuitSlash and intuitCull. AbilityDef.tags
+    replaces DEFAULT_ABILITY_TAGS[kind] (battle/battle.ts). E1/E2/E6 filters
+    keep working with the added tag.
+- id: misha-ult-bounce-toughness
+  entity: "1312"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    fribbels gives Misha's Ultimate 10 Toughness for the first hit and 5 for
+    each further hit (10 + 5 x (hits - 1)); our kit applies 10 to every hit,
+    so a 10-hit Ultimate reduces 100 Toughness instead of 55. Which per-hit
+    value matches the game?
+  detail: >
+    Crosscheck vs fribbels 2140153 (Misha.ts). Neither EN nor ZH text states
+    Toughness. Facts give one value for 131203 (raw ShowStanceList [30, 0, 0]
+    = 10, shape Bounce), which the kit applies to the designated hit and to
+    every random hit; the table cannot tell the first hit from the rest.
+    fribbels keeps per-character bounce values (Welt Skill 10 per bounce,
+    Sampo Skill 5 per extra bounce, Misha 5 per extra hit), which suggests a
+    datamined per-hit split rather than a convention.
