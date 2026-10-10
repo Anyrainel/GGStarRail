@@ -99,7 +99,8 @@ export default defineCharacter("1002", (k) => {
     );
     if (highHp) k.stat("e1", { stat: "critRate", value: k.rankParam(1, 2) });
   }
-  const ultimateKill = k.e(4) && k.toggle("e4-kill", "e4", "enemyDefeated", false);
+  const ultimateKill =
+    k.e(4) && k.toggle("e4-kill", "e4", "enemyDefeated", false);
 
   k.ability({
     id: "basic",
