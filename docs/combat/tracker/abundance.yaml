@@ -38,3 +38,93 @@
     not modelled, so A2's Energy from hits on the target uses its base aggro
     share (see engine-aggro-modifiers).
   detail: ""
+- id: luocha-auto-skill
+  entity: "1203"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    The Skill's automatic trigger at 50% ally HP is an option (default off);
+    when on, every enemy attack off cooldown triggers it, the 2-turn cooldown
+    counts Luocha's turn ends, and it regenerates no Energy (see engine-hp-model).
+  detail: ""
+- id: luocha-zone-stacks
+  entity: "1203"
+  rule: U5
+  status: open
+  category: verify
+  summary: >
+    The Zone (and E1's ATK bonus) counts down on Luocha's turn ends, and Abyss
+    Flower stacks are still gained while the Zone is active, refreshing it at 2
+    stacks; confirm both in game.
+  detail: ""
+- id: bailu-invigoration-counters
+  entity: "1211"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Invigoration is tracked as per-Character counters (turns and heals) and
+    ends only when its duration runs out, not when its heals are used up. A2
+    (overheal) and E1 (full HP at the end) are HP options (default on), and
+    Skill heals on random allies are expected values (see engine-status-lifecycle).
+  detail: ""
+- id: bailu-skill-policy
+  entity: "1211"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated, so Bailu uses Basic ATK; at E4 she Skills with 3+
+    Skill Points on the lowest-slot teammate for Evil Excision (see
+    engine-ally-option-vocabulary).
+  detail: ""
+- id: huohuo-ultimate-energy-err
+  entity: "1217"
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    The Ultimate's Energy for teammates (20% of their max Energy) is scaled by
+    the receiver's ERR because the text does not mark it fixed; confirm in game
+    (see engine-energy-fixed-sources).
+  detail: ""
+- id: huohuo-skill-target
+  entity: "1217"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    The Skill targets the Character whose heal also reaches the most adjacent
+    allies by slot; the choice only matters for E6 (see
+    engine-ally-option-vocabulary).
+  detail: ""
+- id: lingsha-a6-low-hp
+  entity: "1222"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    A6's extra Fuyuan attack is an HP option (default off); when on, every
+    enemy attack while Fuyuan is present and off cooldown queues it, and the
+    2-turn cooldown counts Lingsha's turn ends (see engine-hp-model).
+  detail: ""
+- id: lingsha-fuyuan-extra-toughness
+  entity: "1222"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    Fuyuan's extra hit on one random enemy has no Toughness reduction in the
+    facts (only the AoE's 10 is listed); the kit uses 0.
+  detail: ""
+- id: lingsha-e1-e6-scope
+  entity: "1222"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    E1's DEF reduction has no stated duration and is kept while the enemy stays
+    Weakness Broken. E6's RES reduction is a debuff applied when the Skill
+    summons Fuyuan, before the Skill's hits. Confirm both in game.
+  detail: ""

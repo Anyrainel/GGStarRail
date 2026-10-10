@@ -12,7 +12,7 @@ import {
   type EffectSource,
   EnemyUnit,
 } from "../battle/units";
-import type { PermanentModifier, TurnPolicy } from "../kit/api";
+import type { PermanentModifier, PolicyView, TurnPolicy } from "../kit/api";
 import type {
   CompiledCharacterKit,
   CompiledKit,
@@ -614,16 +614,17 @@ function playPolicy(
   overrides: MemberInput["play"]
 ): TurnPolicy {
   if (!overrides?.skill || overrides.skill === "kit") return kitPolicy;
-  if (overrides.skill === "avoid") {
-    return (view) => {
-      const choice = kitPolicy(view);
-      return choice === "skill" ? "basic" : choice;
-    };
-  }
-  return (view) => {
+  const swap = (from: string, to: string) => (view: PolicyView) => {
     const choice = kitPolicy(view);
-    return choice === "basic" && view.skillPoints >= 1 ? "skill" : choice;
+    const ability = typeof choice === "string" ? choice : choice.ability;
+    if (ability !== from) return choice;
+    if (to === "skill" && view.skillPoints < 1) return choice;
+    // A designated ally belongs to the replaced ability, not the new one.
+    return to;
   };
+  return overrides.skill === "avoid"
+    ? swap("skill", "basic")
+    : swap("basic", "skill");
 }
 
 function registerServants(

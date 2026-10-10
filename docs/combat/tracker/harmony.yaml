@@ -1,1 +1,125 @@
 # Combat translation tracker: harmony. Schema: .agents/skills/hsr-combat/tracking.md
+- id: asta-burn-base
+  entity: "1009"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    A2 Burn ("50% of DMG dealt by Asta's Basic ATK") is a DoT worth 50% of the
+    Basic ATK multiplier on ATK; whether it instead copies the Basic ATK's
+    actual damage needs confirmation.
+  detail: ""
+- id: yukong-a6-actions
+  entity: "1207"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    A6 grants Energy after every action of an ally Character or memosprite,
+    Ultimates and follow-ups included (summons excluded); whether those count
+    as "taking action" needs confirmation.
+  detail: ""
+- id: yukong-e2-energy-full
+  entity: "1207"
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    E2 checks allies for full Energy after each ally action and each turn end
+    instead of when Energy reaches the cap, so Energy filled and spent inside
+    one action is missed.
+  detail: "Needs an Energy-change event (see engine-energy-received-event in engine.yaml)."
+- id: yukong-talent-instance
+  entity: "1207"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    The Talent's extra 80% ATK is added to the Basic ATK as one damage
+    instance with doubled Toughness Reduction; if the game deals it as a
+    separate instance, per-hit effects miss one hit.
+  detail: ""
+- id: hanya-burden-counting
+  entity: "1215"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    The Skill that applies Burden does not count toward it, any ally Basic
+    ATK/Skill/Ultimate that hits the Burden enemy counts (Blast/AoE included),
+    re-applying Burden resets its counts, and Sanction checks only the
+    action's designated target. Each point needs confirmation.
+  detail: ""
+- id: ruan-mei-rebloom-break-extension
+  entity: "1303"
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Thanatoplum Rebloom should cancel the enemy's Weakness Break recovery
+    (it stays Broken) and delay that turn. The engine recovers the enemy at
+    the same turn start and lets it act, so the kit deals the Break DMG and
+    delays the enemy's next turn instead; Broken-only effects (Super Break,
+    E2, the Broken Toughness multiplier) miss the extended window.
+  detail: "Needs a hook at Weakness Break recovery that can keep the enemy Broken and replace its turn with a delay."
+- id: ruan-mei-rebloom-debuff
+  entity: "1303"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    Thanatoplum Rebloom is modeled as an enemy status that is not a debuff.
+    Confirm whether it counts as a debuff (debuff counts for Acheron,
+    Jiaoqiu, and minTargetDebuffs filters).
+  detail: ""
+- id: ruan-mei-a6-steady-break-effect
+  entity: "1303"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    A6's Overtone bonus and Rebloom's action delay read Ruan Mei's steady
+    Break Effect, so E4's timed +100% Break Effect raises neither; in game
+    both likely use her current Break Effect.
+  detail: ""
+- id: bronya-e4-followup-crit
+  entity: "1101"
+  rule: U4
+  status: open
+  category: verify
+  summary: >
+    E4's Follow-Up ATK ("80% of her Basic ATK DMG") is modeled as Follow-Up
+    DMG with 80% of the Basic ATK multiplier, so A2's 100% Basic ATK CRIT
+    Rate does not apply. Confirm whether it inherits Basic ATK's CRIT Rate.
+  detail: "Toughness 10 and Energy 5 come from the Talent's facts row (110104), assumed to be the E4 attack."
+- id: sparkle-e6-spread-duration
+  entity: "1306"
+  rule: U5
+  status: open
+  category: approximation
+  summary: >
+    E6's Ultimate spreads the Skill's CRIT DMG Boost to Cipher teammates
+    with a fresh duration instead of the remaining duration of the ally it
+    spreads from.
+  detail: "Needs a remaining-duration read on UnitView, or an apply option that copies another holder's timer."
+- id: tingyun-benediction-cap-snapshot
+  entity: "1202"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    Benediction's "ATK +50%, up to 25% of Tingyun's current ATK" is decided
+    once per Skill from steady panels (holder's base ATK × 50% vs Tingyun's
+    ATK × 25%), applying either the percent or the capped flat form; in game
+    the cap follows Tingyun's current ATK.
+  detail: "Needs a modifier capped by another scaling term (min of two stat-scaled values)."
+- id: tingyun-ult-energy-err
+  entity: "1202"
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    The Ultimate's 50 Energy (60 at E6) for the ally is scaled by the
+    receiver's Energy Regeneration Rate per U10; community sources describe
+    it as a flat amount. See engine-energy-fixed-sources.
+  detail: ""

@@ -220,3 +220,33 @@
   detail: >
     A generic shield family (or flag) that kits apply alongside their own
     statuses would let "Shielded ally" checks see every source.
+- id: engine-scaled-spd-turn-order
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Turn order ignores SPD modifiers with `scaling`. Hanya's Ultimate ("SPD
+    +20% of Hanya's SPD") works around it with a spdFlat status worth 1 per
+    stack, its stacks set from Hanya's panelStat("spd").
+  detail: "When turn order reads applier-scaled SPD, ten-lords-decree-spd in 1215-hanya.ts should use scaling { source: applier, stat: spd }."
+- id: engine-status-lifecycle
+  entity: engine
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    No event fires when a status expires or is removed, and a kit cannot read
+    or extend a status's remaining turns ("extends Invigoration by 1 turn",
+    "when Invigoration ends"); Bailu tracks Invigoration with counters.
+  detail: ""
+- id: engine-play-override-turn-choice
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    playPolicy in team/assemble.ts only compares the kit's choice with the
+    strings "skill"/"basic", so a `{ ability, target }` choice (Huohuo, Bailu)
+    bypasses the "avoid" Skill override.
+  detail: ""
