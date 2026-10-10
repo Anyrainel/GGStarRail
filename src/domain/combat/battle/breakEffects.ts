@@ -53,6 +53,9 @@ function breakDot(
     id: `break:${id}`,
     origin: "scenario",
     debuff: true,
+    family: id,
+    // Frozen enemies skip their turn; Entanglement and Imprisonment delay.
+    skipsTurn: id === "frozen",
     duration: { turns },
     maxStacks: id === "windShear" || id === "entanglement" ? 5 : 1,
     dot:

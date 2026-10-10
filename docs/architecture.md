@@ -106,3 +106,10 @@ It serves the frontend through an ASSETS binding and the `hsr.ggartifact.com`
 Custom Domain. It declares no D1, R2, KV, cron, authentication provider, or
 secret binding. See [Account imports](account-imports.md) for coverage and
 live-validation limits.
+
+## Combat
+
+Team damage simulation and optimization live in `src/domain/combat/`
+(framework-free engine, optimizer, and translated kits) and
+`src/lib/combat/` (catalog loading, team resolution, and a module worker for
+jobs). See [Combat engine architecture](combat/architecture.md).

@@ -10,6 +10,7 @@ import type { KitRegistry } from "../kit/registry";
 import type { CombatReferenceData } from "../model/data";
 import type { CritMode } from "../model/formulas";
 import {
+  type CombatStat,
   type CombatType,
   finalStat,
   readStat,
@@ -49,16 +50,25 @@ export interface MemberPanel {
   readonly energyRegen: number;
 }
 
+/** Stats that always shape a timeline: turn order and Energy. */
+const TIMELINE_STATS = ["spd", "energyRegen"] as const;
+
+type TimelineStat = CombatStat | "hp" | "atk" | "def" | "spd";
+
 /**
  * Damage of a team as a function of one member's Relics. A simulated
- * timeline only depends on the member's active sets and on the stats that
- * change turn order and Ultimate timing (SPD, Energy Regeneration Rate), so
- * timelines are cached by those and every other candidate re-evaluates the
- * compiled hit ledger with a swapped panel.
+ * timeline only depends on the member's active sets and on the stats the
+ * battle read while it ran: SPD and Energy Regeneration Rate always, plus
+ * any stat a kit or the engine consulted (Break Effect for break delays, a
+ * policy comparing allies' stats). Timelines are cached by those values and
+ * every other candidate re-evaluates the compiled hit ledger with a
+ * swapped panel.
  */
 export class TeamObjective {
   private readonly timelines = new Map<string, TimelineContext>();
   private readonly setContexts = new Map<string, SetContext>();
+  /** Stats besides SPD and ERR that simulations of this member read. */
+  private readonly readStats = new Set<TimelineStat>();
   evaluations = 0;
   simulations = 0;
 
@@ -122,10 +132,15 @@ export class TeamObjective {
     panels: UnitPanels;
   } {
     const member = this.memberPanel(loadout);
-    const key = `${setSignature(loadout.sets)}|${member.speed.toFixed(2)}|${member.energyRegen.toFixed(3)}`;
+    let key = this.timelineKey(loadout, member.vector);
     let context = this.timelines.get(key);
     if (!context) {
       context = this.simulate(loadout);
+      if (this.learnReadStats(context)) {
+        // Older entries were keyed without the newly read stats.
+        this.timelines.clear();
+        key = this.timelineKey(loadout, member.vector);
+      }
       this.timelines.set(key, context);
       const limit = this.options.cacheSize ?? 256;
       if (this.timelines.size > limit) {
@@ -145,6 +160,38 @@ export class TeamObjective {
           : (units.get(id)?.relicElemental[combatType] ?? 0),
     };
     return { context, panels };
+  }
+
+  private timelineKey(loadout: RelicLoadout, vector: StatVector): string {
+    const parts = [setSignature(loadout.sets)];
+    for (const stat of [...TIMELINE_STATS, ...this.readStats]) {
+      const value =
+        stat === "hp" || stat === "atk" || stat === "def" || stat === "spd"
+          ? finalStat(vector, stat)
+          : readStat(vector, stat);
+      parts.push(value.toFixed(stat === "spd" ? 2 : 3));
+    }
+    return parts.join("|");
+  }
+
+  /** Record stats the member's units read; true when the set grew. */
+  private learnReadStats(context: TimelineContext): boolean {
+    const member = context.units.get(context.unitId);
+    if (!member) return false;
+    let grew = false;
+    for (const unit of context.units.values()) {
+      const sharesPanel =
+        unit === member ||
+        (unit.kind === "memosprite" && unit.owner === member);
+      if (!sharesPanel) continue;
+      for (const stat of unit.statReads) {
+        const known = (TIMELINE_STATS as readonly string[]).includes(stat);
+        if (known || this.readStats.has(stat as TimelineStat)) continue;
+        this.readStats.add(stat as TimelineStat);
+        grew = true;
+      }
+    }
+    return grew;
   }
 
   private setContext(loadout: RelicLoadout): SetContext {

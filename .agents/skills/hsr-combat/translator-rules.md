@@ -124,10 +124,14 @@ or DoT is unfiltered. This is the most common mistake: check every
 - "stacks up to N times" → `maxStacks: N`. The modifier `value` is per stack.
 - "gains N stacks" → `applyStatus(..., { stacks: N })`. "Resets stacks" or
   "sets to N" → `setStacks`.
-- Counts derived from battle state ("for every debuff on the target", "for
-  each Punchline owned") → a status whose `setStacks` is synced by the
-  listener that changes the state (`teamResourceChanged`, `statusApplied`,
-  ...). Do not compute such counts inside modifiers.
+- Counts derived from battle state ("for each Punchline owned") → a status
+  whose stacks are synced with `ctx.setStatusStacks` by the listener that
+  changes the state (`teamResourceChanged`, `skillPointsChanged`, ...). Do
+  not compute such counts inside modifiers, and do not re-apply a debuff to
+  change its stacks (that resets its landing chance).
+- "X at 1 stack, +Y per additional stack" = (X − Y) + Y × stacks: the stacking
+  status carries `value: Y`, and a companion status (not a debuff, so it is
+  not counted twice) carries `X − Y` while at least one stack is present.
 
 ### U7. Stat-dependent values
 
@@ -151,8 +155,10 @@ or DoT is unfiltered. This is the most common mistake: check every
 Decide in this order:
 
 1. **The engine models it**: use the event or state. This covers turns,
-   actions, ability use, hits, Weakness Break, debuff presence, Skill Points,
-   Energy, being hit by enemies (aggro-weighted), memosprite presence,
+   extra turns, actions, ability use, hits and the enemies each action hit,
+   Weakness Break and Broken state, statuses and their families on the target
+   (U14), debuff counts, Skill Points gained and spent, Energy, being hit by
+   enemies (aggro-weighted), enemy SPD changes, memosprite presence,
    Punchline, and Certified Banger. Do not add an option for these.
 2. **Team composition** ("if there are N Nihility allies"): `k.countPath`,
    `k.countCombatType`, `k.team`. Path IDs are catalog IDs: Warrior =
@@ -184,7 +190,12 @@ Decide in this order:
 - "fixed chance" and guaranteed effects → no `baseChance`.
 - Random targets → `shape: "bounce"` with `bounces` (expected distribution).
 - Random gifts or outcomes → expected values (e.g. half of each of two equal
-  outcomes), with a comment.
+  outcomes), with a comment. Outcomes that change the action taken → queue
+  each branch with its probability (`queueAction(..., { weight })`); limits
+  and counters add the branches up correctly.
+- A chance-based buff on an ally → `stacks: chance` (statuses are not
+  weighted for you). Control debuffs ("Frozen", "cannot act") → a status with
+  `skipsTurn: true` applied with `baseChance`.
 
 ### U10. Energy and Skill Points
 
@@ -196,6 +207,13 @@ Decide in this order:
   Ultimate 5, Elation Skill 5).
 - "recovers N Skill Point(s)" → `ctx.gainSkillPoints(N)`.
 - "cannot recover Skill Points" → `skillPoints: 0` on that ability.
+- "Skill Point limit +N" → `ctx.setMaxSkillPoints(ctx.maxSkillPoints + N)`.
+- "when an ally consumes / recovers Skill Points" → `skillPointsChanged`
+  (`event.delta` < 0 / > 0).
+- "excess Energy" / overflow → the return value of `ctx.gainEnergy`.
+- An Ultimate paid with something other than Energy ("consumes 6 Flying
+  Aureus") → `resource: { counter, amount }` on the Ultimate, with the
+  resource kept in a counter.
 
 ### U11. Action order
 
@@ -205,21 +223,47 @@ Decide in this order:
 | "immediately takes action" | `advanceAction(unit, 1)` |
 | "delays action by X%" | `delayAction(unit, X)` |
 | "gains 1 extra turn" | `grantExtraTurn(unit)` |
-| leaves / rejoins the Action Order | `setInActionOrder` |
+| leaves / rejoins the Action Order | `setInActionOrder` (+ `castOutsideActionOrder` on an Ultimate still usable then) |
 | a countdown with fixed SPD | `k.summon({ speed, abilities, policy })` |
+| "does not end the turn" / "can use X again" | `endsTurn: false` on the ability |
+| enemy "SPD −X%" (Slow) | `spdPct` on an enemy debuff with `family: "slow"` |
 
 ### U12. Effects that are not modelled
 
 Skip these silently: healing, shields, damage reduction taken by allies, HP
 costs (unless they trigger damage effects), Crowd Control resistance, aggro
 changes, and Technique effects. **[TRACK]** (`engine-gap`) if any of them
-converts into a modelled stat or trigger.
+converts into a modelled stat or trigger. HP is not simulated: when damage
+depends on HP thresholds or HP lost, use a U8 option or a counter fed by
+`hitByEnemy` weights, and file an `approximation`.
 
 ### U13. Non-stacking effects
 
 "Effects of the same type cannot stack" → `unique: true` on the status, or rely
 on team-aura dedupe (identical equipment auras from several wearers keep the
 strongest). **[BUG]** if two copies would stack.
+
+### U14. Target state
+
+| Text | Construct |
+|---|---|
+| "deals X% more DMG to enemies with <status>" | `filter: { targetStatuses: [status.id] }` |
+| "... to Burned / Shocked / Slowed enemies" | `filter: { targetFamilies: ["burn"] }` |
+| "... to Weakness Broken enemies" | `filter: { targetBroken: true }` |
+| "for each debuff on the target" (threshold "at N or more debuffs") | `filter: { minTargetDebuffs: N }` |
+| "... to the primary target" (Blast/AoE) | `filter: { targetRoles: ["main"] }` |
+| "if the target is X" inside a handler | `target.has(s)`, `target.hasFamily(f)`, `(target as EnemyView).broken` |
+
+**[BUG]** if a kit emulates these by applying and removing self statuses
+around hits: the filters see the target as it was when each hit landed.
+
+### U15. Status families
+
+Statuses that game text names generically ("Burn", "Shock", "Bleed", "Wind
+Shear", "Frozen", "Entanglement", "Imprisonment", "Slow") must declare
+`family`. Effects that check "Burned" enemies use the family, so they also see
+Break Burn and other Characters' Burns. **[BUG]** if such a status has no
+family.
 
 ---
 
@@ -234,13 +278,23 @@ strongest). **[BUG]** if two copies would stack.
 - Ability IDs: `basic`, `skill`, `ultimate`, `followUp`, `elationSkill` are
   reserved names that the engine and policies use. Enhanced variants use
   descriptive IDs (`enhancedBasic`, `enhancedSkill`) selected by the turn
-  policy.
+  policy. Ultimate variants are separate `kind: "ultimate"` abilities chosen
+  by returning their ID from the Ultimate policy.
+- Damage dealt with `ctx.deal` inside an ability is credited to that ability.
+  Procs from listeners pass `abilityId` so the breakdown names them.
 - **[BUG]** if a damaging row in the text has no hit anywhere in the kit.
 
 ### C2. Hits
 
 - One `HitDef` per damage instance group. Multipliers are per target role:
-  `main`, `adjacent` (Blast), `each` (AoE, Bounce).
+  `main`, `adjacent` (Blast), `each` (AoE, Bounce). An AoE dealing X to the
+  target and Y to the others sets both `main` and `each`. "Distributed evenly
+  across all enemies" → `shape: "split"`.
+- Hit counts or multipliers that depend on battle state (stacks, enemy count)
+  → `hits: (ctx) => [...]`. Do not rewrite a static `hits` array in `before`.
+- "X% of ATK + Y% of Max HP" → two hits, the second `silent: true`.
+- "can reduce Toughness regardless of Weakness Type" →
+  `toughnessWithoutWeakness: 1` (a fraction when the text gives one).
 - `shape` follows facts (`SingleAttack` → `single`, `Blast` → `blast`, `AoEAttack`
   → `aoe`, `Bounce` → `bounce`) unless the text says otherwise.
 - Never sum the multipliers of different instances into one hit when per-hit
@@ -264,7 +318,10 @@ ATK". Override it to match common play from the kit. Examples:
 
 Document the intent in one comment line. The default Ultimate policy is
 "when Energy is full". Override it only when the kit needs timing (holding for
-a state). Turn policies must only return defined ability IDs.
+a state); `view.upcoming` tells which unit acts next. Turn policies must only
+return defined ability IDs. Abilities unusable in a state declare `usable`;
+the engine falls back to Basic ATK. Ally-targeted abilities may return
+`{ ability, target }` to pick the ally.
 
 ### C4. Eidolons and Bonus Abilities
 

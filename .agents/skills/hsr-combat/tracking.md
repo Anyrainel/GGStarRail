@@ -6,7 +6,7 @@
 |---|---|
 | `npm run combat:dossier -- C\|L\|R <id>` | Entity dossier: EN/ZH text with resolved `#n`, catalog IDs, per-skill facts (Toughness, Energy, SP), current kit, tracker items |
 | `npm run combat:dossier -- list C\|L\|R [--missing]` | Implementation coverage |
-| `KIT_FILES=<paths> npx vitest run tests/combat/kit-check.test.ts --silent=false` | Isolated check of specific kits, with timeline and ability breakdown |
+| `KIT_FILES=<paths> npx vitest run tests/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept` | Isolated check of specific kits, with timeline and ability breakdown |
 | `npx vitest run tests/combat` | Registry health (every kit at E0/E6, S1/S5, all set tiers) and reference tests |
 | `formatTimeline(log)` | Action-by-action timeline for a scratch test |
 

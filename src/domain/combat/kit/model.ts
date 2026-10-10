@@ -1,5 +1,10 @@
 import type { CombatStat, CombatType, ScalingStat } from "../model/stats";
-import type { DamageKind, DamageTag, HitFilter } from "../model/tags";
+import type {
+  DamageKind,
+  DamageTag,
+  HitFilter,
+  StatusFamily,
+} from "../model/tags";
 
 /**
  * Where an effect comes from, for the buff ledger and damage breakdowns.
@@ -96,14 +101,26 @@ export interface StatusDef {
    * different appliers do not add up; only the strongest applies.
    */
   unique?: boolean;
+  /** Generic identity named by game text ("Burned", "Slowed"). */
+  family?: StatusFamily;
+  /**
+   * Control effects (Frozen, Imprisonment-like "cannot act") make the
+   * holder skip its turn. A base-chance application skips in expectation.
+   */
+  skipsTurn?: boolean;
 }
 
-export type TargetShape = "single" | "blast" | "aoe" | "bounce";
+/**
+ * `split`: one multiplier "distributed evenly across all enemies"; each
+ * enemy takes `main / enemies` and its own Toughness reduction.
+ */
+export type TargetShape = "single" | "blast" | "aoe" | "bounce" | "split";
 
 /**
  * One damage instance of an ability. Multipliers are per target role:
  * `main` for the designated target, `adjacent` for Blast neighbours, and
- * `each` for every enemy of an AoE or each Bounce instance.
+ * `each` for every enemy of an AoE or each Bounce instance. An AoE with
+ * both deals `main` to the designated target and `each` to the others.
  */
 export interface HitDef {
   shape: TargetShape;
@@ -124,6 +141,17 @@ export interface HitDef {
   combatType?: CombatType;
   /** Displayed Toughness reduction per target role. */
   toughness?: { main?: number; adjacent?: number; each?: number };
+  /**
+   * Toughness reduction against enemies without the matching Weakness, as
+   * a fraction of the normal amount ("can reduce Toughness regardless of
+   * Weakness Type" is 1). Default 0.
+   */
+  toughnessWithoutWeakness?: number;
+  /**
+   * No `hit` event for this instance: a second scaling part of the same
+   * damage (e.g. "ATK% + Max HP%") must not trigger per-hit effects twice.
+   */
+  silent?: boolean;
   /** Fixed CRIT Rate/CRIT DMG used instead of the attacker's ("Robin"). */
   critOverride?: { critRate: number; critDmg: number };
   /**

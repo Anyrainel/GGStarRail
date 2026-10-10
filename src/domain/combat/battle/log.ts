@@ -1,9 +1,7 @@
 import type { AbilityKind, EffectOrigin, HitDef } from "../kit/model";
 import type { CombatType } from "../model/stats";
-import type { DamageKind, DamageTag } from "../model/tags";
+import type { DamageKind, DamageTag, TargetRole } from "../model/tags";
 import type { AppliedModifier, DebuffChance } from "./units";
-
-export type TargetRole = "main" | "adjacent" | "each";
 
 /** Break DoT families applied by Weakness Break, with their coefficients. */
 export type BreakEffect =
@@ -45,6 +43,11 @@ export interface HitRecord {
   readonly attackerModifiers: readonly AppliedModifier[];
   readonly targetModifiers: readonly AppliedModifier[];
   readonly targetBroken: boolean;
+  /** Target state when the hit landed, for target-state hit filters. */
+  readonly targetWeaknesses: readonly CombatType[];
+  /** Status IDs and `family:<name>` entries (see `HitDescriptor`). */
+  readonly targetStatuses: readonly string[];
+  readonly targetDebuffs: number;
   /** Break and Super Break inputs. */
   readonly toughnessReduced?: number;
   readonly maxToughness?: number;

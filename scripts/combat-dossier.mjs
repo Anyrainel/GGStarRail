@@ -63,8 +63,7 @@ function clean(textValue) {
 
 function formatParam(value, format) {
   if (value === undefined) return "?";
-  if (format.startsWith("f"))
-    return (value * 100).toFixed(Number(format.slice(1)));
+  if (format.startsWith("f")) return value.toFixed(Number(format.slice(1)));
   return Number.isInteger(value)
     ? String(value)
     : String(Number(value.toFixed(4)));
@@ -96,10 +95,19 @@ function slug(name) {
     .replace(/-+/g, "-");
 }
 
+/** Trailblazer forms share the Caelus (odd) ID's kit, as in characterIdentity. */
+function kitId(kind, id) {
+  const number = Number(id);
+  return kind === "C" && /^800\d$/.test(id) && number % 2 === 0
+    ? String(number - 1)
+    : id;
+}
+
 function kitFile(kind, id) {
   const dir = path.join(implDir, KIT_DIRS[kind]);
   if (!existsSync(dir)) return null;
-  const file = readdirSync(dir).find((entry) => entry.startsWith(`${id}-`));
+  const prefix = `${kitId(kind, id)}-`;
+  const file = readdirSync(dir).find((entry) => entry.startsWith(prefix));
   return file ? path.join(dir, file) : null;
 }
 
@@ -109,7 +117,12 @@ async function combatFacts() {
   const cacheDir = path.join(root, ".cache/combat-facts", revision);
   mkdirSync(cacheDir, { recursive: true });
   const facts = new Map();
-  for (const table of ["AvatarSkillConfig", "AvatarServantSkillConfig"]) {
+  // LD: skills of collaboration Characters (e.g. Saber, Archer).
+  for (const table of [
+    "AvatarSkillConfig",
+    "AvatarSkillConfigLD",
+    "AvatarServantSkillConfig",
+  ]) {
     const file = path.join(cacheDir, `${table}.json`);
     if (!existsSync(file)) {
       const url = `https://raw.githubusercontent.com/DimbreathBot/TurnBasedGameData/${revision}/ExcelOutput/${table}.json`;

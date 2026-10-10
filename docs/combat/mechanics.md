@@ -105,12 +105,31 @@ damage are scaled by the chance.
   turn apply to the next one.
 - Cycles: the first is 150 AV, then 100 AV each [COM].
 - Action advance/delay changes the distance by the fraction × 10,000.
-- Extra turns run immediately after the current turn. Ultimates cannot be
-  used during them [GT], and they do not reset the gauge.
+- Extra turns run immediately after the current turn, or before the next turn
+  when an Ultimate grants them. Ultimates cannot be used during them [GT], and
+  they do not reset the gauge. A probabilistic extra turn accumulates: two
+  50% grants make one extra turn.
 - Ultimates are checked before every turn and after every action. They are
-  cast in slot order when Energy is full and the kit's policy agrees.
-- Characters outside the Action Order cannot cast.
-- Follow-up actions queue after the current action.
+  cast in slot order when Energy (or the kit's Ultimate resource) is full and
+  the kit's policy agrees.
+- Characters outside the Action Order cannot cast, unless the Ultimate is
+  marked usable while Departed.
+- Follow-up actions queue after the current action; actions queued at turn
+  end resolve before the next unit acts.
+- Abilities that "do not end the turn" chain within one turn; Ultimates and
+  queued follow-ups may resolve between them.
+- Turn order uses SPD from the panel, statuses, and permanent team auras.
+  Summons, countdowns, and enemies have a fixed SPD that only statuses on
+  them change (Slow, Imprisonment's −10%). Debuffs with a base chance change
+  SPD by their base chance (Effect Hit Rate is not read for turn order).
+- Control statuses (Break Frozen, kit Freezes) skip the holder's turn; with
+  a base chance the enemy acts with the remaining probability mass.
+
+### Expected-value triggers
+
+Random triggers (aggro shares, chances, queued branches) run with a weight
+equal to their probability. "Once per turn" style limits count weight, so
+several partial triggers add up to at most the limit.
 
 ### Durations
 
@@ -132,6 +151,8 @@ damage are scaled by the chance.
   single-target attack per enemy turn by aggro weight. Base aggro: Preservation
   150, Destruction 125, The Hunt and Erudition 75, others 100 [GD].
 - Kills are not simulated.
+- The Skill Point cap can change (`setMaxSkillPoints`); every change is
+  reported as `skillPointsChanged` after clamping.
 
 ## Memosprites [GT talent text, FR, INF]
 

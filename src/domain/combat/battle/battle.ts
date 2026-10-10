@@ -5,8 +5,11 @@ import type {
   BattleApi,
   BattleEvent,
   DealOptions,
+  EnemyView,
   EventFilter,
   PolicyView,
+  ToughnessOptions,
+  TurnChoice,
   UnitView,
 } from "../kit/api";
 import type { ListenerDef } from "../kit/builder";
@@ -25,15 +28,9 @@ import {
   combineStat,
   readStat,
 } from "../model/stats";
-import type { DamageTag } from "../model/tags";
+import type { DamageTag, TargetRole } from "../model/tags";
 import { BREAK_EFFECT_STATUS, breakEffectFor } from "./breakEffects";
-import type {
-  ActionRecord,
-  BreakEffect,
-  CombatLog,
-  HitRecord,
-  TargetRole,
-} from "./log";
+import type { ActionRecord, BreakEffect, CombatLog, HitRecord } from "./log";
 import {
   ACTION_GAUGE,
   type CombatUnit,
@@ -46,8 +43,10 @@ export interface RegisteredListener {
   readonly owner: CombatUnit;
   readonly def: ListenerDef;
   readonly source: EffectSource;
+  /** Expected firings in the current turn / action / owner's turn cycle. */
   fired: number;
   firedInAction: number;
+  firedInOwnTurn: number;
 }
 
 export interface BattleOptions {
@@ -86,6 +85,15 @@ interface QueuedAction {
 
 const MAX_ACTIONS = 2000;
 const ULTIMATE_PASSES = 8;
+/** Abilities one turn may chain when they do not end the turn. */
+const MAX_TURN_ABILITIES = 12;
+
+/** Defaults `deal` uses inside an ability's own callbacks. */
+interface DealDefaults {
+  abilityId: string;
+  abilityKind: AbilityKind;
+  origin: EffectOrigin;
+}
 
 /** Turn-based, deterministic battle producing a hit ledger. */
 export class Battle {
@@ -111,10 +119,17 @@ export class Battle {
   aha: CombatUnit | null = null;
   time = 0;
   skillPoints: number;
+  maxSkillPoints: number;
   private readonly queue: QueuedAction[] = [];
   private readonly extraTurns: CombatUnit[] = [];
   private actionCount = 0;
   private currentActor: CombatUnit | null = null;
+  private currentExtraTurn = false;
+  private usedThisTurn: string[] = [];
+  /** The unit about to act while pre-turn Ultimates are checked. */
+  private upcoming: CombatUnit | null = null;
+  /** Enemies hit by the action being executed. */
+  private targetsHit: Set<EnemyUnit> | null = null;
   private readonly endTime: number;
 
   constructor(
@@ -125,6 +140,7 @@ export class Battle {
     this.allies.push(...characters);
     this.enemies = [...enemies];
     this.skillPoints = options.startingSkillPoints;
+    this.maxSkillPoints = options.maxSkillPoints;
     this.endTime =
       options.firstCycle +
       options.cycleLength * Math.max(0, options.cycles - 1);
@@ -145,7 +161,14 @@ export class Battle {
   }
 
   addListener(owner: CombatUnit, def: ListenerDef, source: EffectSource): void {
-    this.listeners.push({ owner, def, source, fired: 0, firedInAction: 0 });
+    this.listeners.push({
+      owner,
+      def,
+      source,
+      fired: 0,
+      firedInAction: 0,
+      firedInOwnTurn: 0,
+    });
   }
 
   run(): CombatLog {
@@ -179,7 +202,11 @@ export class Battle {
       const wait = actor.distance / actor.speed;
       if (this.time + wait > this.endTime + 1e-9) break;
       this.advanceTime(wait);
+      this.upcoming = actor;
       this.checkUltimates();
+      this.upcoming = null;
+      // An Ultimate may grant an extra turn that comes before this turn.
+      this.processExtraTurns();
       this.takeTurn(actor, "turn");
       this.processExtraTurns();
       this.checkUltimates();
@@ -244,10 +271,13 @@ export class Battle {
 
   private takeTurn(unit: CombatUnit, mode: "turn" | "extraTurn"): void {
     this.actionCount += 1;
-    this.resetTurnLimits();
+    this.resetTurnLimits(unit);
     if (mode === "turn") unit.distance = ACTION_GAUGE;
     this.currentActor = unit;
-    this.emit({ type: "turnStart", unit, weight: 1 }, null);
+    this.currentExtraTurn = mode === "extraTurn";
+    this.usedThisTurn = [];
+    const extraTurn = mode === "extraTurn";
+    this.emit({ type: "turnStart", unit, extraTurn, weight: 1 }, null);
     this.countdown(unit, "turnStart");
     if (unit.kind === "enemy") {
       this.enemyTurn(unit as EnemyUnit);
@@ -257,57 +287,80 @@ export class Battle {
       this.allyTurn(unit, mode);
     }
     this.processQueue();
-    this.emit({ type: "turnEnd", unit, weight: 1 }, null);
+    this.emit({ type: "turnEnd", unit, extraTurn, weight: 1 }, null);
     this.countdown(unit, "turnEnd");
+    // Actions queued at turn end (counters, follow-ups) resolve now.
+    this.processQueue();
     this.currentActor = null;
+    this.currentExtraTurn = false;
   }
 
   private allyTurn(unit: CombatUnit, mode: "turn" | "extraTurn"): void {
     const behaviour = unit.behaviour;
     if (!behaviour) return;
-    let abilityId = behaviour.turnPolicy(this.policyView(unit));
-    let ability = behaviour.abilities.get(abilityId);
-    if (!ability) {
-      this.warnings.push(`unknown-ability:${unit.definitionId}:${abilityId}`);
-      return;
-    }
-    const cost = -(
-      ability.skillPoints ??
-      DEFAULT_SKILL_POINTS[ability.kind] ??
-      0
-    );
-    if (cost > this.skillPoints + 1e-9) {
-      const fallback = behaviour.abilities.get("basic");
-      if (fallback && fallback !== ability) {
-        abilityId = "basic";
-        ability = fallback;
+    for (let step = 0; step < MAX_TURN_ABILITIES; step += 1) {
+      const view = this.policyView(unit);
+      const raw = behaviour.turnPolicy(view);
+      const choice: TurnChoice =
+        typeof raw === "string" ? { ability: raw } : raw;
+      let ability = behaviour.abilities.get(choice.ability);
+      if (!ability) {
+        this.warnings.push(
+          `unknown-ability:${unit.definitionId}:${choice.ability}`
+        );
+        return;
       }
+      const cost = -(
+        ability.skillPoints ??
+        DEFAULT_SKILL_POINTS[ability.kind] ??
+        0
+      );
+      const unusable = ability.usable !== undefined && !ability.usable(view);
+      if (unusable || cost > this.skillPoints + 1e-9) {
+        const fallback = behaviour.abilities.get("basic");
+        if (fallback && fallback !== ability) ability = fallback;
+      }
+      const target =
+        choice.target && choice.target.kind !== "enemy"
+          ? (choice.target as CombatUnit)
+          : ((choice.target as EnemyUnit | undefined) ?? this.mainTarget);
+      this.execute(unit, ability, target, mode, 1);
+      this.usedThisTurn.push(ability.id);
+      if (ability.endsTurn !== false) return;
+      // The turn continues: follow-ups and Ultimates may come first.
+      this.processQueue();
+      this.checkUltimates();
     }
-    this.execute(unit, ability, this.mainTarget, mode, 1);
+    this.warnings.push(`turn-ability-limit:${unit.definitionId}`);
   }
 
   private enemyTurn(enemy: EnemyUnit): void {
     for (const status of [...enemy.statuses.values()]) {
       if (!status.def.dot || status.stacks <= 0) continue;
-      this.tickDot(enemy, status, 1);
+      this.tickDot(enemy, status, 1, false);
     }
     if (enemy.broken) {
       enemy.broken = false;
       enemy.toughness = enemy.maxToughness;
     }
-    const frozen = enemy.findStatus(BREAK_EFFECT_STATUS.frozen);
-    if (frozen && frozen.stacks > 0) return;
-    this.enemyAttack(enemy);
+    // Control effects: a base-chance application skips in expectation.
+    let acts = 1;
+    for (const status of enemy.statuses.values()) {
+      if (!status.def.skipsTurn || status.stacks <= 0) continue;
+      acts *= 1 - Math.min(1, status.baseChance ?? 1);
+    }
+    if (acts <= 1e-6) return;
+    this.enemyAttack(enemy, acts);
   }
 
-  private enemyAttack(enemy: EnemyUnit): void {
+  private enemyAttack(enemy: EnemyUnit, weight: number): void {
     const targets = this.allies.filter((ally) => ally.kind === "character");
     const aggro = targets.map((ally) => Math.max(0, ally.aggro));
     const total = aggro.reduce((sum, value) => sum + value, 0);
     if (total <= 0) return;
-    this.emit({ type: "enemyAttack", unit: enemy, weight: 1 }, null);
+    this.emit({ type: "enemyAttack", unit: enemy, weight }, null);
     targets.forEach((ally, index) => {
-      const share = (aggro[index] ?? 0) / total;
+      const share = ((aggro[index] ?? 0) / total) * weight;
       if (share <= 0) return;
       this.gainEnergy(ally, this.options.enemyAttackEnergy * share, false);
       this.emit(
@@ -318,6 +371,18 @@ export class Battle {
   }
 
   private countdown(unit: CombatUnit, phase: "turnStart" | "turnEnd"): void {
+    if (phase === "turnEnd" && unit.kind === "enemy") {
+      const enemy = unit as EnemyUnit;
+      for (const [type, remaining] of [...enemy.implants]) {
+        if (remaining === null) continue;
+        if (remaining <= 1) {
+          enemy.implants.delete(type);
+          enemy.weaknesses.delete(type);
+        } else {
+          enemy.implants.set(type, remaining - 1);
+        }
+      }
+    }
     if (phase === "turnEnd") {
       for (let index = unit.bangers.length - 1; index >= 0; index -= 1) {
         const banger = unit.bangers[index];
@@ -366,20 +431,34 @@ export class Battle {
   checkUltimates(): void {
     for (let pass = 0; pass < ULTIMATE_PASSES; pass += 1) {
       let cast = false;
-      for (const unit of this.allies) {
+      for (const unit of [...this.allies]) {
         const behaviour = unit.behaviour;
-        const ultimate = behaviour?.abilities.get("ultimate");
-        if (!behaviour?.ultimatePolicy || !ultimate) continue;
-        if (!unit.inActionOrder && unit.kind === "character") {
+        if (!behaviour?.ultimatePolicy) continue;
+        const view = this.policyView(unit);
+        const decision = behaviour.ultimatePolicy(view);
+        if (decision === false) continue;
+        const ultimate = behaviour.abilities.get(
+          typeof decision === "string" ? decision : "ultimate"
+        );
+        if (!ultimate) continue;
+        if (
+          !unit.inActionOrder &&
+          unit.kind === "character" &&
+          !ultimate.castOutsideActionOrder
+        ) {
           // Characters outside the Action Order (channeling) cannot cast.
           continue;
         }
-        const cost = ultimate.energyCost ?? unit.maxEnergy;
-        if (unit.energy + 1e-9 < cost) continue;
-        const view = this.policyView(unit);
         if (ultimate.usable && !ultimate.usable(view)) continue;
-        if (!behaviour.ultimatePolicy(view)) continue;
-        unit.energy -= cost;
+        if (ultimate.resource) {
+          const { counter, amount } = ultimate.resource;
+          if (unit.counter(counter) + 1e-9 < amount) continue;
+          unit.counters.set(counter, unit.counter(counter) - amount);
+        } else {
+          const cost = ultimate.energyCost ?? unit.maxEnergy;
+          if (unit.energy + 1e-9 < cost) continue;
+          unit.energy -= cost;
+        }
         this.execute(unit, ultimate, this.mainTarget, "ultimate", 1);
         this.processQueue();
         cast = true;
@@ -417,20 +496,24 @@ export class Battle {
   execute(
     unit: CombatUnit,
     ability: AbilityDef,
-    target: EnemyUnit | null,
+    target: CombatUnit | null,
     mode: ActionRecord["mode"],
     weight: number
   ): void {
     const skillPoints =
       ability.skillPoints ?? DEFAULT_SKILL_POINTS[ability.kind] ?? 0;
-    this.skillPoints = Math.min(
-      this.options.maxSkillPoints,
-      Math.max(0, this.skillPoints + skillPoints * weight)
-    );
     for (const listener of this.listeners) listener.firedInAction = 0;
+    const outerTargets = this.targetsHit;
+    const targetsHit = new Set<EnemyUnit>();
+    this.targetsHit = targetsHit;
+    this.changeSkillPoints(skillPoints * weight, unit);
     const tags = ability.tags ?? DEFAULT_ABILITY_TAGS[ability.kind];
     const context = this.actionContext(unit, ability, target, weight);
-    const attack = (ability.hits?.length ?? 0) > 0;
+    const attack =
+      ability.attack ??
+      (typeof ability.hits === "function" || (ability.hits?.length ?? 0) > 0);
+    const enemyTarget =
+      target?.kind === "enemy" ? (target as EnemyUnit) : this.mainTarget;
     this.emit(
       {
         type: "actionStart",
@@ -445,19 +528,38 @@ export class Battle {
       unit
     );
     ability.before?.(context);
-    for (const hit of ability.hits ?? []) {
+    const hits =
+      typeof ability.hits === "function"
+        ? ability.hits(context)
+        : (ability.hits ?? []);
+    hits.forEach((hit, index) => {
       this.resolveHit(unit, hit, {
         abilityId: ability.id,
         abilityKind: ability.kind,
         origin: ability.origin ?? originForKind(ability.kind),
         tags,
-        mainTarget: target,
+        mainTarget: enemyTarget,
         weight,
       });
-    }
+      ability.afterHit?.(context, index);
+    });
     ability.after?.(context);
     const energy = ability.energy ?? DEFAULT_ENERGY[ability.kind] ?? 0;
     if (energy > 0) this.gainEnergy(unit, energy * weight, false);
+    this.emit(
+      {
+        type: "actionEnd",
+        unit,
+        target: target ?? undefined,
+        abilityId: ability.id,
+        abilityKind: ability.kind,
+        tags,
+        attack,
+        targetsHit: [...targetsHit],
+        weight,
+      },
+      unit
+    );
     this.actions.push({
       time: this.time,
       cycle: this.cycle,
@@ -468,19 +570,7 @@ export class Battle {
       skillPointsAfter: this.skillPoints,
       energyAfter: unit.energy,
     });
-    this.emit(
-      {
-        type: "actionEnd",
-        unit,
-        target: target ?? undefined,
-        abilityId: ability.id,
-        abilityKind: ability.kind,
-        tags,
-        attack,
-        weight,
-      },
-      unit
-    );
+    this.targetsHit = outerTargets;
   }
 
   /** Expands one HitDef over its target roles and records each instance. */
@@ -533,12 +623,24 @@ export class Battle {
       return enemies.map((target) => ({
         target,
         role: target === main ? "main" : "each",
-        multiplier: hit.each ?? hit.main ?? 0,
+        multiplier:
+          target === main
+            ? (hit.main ?? hit.each ?? 0)
+            : (hit.each ?? hit.main ?? 0),
         weight: 1,
         toughness:
           target === main
             ? (toughness.main ?? toughness.each ?? 0)
             : (toughness.each ?? toughness.main ?? 0),
+      }));
+    }
+    if (hit.shape === "split") {
+      return enemies.map((target) => ({
+        target,
+        role: target === main ? "main" : "each",
+        multiplier: (hit.main ?? hit.each ?? 0) / enemies.length,
+        weight: 1,
+        toughness: toughness.each ?? toughness.main ?? 0,
       }));
     }
     if (hit.shape === "bounce") {
@@ -600,6 +702,9 @@ export class Battle {
     const combatType = hit.combatType ?? attacker.combatType;
     const kind = hit.kind ?? "direct";
     const broken = context.target.broken;
+    if (context.multiplier !== 0 || context.toughness > 0) {
+      this.targetsHit?.add(context.target);
+    }
     if (context.multiplier !== 0 || kind === "fixed") {
       this.hits.push({
         time: this.time,
@@ -621,6 +726,7 @@ export class Battle {
         attackerModifiers: this.outgoingSnapshot(statUnit),
         targetModifiers: context.target.statusModifiers("incoming"),
         targetBroken: broken,
+        ...targetSnapshot(context.target),
         punchline: hit.punchline ?? this.teamResources.get("punchline") ?? 0,
       });
     }
@@ -637,9 +743,12 @@ export class Battle {
           tags: context.tags,
           weight: context.weight,
           hit,
+          withoutWeakness: hit.toughnessWithoutWeakness ?? 0,
+          fixed: false,
         }
       );
     }
+    if (hit.silent || context.multiplier === 0) return;
     this.emit(
       {
         type: "hit",
@@ -675,11 +784,17 @@ export class Battle {
       tags: readonly DamageTag[];
       weight: number;
       hit: HitDef;
+      withoutWeakness: number;
+      fixed: boolean;
     }
   ): void {
-    if (!enemy.weaknesses.has(combatType)) return;
-    const efficiency = this.momentaryStat(breaker, "breakEfficiency");
-    const reduced = amount * (1 + efficiency) * context.weight;
+    const matches = enemy.weaknesses.has(combatType);
+    const scale = matches ? 1 : context.withoutWeakness;
+    if (scale <= 0) return;
+    const efficiency = context.fixed
+      ? 0
+      : this.momentaryStat(breaker, "breakEfficiency");
+    const reduced = amount * scale * (1 + efficiency) * context.weight;
     const base = {
       time: this.time,
       cycle: this.cycle,
@@ -696,6 +811,7 @@ export class Battle {
       targetId: enemy.id,
       attackerModifiers: this.outgoingSnapshot(breaker),
       targetModifiers: enemy.statusModifiers("incoming"),
+      ...targetSnapshot(enemy),
     };
     if (enemy.broken) {
       this.hits.push({
@@ -748,7 +864,8 @@ export class Battle {
   private tickDot(
     enemy: EnemyUnit,
     status: StatusInstance,
-    ratio: number
+    ratio: number,
+    detonation: boolean
   ): void {
     const dot = status.def.dot;
     if (!dot) return;
@@ -781,6 +898,7 @@ export class Battle {
       attackerModifiers: this.outgoingSnapshot(applier.statUnit),
       targetModifiers: enemy.statusModifiers("incoming"),
       targetBroken: enemy.broken,
+      ...targetSnapshot(enemy),
       maxToughness: enemy.maxToughness,
       breakEffect,
     });
@@ -790,6 +908,7 @@ export class Battle {
         unit: enemy,
         target: enemy,
         status: status.def,
+        detonation,
         weight: ratio,
       },
       null
@@ -798,6 +917,7 @@ export class Battle {
 
   /** Stat value from panel and current unfiltered statuses (no scaling). */
   momentaryStat(unit: CombatUnit, stat: CombatStat): number {
+    unit.statReads.add(stat);
     const vector = unit.panel.slice();
     for (const modifier of unit.statusModifiers("outgoing")) {
       if (modifier.def.stat !== stat || modifier.def.filter) continue;
@@ -894,12 +1014,35 @@ export class Battle {
   // ---------------------------------------------------------------------
   // Resources
 
-  gainEnergy(unit: CombatUnit, amount: number, fixed: boolean): void {
+  /** Returns the Energy lost to the cap (overflow), after ERR. */
+  gainEnergy(unit: CombatUnit, amount: number, fixed: boolean): number {
     // Summons and memosprites have no Energy bar; it goes to the owner.
     const target = unit.kind !== "character" && unit.owner ? unit.owner : unit;
-    if (target.kind !== "character") return;
+    if (target.kind !== "character") return 0;
     const scale = fixed ? 1 : 1 + this.momentaryStat(target, "energyRegen");
-    target.energy = Math.min(target.maxEnergy, target.energy + amount * scale);
+    const next = target.energy + amount * scale;
+    target.energy = Math.min(target.maxEnergy, next);
+    return Math.max(0, next - target.maxEnergy);
+  }
+
+  /** Clamp Skill Points to [0, cap] and report the actual change. */
+  changeSkillPoints(delta: number, actor: CombatUnit | null): void {
+    const before = this.skillPoints;
+    this.skillPoints = Math.min(
+      this.maxSkillPoints,
+      Math.max(0, this.skillPoints + delta)
+    );
+    const change = this.skillPoints - before;
+    if (Math.abs(change) < 1e-12) return;
+    this.emit(
+      {
+        type: "skillPointsChanged",
+        unit: actor ?? this.allies[0] ?? this.enemies[0]!,
+        delta: change,
+        weight: 1,
+      },
+      actor
+    );
   }
 
   // ---------------------------------------------------------------------
@@ -963,22 +1106,27 @@ export class Battle {
   // Events
 
   emit(event: BattleEvent, actor: CombatUnit | null): void {
-    for (const listener of this.listeners) {
+    for (const listener of [...this.listeners]) {
       if (listener.def.event !== event.type) continue;
       if (!this.matches(listener, event)) continue;
-      const { limitPerTurn, limitPerAction } = listener.def.filter;
-      if (limitPerTurn !== undefined && listener.fired >= limitPerTurn)
-        continue;
-      if (
-        limitPerAction !== undefined &&
-        listener.firedInAction >= limitPerAction
-      ) {
-        continue;
-      }
-      listener.fired += 1;
-      listener.firedInAction += 1;
-      const api = this.api(listener.owner, event.weight, actor);
-      listener.def.handler(api, event);
+      // Limits count expected firings; the last one is scaled to what is
+      // left, so a 30% trigger before a sure one still totals one firing.
+      const { limitPerTurn, limitPerAction, limitPerOwnTurn } =
+        listener.def.filter;
+      let weight = event.weight;
+      if (limitPerTurn !== undefined)
+        weight = Math.min(weight, limitPerTurn - listener.fired);
+      if (limitPerAction !== undefined)
+        weight = Math.min(weight, limitPerAction - listener.firedInAction);
+      if (limitPerOwnTurn !== undefined)
+        weight = Math.min(weight, limitPerOwnTurn - listener.firedInOwnTurn);
+      if (weight <= 1e-9) continue;
+      const api = this.api(listener.owner, weight, actor);
+      const scaled = weight === event.weight ? event : { ...event, weight };
+      listener.def.handler(api, scaled);
+      listener.fired += weight;
+      listener.firedInAction += weight;
+      listener.firedInOwnTurn += weight;
     }
   }
 
@@ -988,7 +1136,13 @@ export class Battle {
     const unit = event.unit as CombatUnit;
     switch (filter.subject ?? "self") {
       case "self":
-        if (unit !== owner) return false;
+        // A summon's attacks are its owner's (Lightning-Lord, Numby).
+        if (
+          unit !== owner &&
+          !(unit.kind === "summon" && unit.owner === owner && event.attack)
+        ) {
+          return false;
+        }
         break;
       case "selfOrMemosprite":
         if (unit !== owner && unit.owner !== owner) return false;
@@ -1025,11 +1179,15 @@ export class Battle {
     }
     if (filter.status && filter.status !== event.status) return false;
     if (filter.resource && filter.resource !== event.resource) return false;
+    if (filter.when && !filter.when(event, owner)) return false;
     return true;
   }
 
-  private resetTurnLimits(): void {
-    for (const listener of this.listeners) listener.fired = 0;
+  private resetTurnLimits(unit: CombatUnit): void {
+    for (const listener of this.listeners) {
+      listener.fired = 0;
+      if (listener.owner === unit) listener.firedInOwnTurn = 0;
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -1041,9 +1199,13 @@ export class Battle {
       allies: this.allies,
       enemies: this.enemies,
       skillPoints: this.skillPoints,
-      maxSkillPoints: this.options.maxSkillPoints,
+      maxSkillPoints: this.maxSkillPoints,
       cycle: this.cycle,
       time: this.time,
+      mainTarget: this.mainTarget,
+      upcoming: this.upcoming,
+      extraTurn: this.currentActor === unit && this.currentExtraTurn,
+      usedThisTurn: this.currentActor === unit ? [...this.usedThisTurn] : [],
       teamResource: (name) => this.teamResources.get(name) ?? 0,
     };
   }
@@ -1051,18 +1213,32 @@ export class Battle {
   private actionContext(
     unit: CombatUnit,
     ability: AbilityDef,
-    target: EnemyUnit | null,
+    target: CombatUnit | null,
     weight: number
   ): ActionContext {
-    return {
-      ...this.api(unit, weight, unit),
+    const api = this.api(unit, weight, unit, {
+      abilityId: ability.id,
+      abilityKind: ability.kind,
+      origin: ability.origin ?? originForKind(ability.kind),
+    });
+    const targetsHit = this.targetsHit;
+    // Assign onto the API object so its live getters (Skill Points, time)
+    // keep reading the battle instead of a copy taken at action start.
+    return Object.assign(api, {
       abilityId: ability.id,
       abilityKind: ability.kind,
       target,
-    };
+      scratch: new Map<string, unknown>(),
+      targetsHit: (): readonly EnemyView[] => [...(targetsHit ?? [])],
+    });
   }
 
-  api(self: CombatUnit, weight: number, actor: CombatUnit | null): BattleApi {
+  api(
+    self: CombatUnit,
+    weight: number,
+    actor: CombatUnit | null,
+    dealDefaults?: DealDefaults
+  ): BattleApi {
     const battle = this;
     const asUnit = (view: UnitView) => view as CombatUnit;
     return {
@@ -1072,8 +1248,17 @@ export class Battle {
       get skillPoints() {
         return battle.skillPoints;
       },
+      get maxSkillPoints() {
+        return battle.maxSkillPoints;
+      },
       get cycle() {
         return battle.cycle;
+      },
+      get time() {
+        return battle.time;
+      },
+      get mainTarget() {
+        return battle.mainTarget;
       },
       weight,
       applyStatus: (target, status, options = {}) =>
@@ -1082,6 +1267,16 @@ export class Battle {
         const unit = asUnit(target);
         for (const [key, instance] of unit.statuses) {
           if (instance.def === status) unit.statuses.delete(key);
+        }
+      },
+      setStatusStacks: (target, status, stacks) => {
+        const unit = asUnit(target);
+        const instance = unit.findStatus(status);
+        if (!instance) return;
+        const max = status.maxStacks ?? 1;
+        instance.stacks = Math.min(max, Math.max(0, stacks));
+        if (instance.stacks <= 0) {
+          unit.statuses.delete(unit.statusKey(instance.def, instance.applier));
         }
       },
       consumeStacks: (target, status, stacks) => {
@@ -1103,10 +1298,13 @@ export class Battle {
       setEnergy: (unit, amount) => {
         asUnit(unit).energy = Math.min(asUnit(unit).maxEnergy, amount);
       },
-      gainSkillPoints: (amount) => {
+      gainSkillPoints: (amount) =>
+        battle.changeSkillPoints(amount * weight, actor ?? self),
+      setMaxSkillPoints: (max) => {
+        battle.maxSkillPoints = Math.max(0, max);
         battle.skillPoints = Math.min(
-          battle.options.maxSkillPoints,
-          Math.max(0, battle.skillPoints + amount * weight)
+          battle.skillPoints,
+          battle.maxSkillPoints
         );
       },
       advanceAction: (unit, fraction) => {
@@ -1120,7 +1318,12 @@ export class Battle {
         asUnit(unit).distance += ACTION_GAUGE * fraction * weight;
       },
       grantExtraTurn: (unit) => {
-        if (weight >= 0.5) battle.extraTurns.push(asUnit(unit));
+        const target = asUnit(unit);
+        target.pendingExtraTurns += weight;
+        if (target.pendingExtraTurns >= 1 - 1e-6) {
+          target.pendingExtraTurns -= 1;
+          battle.extraTurns.push(target);
+        }
       },
       setInActionOrder: (unit, inOrder) => {
         const target = asUnit(unit);
@@ -1137,15 +1340,20 @@ export class Battle {
       },
       deal: (hit, options: DealOptions = {}) => {
         const attacker = options.attacker ? asUnit(options.attacker) : self;
+        const origin = options.origin ?? dealDefaults?.origin ?? "talent";
         battle.resolveHit(attacker, hit, {
-          abilityId: `${options.origin ?? "talent"}:${self.definitionId}`,
-          abilityKind: options.abilityKind ?? "other",
-          origin: options.origin ?? "talent",
+          abilityId:
+            options.abilityId ??
+            (options.origin === undefined ? dealDefaults?.abilityId : null) ??
+            `${origin}:${self.definitionId}`,
+          abilityKind:
+            options.abilityKind ?? dealDefaults?.abilityKind ?? "other",
+          origin,
           tags: options.tags ?? [],
           mainTarget:
             (options.targets?.[0] as EnemyUnit | undefined) ??
             battle.mainTarget,
-          weight,
+          weight: weight * (options.weight ?? 1),
           targets: options.targets as EnemyUnit[] | undefined,
         });
       },
@@ -1154,27 +1362,43 @@ export class Battle {
         for (const status of [...enemy.statuses.values()]) {
           if (!status.def.dot || status.stacks <= 0) continue;
           if (options.filter && !options.filter(status.def)) continue;
-          battle.tickDot(enemy, status, ratio * weight);
+          battle.tickDot(enemy, status, ratio * weight, true);
         }
       },
-      reduceToughness: (target, amount) => {
+      reduceToughness: (target, amount, options: ToughnessOptions = {}) => {
+        const origin = options.origin ?? dealDefaults?.origin ?? "talent";
         battle.applyToughness(
           self.statUnit,
           target as EnemyUnit,
           amount,
-          self.combatType,
+          options.combatType ?? self.combatType,
           {
-            abilityId: "toughness",
-            abilityKind: "other",
-            origin: "talent",
+            abilityId:
+              options.abilityId ??
+              dealDefaults?.abilityId ??
+              `${origin}:${self.definitionId}`,
+            abilityKind: dealDefaults?.abilityKind ?? "other",
+            origin,
             tags: [],
             weight,
             hit: { shape: "single" },
+            withoutWeakness: options.withoutWeakness ?? 0,
+            fixed: options.fixed ?? false,
           }
         );
       },
-      implantWeakness: (target, combatType) => {
-        (target as EnemyUnit).weaknesses.add(combatType);
+      implantWeakness: (target, combatType, options = {}) => {
+        const enemy = target as EnemyUnit;
+        const native =
+          enemy.weaknesses.has(combatType) && !enemy.implants.has(combatType);
+        if (native) return;
+        enemy.weaknesses.add(combatType);
+        enemy.implants.set(combatType, options.turns ?? null);
+      },
+      removeWeakness: (target, combatType) => {
+        const enemy = target as EnemyUnit;
+        enemy.weaknesses.delete(combatType);
+        enemy.implants.delete(combatType);
       },
       addCounter: (unit, name, delta, max) => {
         const target = asUnit(unit);
@@ -1191,6 +1415,10 @@ export class Battle {
       addTeamResource: (name, delta, max) =>
         battle.changeTeamResource(self, name, delta, max, weight, actor),
       summon: (owner, servantId) => battle.summon(asUnit(owner), servantId),
+      findSummon: (owner, servantId) =>
+        [...battle.allies, ...battle.summons].find(
+          (unit) => unit.owner === owner && unit.definitionId === servantId
+        ) ?? null,
       grantCertifiedBanger: (unit, value, turns = 2) => {
         const target = asUnit(unit);
         target.bangers.push({
@@ -1254,4 +1482,13 @@ function originForKind(kind: AbilityKind): EffectOrigin {
     default:
       return "talent";
   }
+}
+
+/** Target state captured at a hit, for target-state hit filters. */
+function targetSnapshot(enemy: EnemyUnit) {
+  return {
+    targetWeaknesses: [...enemy.weaknesses],
+    targetStatuses: enemy.statusSignature(),
+    targetDebuffs: enemy.debuffCount(),
+  };
 }

@@ -15,6 +15,7 @@ export const DAMAGE_TAGS = [
   "memosprite",
   "elation",
   "joint",
+  "assist",
   "technique",
   "break",
   "superBreak",
@@ -42,6 +43,27 @@ export type DamageKind =
 /** Which unit families a modifier reaches when it is evaluated. */
 export type UnitKind = "character" | "memosprite" | "summon" | "enemy";
 
+/** Where a hit landed relative to the ability's designated target. */
+export type TargetRole = "main" | "adjacent" | "each";
+
+/**
+ * Shared identities of statuses that game text names generically ("Burned
+ * enemies", "Slowed"). Kits tag their statuses with a family so effects can
+ * see the same family from Weakness Break and from other Characters.
+ */
+export const STATUS_FAMILIES = [
+  "burn",
+  "shock",
+  "bleed",
+  "windShear",
+  "frozen",
+  "entanglement",
+  "imprisonment",
+  "slow",
+] as const;
+
+export type StatusFamily = (typeof STATUS_FAMILIES)[number];
+
 /**
  * Scope of a modifier. Omitted dimensions match everything, except that
  * Break-family hits (`break`, `superBreak`) only receive DMG Boost, DMG
@@ -57,14 +79,30 @@ export interface HitFilter {
   attackerKinds?: readonly UnitKind[];
   /** Only against targets weak to any of these Combat Types. */
   targetWeakness?: readonly CombatType[];
+  /** Only against targets holding any of these statuses (by status ID). */
+  targetStatuses?: readonly string[];
+  /** Only against targets holding a status of any of these families. */
+  targetFamilies?: readonly StatusFamily[];
+  /** Only against targets with at least this many debuffs. */
+  minTargetDebuffs?: number;
+  /** Only against Weakness Broken (true) or unbroken (false) targets. */
+  targetBroken?: boolean;
+  /** Only hits on these target roles (e.g. the main target of a Blast). */
+  targetRoles?: readonly TargetRole[];
 }
 
+/** The hit as filters see it; target state is captured when it landed. */
 export interface HitDescriptor {
   tags: readonly DamageTag[];
   kind: DamageKind;
   combatType: CombatType;
   attackerKind: UnitKind;
+  role: TargetRole;
   targetWeaknesses: ReadonlySet<CombatType>;
+  /** Status IDs and `family:<name>` entries present on the target. */
+  targetStatuses: ReadonlySet<string>;
+  targetDebuffs: number;
+  targetBroken: boolean;
 }
 
 const BREAK_TAGS: ReadonlySet<DamageTag> = new Set(["break", "superBreak"]);
@@ -113,6 +151,35 @@ export function filterMatches(
     filter.targetWeakness &&
     !filter.targetWeakness.some((type) => hit.targetWeaknesses.has(type))
   ) {
+    return false;
+  }
+  if (
+    filter.targetStatuses &&
+    !filter.targetStatuses.some((id) => hit.targetStatuses.has(id))
+  ) {
+    return false;
+  }
+  if (
+    filter.targetFamilies &&
+    !filter.targetFamilies.some((family) =>
+      hit.targetStatuses.has(`family:${family}`)
+    )
+  ) {
+    return false;
+  }
+  if (
+    filter.minTargetDebuffs !== undefined &&
+    hit.targetDebuffs < filter.minTargetDebuffs
+  ) {
+    return false;
+  }
+  if (
+    filter.targetBroken !== undefined &&
+    filter.targetBroken !== hit.targetBroken
+  ) {
+    return false;
+  }
+  if (filter.targetRoles && !filter.targetRoles.includes(hit.role)) {
     return false;
   }
   return true;

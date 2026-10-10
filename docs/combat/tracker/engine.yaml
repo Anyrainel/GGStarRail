@@ -83,3 +83,112 @@
     Enemy HP and kills are not simulated; "upon defeating an enemy" effects
     are user options.
   detail: ""
+- id: engine-pass-wave1
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Engine pass after wave 1. Kit items that worked around any of these gaps
+    should adopt the construct now available (see kit-authoring.md).
+  detail: >
+    Fixed: ActionContext Skill Points/cycle frozen at action start; status
+    landing-chance cache ignoring re-applied chances; once-per-turn limits
+    counting firings instead of weight (now weighted, plus a `when`
+    predicate checked before limits and limitPerOwnTurn); breakdown rows merging different abilities
+    (groups key on abilityId; deal inside an ability is credited to it, and
+    DealOptions.abilityId names proc rows); targetWeakness filters read after
+    the battle (now snapshotted per hit); team SPD auras ignored by turn order;
+    summons ignoring SPD statuses; enemy Slow having no effect; stat-scaled
+    incoming modifiers ignored; Break Frozen relied on a hard-coded check
+    (now skipsTurn); timeline energyAfter recorded before actionEnd; actions
+    queued at turn end running a turn late; extra turns from Ultimates waiting
+    a turn; optimizer timeline caches ignoring stats read in battle.
+    Added: HitFilter targetStatuses/targetFamilies/minTargetDebuffs/
+    targetBroken/targetRoles; StatusDef.family and skipsTurn; setStatusStacks;
+    endsTurn false; hits as a function, attack, afterHit, ctx.scratch,
+    ctx.targetsHit, actionEnd targetsHit; split shape and AoE main/each;
+    toughnessWithoutWeakness, reduceToughness options, timed implantWeakness
+    and removeWeakness; silent hits; Ultimate variants and resources,
+    castOutsideActionOrder; turn choices with an ally target and usable on
+    turn abilities; skillPointsChanged and setMaxSkillPoints; gainEnergy
+    overflow; findSummon; summons' attacks count as the owner's for self
+    listeners; UnitView pathId/slot/actionGauge/hasFamily; ctx time and
+    mainTarget; policy upcoming/extraTurn/usedThisTurn; dotTick detonation;
+    the "assist" damage tag; dossier reads AvatarSkillConfigLD and prints
+    #n[fN] values correctly.
+- id: engine-hp-model
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    HP is not simulated. Blade, Arlan, Jingliu, Mydei, Clara and others use
+    toggles or counters for HP thresholds, HP lost, and healing triggers.
+  detail: >
+    A minimal per-unit HP fraction (consume, heal, set) with a threshold
+    crossing event and heal events would replace most of these workarounds.
+- id: engine-aggro-modifiers
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Aggro cannot be modified (Taunt, aggro increases), and Departed units are
+    still targeted by enemy attacks.
+  detail: ""
+- id: engine-enemy-tier
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies have no tier (elite/boss vs normal); kits with elite-only effects
+    treat the middle enemy as the only elite.
+  detail: ""
+- id: engine-super-break-unbroken
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Super Break only applies to Weakness Broken enemies; The Dahlia's Zone
+    lets it apply to unbroken ones, and deal() cannot produce Super Break.
+  detail: ""
+- id: engine-separate-timeline
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    No territory or paused-clock state: Phainon's transformation runs as a
+    chain of queued actions, and teammates still react to it.
+  detail: ""
+- id: engine-ally-turn-takeover
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot act through another ally's turn (Himeko Nova's ally-used
+    Assist Skills) or replace an ally's action choice.
+  detail: ""
+- id: engine-energy-received-event
+  entity: engine
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    No event for Energy received from a teammate (Phainon) or for Energy
+    overflow from other sources than the kit's own gainEnergy calls.
+  detail: ""
+- id: engine-ally-option-vocabulary
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Single-ally designations (March 7th's Shifu, Fugue's Prayer target, The
+    Dahlia's Dance Partner, Jade's Debt Collector) are heuristics; there is no
+    option type for choosing a teammate.
+  detail: ""

@@ -16,7 +16,7 @@ import {
   readStat,
   type StatVector,
 } from "../model/stats";
-import type { UnitKind } from "../model/tags";
+import type { StatusFamily, UnitKind } from "../model/tags";
 
 /** The catalog entity an effect belongs to, for breakdowns and ledgers. */
 export interface EffectSource {
@@ -78,6 +78,7 @@ export class StatusInstance {
   skipNextTurnEnd = false;
   private cached: readonly AppliedModifier[] | null = null;
   private cachedScale = Number.NaN;
+  private cachedChance: number | null = null;
 
   constructor(
     readonly def: StatusDef,
@@ -110,11 +111,21 @@ export class StatusInstance {
       : { base: this.baseChance, applierId: this.applier.statUnit.id };
   }
 
-  /** Interned modifier snapshot; identical while stacks are unchanged. */
+  /**
+   * Interned modifier snapshot; identical while stacks and landing chance
+   * are unchanged, so hit groups can key on modifier identity.
+   */
   modifiers(): readonly AppliedModifier[] {
     const scale = this.stacks;
-    if (this.cached && this.cachedScale === scale) return this.cached;
+    if (
+      this.cached &&
+      this.cachedScale === scale &&
+      this.cachedChance === this.baseChance
+    ) {
+      return this.cached;
+    }
     this.cachedScale = scale;
+    this.cachedChance = this.baseChance;
     const chance = this.chance;
     this.cached = (this.def.modifiers ?? []).map((def) =>
       appliedModifier(
@@ -162,6 +173,13 @@ export class CombatUnit implements UnitView {
   fixedSpeed: number | null = null;
   /** Memosprite SPD rule relative to the owner. */
   speedRule: { ownerRatio: number; flat: number } | null = null;
+  /** Expected extra turns granted but not yet whole (see grantExtraTurn). */
+  pendingExtraTurns = 0;
+  /**
+   * Panel stats read by kits or the engine while the battle ran. Optimizer
+   * timeline caches key on these besides SPD and Energy Regeneration Rate.
+   */
+  readonly statReads = new Set<string>();
   /** Computed SPD for engine-owned units such as Aha. */
   speedFunction: (() => number) | null = null;
   /** Certified Banger states: values sum, durations are independent. */
@@ -187,44 +205,62 @@ export class CombatUnit implements UnitView {
     return this.kind === "summon" && this.owner ? this.owner : this;
   }
 
+  get actionGauge(): number {
+    return this.distance;
+  }
+
   get speed(): number {
     if (this.speedFunction) return this.speedFunction();
-    if (this.fixedSpeed !== null) return this.fixedSpeed;
+    if (this.fixedSpeed !== null) {
+      // Summons, countdowns, and enemies ignore team auras, but statuses
+      // applied to them (SPD buffs on a summon, Slow on an enemy) apply.
+      const pct = this.statusStat("spdPct", false);
+      const flat = this.statusStat("spdFlat", false);
+      return Math.max(1, this.fixedSpeed * (1 + pct) + flat);
+    }
+    const pct = this.statusStat("spdPct", true);
+    const flat = this.statusStat("spdFlat", true);
     if (this.speedRule && this.owner) {
       return (
         this.owner.speed * this.speedRule.ownerRatio +
         this.speedRule.flat +
-        this.statusStat("spdFlat")
+        flat
       );
     }
     const vector = this.panel.slice();
-    for (const status of this.statuses.values()) {
-      for (const modifier of status.modifiers()) {
-        const { stat } = modifier.def;
-        if (
-          (stat === "spdPct" || stat === "spdFlat") &&
-          !modifier.def.filter &&
-          !modifier.def.scaling
-        ) {
-          combineStat(vector, stat, (modifier.def.value ?? 0) * modifier.scale);
-        }
-      }
-    }
-    return finalStat(vector, "spd");
+    combineStat(vector, "spdPct", pct);
+    combineStat(vector, "spdFlat", flat);
+    return Math.max(1, finalStat(vector, "spd"));
   }
 
-  /** Sum of a stat from unfiltered, non-scaling statuses. */
-  private statusStat(stat: CombatStat): number {
+  /**
+   * Sum of a stat from unfiltered, non-scaling statuses and permanent team
+   * modifiers. A debuff applied with a base chance counts with that chance
+   * (Effect Hit Rate is not read here, so timelines never depend on it).
+   */
+  private statusStat(stat: CombatStat, withTeamAuras: boolean): number {
     let total = 0;
     for (const status of this.statuses.values()) {
+      if (status.stacks <= 0) continue;
+      const chance = Math.min(1, status.baseChance ?? 1);
       for (const modifier of status.modifiers()) {
         if (
           modifier.def.stat === stat &&
           !modifier.def.filter &&
           !modifier.def.scaling
         ) {
-          total += (modifier.def.value ?? 0) * modifier.scale;
+          total += (modifier.def.value ?? 0) * modifier.scale * chance;
         }
+      }
+    }
+    if (!withTeamAuras) return total;
+    for (const modifier of this.conditional) {
+      if (
+        modifier.def.stat === stat &&
+        !modifier.def.filter &&
+        !modifier.def.scaling
+      ) {
+        total += (modifier.def.value ?? 0) * modifier.scale;
       }
     }
     return total;
@@ -250,6 +286,24 @@ export class CombatUnit implements UnitView {
     return this.stacks(def, applier) > 0;
   }
 
+  hasFamily(family: StatusFamily): boolean {
+    for (const status of this.statuses.values()) {
+      if (status.def.family === family && status.stacks > 0) return true;
+    }
+    return false;
+  }
+
+  /** Status IDs and `family:<name>` entries, for hit-time snapshots. */
+  statusSignature(): string[] {
+    const entries = new Set<string>();
+    for (const status of this.statuses.values()) {
+      if (status.stacks <= 0) continue;
+      entries.add(status.def.id);
+      if (status.def.family) entries.add(`family:${status.def.family}`);
+    }
+    return [...entries].sort();
+  }
+
   debuffCount(): number {
     let count = 0;
     for (const status of this.statuses.values()) {
@@ -259,6 +313,7 @@ export class CombatUnit implements UnitView {
   }
 
   panelStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number {
+    this.statReads.add(stat);
     if (stat === "hp" || stat === "atk" || stat === "def" || stat === "spd") {
       return finalStat(this.panel, stat);
     }
@@ -306,6 +361,8 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
   maxToughness: number;
   broken = false;
   readonly weaknesses: Set<CombatType>;
+  /** Implanted Weaknesses with remaining enemy turns (null: permanent). */
+  readonly implants = new Map<CombatType, number | null>();
   readonly resistance: number;
   readonly weakResistance: number;
   readonly enemyLevel: number;

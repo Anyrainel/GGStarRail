@@ -77,28 +77,40 @@ export interface HitGroup {
     resReduction: number;
     mitigation: number;
   };
-  /** Incoming modifiers from debuffs whose landing chance needs EHR. */
+  /**
+   * Incoming modifiers resolved per evaluation: debuffs whose landing chance
+   * needs the applier's Effect Hit Rate, and values scaling with the
+   * applier's stats.
+   */
   readonly incomingChance: readonly ChanceModifier[];
 }
 
+type IncomingStat =
+  | "vulnerability"
+  | "defReduction"
+  | "resReduction"
+  | "dmgMitigation";
+
 interface ChanceModifier {
-  stat: "vulnerability" | "defReduction" | "resReduction" | "dmgMitigation";
+  stat: IncomingStat;
   value: number;
-  base: number;
+  /** Null when the modifier always applies. */
+  base: number | null;
   applierId: string;
+  scaling?: StatScaling;
 }
 
-function descriptor(
-  record: HitRecord,
-  attacker: CombatUnit,
-  target: EnemyUnit | undefined
-): HitDescriptor {
+function descriptor(record: HitRecord, attacker: CombatUnit): HitDescriptor {
   return {
     tags: record.tags,
     kind: record.kind,
     combatType: record.combatType,
     attackerKind: attacker.kind,
-    targetWeaknesses: target?.weaknesses ?? new Set(),
+    role: record.role,
+    targetWeaknesses: new Set(record.targetWeaknesses),
+    targetStatuses: new Set(record.targetStatuses),
+    targetDebuffs: record.targetDebuffs,
+    targetBroken: record.targetBroken,
   };
 }
 
@@ -112,11 +124,17 @@ function groupKey(record: HitRecord): string {
     record.attackerId,
     record.statUnitId,
     record.scalingUnitId,
+    record.abilityId,
+    record.origin,
+    record.role,
     record.kind,
     record.combatType,
     record.tags.join("+"),
     record.targetId,
     record.targetBroken ? 1 : 0,
+    record.targetWeaknesses.join("+"),
+    record.targetStatuses.join("+"),
+    record.targetDebuffs,
     hit.stat ?? "atk",
     hit.critOverride
       ? `${hit.critOverride.critRate}/${hit.critOverride.critDmg}`
@@ -168,7 +186,7 @@ export class DamageModel {
     const attacker =
       this.units.get(sample.attackerId) ?? this.unit(sample.statUnitId);
     const statUnit = this.unit(sample.statUnitId);
-    const hit = descriptor(sample, attacker, this.enemies.get(sample.targetId));
+    const hit = descriptor(sample, attacker);
     const constant: { stat: CombatStat; value: number }[] = [];
     const scaling: ScalingModifier[] = [];
     const outgoing = [...statUnit.conditional, ...sample.attackerModifiers];
@@ -208,12 +226,20 @@ export class DamageModel {
       if (!INCOMING_STATS.has(def.stat)) continue;
       if (!modifierApplies(def.stat, def.filter, hit)) continue;
       const value = (def.value ?? 0) * modifier.scale;
-      if (modifier.chance) {
+      if (modifier.chance || def.scaling) {
         incomingChance.push({
-          stat: def.stat as ChanceModifier["stat"],
+          stat: def.stat as IncomingStat,
           value,
-          base: modifier.chance.base,
-          applierId: modifier.chance.applierId,
+          base: modifier.chance?.base ?? null,
+          applierId: modifier.chance?.applierId ?? modifier.applierId,
+          ...(def.scaling
+            ? {
+                scaling: {
+                  ...def.scaling,
+                  ratio: def.scaling.ratio * modifier.scale,
+                },
+              }
+            : {}),
         });
         continue;
       }
@@ -322,9 +348,28 @@ export class DamageModel {
     if (!target) return 0;
     const incoming = { ...group.incoming };
     for (const modifier of group.incomingChance) {
-      const value =
-        modifier.value *
-        this.landingChance(panels, modifier.base, modifier.applierId, target);
+      let value = modifier.value;
+      if (modifier.scaling) {
+        // Incoming values scale with the applier's stats (the holder is
+        // an enemy without a panel of its own).
+        const applier = this.unit(modifier.applierId);
+        value += scaledValue(
+          readScalingInput(
+            this.panelOf(panels, modifier.applierId),
+            applier,
+            modifier.scaling
+          ),
+          modifier.scaling
+        );
+      }
+      if (modifier.base !== null) {
+        value *= this.landingChance(
+          panels,
+          modifier.base,
+          modifier.applierId,
+          target
+        );
+      }
       if (modifier.stat === "dmgMitigation") {
         incoming.mitigation = 1 - (1 - incoming.mitigation) * (1 - value);
       } else {
