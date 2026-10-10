@@ -6,28 +6,21 @@ import { defineLightCone } from "../../kit/equipment";
  * applied from catalog properties.
  */
 export default defineLightCone("23062", (k) => {
-  // Energy consumed is read as the wearer's max Energy: Ultimates with
-  // another cost (Yunli, Phainon) are not distinguished.
+  // One stack per Energy the Ultimate consumed (none when paid from a
+  // counter), up to #6 in total.
   const atWill = k.status({
     id: "at-will",
     origin: "lightCone",
+    maxStacks: k.s(6) / k.s(3),
     modifiers: [
-      {
-        stat: "dmgBoost",
-        filter: { tags: ["ultimate"] },
-        scaling: {
-          source: "holder",
-          stat: "maxEnergy",
-          ratio: k.s(3),
-          cap: k.s(6),
-        },
-      },
+      { stat: "dmgBoost", value: k.s(3), filter: { tags: ["ultimate"] } },
     ],
   });
   const ultimate = { abilityKinds: ["ultimate"] } as const;
-  k.on("actionStart", "lightCone", ultimate, (ctx) =>
-    ctx.applyStatus(ctx.self, atWill)
-  );
+  k.on("actionStart", "lightCone", ultimate, (ctx, event) => {
+    const spent = event.energySpent ?? 0;
+    if (spent > 1e-9) ctx.applyStatus(ctx.self, atWill, { setStacks: spent });
+  });
   k.on("actionEnd", "lightCone", ultimate, (ctx) =>
     ctx.removeStatus(ctx.self, atWill)
   );
@@ -46,4 +39,34 @@ export default defineLightCone("23062", (k) => {
   };
   k.on("battleStart", "lightCone", { subject: "any" }, entertain);
   k.on("actionStart", "lightCone", ultimate, entertain);
+  // An aura of the wearer's state: a memosprite summoned while the wearer
+  // holds it joins it, and every copy ends with the wearer's.
+  k.on(
+    "statusRemoved",
+    "lightCone",
+    {
+      status: kingsEntertainment,
+      when: (event, self) => event.target === self,
+    },
+    (ctx) => {
+      for (const ally of ctx.allies) {
+        if (ally !== ctx.self && ally.has(kingsEntertainment, ctx.self)) {
+          ctx.removeStatus(ally, kingsEntertainment);
+        }
+      }
+    }
+  );
+  k.on(
+    "summoned",
+    "lightCone",
+    {
+      subject: "ally",
+      when: (event, self) =>
+        event.unit.kind === "memosprite" && self.has(kingsEntertainment, self),
+    },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(kingsEntertainment, ctx.self);
+      if (turns) ctx.applyStatus(event.unit, kingsEntertainment, { turns });
+    }
+  );
 });

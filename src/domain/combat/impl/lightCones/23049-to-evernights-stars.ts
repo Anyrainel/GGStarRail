@@ -41,29 +41,16 @@ export default defineLightCone("23049", (k) => {
     if (!ctx.self.has(noctis)) ctx.applyStatus(ctx.self, noctis);
     sync(ctx);
   });
-  k.on("actionStart", "lightCone", { subject: "any" }, sync);
-
-  // "When the memosprite disappears" is checked at turn and action
-  // boundaries (there is no dismissal event).
-  const PRESENT = "lc23049:present";
-  const checkDeparture = (ctx: BattleApi) => {
-    const present = ctx.allies.some(
-      (unit) => unit.kind === "memosprite" && unit.owner === ctx.self
-    )
-      ? 1
-      : 0;
-    const was = ctx.self.counter(PRESENT);
-    ctx.setCounter(ctx.self, PRESENT, present);
-    if (was === 1 && present === 0 && ctx.self.has(noctis)) {
-      ctx.gainEnergy(ctx.self, k.s(4));
-    }
-  };
-  for (const event of [
-    "turnStart",
-    "turnEnd",
-    "actionStart",
-    "actionEnd",
-  ] as const) {
-    k.on(event, "lightCone", { subject: "any" }, checkDeparture);
-  }
+  k.on(
+    "summoned",
+    "lightCone",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    sync
+  );
+  k.on(
+    "departed",
+    "lightCone",
+    { subject: "memosprite", when: (_event, self) => self.has(noctis) },
+    (ctx) => ctx.gainEnergy(ctx.self, k.s(4))
+  );
 });

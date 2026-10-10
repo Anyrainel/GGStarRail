@@ -15,32 +15,20 @@ export default defineLightCone("24006", (k) => {
   const isAllyCharacter = (unit: UnitView | undefined): unit is UnitView =>
     unit !== undefined && !isEnemy(unit) && unit.kind === "character";
 
-  // An ally target is known only when the turn policy names one. Otherwise
-  // a Skill or Ultimate that does not attack enemies is "on one ally
-  // character" when the statuses the wearer applies during it reach exactly
-  // one other Character (as A Grounded Ascent).
-  let recipients: Set<UnitView> | null = null;
-  const abilities = { abilityKinds: ["skill", "ultimate"] } as const;
-  k.on("actionStart", "lightCone", abilities, () => {
-    recipients = new Set();
-  });
-  k.on("statusApplied", "lightCone", {}, (ctx, event) => {
-    if (
-      recipients &&
-      isAllyCharacter(event.target) &&
-      event.target !== ctx.self
-    ) {
-      recipients.add(event.target);
+  // "On one ally character" (我方单体角色): a Skill or Ultimate aimed at one
+  // ally, whose target is a Character.
+  k.on(
+    "actionEnd",
+    "lightCone",
+    {
+      abilityKinds: ["skill", "ultimate"],
+      when: (event) =>
+        event.abilityTarget === "ally" && isAllyCharacter(event.target),
+    },
+    (ctx, event) => {
+      if (isAllyCharacter(event.target)) {
+        ctx.applyStatus(event.target, opening);
+      }
     }
-  });
-  k.on("actionEnd", "lightCone", abilities, (ctx, event) => {
-    const reached = recipients ? [...recipients] : [];
-    recipients = null;
-    const target = isAllyCharacter(event.target)
-      ? event.target
-      : !event.attack && reached.length === 1
-        ? reached[0]
-        : undefined;
-    if (target) ctx.applyStatus(target, opening);
-  });
+  );
 });

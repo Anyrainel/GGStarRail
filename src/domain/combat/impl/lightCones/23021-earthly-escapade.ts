@@ -1,4 +1,4 @@
-import type { BattleApi } from "../../kit/api";
+import type { BattleApi, BattleEvent } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /** Earthly Escapade — Harmony. CRIT DMG is applied from catalog properties. */
@@ -27,15 +27,38 @@ export default defineLightCone("23021", (k) => {
   k.on("battleStart", "lightCone", { subject: "any" }, (ctx) =>
     gainMask(ctx, k.s(6))
   );
+  // An aura of Mask: a memosprite summoned while it lasts joins it, and
+  // every copy ends with Mask.
+  k.on("statusRemoved", "lightCone", { status: mask }, (ctx) => {
+    for (const ally of ctx.allies) {
+      if (ally.has(maskTeammates, ctx.self)) {
+        ctx.removeStatus(ally, maskTeammates);
+      }
+    }
+  });
+  k.on(
+    "summoned",
+    "lightCone",
+    {
+      subject: "otherAlly",
+      when: (event, self) => event.unit.kind === "memosprite" && self.has(mask),
+    },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(mask);
+      if (turns) ctx.applyStatus(event.unit, maskTeammates, { turns });
+    }
+  );
 
-  // Skill Points lost to the cap are not reported by the engine (tracked).
+  // Skill Points recovered beyond the cap count too.
   const RADIANT_FLAME = "earthly-escapade-radiant-flame";
+  const recovered = (event: BattleEvent) =>
+    Math.max(0, event.delta ?? 0) + (event.overflow ?? 0);
   k.on(
     "skillPointsChanged",
     "lightCone",
-    { when: (event) => (event.delta ?? 0) > 0 },
+    { when: (event) => recovered(event) > 1e-9 },
     (ctx, event) => {
-      const stacks = ctx.self.counter(RADIANT_FLAME) + (event.delta ?? 0);
+      const stacks = ctx.self.counter(RADIANT_FLAME) + recovered(event);
       const threshold = k.s(4);
       if (stacks + 1e-9 < threshold) {
         ctx.setCounter(ctx.self, RADIANT_FLAME, stacks);

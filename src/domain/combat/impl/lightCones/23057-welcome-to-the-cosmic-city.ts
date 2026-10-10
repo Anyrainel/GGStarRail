@@ -1,4 +1,3 @@
-import { isEnemy, type UnitView } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /**
@@ -17,34 +16,24 @@ export default defineLightCone("23057", (k) => {
   const SPENT = "welcome-to-the-cosmic-city-spent";
   const BASICS = "welcome-to-the-cosmic-city-basics";
 
-  // Ultimates carry no target unless the policy names one: an Ultimate is
-  // "on themselves" when it does not attack enemies and the statuses the
-  // wearer applies during it reach the wearer and no other Character.
-  let recipients: Set<UnitView> | null = null;
-  const ultimate = { abilityKinds: ["ultimate"] } as const;
-  k.on("actionStart", "lightCone", ultimate, () => {
-    recipients = new Set();
-  });
-  k.on("statusApplied", "lightCone", {}, (_ctx, event) => {
-    if (recipients && event.target && !isEnemy(event.target)) {
-      recipients.add(event.target);
+  // "On themselves" (对自身单体): an Ultimate aimed at the wearer, declared
+  // as such or aimed at one ally that is the wearer.
+  k.on(
+    "actionStart",
+    "lightCone",
+    {
+      abilityKinds: ["ultimate"],
+      when: (event, self) =>
+        self.counter(SPENT) <= 0.5 &&
+        (event.abilityTarget === "self" ||
+          (event.abilityTarget === "ally" && event.target === self)),
+    },
+    (ctx) => {
+      ctx.addTeamResource("punchline", k.s(3));
+      ctx.setCounter(ctx.self, SPENT, 1);
+      ctx.setCounter(ctx.self, BASICS, 0);
     }
-  });
-  k.on("actionEnd", "lightCone", ultimate, (ctx, event) => {
-    const reached = recipients ? [...recipients] : [];
-    recipients = null;
-    const onSelf =
-      event.target === ctx.self ||
-      (!event.attack &&
-        reached.includes(ctx.self) &&
-        reached.every(
-          (unit) => unit === ctx.self || unit.kind !== "character"
-        ));
-    if (!onSelf || ctx.self.counter(SPENT) > 0.5) return;
-    ctx.addTeamResource("punchline", k.s(3));
-    ctx.setCounter(ctx.self, SPENT, 1);
-    ctx.setCounter(ctx.self, BASICS, 0);
-  });
+  );
   k.on(
     "actionEnd",
     "lightCone",

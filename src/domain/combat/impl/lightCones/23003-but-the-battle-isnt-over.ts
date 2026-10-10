@@ -1,3 +1,4 @@
+import type { UnitView } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /**
@@ -6,16 +7,22 @@ import { defineLightCone } from "../../kit/equipment";
  */
 export default defineLightCone("23003", (k) => {
   // "1 Skill Point" and "once after every 2 uses" have no placeholders. The
-  // first Ultimate triggers it, then every second one.
+  // first Ultimate triggers it, then every second one (every Ultimate counts
+  // toward the 2 uses).
   const ULTIMATE_COOLDOWN = "but-the-battle-isnt-over-cooldown";
   const usesPerTrigger = 2;
-  // An Ultimate "on an ally" is one that does not attack enemies.
+  // "On an ally" (对我方目标): an Ultimate aimed at one ally, all allies, or
+  // the wearer.
   k.on(
     "actionEnd",
     "lightCone",
     { abilityKinds: ["ultimate"] },
     (ctx, event) => {
-      if (!event.attack && ctx.self.counter(ULTIMATE_COOLDOWN) <= 1e-9) {
+      const onAlly =
+        event.abilityTarget === "ally" ||
+        event.abilityTarget === "allies" ||
+        event.abilityTarget === "self";
+      if (onAlly && ctx.self.counter(ULTIMATE_COOLDOWN) <= 1e-9) {
         ctx.gainSkillPoints(1);
         ctx.setCounter(ctx.self, ULTIMATE_COOLDOWN, usesPerTrigger);
       }
@@ -23,45 +30,27 @@ export default defineLightCone("23003", (k) => {
     }
   );
 
+  // Copies from several wearers do not stack, like equipment team auras.
   const heir = k.status({
     id: "but-the-battle-isnt-over",
     origin: "lightCone",
+    duration: { turns: k.s(3) },
     modifiers: [{ stat: "dmgBoost", value: k.s(2) }],
+    unique: true,
   });
-  const PENDING = "but-the-battle-isnt-over-pending";
-  const TURNS = "but-the-battle-isnt-over-turns";
-  k.on("actionStart", "lightCone", { abilityKinds: ["skill"] }, (ctx) =>
-    ctx.setCounter(ctx.self, PENDING, 1)
-  );
-  // The next teammate turn (memosprites included, stat-less summons not)
-  // receives the buff for #3 of its own turns, counting this one.
-  k.on(
-    "turnStart",
-    "lightCone",
-    {
-      subject: "otherAlly",
-      when: (event, self) =>
-        self.counter(PENDING) > 0 &&
-        (event.unit.kind === "character" || event.unit.kind === "memosprite"),
-    },
-    (ctx, event) => {
-      ctx.setCounter(ctx.self, PENDING, 0);
-      ctx.applyStatus(event.unit, heir);
-      ctx.setCounter(event.unit, TURNS, 0);
-    }
-  );
-  k.on(
-    "turnEnd",
-    "lightCone",
-    {
-      subject: "otherAlly",
-      when: (event, self) => event.unit.has(heir, self),
-    },
-    (ctx, event) => {
-      ctx.addCounter(event.unit, TURNS, 1);
-      if (event.unit.counter(TURNS) + 1e-9 >= k.s(3)) {
-        ctx.removeStatus(event.unit, heir);
+  // The next ally is read from the Action Order after the Skill resolves
+  // (as Past and Future), so an ally the Skill advanced receives it.
+  k.on("actionEnd", "lightCone", { abilityKinds: ["skill"] }, (ctx) => {
+    let next: UnitView | null = null;
+    for (const ally of ctx.allies) {
+      if (ally === ctx.self || !ally.inActionOrder) continue;
+      if (
+        !next ||
+        ally.actionGauge / ally.speed < next.actionGauge / next.speed - 1e-9
+      ) {
+        next = ally;
       }
     }
-  );
+    if (next) ctx.applyStatus(next, heir);
+  });
 });

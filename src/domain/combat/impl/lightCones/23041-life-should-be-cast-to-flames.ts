@@ -27,10 +27,9 @@ function weaknessBits(enemy: EnemyView): number {
 export default defineLightCone("23041", (k) => {
   k.on("turnStart", "lightCone", {}, (ctx) => ctx.gainEnergy(ctx.self, k.s(5)));
 
-  // Implants do not record who added them: Weaknesses that appear on an
-  // enemy during the wearer's own actions are read as the wearer's and mark
-  // the enemy until they are gone. Counters live on the enemy, keyed by the
-  // wearer. Tracker: life-should-be-cast-to-flames-implanter.
+  // Enemies holding a Weakness the wearer implanted carry a marker, with the
+  // implanted Combat Types in a counter keyed by the wearer. Implants that
+  // expired or were removed are dropped before each of the wearer's actions.
   const implanted = k.status({
     id: "life-should-be-cast-to-flames-implant",
     origin: "lightCone",
@@ -40,33 +39,27 @@ export default defineLightCone("23041", (k) => {
     value: k.s(3),
     filter: { targetStatuses: [implanted.id] },
   });
-  const beforeKey = (ctx: BattleApi) => `lc23041:${ctx.self.id}:before`;
   const ownKey = (ctx: BattleApi) => `lc23041:${ctx.self.id}:implanted`;
-  const detect = (ctx: BattleApi, enemy: EnemyView) => {
-    const added = weaknessBits(enemy) & ~enemy.counter(beforeKey(ctx));
-    if (added === 0) return;
-    ctx.setCounter(enemy, ownKey(ctx), enemy.counter(ownKey(ctx)) | added);
-    ctx.setCounter(enemy, beforeKey(ctx), weaknessBits(enemy));
+  k.on("weaknessImplanted", "lightCone", {}, (ctx, event) => {
+    const enemy = event.target;
+    const index = event.combatType
+      ? COMBAT_TYPES.indexOf(event.combatType)
+      : -1;
+    if (!isEnemy(enemy) || index < 0) return;
+    ctx.setCounter(
+      enemy,
+      ownKey(ctx),
+      enemy.counter(ownKey(ctx)) | (1 << index)
+    );
     ctx.applyStatus(enemy, implanted);
-  };
+  });
   k.on("actionStart", "lightCone", {}, (ctx) => {
     for (const enemy of ctx.enemies) {
-      const current = weaknessBits(enemy);
-      const own = enemy.counter(ownKey(ctx)) & current;
+      if (!enemy.has(implanted, ctx.self)) continue;
+      const own = enemy.counter(ownKey(ctx)) & weaknessBits(enemy);
       ctx.setCounter(enemy, ownKey(ctx), own);
-      if (own === 0 && enemy.has(implanted)) {
-        ctx.removeStatus(enemy, implanted);
-      }
-      ctx.setCounter(enemy, beforeKey(ctx), current);
+      if (own === 0) ctx.removeStatus(enemy, implanted);
     }
-  });
-  // Character listeners run first, so an implant made on a hit is seen by
-  // that hit's event and boosts the following hits.
-  k.on("hit", "lightCone", {}, (ctx, event) => {
-    if (isEnemy(event.target)) detect(ctx, event.target);
-  });
-  k.on("actionEnd", "lightCone", {}, (ctx) => {
-    for (const enemy of ctx.enemies) detect(ctx, enemy);
   });
 
   const smelt = k.status({

@@ -28,23 +28,20 @@
 - id: mutual-demise-own-hp
   entity: "20016"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Mutual Demise's CRIT Rate below 80% HP is an off-by-default toggle (U8
     table) for the whole battle, because HP is not simulated; HP-consuming
     wearers such as Blade usually stay below 80%.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    self-hp-below toggle. Hold the CRIT Rate (#2) as a status on the
-    wearer synced from hpChanged (subject self): present while
-    self.hpRatio < #1, removed otherwise. HP starts full, so it starts off
-    and turns on once HP costs (Blade, Arlan, Mydei, Firefly calling
-    consumeHp) or enemy attacks bring the wearer below #1.
+    Removed the self-hp-below toggle. The CRIT Rate (#2) is a status on the
+    wearer synced on its own hpChanged: present while hpRatio < #1. It
+    starts off (HP starts full) and turns on once enemy attacks or HP costs
+    bring the wearer below #1 (checked with a scratch wearer whose Skill
+    consumes 30%). Blade, Arlan, Mydei, and Firefly reach it through their
+    own costs only once their kits call consumeHp; until then only enemy
+    attacks lower their HP.
 - id: a-secret-vow-hp-compare
   entity: "21012"
   rule: U12
@@ -62,7 +59,7 @@
 - id: flames-afar-hp-loss
   entity: "21038"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Flames Afar's trigger (one HP loss or consumption above 25% of Max HP) is
@@ -71,24 +68,17 @@
     fires for wearers without such HP costs. With the toggle off it never
     fires, even after large enemy hits.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the hp-loss
-    toggle. Listen to hpChanged (subject self, hpCause consume) and
-    trigger when one consumption removes more than #1 of Max HP
-    (-event.delta > #1) while off cooldown: apply Deflagration and the
-    cooldown as now, and heal the wearer with ctx.heal(self, #3). Enemy
-    attacks remove 10% of Max HP split by aggro, so the 'cumulative loss
-    during one attack' branch never reaches #1 and needs no listener. It
-    triggers once Blade (Skill, 30%), Firefly (Skill, 40%), and Mydei
-    (Skill, 50% of current HP) call ctx.consumeHp before their hits
-    (Character triage).
+    Removed the hp-loss toggle. hpChanged (subject self, hpCause consume)
+    with -delta > #1 while off cooldown heals the wearer #3 of Max HP (times
+    1 + Outgoing Healing, U12), applies Deflagration (stacks = weight) and
+    the #5-turn cooldown. Enemy attacks are not listened to. Checked with a
+    scratch wearer whose Skill consumes 30%; with Blade, Firefly, and Mydei
+    it fires once their kits call consumeHp (Blade's does not yet, so it
+    currently never fires there).
 - id: ninja-record-hp-change
   entity: "22003"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Ninja Record: Sound Hunt triggers from enemy hits on the wearer
@@ -96,15 +86,12 @@
     for the wearer's own HP costs and allies' healing by triggering at each
     of its actions, so the CRIT DMG is effectively permanent by default.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    hp-changes toggle and its every-action trigger. Grant Curtains Up!
-    (limitPerTurn 1) from hpChanged (subject self) with hpCause consume or
-    heal, and keep hitByEnemy (stacks = weight) for enemy hits. Costs and
-    heals arrive once Character kits call consumeHp and heal.
+    Removed the hp-changes toggle and its every-action trigger. Curtains Up!
+    (stacks = weight) comes from hitByEnemy and from hpChanged (subject
+    self) with hpCause consume or heal, each with limitPerTurn 1; a second
+    trigger in one turn only refreshes it (1 stack max). Checked with a
+    scratch wearer that consumes and heals; costs and heals from Character
+    kits arrive as those kits call consumeHp and heal.
 
 - id: mediation-unique-strongest
   entity: "20019"
@@ -144,7 +131,7 @@
 - id: final-victor-crit-stacks
   entity: "21037"
   rule: U9
-  status: open
+  status: completed
   category: approximation
   summary: >
     Good Fortune is gained in expectation: each hit event (every damage
@@ -153,11 +140,10 @@
     4-stack cap applies to the expected sum, and per-target counting on
     Blast/AoE hits is assumed.
   detail: >
-    Blocked on engine-momentary-stat-read. Once it exists, read the
-    wearer's CRIT Rate with its statuses at each hit instead of panelStat.
-    The rest is the expected-value CRIT model (each damage instance on
-    each enemy adds its CRIT chance in stacks); fribbels models Good
-    Fortune as a 0-4 stack slider, default 4.
+    Each hit now adds the wearer's currentStat('critRate') (timed statuses
+    included) in stacks instead of the panel CRIT Rate. Filtered and scaling
+    CRIT Rate modifiers are still left out (currentStat excludes them); the
+    rest of the expected-value model is unchanged.
 - id: swordplay-stack-timing
   entity: "21010"
   rule: U6
@@ -175,40 +161,42 @@
 - id: shadowed-by-night-super-break
   entity: "21047"
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     The SPD buff triggers on the wearer's Weakness Breaks, Break-tagged
     procs, and Break DoT ticks, but Super Break DMG emits no event, so Super
     Break DMG dealt by the wearer does not trigger it.
   detail: >
-    Blocked on engine-super-break-event. Once it exists, grant Concealment
-    (limitPerTurn 1) when the wearer deals Super Break DMG, like its other
-    Break DMG triggers.
+    breakDamage (limitPerTurn 1) replaces the weaknessBreak listener and
+    covers Weakness Break and Super Break DMG; the Break-tagged hit and
+    Break DoT listeners stay for procs and ticks. breakDamage also fires for
+    Toughness reduced on Broken enemies by attackers with no Super Break
+    conversion (which deals no DMG; engine-break-damage-no-conversion), so a
+    Super Break event counts only while the wearer's
+    currentStat('superBreakDmg') > 0 (checked: Boothill with Harmony
+    Trailblazer triggers, Seele alone does not). currentStat leaves out
+    filtered and scaling conversions (Rappa, Firefly, The Dahlia's
+    Follow-up), none of which reach a Hunt wearer.
 - id: but-the-battle-isnt-over-sp-timing
   entity: "23003"
   rule: U10
-  status: actionable
+  status: completed
   category: verify
   summary: >
     The Skill Point fires on the 1st, 3rd, 5th... Ultimate ("once after every
     2 uses"), and only for Ultimates that attack no enemy (read as "on an
     ally"). Verify whether the game recovers it on the 2nd, 4th... use instead.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Replace the !event.attack test with abilityTarget
-    ally, allies, or self on the wearer's Ultimate. The timing reading
-    stays: the first, third, fifth... Ultimate recovers the Skill Point,
-    like other 'once every N' effects that start available (not confirmed
-    in game; fribbels does not model it).
+    The Skill Point needs the wearer's Ultimate to be aimed at an ally
+    (abilityTarget ally, allies, or self); the !event.attack test is gone.
+    Timing reading kept: the first, third, fifth... Ultimate recovers it,
+    and every Ultimate counts toward the 2 uses. Checked with Sunday, whose
+    Ultimate names an ally, and a scratch Harmony wearer.
 - id: but-the-battle-isnt-over-next-ally
   entity: "23003"
   rule: U8
-  status: actionable
+  status: completed
   category: verify
   summary: >
     The DMG buff goes to the next teammate (Character or memosprite) whose
@@ -216,43 +204,41 @@
     turn; Ultimates cast in between do not count as "taking action". Past and
     Future (21025) instead predicts the next ally from the Action Order.
   detail: >
-    Convention (next ally): 'the next ally taking action' is predicted
-    from the Action Order when the wearer's Skill ends (after the Skill's
-    own advances), among Characters and memosprites other than the wearer,
-    and receives the buff at once. Do it as Past and Future (21025) does:
-    at the end of the wearer's Skill, pick the ally with the smallest
-    actionGauge / speed among Characters and memosprites in the Action
-    Order, and apply the buff with duration { turns: #3 } and unique:
-    true. Drop the pending counter and the turn counting. The open check
-    is past-and-future-next-ally.
+    As Past and Future: at the end of the wearer's Skill, the ally in the
+    Action Order (Character or memosprite, not the wearer) with the smallest
+    actionGauge / speed receives the buff at once, with duration { turns: #3
+    } and unique: true. The pending counter and turn counting are gone.
+    Checked with Sunday (his Skill makes its target act at once, so it holds
+    the buff for that turn) and a scratch wearer (Robin, Kafka, and a
+    memosprite each held it until the end of their next turn). The open
+    check is past-and-future-next-ally.
 - id: earthly-escapade-sp-overflow
   entity: "23021"
   rule: U10
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Radiant Flame counts "Skill Points that exceed the limit", but
     skillPointsChanged reports the change after the cap, so Skill Points the
     wearer recovers at the cap give no stacks.
   detail: >
-    Blocked on engine-skill-point-overflow. Once gains report the Skill
-    Points lost to the cap, count them toward Radiant Flame.
+    Radiant Flame counts delta + overflow of the wearer's skillPointsChanged
+    gains (85ed2c2), so Skill Points recovered at the cap give stacks.
 - id: earthly-escapade-late-memosprites
   entity: "23021"
   rule: U3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Mask's teammate CRIT buff is a status applied when Mask is gained, so a
     memosprite summoned while Mask is active lacks it until the next Mask.
   detail: >
-    Convention (late memosprites): an aura tied to the wearer's state
-    ('while the wearer holds X, allies get Y') reaches a memosprite
-    summoned during it; a timed buff applied once to all allies reaches
-    only the allies present then. Mask is such an aura ('while the wearer
-    has Mask, teammates...'). Listen to summoned (subject ally, unit.kind
-    memosprite) and, while the wearer has Mask, apply the teammate status
-    to the new memosprite with turns: self.remainingTurns(mask).
+    A memosprite summoned (summoned, subject otherAlly) while the wearer has
+    Mask receives the teammate status with turns = the wearer's
+    remainingTurns(mask). statusRemoved of Mask removes every teammate copy,
+    so a copy applied during the wearer's own turn cannot outlast Mask.
+    Checked with a scratch Harmony wearer that summons a memosprite during
+    Mask.
 - id: flowing-nightglow-concerto-atk
   entity: "23026"
   rule: U7
@@ -269,7 +255,7 @@
 - id: a-grounded-ascent-ultimate-target
   entity: "23034"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Ultimates carry no ally target, so an Ultimate counts as "on one ally
@@ -277,37 +263,30 @@
     one other Character; that Character receives Hymn. Skills use the turn
     choice's ally target.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Use abilityTarget === 'ally' with event.target an
-    ally Character for both the Skill and the Ultimate, and give Hymn to
-    event.target; drop the statusApplied recipient heuristic. Ultimates
-    aimed inside the kit only name their ally once those Character kits
-    return { ability, target } from their policies (filed as
-    <name>-ally-target-event items; Sunday: sunday-ultimate-target).
+    Skill and Ultimate trigger at actionEnd when abilityTarget is 'ally' and
+    event.target is an ally Character, which receives Hymn; the
+    statusApplied recipient heuristic is gone. Checked with Sunday (Skill
+    and Ultimate both name Kafka: Hymn stacks, Energy, a Skill Point every 2
+    uses). Character kits whose ally-targeted Ultimate does not name its
+    ally (their <name>-ally-target-event items) do not trigger it.
 - id: if-time-were-a-flower-late-memosprites
   entity: "23038"
   rule: U3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Presage's CRIT DMG for all ally targets is a status applied when Presage is
     gained, so a memosprite summoned while Presage is active lacks it until
     the wearer's next Follow-up ATK.
   detail: >
-    Convention (late memosprites): an aura tied to the wearer's state
-    ('while the wearer holds X, allies get Y') reaches a memosprite
-    summoned during it; a timed buff applied once to all allies reaches
-    only the allies present then. Presage is such an aura. On summoned of
-    an ally memosprite while the wearer has Presage, apply the ally CRIT
-    DMG status with turns: self.remainingTurns(presage).
+    A memosprite summoned while the wearer has Presage receives the ally
+    CRIT DMG status with turns = the wearer's remainingTurns(presage), and
+    statusRemoved of Presage removes every ally copy. Checked with a scratch
+    Harmony wearer that summons a memosprite.
 - id: sleep-like-the-dead-crit-chance
   entity: "23012"
   rule: U9
-  status: open
+  status: completed
   category: approximation
   summary: >
     CRIT is an expected value, so the trigger chance of a Basic ATK or Skill
@@ -316,9 +295,10 @@
     per-target CRIT Rate of other effects are ignored); the buff is applied
     after the action rather than mid-action.
   detail: >
-    Blocked on engine-momentary-stat-read (CRIT Rate with statuses). The
-    rest is the expected-value CRIT model, with cooldown windows as
-    exclusive trigger chances.
+    The non-CRIT chance reads currentStat('critRate'), so timed CRIT Rate
+    statuses (Sweet Dreams' own expected stacks included) count. currentStat
+    still leaves out filtered and scaled CRIT Rate (per-target bonuses), and
+    the buff is applied after the action (engine-momentary-stat-read).
 - id: sleep-like-the-dead-trigger-scope
   entity: "23012"
   rule: U9
@@ -404,7 +384,7 @@
 - id: into-the-unreachable-veil-energy-cost
   entity: "23037"
   rule: U10
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Into the Unreachable Veil recovers a Skill Point when the Ultimate
@@ -413,13 +393,14 @@
     variants with a lower cost (Argenti's 90-Energy Ultimate) or paid from a
     counter still recover the Skill Point.
   detail: >
-    Blocked on engine-ultimate-energy-spent. Once Ultimate events carry
-    the Energy consumed, recover the Skill Point when it is at least #3
-    (Ultimates paid from a counter consume none).
+    The Skill Point needs the Ultimate's energySpent (85ed2c2) to be at
+    least #3; Ultimates paid from a counter consume 0. The build-time max
+    Energy check is gone. Checked with a scratch Erudition wearer (180
+    Energy).
 - id: life-should-be-cast-to-flames-implanter
   entity: "23041"
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Life Should Be Cast to Flames boosts DMG against enemies with a Weakness
@@ -428,10 +409,13 @@
     actions as the wearer's (a marker status on the enemy); implants made
     outside them (Anaxa's E2 at battle start) are missed.
   detail: >
-    Blocked on engine-weakness-implanted-event. Once implants emit an
-    event naming the implanter, mark each enemy and Combat Type the wearer
-    implants, filter the DMG bonus on those Weaknesses, and drop the
-    marker inferred from Weakness changes during the wearer's actions.
+    weaknessImplanted with the wearer as implanter records the Combat Type
+    on the enemy and marks it; Weaknesses that expired or were removed are
+    dropped before each of the wearer's actions. The inference from Weakness
+    changes during the wearer's actions is gone, so battle-start implants
+    (Anaxa's E2) count. A Weakness another unit implanted first emits no
+    event when the wearer refreshes it (engine-weakness-implanted-event).
+    Checked with a scratch implanter.
 - id: life-should-be-cast-to-flames-def-timing
   entity: "23041"
   rule: U8
@@ -487,31 +471,35 @@
 - id: boundless-choreo-def-reduced
   entity: "21044"
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     The engine cannot test whether a target's DEF is reduced, so the CRIT DMG
     bonus is an on-by-default toggle covering every target; with it off, only
     Slowed targets (status family) count.
   detail: >
-    Blocked on engine-def-reduced-state. Once a DEF-reduced target filter
-    exists, use it alongside the Slow family and drop the toggle.
+    Removed the def-reduced toggle. The CRIT DMG uses filter targetFamilies
+    ['slow', 'defReduced'] (either state). Like other target filters it sees
+    a base-chance DEF reduction as present.
 - id: before-the-tutorial-def-reduced
   entity: "22000"
   rule: U14
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Energy for attacking DEF-reduced enemies is an on-by-default toggle that
     triggers on every attack, because the engine cannot test whether a
     target's DEF is reduced.
   detail: >
-    Blocked on engine-def-reduced-state. Then regenerate #2 Energy after
-    attacks that hit a DEF-reduced enemy and drop the toggle.
+    Removed the def-reduced toggle. #2 Energy at actionEnd of each attack
+    whose targetsHit include an enemy with the defReduced family, so a DEF
+    reduction applied by the attack itself counts (checked: Pela's Ultimate
+    gains it, her earlier Basic ATK does not). A base-chance DEF reduction
+    counts as landed (engine-debuff-landing-chance).
 - id: the-unreachable-side-own-hp
   entity: "23009"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     The wearer's own HP consumption is an option assumed at the start of the
@@ -519,21 +507,15 @@
     Ultimate), Arlan and Mydei (Skill), off for other wearers. Mydei's
     Godslayer Be God (Charge, not HP) and Blade's plain Basic ATK still count.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    own-hp-consumed toggle and the per-wearer table. Apply Unfulfilled
-    Yearning from hitByEnemy (as now) and from hpChanged (subject self,
-    hpCause consume, event.source the wearer: it consumed its own HP). The
-    costs come from Character kits calling consumeHp before their hits
-    (Blade's Skill, Forest of Swords, and Ultimate via setHp; Arlan;
-    Mydei; Firefly), so the buff covers that attack.
+    Removed the own-hp-consumed toggle and the per-wearer table. Unfulfilled
+    Yearning comes from hitByEnemy (stacks = weight) and from hpChanged
+    (subject self, hpCause consume, source the wearer, delta < 0), and is
+    removed after the wearer attacks. Checked with Blade: his Skill and
+    Forest of Swords costs grant it before the Enhanced Basic ATK's hits.
 - id: i-shall-be-my-own-sword-teammate-hp
   entity: "23014"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Teammates' HP loss is an option (on by default for Jingliu) that grants
@@ -542,17 +524,12 @@
     HP loss from other sources (teammates' own HP costs, Castorice) is not
     seen.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    teammate-hp-loss toggle and the stacks granted per teammate at each
-    wearer attack. Gain 1 Eclipse from hitByEnemy (subject otherAlly,
-    stacks = weight) as now and from each hpChanged (subject otherAlly,
-    hpCause consume, delta < 0): Jingliu's Spectral Transmigration
-    attacks, Castorice's Skills, teammates' own costs. Needs those
-    Character kits to call consumeHp.
+    Removed the teammate-hp-loss toggle and the per-attack stacks. Eclipse
+    comes from hitByEnemy (subject otherAlly, stacks = weight) and from
+    every hpChanged with subject otherAlly, hpCause consume, and delta < 0
+    (one stack per teammate and occurrence). Checked with Jingliu: her
+    Spectral Transmigration Skill consumes both teammates' HP before its
+    hits (DEF ignore at 3 stacks with earlier enemy hits).
 - id: whereabouts-should-dreams-rest-routed-scope
   entity: "23025"
   rule: U3
@@ -571,31 +548,36 @@
 - id: whereabouts-should-dreams-rest-super-break
   entity: "23025"
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Routed is inflicted on the wearer's Weakness Breaks and Break DoT ticks or
     detonations; Super Break DMG emits no event, so the wearer's Super Break
     on an enemy broken by a teammate does not inflict it.
   detail: >
-    Blocked on engine-super-break-event. Then inflict Routed when the
-    wearer deals Super Break DMG.
+    Routed comes from breakDamage (Weakness Break and Super Break, 85ed2c2)
+    and Break DoT ticks; Super Break counts only while
+    currentStat('superBreakDmg') > 0, because breakDamage also reports
+    Toughness reduced without a conversion. Scaled or filtered conversions
+    (Firefly's) are not seen yet (engine-break-damage-no-conversion).
+    Checked with Firefly and a scratch wearer.
 - id: dance-at-sunset-aggro
   entity: "23030"
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     "Greatly increases the wearer's chance of getting attacked" is not
     modeled, but it converts into more hitByEnemy triggers (Yunli's Counters,
     Energy from enemy hits).
   detail: >
-    Blocked on engine-aggro-modifiers. Then raise the wearer's aggro
-    ('greatly increases'; the amount needs data).
+    aggroPct +#4 (5, +500%; the parameter the text leaves unreferenced for
+    'greatly increases'). Checked: a Destruction wearer's share of enemy
+    attacks rose to 79%.
 - id: flame-of-blood-blaze-my-path-hp-cost
   entity: "23039"
   rule: U12
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     The HP consumed on Skill and Ultimate (6% Max HP) does not feed the
@@ -603,16 +585,12 @@
     The wearer is assumed to have enough HP, so the extra DMG applies
     whenever 6% of Max HP exceeds 500.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. At the start of the
-    wearer's Skill and Ultimate, call consumed = ctx.consumeHp(self, #2):
-    the #3 DMG bonus covers that attack, and the extra #5 applies when
-    consumed × self.panelStat('hp') > #4. Drop the 'enough HP' assumption;
-    the 1 HP floor makes low-HP casts consume less. Blade's and Mydei's
-    Charge see the cost through hpChanged once their kits listen to it.
+    At the start of the wearer's Skill and Ultimate, consumed =
+    ctx.consumeHp(self, #2) (per occurrence); Vista (#3) covers that action,
+    and a second status adds #5 when consumed × currentStat('hp') > #4. The
+    cost stops at 1 HP and reaches the wearer's hpChanged listeners (Blade's
+    Charge, The Unreachable Side). Checked with Blade and a scratch wearer
+    with +8000 HP (extra DMG on).
 - id: thus-burns-the-dawn-transformation-turns
   entity: "23044"
   rule: U5
@@ -632,32 +610,31 @@
 - id: i-am-as-you-behold-energy-cost
   entity: "23062"
   rule: U10
-  status: open
+  status: completed
   category: approximation
   summary: >
     Energy consumed by the Ultimate is read as the wearer's max Energy.
     Ultimates with another cost (Yunli's 120, Phainon's Coreflame) get the
     wrong Ultimate DMG bonus.
   detail: >
-    Blocked on engine-ultimate-energy-spent. Then scale the Ultimate DMG
-    bonus by the Energy actually consumed (#3 per Energy, up to #6).
+    At Will holds one stack per Energy the Ultimate consumed (energySpent, 0
+    when paid from a counter), #3 each, capped at #6 through maxStacks.
+    Checked with a scratch wearer (130 Energy, 130 stacks).
 - id: i-am-as-you-behold-late-memosprites
   entity: "23062"
   rule: U3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     King's Entertainment's ally CRIT DMG is a status applied to every ally at
     battle start and on each Ultimate, so a memosprite summoned in between
     lacks it until the next Ultimate.
   detail: >
-    Convention (late memosprites): an aura tied to the wearer's state
-    ('while the wearer holds X, allies get Y') reaches a memosprite
-    summoned during it; a timed buff applied once to all allies reaches
-    only the allies present then. King's Entertainment is such an aura
-    ('while the wearer holds...'). On summoned of an ally memosprite while
-    the wearer holds it, apply the ally status with turns: the wearer's
-    remainingTurns of it.
+    A memosprite summoned while the wearer holds King's Entertainment
+    receives it with turns = the wearer's remainingTurns; when the wearer's
+    own copy ends (statusRemoved, target the wearer), the wearer's other
+    copies are removed. Checked with a scratch Destruction wearer that
+    summons a memosprite.
 - id: in-the-name-of-the-world-skill-ehr
   entity: "23004"
   rule: U9
@@ -701,7 +678,7 @@
 - id: never-forget-her-flame-implant-event
   entity: "23050"
   rule: U8
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Never Forget Her Flame recovers 1 Skill Point when the wearer applies a
@@ -710,9 +687,11 @@
     the enemy already has (native, or The Dahlia's permanent Wilt implants on
     later Ultimates) and implants outside the wearer's actions are missed.
   detail: >
-    Blocked on engine-weakness-implanted-event. Then recover the Skill
-    Point on the wearer's implant events, refreshes of existing Weaknesses
-    included.
+    The Skill Point comes on the wearer's weaknessImplanted events (once
+    until the next Ultimate); the Weakness snapshots are gone. The engine
+    reports only new Weaknesses, so refreshing an implant (The Dahlia's
+    later Wilt) is still missed (engine-weakness-implanted-event). Checked
+    with a scratch Nihility implanter.
 - id: reforged-in-hellfire-purgatory-scope
   entity: "23059"
   rule: U14
@@ -732,7 +711,7 @@
 - id: landaus-choice-aggro
   entity: "21009"
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Landau's Choice's aggro increase (#1 = 2) is not modeled because kits
@@ -740,12 +719,12 @@
     share of enemy attacks, which sets its hit Energy and its kit's
     hit triggers. Its DMG reduction is not modeled (U12).
   detail: >
-    Blocked on engine-aggro-modifiers. Then raise the wearer's aggro by
-    #1.
+    aggroPct +#1 (+200%) on the wearer (e7054f4). Checked: a Preservation
+    wearer's share of enemy attacks rose from 43% to 69%.
 - id: moment-of-victory-aggro
   entity: "23005"
   rule: U12
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Moment of Victory's aggro increase (#1 = 2) is not modeled
@@ -753,8 +732,8 @@
     expected stacks from the wearer's base aggro share (hitByEnemy), and hit
     Energy uses the same share.
   detail: >
-    Blocked on engine-aggro-modifiers. Then raise the wearer's aggro by
-    #1; the extra DEF keeps following hitByEnemy.
+    aggroPct +#1 (+200%) on the wearer (e7054f4); the extra DEF keeps
+    following hitByEnemy, now with the larger share.
 - id: trend-universal-market-chance
   entity: "21016"
   rule: U9
@@ -785,7 +764,7 @@
 - id: concert-for-two-shields
   entity: "21043"
   rule: U12
-  status: open
+  status: completed
   category: approximation
   summary: >
     Shields are not simulated (engine-shield-state), so the number of
@@ -793,24 +772,28 @@
     team size (0 for Fu Xuan, who provides no Shields), for the whole
     battle.
   detail: >
-    Blocked on engine-shield-state. Then count shielded Characters from
-    the Shielded state and drop the count option.
+    Removed the shielded-characters count. A status on the wearer holds one
+    stack per on-field (not Departed) Character with a shield-family status,
+    synced on statusApplied/statusRemoved of shield statuses and at the
+    wearer's action start. Checked with Aventurine and a scratch shielder.
 - id: journey-forever-peaceful-shields
   entity: "21053"
   rule: U12
-  status: open
+  status: completed
   category: approximation
   summary: >
     Shields are not simulated (engine-shield-state): the DMG bonus of
     shielded allies is the toggle allies-shielded (default on, off for Fu
     Xuan) and then applies to every ally for the whole battle.
   detail: >
-    Blocked on engine-shield-state. Then give the DMG bonus to allies
-    holding a Shield and drop the toggle.
+    Removed the allies-shielded toggle. Each ally target holds the DMG bonus
+    (unique) while it has a shield-family status, synced on
+    statusApplied/statusRemoved of shield statuses. Checked with March 7th
+    and a scratch shielder.
 - id: inherently-unjust-destiny-shield-sources
   entity: "23023"
   rule: U12
-  status: open
+  status: completed
   category: approximation
   summary: >
     "When the wearer provides a Shield" fires after the abilities that
@@ -820,8 +803,10 @@
     none; others: Skill, Ultimate). Traces are assumed, and Eidolon Shields
     (Aventurine E1, March 7th E2) and Souldragon's Shields are not seen.
   detail: >
-    Blocked on engine-shield-state. A shield event naming the provider
-    replaces the per-wearer table.
+    Removed the per-wearer ability table. All-In comes from statusApplied of
+    a shield-family status on an ally by the wearer or its summons (subject
+    selfOrMemosprite, so Souldragon's Shields count). Checked with
+    Aventurine (battle-start and Follow-Up ATK Shields).
 - id: inherently-unjust-destiny-bounce
   entity: "23023"
   rule: C2
@@ -838,7 +823,7 @@
 - id: she-already-shut-her-eyes-hp-loss
   entity: "23011"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     HP is not simulated: the wearer's HP is reduced by enemy hits on it
@@ -847,22 +832,16 @@
     takes part of the allies' DMG) counts hits on any ally. HP costs are not
     seen.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Keep hitByEnemy for
-    enemy hits and add hpChanged (subject self, hpCause consume, delta <
-    0) for HP consumed from the wearer (Castorice's Skills, Jingliu's
-    Spectral Transmigration attacks, Long May Rainbows Adorn the Sky).
-    Replace the ally-dmg-shared option with a wearer rule: for Fu Xuan
-    (1208), whose Matrix of Prescience takes part of every ally's DMG,
-    hits on any ally count. The wave-start heal is a no-op (single wave,
-    HP starts full).
+    Removed the ally-dmg-shared toggle: hits on any ally count when the
+    wearer is Fu Xuan (1208), otherwise hits on the wearer (hitByEnemy,
+    stacks = weight). hpChanged (subject self, hpCause consume, delta < 0)
+    adds HP consumed from the wearer. The wave-start heal is a no-op (single
+    wave starting at full HP). Checked with Fu Xuan and a scratch wearer
+    that consumes its own HP.
 - id: though-worlds-apart-summons
   entity: "23051"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Redoubt's extra DMG for targets with summons is checked when it is
@@ -871,17 +850,15 @@
     Whether Souldragon counts for Dan Heng • Permansor Terrae or for the
     Bondmate also needs confirmation.
   detail: >
-    Track allies' summons with summoned/departed (61c14f6): a Redoubt
-    holder has the extra #3 while it holds Redoubt and an active
-    memosprite or summon has it as owner, updated as summons appear or
-    leave. Countdowns are not summons: tell them apart by definition ID as
-    Sunday's SUMMON_IDS does (numby, lightning-lord, fuyuan, souldragon
-    are summons; the Action Order countdowns use '-countdown' IDs).
-    Souldragon counts for Dan Heng • Permansor Terrae; fribbels also
-    counts it for the Bondmate, which needs his Bondmate state
-    (engine-cross-kit-state) and is left out. Also model the Ultimate's
-    heal (U12): ctx.heal each ally for #5 × the wearer's ATK / its Max HP,
-    plus #6 for the Character with the lowest hpRatio.
+    Redoubt's extra #3 is a status held while the holder has Redoubt and an
+    active memosprite or summon (findSummon over Sunday's summon IDs
+    lightning-lord, numby, fuyuan, souldragon; countdowns excluded), synced
+    on the Ultimate, summoned, departed, and statusRemoved of Redoubt. The
+    Ultimate heals every ally #5 × the wearer's current ATK × (1 + Outgoing
+    Healing), then the Character with the lowest current HP by #6 more
+    (absolute HP, as the text says, rather than hpRatio). The Bondmate's
+    Souldragon is left out (engine-cross-kit-state). Checked with a scratch
+    wearer whose summon comes and goes.
 - id: time-waits-for-no-one-healing-record
   entity: "23013"
   rule: U12
@@ -903,7 +880,7 @@
 - id: night-of-fright-heal-triggers
   entity: "23017"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Night of Fright's ATK stacks come from the wearer's heals. Healing is not
@@ -913,18 +890,12 @@
     missed, and the heal on the lowest-HP ally after each Ultimate is spread
     evenly over ally targets.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the HEALING
-    table and the even spread. (1) When any ally uses an Ultimate, heal
-    the ally target (Character or memosprite) with the lowest hpRatio:
-    ctx.heal(ally, #2). (2) Give Deep Breaths to the healed unit of each
-    hpChanged with hpCause heal and source the wearer, the heal in (1)
-    included. Heals on full-HP allies emit no event
-    (engine-hp-event-triggers). Needs the wearer's healer kit to call
-    ctx.heal.
+    Removed the HEALING table and the even spread. When any ally uses an
+    Ultimate (actionStart), the wearer heals the ally target (Character or
+    memosprite) with the lowest hpRatio by #2 × (1 + Outgoing Healing) of
+    its Max HP. Deep Breaths goes to the healed unit of every hpChanged with
+    hpCause heal and source the wearer, this heal included; heals at full HP
+    count, as the engine now reports them. Checked with Natasha.
 - id: dazzled-by-a-flowery-world-durations
   entity: "23053"
   rule: U5
@@ -946,7 +917,7 @@
 - id: when-she-decided-to-see-ally-ultimate
   entity: "23054"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     "Uses Ultimate on an ally target" is an Ultimate whose turn choice names
@@ -954,18 +925,16 @@
     and Silver Wolf LV.999's self-targeted one). An Ultimate that targets an
     ally and also attacks would be missed.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Gain Great Fortune when the wearer's Ultimate has
-    abilityTarget ally, allies, or self; drop the turn-choice and
-    non-attacking tests.
+    Great Fortune comes from the wearer's Ultimate with abilityTarget ally,
+    allies, or self; the turn-choice and non-attacking tests are gone. The
+    team CRIT bonus is an aura of Great Fortune, so a memosprite summoned
+    while it lasts now joins it (turns = remainingTurns) and every copy ends
+    with it (late-memosprite convention). Checked with Yao Guang (Ultimate
+    on all allies) and a scratch wearer with a memosprite.
 - id: colors-for-tomorrow-all-allies
   entity: "23055"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     Elation Skills carry no ally target, so one is "used on all allies" when
@@ -973,19 +942,14 @@
     reach every ally Character (Pearl's Dissolve Reason). Silver Wolf LV.999's
     non-attacking Elation Skill does not count.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on the wearer's Elation Skill with
-    abilityTarget === 'allies' (Pearl's declares it); drop the
-    statusApplied heuristic. Also model the heal (U12): ctx.heal each ally
-    for #5 × the wearer's DEF / its Max HP.
+    Triggers at the start of the wearer's Elation Skill with abilityTarget
+    'allies'; the statusApplied heuristic is gone. It also heals each ally
+    #5 × the wearer's current DEF × (1 + Outgoing Healing). Checked with
+    Pearl and a scratch wearer.
 - id: welcome-to-the-cosmic-city-self-ultimate
   entity: "23057"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     "Uses Ultimate on themselves" is an Ultimate whose turn choice names the
@@ -993,14 +957,11 @@
     wearer reach the wearer and no other Character (Silver Wolf LV.999's
     Godmode). The Punchline is therefore gained when the Ultimate ends.
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Trigger on the wearer's Ultimate with abilityTarget
-    === 'self' (Silver Wolf LV.999's declares it) when the Ultimate is
-    used; drop the status heuristic. The Basic ATK reset reading stays.
+    The Punchline comes at the start of the wearer's Ultimate when
+    abilityTarget is 'self', or 'ally' with the wearer as the named target;
+    the status heuristic is gone. The Basic ATK reset reading stays. Checked
+    with a scratch Elation wearer (Silver Wolf LV.999 does not reach her
+    Ultimate in the 3-cycle check).
 - id: summer-rides-the-surf-readings
   entity: "23064"
   rule: U5
@@ -1021,7 +982,7 @@
 - id: elation-brimming-with-blessings-ally-target
   entity: "24006"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     A Skill or Ultimate is "on one ally character" when its turn choice names
@@ -1029,19 +990,14 @@
     the wearer applies during it reach exactly one other Character, which
     receives the Elation bonus (Trailblazer's Ultimate).
   detail: >
-    Convention (ally target): an ability's ally target is read from
-    event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally, allies, or
-    self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Use abilityTarget === 'ally' with event.target an
-    ally Character, which receives the Elation bonus; drop the
-    statusApplied heuristic. Trailblazer (Elation)'s Ultimate names its
-    ally once trailblazer-elation-ally-target-event is done.
+    Opening goes to event.target when the wearer's Skill or Ultimate has
+    abilityTarget 'ally' and the target is an ally Character (actionEnd);
+    the statusApplied heuristic is gone. Checked with Trailblazer (Elation),
+    whose Ultimate names Kafka.
 - id: shadowburn-summon-events
   entity: "20021"
   rule: U8
-  status: actionable
+  status: completed
   category: engine-gap
   summary: >
     There is no event when a memosprite is summoned or disappears, so
@@ -1051,12 +1007,15 @@
     action, and a memosprite that deals DMG in the action that summoned it
     (Trailblazer's or Evernight's Ultimate) misses mirrored wearer buffs.
   detail: >
-    Use summoned/departed (61c14f6) instead of checks at turn and action
-    boundaries: Shadowburn (the first summoned of the wearer's
-    memosprite), Reminiscence, Sweat Now Cry Less, Make Farewells More
-    Beautiful (advance on departed), and To Evernight's Stars. summoned
-    fires when the memosprite appears, so a memosprite that deals DMG in
-    its summoning action gets the mirrored buffs.
+    Shadowburn pays out on the first summoned event of the wearer's
+    memosprite (a counter guards later summons). Reminiscence removes
+    Commemoration from the wearer and the memosprite on departed (subject
+    memosprite). Sweat Now, Cry Less syncs the wearer's DMG status on
+    summoned and departed. The polling at turn and action boundaries is gone
+    from all three (checked with Aglaea, whose Garmentmaker leaves with
+    Supreme Stance). Make Farewells More Beautiful's departed change is part
+    of make-farewells-more-beautiful-hp-loss, and To Evernight's Stars moved
+    to to-evernights-stars-summon-events for the 23xxx pass.
 - id: the-storys-next-page-healing-tally
   entity: "21054"
   rule: U12
@@ -1067,11 +1026,13 @@
     her steady panel (panelStat), so the buff does not raise Little Ica's
     Rainclouds DMG as it does in game.
   detail: >
-    Blocked on engine-momentary-stat-read. Convention (Outgoing Healing):
-    Outgoing Healing statuses stay in kits now that healing is simulated
-    (U12), here and in Cornucopia, Post-Op Conversation, Hey, Over Here,
-    and Perfect Timing; they reach heal amounts and Hyacine's tally once
-    those read Outgoing Healing with statuses and conditional modifiers.
+    The Light Cone needs no change: currentStat (85ed2c2) gives heal amounts
+    its Outgoing Healing status. What remains is Hyacine's kit, whose heals
+    and tally read Outgoing Healing with panelStat; it moves to currentStat
+    under hyacine-healing-tally (remembrance.yaml). Convention (Outgoing
+    Healing): Outgoing Healing statuses stay in kits, here and in
+    Cornucopia, Post-Op Conversation, Hey, Over Here, and Perfect Timing
+    (scaling, still left out by currentStat).
 - id: fly-into-a-pink-tomorrow-enhanced-basic
   entity: "22006"
   rule: C1
@@ -1089,7 +1050,7 @@
 - id: make-farewells-more-beautiful-hp-loss
   entity: "23040"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     HP is not simulated, so HP lost during own turns is assumed at the start
@@ -1098,39 +1059,32 @@
     assumed) and Skill. Other wearers default off and, when the option is
     enabled, lose HP with every Basic ATK and Skill.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the
-    own-turn-hp-lost toggle and the per-wearer table. Track the turns of
-    the wearer and its memosprite (turnStart/turnEnd, subject
-    selfOrMemosprite) and gain Death Flower on hpChanged (subject
-    selfOrMemosprite, delta < 0) during them. Detect the memosprite
-    leaving with departed (subject memosprite) instead of polling
-    (shadowburn-summon-events). Needs Castorice, Netherwing, and Evernight
-    to call consumeHp.
+    Removed the own-turn-hp-lost toggle and the per-wearer table. The turns
+    of the wearer and its memosprite are tracked with turnStart/turnEnd
+    (subject selfOrMemosprite, countdowns excluded), and hpChanged with
+    delta < 0 (subject selfOrMemosprite) during them grants Death Flower.
+    The memosprite's copy is synced on summoned and on statusRemoved of
+    Death Flower instead of every action start. The advance uses departed
+    (subject memosprite), once until the wearer's next Ultimate. Checked
+    with Castorice (own Skill costs) and a scratch wearer whose memosprite
+    spends HP and leaves.
 - id: long-may-rainbows-adorn-the-sky-hp
   entity: "23042"
   rule: U12
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Consumed HP assumes allies at 80% of Max HP and leaves memosprites out
     (their HP is unknown), and the consumption does not feed allies'
     HP-loss mechanics (Castorice's and Evernight's Talents).
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. At the start of the
-    wearer's Basic ATK, Skill, and Ultimate, consume from every ally
-    (memosprites included) consumed = ctx.consumeHp(ally, #2 ×
-    ally.hpRatio) and add consumed × ally.panelStat('hp') to the total,
-    replacing the 80% assumption. Allies' HP-loss mechanics (Castorice,
-    Evernight) see it through hpChanged. A memosprite's Max HP reads its
-    owner's (engine-memosprite-max-hp).
+    At the start of the wearer's Basic ATK, Skill, and Ultimate, every ally
+    (memosprites included) loses #2 of its current HP via
+    ctx.consumeHp(ally, #2 × hpRatio); the total adds the consumed shares ×
+    each ally's current Max HP, in units of the wearer's panel Max HP. The
+    80% assumption is gone, and allies' HP-loss mechanics see the costs
+    through hpChanged. A memosprite's Max HP still reads its owner's
+    (engine-memosprite-max-hp). Checked with Castorice and a scratch wearer.
 - id: long-may-rainbows-adorn-the-sky-target
   entity: "23042"
   rule: U14
@@ -1147,44 +1101,31 @@
 - id: this-love-forever-blank-verse
   entity: "23052"
   rule: U5
-  status: actionable
+  status: completed
   category: verify
   summary: >
     Blank and Verse have no duration in the text and are kept until the
     memosprite disappears; Blank's DMG taken is an aura, not a debuff, so it
     does not count toward debuff counts. Confirm both in game.
   detail: >
-    Settled: Convention (no duration): an effect the text gives no
-    duration or removal lasts for the rest of the battle once gained
-    (fribbels defaults these on). Blank and Verse are held by the
-    memosprite, so they end when it disappears; Blank's DMG taken is an
-    aura of the memosprite's state, not an inflicted debuff (fribbels:
-    always-on vulnerability). Change (convention: ally target): tell
-    'Memosprite Skill on one ally' from 'on an enemy' with
-    event.abilityTarget (ally gives Blank, enemy gives Verse) instead of
-    the event's target.
+    Blank comes from a Memosprite Skill with abilityTarget 'ally' and Verse
+    from one with 'enemy' (other targets give neither); the event-target
+    test is gone. Checked with a scratch memosprite alternating an attack
+    and an ally-targeted Memosprite Skill.
 - id: victory-in-a-blink-late-memosprites
   entity: "21050"
   rule: U3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     The all-ally DMG buff is a status applied to every ally when it
     triggers, so a memosprite summoned during its 3 turns lacks it.
   detail: >
-    Convention (late memosprites): an aura tied to the wearer's state
-    ('while the wearer holds X, allies get Y') reaches a memosprite
-    summoned during it; a timed buff applied once to all allies reaches
-    only the allies present then. This buff is applied once to all ally
-    targets, so a memosprite summoned later does not get it; the kit is
-    right there. Convention (ally target): an ability's ally target is
-    read from event.abilityTarget (61c14f6): 'on an ally' (对我方目标) = ally,
-    allies, or self; 'on one ally (target/character)' (我方单体) = ally, with
-    event.target the ally; 'on all allies' = allies; 'on themselves' =
-    self. Kits keep no inference from statuses, non-attacking Ultimates,
-    or turn choices. Change: trigger when the memosprite's ability has
-    abilityTarget ally, allies, or self, replacing the event-target and
-    non-attacking test.
+    The buff triggers at actionStart of the wearer's memosprite when the
+    ability's abilityTarget is ally, allies, or self, replacing the
+    event-target and non-attacking test (Mem's Support triggers it). It is
+    still applied once to the ally targets present, so a memosprite summoned
+    later does not get it, per the late-memosprite convention.
 - id: memorys-curtain-never-falls-late-memosprites
   entity: "24005"
   rule: U3
@@ -1203,73 +1144,83 @@
 - id: amber-own-hp
   entity: "20003"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Amber's extra DEF below 50% HP is an off-by-default selfHpBelow toggle,
     an own-HP option now that allies' HP is simulated.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the toggle.
-    Hold the extra DEF (#3) as a status on the wearer synced from
-    hpChanged (subject self): present while self.hpRatio < #2, removed
-    otherwise. It matters for DEF-scaling wearers (Aventurine, Gepard).
+    Removed the toggle. The extra DEF (#3) is a status on the wearer synced
+    on its own hpChanged: present while hpRatio < #2. It starts off (HP
+    starts full); checked with a scratch Preservation wearer brought below
+    #2 by its own costs and enemy attacks.
 - id: unto-tomorrows-morrow-ally-hp
   entity: "21055"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Unto Tomorrow's Morrow's DMG bonus for ally targets at or above 50% HP is
     an on-by-default selfHpAbove toggle that grants a permanent team aura,
     an HP option now that allies' HP is simulated.
   detail: >
-    Convention (HP): allies' HP is simulated (e553888), so U12 models HP
-    costs, heals, and thresholds with consumeHp/heal/setHp, hpRatio, and
-    hpChanged, and an own-HP option is a [BUG]. Enemy hits stay on
-    hitByEnemy (weight = aggro share), because hpChanged with hpCause
-    enemy fires for every ally on every enemy attack. Remove the toggle
-    and the team aura. Give each ally target (Characters and memosprites)
-    a unique status (#3 DMG) synced from hpChanged (subject ally) and at
-    battle start: present while that unit's hpRatio ≥ #2.
+    Removed the toggle and the team aura. Each ally Character and memosprite
+    gets a unique #3 DMG status synced at battle start, on summoned
+    (memosprites arriving later), and on its own hpChanged (subject ally):
+    present while its hpRatio >= #2. Checked with a scratch healer that
+    consumes 40% from every ally and heals 30%.
 - id: pioneering-heal
   entity: "20017"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Pioneering's heal on Weakness Break is not modeled, but healing is
     simulated now (U12).
   detail: >
-    Convention (HP): healing is simulated (U12, e553888); heals call
-    ctx.heal with a share of the target's Max HP. On the wearer's
-    weaknessBreak, ctx.heal(self, #1).
+    On the wearer's weaknessBreak, ctx.heal(self, #1 x (1 + Outgoing
+    Healing)); the Outgoing Healing factor follows U12 and is read with
+    currentStat at the heal.
 - id: what-is-real-heal
   entity: "21035"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     What Is Real?'s heal after Basic ATK is not modeled, but healing is
     simulated now (U12).
   detail: >
-    Convention (HP): healing is simulated (U12, e553888); heals call
-    ctx.heal with a share of the target's Max HP. After the wearer's Basic
-    ATK, ctx.heal(self, #2 + #3 / self.panelStat('hp')).
+    After the wearer's Basic ATK (actionEnd, abilityKinds basic),
+    ctx.heal(self, (#2 + #3 / Max HP) x (1 + Outgoing Healing)), reading Max
+    HP and Outgoing Healing with currentStat at the heal.
 - id: something-irreplaceable-heal
   entity: "23002"
   rule: U12
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Something Irreplaceable's heal when the wearer is hit or defeats an enemy
     is not modeled, but healing is simulated now (U12).
   detail: >
-    Convention (HP): healing is simulated (U12, e553888); heals call
-    ctx.heal with a share of the target's Max HP. Where Kinship is granted
-    (hitByEnemy with its weight, and the defeat option), also
-    ctx.heal(self, #2 × self.panelStat('atk') / self.panelStat('hp')); the
-    API scales the heal by the weight.
+    Where Kinship is granted (hitByEnemy with its weight, and the defeat
+    option), the wearer also heals #2 × its current ATK × (1 + Outgoing
+    Healing) / its current Max HP. hitByEnemy fires before the hit removes
+    HP, so the heal is lost at full HP (engine-hit-by-enemy-before-hp).
+    Checked with Blade.
+- id: to-evernights-stars-summon-events
+  entity: "23049"
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    To Evernight's Stars checks the wearer's memosprite at turn and action
+    boundaries: the Energy for the memosprite disappearing lands at the next
+    boundary, and a memosprite summoned while the wearer holds Noctis gets
+    the mirrored buffs only at the next action start, so DMG it deals in
+    its summoning action misses them.
+  detail: >
+    The Noctis sync runs on summoned (subject ally, memosprites) instead of
+    every action start, and the #4 Energy comes on departed (subject
+    memosprite) while the wearer has Noctis; the lc23049:present polling is
+    gone. Checked with Evernight (Evey leaves and returns) and a scratch
+    wearer.

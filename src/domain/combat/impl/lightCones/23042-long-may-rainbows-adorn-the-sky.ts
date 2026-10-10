@@ -6,11 +6,8 @@ import { defineLightCone } from "../../kit/equipment";
  * properties.
  */
 export default defineLightCone("23042", (k) => {
-  // HP is not simulated: allies' current HP is assumed at 80% of Max HP, as
-  // for Castorice, and memosprites (whose HP is unknown) are left out.
-  const currentHp = 0.8;
   // Consumed HP in units of the wearer's panel Max HP, so the memosprite's
-  // hit can scale off its owner's Max HP.
+  // hit can scale off its owner's Max HP. "All allies" includes memosprites.
   const CONSUMED = "lc23042:consumed";
   k.on(
     "actionStart",
@@ -19,12 +16,17 @@ export default defineLightCone("23042", (k) => {
     (ctx) => {
       const wearerHp = ctx.self.panelStat("hp");
       if (wearerHp <= 0) return;
-      let consumed = 0;
+      let total = 0;
       for (const ally of ctx.allies) {
-        if (ally.kind !== "character") continue;
-        consumed += k.s(2) * currentHp * ally.panelStat("hp");
+        const consumed = ctx.consumeHp(ally, k.s(2) * ally.hpRatio);
+        total += consumed * ally.currentStat("hp");
       }
-      ctx.addCounter(ctx.self, CONSUMED, consumed / wearerHp);
+      // consumeHp already returns the expected (weighted) amount.
+      ctx.setCounter(
+        ctx.self,
+        CONSUMED,
+        ctx.self.counter(CONSUMED) + total / wearerHp
+      );
     }
   );
   // "The attacked target": the designated target of the memosprite's

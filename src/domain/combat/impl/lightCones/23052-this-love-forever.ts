@@ -1,4 +1,4 @@
-import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
+import type { BattleApi, UnitView } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 import type { StatusDef } from "../../kit/model";
 
@@ -61,15 +61,22 @@ export default defineLightCone("23052", (k) => {
     }
   };
 
-  // "On one ally": a Memosprite Skill aimed at an ally (Demiurge's Ode);
-  // "on an enemy": one aimed at enemies.
+  // "On one ally" (我方单体): a Memosprite Skill aimed at one ally (Demiurge's
+  // Ode, Mem's support); "on an enemy": one aimed at enemies.
   k.on(
     "actionStart",
     "lightCone",
-    { subject: "memosprite", abilityKinds: ["memospriteSkill"] },
+    {
+      subject: "memosprite",
+      abilityKinds: ["memospriteSkill"],
+      when: (event) =>
+        event.abilityTarget === "ally" || event.abilityTarget === "enemy",
+    },
     (ctx, event) => {
-      const onAlly = event.target !== undefined && !isEnemy(event.target);
-      ctx.applyStatus(event.unit, onAlly ? blank : verse);
+      ctx.applyStatus(
+        event.unit,
+        event.abilityTarget === "ally" ? blank : verse
+      );
       sync(ctx);
     }
   );

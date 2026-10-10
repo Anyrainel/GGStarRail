@@ -7,16 +7,6 @@ import { defineLightCone } from "../../kit/equipment";
  */
 export default defineLightCone("23014", (k) => {
   const maxStacks = k.s(2);
-  // HP is not simulated. Teammates' HP loss is assumed at the start of each
-  // of the wearer's attacks, one stack per teammate; it defaults on for
-  // Jingliu, whose Spectral Transmigration attacks consume teammates' HP
-  // (her Skills outside it do not).
-  const teammateHpLoss = k.toggle(
-    "teammate-hp-loss",
-    "lightCone",
-    "active",
-    k.wearer.characterId === "1212"
-  );
 
   const eclipse = k.status({
     id: "eclipse",
@@ -42,14 +32,17 @@ export default defineLightCone("23014", (k) => {
   k.on("hitByEnemy", "lightCone", { subject: "otherAlly" }, (ctx) =>
     gain(ctx, ctx.weight)
   );
-  if (teammateHpLoss) {
-    k.on("actionStart", "lightCone", { attack: true }, (ctx) => {
-      const teammates = ctx.allies.filter(
-        (ally) => ally !== ctx.self && ally.kind === "character"
-      ).length;
-      if (teammates > 0) gain(ctx, teammates);
-    });
-  }
+  // Teammates' consumed HP, one stack per teammate and occurrence: Jingliu's
+  // Spectral Transmigration attacks, Castorice's Skills, their own costs.
+  k.on(
+    "hpChanged",
+    "lightCone",
+    {
+      subject: "otherAlly",
+      when: (event) => event.hpCause === "consume" && (event.delta ?? 0) < 0,
+    },
+    (ctx) => gain(ctx, ctx.weight)
+  );
   k.on("actionEnd", "lightCone", { attack: true }, (ctx) => {
     ctx.removeStatus(ctx.self, eclipse);
     ctx.removeStatus(ctx.self, eclipseFull);

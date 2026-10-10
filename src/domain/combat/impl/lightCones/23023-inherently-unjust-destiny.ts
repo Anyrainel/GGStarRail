@@ -1,4 +1,3 @@
-import { canonicalCharacterId } from "@/domain/characterIdentity";
 import { isEnemy } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
@@ -21,33 +20,18 @@ export default defineLightCone("23023", (k) => {
     modifiers: [{ stat: "vulnerability", value: k.s(5) }],
   });
 
-  // Shields are not simulated: the ability IDs with which known wearers
-  // provide Shields (all Traces assumed, Eidolons not visible), and whether
-  // they do at battle start. Other wearers shield with Skill and Ultimate.
-  const shieldSources: Readonly<
-    Record<string, { abilities: readonly string[]; battleStart?: boolean }>
-  > = {
-    "1001": { abilities: ["skill"] },
-    "1104": { abilities: ["ultimate"] },
-    "1208": { abilities: [] },
-    // Aventurine: A4 at battle start, A6 after his Follow-Up ATK.
-    "1304": { abilities: ["skill", "followUp"], battleStart: true },
-    "1414": { abilities: ["skill", "ultimate"] },
-    // Trailblazer: the Talent's Shield.
-    "8003": { abilities: ["basic", "enhancedBasic", "skill", "ultimate"] },
-  };
-  const sources = shieldSources[canonicalCharacterId(k.wearer.characterId)] ?? {
-    abilities: ["skill", "ultimate"],
-  };
-  if (sources.battleStart) {
-    k.on("battleStart", "lightCone", { subject: "any" }, (ctx) =>
-      ctx.applyStatus(ctx.self, allIn)
-    );
-  }
+  // Shields the wearer provides: statuses of the shield family it applies
+  // (its summons' Shields, such as Souldragon's, included).
   k.on(
-    "actionEnd",
+    "statusApplied",
     "lightCone",
-    { when: (event) => sources.abilities.includes(event.abilityId ?? "") },
+    {
+      subject: "selfOrMemosprite",
+      when: (event) =>
+        event.status?.family === "shield" &&
+        event.target !== undefined &&
+        event.target.kind !== "enemy",
+    },
     (ctx) => ctx.applyStatus(ctx.self, allIn)
   );
 

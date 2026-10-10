@@ -25,11 +25,24 @@ export default defineLightCone("23025", (k) => {
     filter: { tags: ["break"], targetStatuses: [routed.id] },
   });
 
-  // Break DMG from the wearer: the Weakness Break itself and its Break DoTs
-  // (ticks and detonations). Super Break DMG has no event (engine-gap).
-  k.on("weaknessBreak", "lightCone", {}, (ctx, event) => {
-    if (isEnemy(event.target)) ctx.applyStatus(event.target, routed);
-  });
+  // Break DMG from the wearer: Weakness Breaks, Super Break DMG, and its
+  // Break DoTs (ticks and detonations). breakDamage also reports Toughness
+  // reduced on Broken enemies without a Super Break conversion, which deals
+  // no DMG, so Super Break needs the wearer's current conversion (scaled and
+  // filtered conversions, such as Firefly's, are not seen:
+  // engine-break-damage-no-conversion).
+  k.on(
+    "breakDamage",
+    "lightCone",
+    {
+      when: (event, self) =>
+        !event.tags?.includes("superBreak") ||
+        self.currentStat("superBreakDmg") > 0,
+    },
+    (ctx, event) => {
+      if (isEnemy(event.target)) ctx.applyStatus(event.target, routed);
+    }
+  );
   k.on(
     "dotTick",
     "lightCone",

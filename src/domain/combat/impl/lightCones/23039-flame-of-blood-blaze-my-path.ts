@@ -5,30 +5,28 @@ import { defineLightCone } from "../../kit/equipment";
  * are applied from catalog properties.
  */
 export default defineLightCone("23039", (k) => {
-  // HP is not simulated: the wearer is assumed to have the HP to pay, so
-  // more than #4 HP is consumed once #2 of Max HP exceeds it. The consumption
-  // does not feed the wearer's own HP-loss mechanics (engine-gap).
   const vista = k.status({
     id: "vista",
     origin: "lightCone",
-    modifiers: [
-      { stat: "dmgBoost", value: k.s(3) },
-      {
-        stat: "dmgBoost",
-        scaling: {
-          source: "holder",
-          stat: "hp",
-          atLeast: k.s(4) / k.s(2),
-          ratio: k.s(5),
-        },
-      },
-    ],
+    modifiers: [{ stat: "dmgBoost", value: k.s(3) }],
+  });
+  const vistaExtra = k.status({
+    id: "vista-extra",
+    origin: "lightCone",
+    modifiers: [{ stat: "dmgBoost", value: k.s(5) }],
   });
   const kinds = { abilityKinds: ["skill", "ultimate"] } as const;
-  k.on("actionStart", "lightCone", kinds, (ctx) =>
-    ctx.applyStatus(ctx.self, vista)
-  );
-  k.on("actionEnd", "lightCone", kinds, (ctx) =>
-    ctx.removeStatus(ctx.self, vista)
-  );
+  // The cost stops at 1 HP, so a low-HP cast consumes less and may miss the
+  // extra DMG. Consumed HP feeds the wearer's own HP-loss mechanics.
+  k.on("actionStart", "lightCone", kinds, (ctx) => {
+    const consumed = ctx.consumeHp(ctx.self, k.s(2)) / ctx.weight;
+    ctx.applyStatus(ctx.self, vista);
+    if (consumed * ctx.self.currentStat("hp") > k.s(4)) {
+      ctx.applyStatus(ctx.self, vistaExtra);
+    }
+  });
+  k.on("actionEnd", "lightCone", kinds, (ctx) => {
+    ctx.removeStatus(ctx.self, vista);
+    ctx.removeStatus(ctx.self, vistaExtra);
+  });
 });

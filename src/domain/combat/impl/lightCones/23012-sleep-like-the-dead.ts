@@ -7,7 +7,8 @@ import { defineLightCone } from "../../kit/equipment";
  *
  * CRIT is an expected value, so the trigger is too: an action triggers with
  * the chance that at least one of its Basic ATK/Skill DMG instances does not
- * CRIT, read from the wearer's steady CRIT Rate. Triggers within one
+ * CRIT, read from the wearer's CRIT Rate with its current statuses (CRIT
+ * Rate limited to some targets or scaled is left out). Triggers within one
  * cooldown window exclude each other, so the chance still available is one
  * minus the triggers of the last `cooldown` own turns, and the buff carries
  * the triggers whose duration has not run out.
@@ -51,7 +52,7 @@ export default defineLightCone("23012", (k) => {
     ctx.setCounter(ctx.self, allCritKey, 1)
   );
   k.on("hit", "lightCone", { tags: ["basic", "skill"] }, (ctx) => {
-    const critRate = Math.min(1, Math.max(0, ctx.self.panelStat("critRate")));
+    const critRate = Math.min(1, Math.max(0, ctx.self.currentStat("critRate")));
     ctx.setCounter(
       ctx.self,
       allCritKey,

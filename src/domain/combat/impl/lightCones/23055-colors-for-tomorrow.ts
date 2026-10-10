@@ -1,4 +1,3 @@
-import { isEnemy, type UnitView } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /** Colors for Tomorrow — Elation. DEF is applied from catalog properties. */
@@ -11,26 +10,25 @@ export default defineLightCone("23055", (k) => {
     modifiers: [{ stat: "vulnerability", value: k.s(4) }],
   });
 
-  // Elation Skills carry no ally target: one is "on all allies" when it does
-  // not attack enemies and the statuses the wearer applies during it reach
-  // every ally Character. Healing is not modeled.
-  let recipients: Set<UnitView> | null = null;
-  const elationSkill = { abilityKinds: ["elationSkill"] } as const;
-  k.on("actionStart", "lightCone", elationSkill, () => {
-    recipients = new Set();
-  });
-  k.on("statusApplied", "lightCone", {}, (_ctx, event) => {
-    if (recipients && event.target && !isEnemy(event.target)) {
-      recipients.add(event.target);
+  // "On all allies" (对我方全体): an Elation Skill aimed at all allies.
+  k.on(
+    "actionStart",
+    "lightCone",
+    {
+      abilityKinds: ["elationSkill"],
+      when: (event) => event.abilityTarget === "allies",
+    },
+    (ctx) => {
+      for (const enemy of ctx.enemies) ctx.applyStatus(enemy, inkSplash);
+      ctx.gainEnergy(ctx.self, k.s(2), { fixed: true });
+      const amount =
+        k.s(5) *
+        ctx.self.currentStat("def") *
+        (1 + ctx.self.currentStat("outgoingHealing"));
+      for (const ally of ctx.allies) {
+        const maxHp = ally.currentStat("hp");
+        if (maxHp > 0) ctx.heal(ally, amount / maxHp);
+      }
     }
-  });
-  k.on("actionEnd", "lightCone", elationSkill, (ctx, event) => {
-    const reached = recipients;
-    recipients = null;
-    if (event.attack || !reached) return;
-    const allies = ctx.allies.filter((ally) => ally.kind === "character");
-    if (!allies.every((ally) => reached.has(ally))) return;
-    for (const enemy of ctx.enemies) ctx.applyStatus(enemy, inkSplash);
-    ctx.gainEnergy(ctx.self, k.s(2), { fixed: true });
-  });
+  );
 });

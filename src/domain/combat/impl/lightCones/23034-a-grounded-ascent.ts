@@ -25,33 +25,18 @@ export default defineLightCone("23034", (k) => {
   const isAllyCharacter = (unit: UnitView | undefined): unit is UnitView =>
     unit !== undefined && !isEnemy(unit) && unit.kind === "character";
 
+  // "On one ally character" (我方单体角色): a Skill or Ultimate aimed at one
+  // ally, whose target is a Character.
   k.on(
     "actionEnd",
     "lightCone",
-    { abilityKinds: ["skill"], when: (event) => isAllyCharacter(event.target) },
+    {
+      abilityKinds: ["skill", "ultimate"],
+      when: (event) =>
+        event.abilityTarget === "ally" && isAllyCharacter(event.target),
+    },
     (ctx, event) => {
       if (isAllyCharacter(event.target)) departingAnew(ctx, event.target);
     }
   );
-
-  // Ultimates carry no ally target: the Ultimate is "on one ally character"
-  // when the wearer's statuses from it reach exactly one other Character.
-  let recipients: Set<UnitView> | null = null;
-  k.on("actionStart", "lightCone", { abilityKinds: ["ultimate"] }, () => {
-    recipients = new Set();
-  });
-  k.on("statusApplied", "lightCone", {}, (ctx, event) => {
-    if (
-      recipients &&
-      isAllyCharacter(event.target) &&
-      event.target !== ctx.self
-    )
-      recipients.add(event.target);
-  });
-  k.on("actionEnd", "lightCone", { abilityKinds: ["ultimate"] }, (ctx) => {
-    const targets = recipients ? [...recipients] : [];
-    recipients = null;
-    const [target] = targets;
-    if (targets.length === 1 && target) departingAnew(ctx, target);
-  });
 });

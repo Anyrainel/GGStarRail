@@ -21,12 +21,15 @@ export default defineLightCone("23037", (k) => {
     ctx.applyStatus(ctx.self, mindGame)
   );
 
-  // Ultimate events do not carry the Energy consumed: read as the wearer's
-  // max Energy, the default Ultimate cost. "Recovers 1 Skill Point" has no
-  // placeholder. Tracker: into-the-unreachable-veil-energy-cost.
-  if (k.wearer.maxEnergy >= k.s(3)) {
-    k.on("actionEnd", "lightCone", { abilityKinds: ["ultimate"] }, (ctx) =>
-      ctx.gainSkillPoints(1)
-    );
-  }
+  // "Recovers 1 Skill Point" has no placeholder. Ultimates paid from a
+  // counter consume no Energy.
+  k.on(
+    "actionEnd",
+    "lightCone",
+    {
+      abilityKinds: ["ultimate"],
+      when: (event) => (event.energySpent ?? 0) + 1e-9 >= k.s(3),
+    },
+    (ctx) => ctx.gainSkillPoints(1)
+  );
 });

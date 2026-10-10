@@ -29,4 +29,26 @@ export default defineLightCone("23038", (k) => {
     ctx.gainEnergy(ctx.self, k.s(2));
     gainPresage(ctx, k.s(3));
   });
+  // An aura of Presage: a memosprite summoned while it lasts joins it, and
+  // every copy ends with Presage.
+  k.on("statusRemoved", "lightCone", { status: presage }, (ctx) => {
+    for (const ally of ctx.allies) {
+      if (ally.has(presageAllies, ctx.self)) {
+        ctx.removeStatus(ally, presageAllies);
+      }
+    }
+  });
+  k.on(
+    "summoned",
+    "lightCone",
+    {
+      subject: "ally",
+      when: (event, self) =>
+        event.unit.kind === "memosprite" && self.has(presage),
+    },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(presage);
+      if (turns) ctx.applyStatus(event.unit, presageAllies, { turns });
+    }
+  );
 });

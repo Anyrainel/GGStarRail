@@ -5,7 +5,9 @@ import { defineLightCone } from "../../kit/equipment";
  * properties.
  */
 export default defineLightCone("23030", (k) => {
-  // The aggro increase is not modeled (engine-gap).
+  // "Greatly increases the chance of getting attacked": #4, not referenced
+  // by the text, is the aggro increase (+500%).
+  k.stat("lightCone", { stat: "aggroPct", value: k.s(4) });
   const firedance = k.status({
     id: "firedance",
     origin: "lightCone",

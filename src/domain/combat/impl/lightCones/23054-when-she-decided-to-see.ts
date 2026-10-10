@@ -1,4 +1,4 @@
-import { type BattleApi, isEnemy } from "../../kit/api";
+import type { BattleApi } from "../../kit/api";
 import { defineLightCone } from "../../kit/equipment";
 
 /** When She Decided to See — Elation. SPD is applied from catalog properties. */
@@ -25,20 +25,45 @@ export default defineLightCone("23054", (k) => {
     for (const ally of ctx.allies) ctx.applyStatus(ally, greatFortuneTeam);
   };
 
+  // An aura of Great Fortune: a memosprite summoned while it lasts joins it,
+  // and every copy ends with it.
+  k.on("statusRemoved", "lightCone", { status: greatFortune }, (ctx) => {
+    for (const ally of ctx.allies) {
+      if (ally.has(greatFortuneTeam, ctx.self)) {
+        ctx.removeStatus(ally, greatFortuneTeam);
+      }
+    }
+  });
+  k.on(
+    "summoned",
+    "lightCone",
+    {
+      subject: "ally",
+      when: (event, self) =>
+        event.unit.kind === "memosprite" && self.has(greatFortune),
+    },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(greatFortune);
+      if (turns) ctx.applyStatus(event.unit, greatFortuneTeam, { turns });
+    }
+  );
+
   // The battle is a single wave.
   k.on("battleStart", "lightCone", { subject: "any" }, (ctx) => {
     gainGreatFortune(ctx);
     ctx.gainEnergy(ctx.self, k.s(6), { fixed: true });
   });
-  // Ultimates carry an ally target only when the policy names one; an
-  // Ultimate that does not attack enemies is read as aimed at allies.
+  // "On an ally target" (对我方目标): an Ultimate aimed at one ally, all
+  // allies, or the wearer.
   k.on(
     "actionStart",
     "lightCone",
     {
       abilityKinds: ["ultimate"],
       when: (event) =>
-        (event.target !== undefined && !isEnemy(event.target)) || !event.attack,
+        event.abilityTarget === "ally" ||
+        event.abilityTarget === "allies" ||
+        event.abilityTarget === "self",
     },
     gainGreatFortune
   );
