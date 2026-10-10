@@ -101,3 +101,78 @@
     wearer applies, whatever its landing chance: statusApplied events do not
     carry the base chance, so a failed roll still doubles the effects.
   detail: ""
+- id: bananamusement-summon-detection
+  entity: "318"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Kits cannot list a unit's summons or tell summoned targets (Numby,
+    Lightning-Lord, Fuyuan, Souldragon) from countdowns (Concerto, Supreme
+    Stance). The kit counts memosprites while present and a summon only after
+    it has attacked and while it is still active, so the wearer's hits before
+    the summon's first attack (Topaz, Jing Yuan) and summons that never attack
+    (Souldragon outside its enhanced state) miss the 32% CRIT DMG.
+  detail: >
+    Exact with a UnitView flag for summoned targets, or a BattleApi call that
+    lists a unit's active summons and memosprites.
+- id: bananamusement-memosprite-crit-dmg
+  entity: "318"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    The text names only the wearer's CRIT DMG. The kit also gives the
+    conditional 32% to the wearer's memosprites (memosprite DMG reads the
+    memosprite's own statuses), as the engine copies the wearer's equipment
+    modifiers to memosprites. Confirm in game whether Garmentmaker and other
+    memosprites receive it.
+  detail: ""
+- id: giant-tree-healing-panel
+  entity: "320"
+  rule: E3
+  status: open
+  category: engine-gap
+  summary: >
+    The Outgoing Healing tiers are SPD-threshold scaling modifiers, which only
+    damage evaluation resolves. Hyacine's healing tally reads
+    panelStat("outgoingHealing") (steady panel only), so Giant Tree's 12%/20%
+    never raises Little Ica's damage; the same 20% as a Relic stat raises
+    Hyacine's damage by about 11% at 180 SPD.
+  detail: >
+    Needs a stat read that includes the unit's conditional (scaling)
+    modifiers per loadout, or a tally evaluated per loadout.
+- id: tengoku-sp-scope
+  entity: "324"
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    "If 3 or more Skill Points are consumed in the same turn" counts Skill
+    Points consumed by any ally during one turn of any unit (reset at every
+    turn start). Confirm whether teammates' consumption counts or only the
+    wearer's, and whether it must happen in the wearer's own turn.
+  detail: ""
+- id: punklorde-elation-latch
+  entity: "325"
+  rule: E3
+  status: open
+  category: approximation
+  summary: >
+    The CRIT DMG tiers check the wearer's steady Elation with scaling
+    `atLeast`, so they hold from battle start or never. Momentary Elation
+    buffs that reach 40%/80% once in combat, which latch the bonus for the
+    rest of the battle in game, are not counted.
+  detail: ""
+- id: fallen-star-companions
+  entity: "327"
+  rule: U8
+  status: open
+  category: needs-data
+  summary: >
+    "Trailblaze Companions" are not listed in the reference data. The kit
+    assumes the Astral Express crew: Trailblazer (all Paths), March 7th (both),
+    Dan Heng, Dan Heng • Imbibitor Lunae, Dan Heng • Permansor Terrae,
+    Himeko, Himeko • Nova, and Welt (see himeko-nova-companions in
+    erudition.yaml).
+  detail: ""
