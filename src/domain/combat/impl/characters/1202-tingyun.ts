@@ -178,15 +178,21 @@ export default defineCharacter("1202", (k) => {
     }
   });
 
+  // The game grants this Energy as a fixed amount (FixedAddValue).
   const ultimateEnergy = k.param("03", 1) + (k.e(6) ? k.rankParam(6, 1) : 0);
+  // The Benediction holder, else the Skill's choice.
+  const ultimateTarget = (view: {
+    self: UnitView;
+    allies: readonly UnitView[];
+  }) => benedictionHolder(view.allies) ?? carry(view);
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     target: "ally",
     before: (ctx) => {
-      // Ultimates take no ally choice: the Benediction holder receives it.
-      const target = benedictionHolder(ctx.allies) ?? carry(ctx);
-      ctx.gainEnergy(target, ultimateEnergy);
+      const target =
+        ctx.target && !isEnemy(ctx.target) ? ctx.target : ultimateTarget(ctx);
+      ctx.gainEnergy(target, ultimateEnergy, { fixed: true });
       ctx.applyStatus(target, rejoicingClouds);
     },
   });
@@ -236,5 +242,6 @@ export default defineCharacter("1202", (k) => {
         ? { ability: "skill", target: carry(view) }
         : "basic";
     },
+    ultimate: (view) => ({ ability: "ultimate", target: ultimateTarget(view) }),
   });
 });

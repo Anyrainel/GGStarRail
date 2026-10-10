@@ -70,6 +70,7 @@ export default defineCharacter("1309", (k) => {
 
   const countdown = k.summon({
     id: "concerto-countdown",
+    countdown: true,
     speed: k.param("03", 2),
     policy: () => "end",
     abilities: [

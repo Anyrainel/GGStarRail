@@ -108,6 +108,23 @@ export default defineCharacter("8005", (k) => {
     },
   });
 
+  // Backup Dancer (with its A2 tier) reaches memosprites summoned while it
+  // lasts, for the remaining duration.
+  k.on(
+    "summoned",
+    "ultimate",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx, event) => {
+      for (const status of [backupDancer, ...danceTiers]) {
+        const holder = ctx.allies.find(
+          (ally) => ally !== event.unit && ally.has(status)
+        );
+        const turns = holder?.remainingTurns(status);
+        if (turns) ctx.applyStatus(event.unit, status, { turns });
+      }
+    }
+  );
+
   k.on("weaknessBreak", "talent", { subject: "ally" }, (ctx) =>
     ctx.gainEnergy(ctx.self, k.param("04", 1))
   );

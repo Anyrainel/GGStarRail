@@ -3,27 +3,57 @@ import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
 
 const SUPPORT_PATHS = new Set(["Shaman", "Priest", "Knight"]);
-// Kit-local IDs of stat-less summons that game text calls summons
-// (Lightning-Lord, Numby, Fuyuan, Souldragon); countdowns such as Concerto
-// are not. The engine cannot list an ally's summons (tracker
-// sunday-summon-ids).
-const SUMMON_IDS = ["lightning-lord", "numby", "fuyuan", "souldragon"];
-
-/** The damage dealer: first ally Character in team order not on a support Path. */
-function designate(
-  self: UnitView,
-  allies: readonly UnitView[]
-): UnitView | null {
-  const others = allies
-    .filter((unit) => unit.kind === "character" && unit !== self)
-    .sort((left, right) => left.slot - right.slot);
-  return (
-    others.find((unit) => !SUPPORT_PATHS.has(unit.pathId)) ?? others[0] ?? null
-  );
-}
 
 /** Sunday — Harmony, Imaginary. */
 export default defineCharacter("1313", (k) => {
+  // The teammate his Skill and Ultimate go to: by default the first in team
+  // order not on a support Path.
+  const beneficiary = k.ally(
+    "beneficiary",
+    "skill",
+    (candidates) =>
+      [...candidates]
+        .sort((left, right) => left.slot - right.slot)
+        .find((member) => !SUPPORT_PATHS.has(member.pathId)) ?? candidates[0]
+  );
+  const designate = (allies: readonly UnitView[]): UnitView | null =>
+    allies.find(
+      (unit) => unit.kind === "character" && unit.slot === beneficiary?.slot
+    ) ?? null;
+
+  // Summons other than countdowns, per owner, from summon events. Keyed by
+  // the battle's units, so simulations share nothing.
+  const activeSummons = new WeakMap<UnitView, UnitView[]>();
+  const isSummon = (unit: UnitView) =>
+    unit.kind === "summon" && !unit.countdown && unit.owner !== null;
+  k.on(
+    "summoned",
+    "skill",
+    { subject: "ally", when: (event) => isSummon(event.unit) },
+    (_ctx, event) => {
+      const owner = event.unit.owner;
+      if (!owner) return;
+      const list = activeSummons.get(owner) ?? [];
+      if (!list.includes(event.unit)) list.push(event.unit);
+      activeSummons.set(owner, list);
+    }
+  );
+  k.on(
+    "departed",
+    "skill",
+    { subject: "ally", when: (event) => isSummon(event.unit) },
+    (_ctx, event) => {
+      const owner = event.unit.owner;
+      const list = owner ? activeSummons.get(owner) : undefined;
+      if (owner && list) {
+        activeSummons.set(
+          owner,
+          list.filter((unit) => unit !== event.unit)
+        );
+      }
+    }
+  );
+
   const benisonTurns = { turns: k.param("02", 3) };
   const benison = k.status({
     id: "benison",
@@ -111,20 +141,16 @@ export default defineCharacter("1313", (k) => {
     modifiers: beatifiedModifiers,
   });
 
-  const summonsOf = (ctx: BattleApi, owner: UnitView): UnitView[] => {
-    const result = ctx.allies.filter(
+  const summonsOf = (ctx: BattleApi, owner: UnitView): UnitView[] => [
+    ...ctx.allies.filter(
       (unit) => unit.kind === "memosprite" && unit.owner === owner
-    );
-    for (const id of SUMMON_IDS) {
-      const summon = ctx.findSummon(owner, id);
-      if (summon) result.push(summon);
-    }
-    return result;
-  };
+    ),
+    ...(activeSummons.get(owner) ?? []),
+  ];
   const allyTarget = (ctx: BattleApi, chosen: UnitView | null) =>
     chosen && !isEnemy(chosen) && chosen.kind === "character"
       ? chosen
-      : designate(ctx.self, ctx.allies);
+      : designate(ctx.allies);
 
   k.ability({
     id: "basic",
@@ -164,13 +190,14 @@ export default defineCharacter("1313", (k) => {
     kind: "ultimate",
     target: "ally",
     before: (ctx) => {
-      // Ultimates carry no ally target: the Skill's heuristic picks it.
-      const target = designate(ctx.self, ctx.allies);
+      const target = allyTarget(ctx, ctx.target);
       if (!target) return;
+      // A fixed amount in game (FixedAddValue): ERR does not apply.
       const energy = target.maxEnergy * k.param("03", 1);
       ctx.gainEnergy(
         target,
-        k.a(1) ? Math.max(energy, k.traceParam(1, 1)) : energy
+        k.a(1) ? Math.max(energy, k.traceParam(1, 1)) : energy,
+        { fixed: true }
       );
       for (const ally of ctx.allies) ctx.removeStatus(ally, beatified);
       const memosprites = summonsOf(ctx, target).filter(
@@ -192,6 +219,23 @@ export default defineCharacter("1313", (k) => {
     },
   });
 
+  // The Beatified reaches the target's memosprites summoned while it lasts,
+  // for its remaining duration.
+  k.on(
+    "summoned",
+    "ultimate",
+    {
+      subject: "ally",
+      when: (event) =>
+        event.unit.kind === "memosprite" &&
+        (event.unit.owner?.has(beatified) ?? false),
+    },
+    (ctx, event) => {
+      const turns = event.unit.owner?.remainingTurns(beatified);
+      if (turns) ctx.applyStatus(event.unit, beatified, { turns });
+    }
+  );
+
   if (k.a(2)) {
     k.on("battleStart", "a4", { subject: "any" }, (ctx) =>
       ctx.gainEnergy(ctx.self, k.traceParam(2, 1))
@@ -206,10 +250,15 @@ export default defineCharacter("1313", (k) => {
   k.policy({
     // Skill the designated damage dealer whenever a Skill Point is available.
     turn: (view) => {
-      const target = designate(view.self, view.allies);
+      const target = designate(view.allies);
       return target && view.skillPoints >= 1
         ? { ability: "skill", target }
         : "basic";
+    },
+    // The Ultimate goes to the same damage dealer.
+    ultimate: (view) => {
+      const target = designate(view.allies);
+      return target ? { ability: "ultimate", target } : true;
     },
   });
 });

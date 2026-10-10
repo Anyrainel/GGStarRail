@@ -243,7 +243,6 @@ export default defineCharacter("1501", (k) => {
         },
       ];
       if (banger(ctx) > 0) {
-        // Talent facts list 5 Toughness on the main target only.
         hits.push({
           shape: "blast",
           main: k.param("04", 3),
@@ -251,7 +250,6 @@ export default defineCharacter("1501", (k) => {
           kind: "elation",
           onlyTags: ["elation"],
           punchline: banger(ctx),
-          toughness: { main: 5 },
         });
       }
       return hits;
@@ -259,6 +257,8 @@ export default defineCharacter("1501", (k) => {
     after: (ctx) => {
       const farms = ctx.self.counter(FARMS);
       if (banger(ctx) > 0 && farms > 0) {
+        // The Talent facts' 5 Toughness belongs to each per-farm instance
+        // (fixed StanceValue in Skill11_Phase02), not to the Blast hits.
         ctx.deal(
           {
             shape: "bounce",
@@ -267,6 +267,7 @@ export default defineCharacter("1501", (k) => {
             kind: "elation",
             onlyTags: ["elation"],
             punchline: banger(ctx),
+            toughness: { each: 5 },
           },
           { targets: ctx.targetsHit() }
         );

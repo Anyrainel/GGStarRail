@@ -1,27 +1,38 @@
-import type { BattleApi, UnitView } from "../../kit/api";
+import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
 
 /** Trailblazer — Elation, Lightning. */
 export default defineCharacter("8009", (k) => {
   const PUNCHLINE = "punchline";
-  const A6_BANGER = "a6-next-skill-banger";
+  /** A6's mark from an ally Elation Skill (probability it is held). */
+  const A6_MARK = "a6-mark";
 
-  // The engine cannot pick an ally target: the Ultimate goes to the first
-  // Elation teammate, else the first damage dealer, else a Nihility
-  // teammate, else the first teammate.
+  // The Ultimate's ally: by default the first Elation teammate, else the
+  // first damage dealer, else a Nihility teammate, else the first teammate.
+  // "Has an Elation Skill" is read as the Elation Path.
   const damagePaths = ["Mage", "Warrior", "Rogue", "Memory"];
-  const own = k.team.find((member) => member.characterId === k.id);
-  const others = k.team.filter((member) => member.slot !== own?.slot);
-  const designated =
-    others.find((member) => member.pathId === "Elation") ??
-    others.find((member) => damagePaths.includes(member.pathId)) ??
-    others.find((member) => member.pathId === "Warlock") ??
-    others[0];
-  const designatedAlly = (ctx: BattleApi): UnitView =>
-    ctx.allies.find(
+  const designated = k.ally(
+    "ultimate-target",
+    "ultimate",
+    (candidates) => {
+      const others = candidates.filter((member) => member.characterId !== k.id);
+      return (
+        others.find((member) => member.pathId === "Elation") ??
+        others.find((member) => damagePaths.includes(member.pathId)) ??
+        others.find((member) => member.pathId === "Warlock") ??
+        others[0]
+      );
+    },
+    { includeSelf: true }
+  );
+  const designatedAlly = (view: {
+    self: UnitView;
+    allies: readonly UnitView[];
+  }): UnitView =>
+    view.allies.find(
       (ally) => ally.kind === "character" && ally.slot === designated?.slot
-    ) ?? ctx.self;
+    ) ?? view.self;
 
   if (k.a(1)) {
     k.stat("a2", {
@@ -80,12 +91,21 @@ export default defineCharacter("8009", (k) => {
   k.ability({
     id: "skill",
     kind: "skill",
+    // A6's mark is spent for its Certified Banger before the DMG, so it
+    // counts for the Talent's check below.
+    before: (ctx) => {
+      const mark = ctx.self.counter(A6_MARK);
+      if (mark > 1e-9) {
+        ctx.grantCertifiedBanger(ctx.self, k.traceParam(3, 1) * mark);
+        ctx.setCounter(ctx.self, A6_MARK, 0);
+      }
+    },
     hits: (ctx) => {
       const hits: HitDef[] = [
         { shape: "aoe", each: k.param("02", 1), toughness: { each: 20 } },
       ];
       // Checked before this Skill's own Certified Banger, which comes after
-      // the DMG in the text; it uses the highest Certified Banger of allies.
+      // the DMG; it uses the highest Certified Banger of allies.
       if (ctx.self.certifiedBanger() > 0) {
         const punchline = Math.max(
           ...ctx.allies.map((ally) => ally.certifiedBanger())
@@ -100,11 +120,7 @@ export default defineCharacter("8009", (k) => {
       return hits;
     },
     after: (ctx) => {
-      ctx.grantCertifiedBanger(
-        ctx.self,
-        k.param("02", 2) + ctx.self.counter(A6_BANGER)
-      );
-      ctx.setCounter(ctx.self, A6_BANGER, 0);
+      ctx.grantCertifiedBanger(ctx.self, k.param("02", 2));
       if (k.e(1)) ctx.applyStatus(ctx.self, e1Bonus);
     },
   });
@@ -157,7 +173,10 @@ export default defineCharacter("8009", (k) => {
     target: "ally",
     before: (ctx) => {
       ctx.addTeamResource(PUNCHLINE, k.param("03", 6));
-      const target = designatedAlly(ctx);
+      const target =
+        ctx.target && !isEnemy(ctx.target) && ctx.target.kind === "character"
+          ? ctx.target
+          : designatedAlly(ctx);
       ctx.applyStatus(target, ultimateCritDmg);
       if (k.e(2)) ctx.applyStatus(target, e2Elation);
       // Elation Characters are the ones with an Elation Skill.
@@ -187,11 +206,19 @@ export default defineCharacter("8009", (k) => {
   });
 
   if (k.a(3)) {
+    // One mark, however many Elation Skills precede the Skill.
     k.on(
       "actionEnd",
       "a6",
       { subject: "ally", abilityKinds: ["elationSkill"] },
-      (ctx) => ctx.addCounter(ctx.self, A6_BANGER, k.traceParam(3, 1))
+      (ctx) => ctx.addCounter(ctx.self, A6_MARK, 1, 1)
     );
   }
+
+  k.policy({
+    ultimate: (view) => ({
+      ability: "ultimate",
+      target: designatedAlly(view),
+    }),
+  });
 });

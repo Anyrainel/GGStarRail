@@ -1,8 +1,11 @@
-import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
+import { type BattleApi, isEnemy } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef } from "../../kit/model";
 
 const SP_SPENT = "great-boon-sp-spent";
+/** The Ultimate queued Aha's extra turn (E4 applies in that turn). */
+const E4_PENDING = "e4-extra-turn-pending";
+const E4_ACTIVE = "e4-extra-turn-active";
 
 /** Yao Guang — Elation, Physical. */
 export default defineCharacter("1502", (k) => {
@@ -104,6 +107,18 @@ export default defineCharacter("1502", (k) => {
   if (k.e(6))
     k.teamStat("e6", { stat: "merrymaking", value: k.rankParam(6, 1) });
 
+  // The Zone's Elation is a halo effect in game: memosprites summoned while
+  // it lasts receive it for the remaining duration.
+  k.on(
+    "summoned",
+    "skill",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(zone);
+      if (turns) ctx.applyStatus(event.unit, zone, { turns });
+    }
+  );
+
   const zonePunchline = (ctx: BattleApi) => {
     if (ctx.self.has(zone)) {
       ctx.addTeamResource("punchline", k.param("02", 3));
@@ -135,12 +150,10 @@ export default defineCharacter("1502", (k) => {
     after: zonePunchline,
   });
 
-  // Aha's extra turn has no engine construct yet (tracked): it is emulated
-  // by queueing every Elation Character's Elation Skill, then granting
-  // Certified Banger worth the fixed Punchline. Those Elation Skills read
-  // the team's Punchline instead of the fixed amount.
+  // Aha's extra turn counts a fixed Punchline without consuming any. A6's
+  // +1 turn cannot reach the Certified Banger the engine grants in it
+  // (tracked: yao-guang-a6-banger-duration).
   const fixedPunchline = k.e(1) ? k.rankParam(1, 2) : k.param("03", 4);
-  const bangerTurns = 2 + (k.a(3) ? k.traceParam(3, 2) : 0);
   const featheredFortune = k.status({
     id: "threads-of-fate",
     origin: "e4",
@@ -152,11 +165,6 @@ export default defineCharacter("1502", (k) => {
       },
     ],
   });
-  const participants = (allies: readonly UnitView[]) =>
-    allies.filter(
-      (ally) => ally.kind === "character" && ally.pathId === "Elation"
-    );
-
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -166,30 +174,42 @@ export default defineCharacter("1502", (k) => {
       for (const ally of ctx.allies) ctx.applyStatus(ally, resPen);
     },
     after: (ctx) => {
-      for (const ally of participants(ctx.allies)) {
-        if (k.e(4)) ctx.applyStatus(ally, featheredFortune);
-        ctx.queueAction(ally, "elationSkill");
-      }
-      ctx.queueAction(ctx.self, "ahaExtraTurn");
+      if (k.e(4)) ctx.setCounter(ctx.self, E4_PENDING, 1);
+      ctx.ahaExtraTurn(fixedPunchline);
     },
   });
 
-  k.ability({
-    id: "ahaExtraTurn",
-    kind: "other",
-    origin: "ultimate",
-    target: "none",
-    after: (ctx) => {
-      for (const ally of participants(ctx.allies)) {
-        ctx.removeStatus(ally, featheredFortune);
-        ctx.grantCertifiedBanger(
-          ally,
-          fixedPunchline,
-          ally === ctx.self ? bangerTurns : 2
-        );
+  if (k.e(4)) {
+    // No tag separates Elation Skill DMG, so other Elation DMG dealt inside
+    // the extra turn (Great Boon) is boosted too.
+    k.on(
+      "ahaInstantStart",
+      "e4",
+      {
+        subject: "any",
+        when: (event, self) =>
+          event.extraTurn === true && self.counter(E4_PENDING) > 0,
+      },
+      (ctx) => {
+        ctx.setCounter(ctx.self, E4_PENDING, 0);
+        ctx.setCounter(ctx.self, E4_ACTIVE, 1);
+        for (const ally of ctx.allies) {
+          if (ally.kind === "character") {
+            ctx.applyStatus(ally, featheredFortune);
+          }
+        }
       }
-    },
-  });
+    );
+    k.on(
+      "ahaInstantEnd",
+      "e4",
+      { subject: "any", when: (_event, self) => self.counter(E4_ACTIVE) > 0 },
+      (ctx) => {
+        ctx.setCounter(ctx.self, E4_ACTIVE, 0);
+        for (const ally of ctx.allies) ctx.removeStatus(ally, featheredFortune);
+      }
+    );
+  }
 
   // Great Boon: one extra instance after an ally attack, two when the
   // attack consumed Skill Points. Dealt with Yao Guang's stats (her Elation

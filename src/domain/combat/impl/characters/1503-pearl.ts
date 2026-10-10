@@ -11,8 +11,10 @@ const A4_GAINED = "sensory-latitude-gained";
 const EXTRA_TURN_PENDING = "archetype-extra-turn";
 const EXTRA_TURN_PUNCHLINE = "archetype-extra-punchline";
 
-// Pearl (4.6) is newer than the pinned TurnBasedGameData: Energy, Skill
-// Point, and Toughness values follow the kind conventions (tracked).
+// Pearl (4.6) is newer than the pinned TurnBasedGameData. Her facts come
+// from TurnBasedGameData 312b459 (4.6.0) AvatarSkillConfig: the Basic ATK,
+// Skill, Ultimate, and Elation Skill match the kind conventions; the
+// Enhanced Basic ATKs set their own.
 
 /** Pearl — Elation, Ice. */
 export default defineCharacter("1503", (k) => {
@@ -48,6 +50,39 @@ export default defineCharacter("1503", (k) => {
         step: k.traceParam(1, 3),
         ratio: k.traceParam(1, 4),
         cap: (k.traceParam(1, 5) / k.traceParam(1, 3)) * k.traceParam(1, 4),
+      },
+    });
+  }
+  if (k.a(1)) {
+    // "Outgoing Healing Boost equal to 20% of this unit's Elation": scaling
+    // never reads other scaling, so the DEF-based Elation above is repeated
+    // in DEF terms.
+    const share = k.traceParam(1, 6);
+    k.stat("a2", {
+      stat: "outgoingHealing",
+      scaling: { source: "holder", stat: "elation", ratio: share },
+    });
+    k.stat("a2", {
+      stat: "outgoingHealing",
+      scaling: {
+        source: "holder",
+        stat: "def",
+        atLeast: k.traceParam(1, 1),
+        ratio: share * k.traceParam(1, 2),
+      },
+    });
+    k.stat("a2", {
+      stat: "outgoingHealing",
+      scaling: {
+        source: "holder",
+        stat: "def",
+        threshold: k.traceParam(1, 1),
+        step: k.traceParam(1, 3),
+        ratio: share * k.traceParam(1, 4),
+        cap:
+          share *
+          (k.traceParam(1, 5) / k.traceParam(1, 3)) *
+          k.traceParam(1, 4),
       },
     });
   }
@@ -98,6 +133,25 @@ export default defineCharacter("1503", (k) => {
   const archetypeOf = (allies: readonly UnitView[]) =>
     allies.find((ally) => ally.has(archetype)) ?? null;
 
+  // "Restores HP for all ally targets ... and additionally restores HP for
+  // the ally target with the lowest current HP percentage" (chosen before
+  // the first heal).
+  const healTeam = (ctx: BattleApi, defRatio: number, flat: number) => {
+    const amount =
+      (defRatio * ctx.self.panelStat("def") + flat) *
+      (1 + ctx.self.panelStat("outgoingHealing"));
+    const heal = (ally: UnitView) => {
+      const maxHp = ally.panelStat("hp");
+      if (maxHp > 0) ctx.heal(ally, amount / maxHp);
+    };
+    const lowest = ctx.allies.reduce<UnitView | null>(
+      (low, ally) => (!low || ally.hpRatio < low.hpRatio ? ally : low),
+      null
+    );
+    for (const ally of ctx.allies) heal(ally);
+    if (lowest) heal(lowest);
+  };
+
   k.ability({
     id: "basic",
     kind: "basic",
@@ -117,6 +171,7 @@ export default defineCharacter("1503", (k) => {
     target: "allies",
     before: (ctx) => {
       gainBanger(ctx, k.param("02", 1));
+      healTeam(ctx, k.param("02", 2), k.param("02", 3));
     },
   });
 
@@ -149,19 +204,21 @@ export default defineCharacter("1503", (k) => {
     }
   };
 
-  // Facts are missing for the Enhanced Basic ATKs: 10 Toughness per enemy.
+  // Enhanced Basic ATKs (312b459): 30 Toughness per enemy, 30 Energy.
   k.ability({
     id: "greatWave",
     kind: "basic",
+    energy: 30,
     hits: [
       {
         shape: "aoe",
         each: k.param("10", 1),
         stat: "def",
-        toughness: { each: 10 },
+        toughness: { each: 30 },
       },
     ],
     after: (ctx) => {
+      healTeam(ctx, k.param("10", 2), k.param("10", 4));
       archetypeHits(ctx, false);
       spendCharge(ctx);
     },
@@ -170,13 +227,14 @@ export default defineCharacter("1503", (k) => {
   k.ability({
     id: "starryNight",
     kind: "basic",
+    energy: 30,
     hits: (ctx) => {
       const hits: HitDef[] = [
         {
           shape: "aoe",
           each: k.param("08", 1),
           stat: "def",
-          toughness: { each: 10 },
+          toughness: { each: 30 },
         },
       ];
       const banger = ctx.self.certifiedBanger();
@@ -192,19 +250,24 @@ export default defineCharacter("1503", (k) => {
       return hits;
     },
     after: (ctx) => {
+      healTeam(ctx, k.param("08", 2), k.param("08", 4));
       archetypeHits(ctx, true);
       spendCharge(ctx);
     },
   });
 
-  // No option exists for choosing a teammate: the Aesthetic Archetype is
-  // the first other Elation Character, else the first other Character.
-  const chooseArchetype = (ctx: BattleApi) => {
-    const others = ctx.allies.filter(
-      (ally) => ally.kind === "character" && ally !== ctx.self
+  // The Aesthetic Archetype: by default the first other Elation Character,
+  // else the first other Character.
+  const archetypeMember = k.ally(
+    "aesthetic-archetype",
+    "ultimate",
+    (candidates) =>
+      candidates.find((member) => member.pathId === "Elation") ?? candidates[0]
+  );
+  const chooseArchetype = (view: { allies: readonly UnitView[] }) =>
+    view.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === archetypeMember?.slot
     );
-    return others.find((ally) => ally.pathId === "Elation") ?? others[0];
-  };
   const advance = k.param("03", 3 + Math.min(3, elationCount));
   const extraTurnScale = k.e(2) ? 1 + k.rankParam(2, 2) : 1;
 
@@ -215,7 +278,14 @@ export default defineCharacter("1503", (k) => {
     before: (ctx) => {
       gainBanger(ctx, k.param("03", 3));
       for (const ally of ctx.allies) ctx.removeStatus(ally, archetype);
-      const chosen = chooseArchetype(ctx);
+      const named = ctx.target;
+      const chosen =
+        named &&
+        !isEnemy(named) &&
+        named.kind === "character" &&
+        named !== ctx.self
+          ? named
+          : chooseArchetype(ctx);
       ctx.applyStatus(ctx.self, deepLearning, { setStacks: k.param("03", 1) });
       if (k.e(6)) {
         for (const ally of ctx.allies) ctx.applyStatus(ally, deepLearningPen);
@@ -345,8 +415,9 @@ export default defineCharacter("1503", (k) => {
     }
   );
 
-  // Sustain: Enhanced Basic ATK while Deep Learning lasts; the Skill only
-  // when Pearl holds no Certified Banger (healing is not simulated).
+  // Sustain: Enhanced Basic ATK while Deep Learning lasts; the Skill when
+  // Pearl holds no Certified Banger or an ally is at 50% HP or lower.
+  const hurtThreshold = k.param("04", 1);
   k.policy({
     turn: (view) => {
       if (view.self.has(deepLearning)) {
@@ -354,9 +425,17 @@ export default defineCharacter("1503", (k) => {
           ? "starryNight"
           : "greatWave";
       }
-      return view.self.certifiedBanger() <= 0 && view.skillPoints >= 1
+      const hurt = view.allies.some(
+        (ally) =>
+          ally.kind === "character" && ally.hpRatio <= hurtThreshold + 1e-9
+      );
+      return (view.self.certifiedBanger() <= 0 || hurt) && view.skillPoints >= 1
         ? "skill"
         : "basic";
+    },
+    ultimate: (view) => {
+      const target = chooseArchetype(view);
+      return target ? { ability: "ultimate", target } : true;
     },
   });
 });

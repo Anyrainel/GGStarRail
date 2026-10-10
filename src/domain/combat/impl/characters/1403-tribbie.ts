@@ -1,3 +1,4 @@
+import type { BattleApi, BattleEvent, UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { ModifierDef, TurnDuration } from "../../kit/model";
 import type { DamageTag } from "../../model/tags";
@@ -42,10 +43,11 @@ export default defineCharacter("1403", (k) => {
     origin: "ultimate",
     duration: zoneDuration,
   });
-  // A Zone effect rather than a debuff.
+  // A debuff in game; it always lands (no base chance).
   const zoneVulnerability = k.status({
     id: "zone-vulnerability",
     origin: "ultimate",
+    debuff: true,
     duration: zoneDuration,
     modifiers: [{ stat: "vulnerability", value: k.param("03", 2) }],
   });
@@ -63,8 +65,8 @@ export default defineCharacter("1403", (k) => {
       },
     ],
   });
-  // A4: stacks hold the sum of the ally Characters' Max HP (steady panels,
-  // synced when the Zone opens); no scaling source reads other allies.
+  // A4: stacks hold the sum of the ally Characters' current Max HP without
+  // this bonus; no scaling source reads other allies.
   const glassBall = k.status({
     id: "glass-ball-with-wings",
     origin: "a4",
@@ -121,6 +123,28 @@ export default defineCharacter("1403", (k) => {
 
   const busy = (unitId: string) => `busy:${unitId}`;
 
+  const teamMaxHp = (ctx: BattleApi) => {
+    let total = -ctx.self.stacks(glassBall) * k.traceParam(2, 1);
+    for (const ally of ctx.allies) {
+      if (ally.kind === "character") total += ally.currentStat("hp");
+    }
+    return total;
+  };
+  if (k.a(2)) {
+    // Recomputed whenever a status changes an ally Character's Max HP.
+    const changesMaxHp = (event: BattleEvent, self: UnitView) =>
+      self.has(glassBall) &&
+      event.status !== glassBall &&
+      event.target?.kind === "character" &&
+      (event.status?.modifiers ?? []).some(
+        (modifier) => modifier.stat === "hpPct" || modifier.stat === "hpFlat"
+      );
+    const sync = (ctx: BattleApi) =>
+      ctx.setStatusStacks(ctx.self, glassBall, teamMaxHp(ctx));
+    k.on("statusApplied", "a4", { subject: "any", when: changesMaxHp }, sync);
+    k.on("statusRemoved", "a4", { subject: "any", when: changesMaxHp }, sync);
+  }
+
   k.ability({
     id: "ultimate",
     kind: "ultimate",
@@ -141,11 +165,7 @@ export default defineCharacter("1403", (k) => {
         for (const ally of ctx.allies) ctx.applyStatus(ally, sugarScoop);
       }
       if (k.a(2)) {
-        let total = 0;
-        for (const ally of ctx.allies) {
-          if (ally.kind === "character") total += ally.panelStat("hp");
-        }
-        ctx.applyStatus(ctx.self, glassBall, { setStacks: total });
+        ctx.applyStatus(ctx.self, glassBall, { setStacks: teamMaxHp(ctx) });
       }
       for (const ally of ctx.allies) ctx.setCounter(ctx.self, busy(ally.id), 0);
     },
@@ -187,8 +207,8 @@ export default defineCharacter("1403", (k) => {
     }
   );
 
-  // HP is not simulated: the main target (the boss) stands for the hit
-  // target with the highest HP whenever it was hit.
+  // Enemy HP is not simulated: the main target (the boss) stands for the
+  // hit target with the highest HP whenever it was hit.
   k.on(
     "actionEnd",
     "ultimate",
@@ -213,6 +233,24 @@ export default defineCharacter("1403", (k) => {
             origin: "ultimate",
           }
         );
+      }
+    }
+  );
+
+  // Numinosity and E1 reach memosprites summoned while they last, for the
+  // remaining duration.
+  const teamBuffs = k.e(1) ? [numinosity, sugarScoop] : [numinosity];
+  k.on(
+    "summoned",
+    "skill",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx, event) => {
+      for (const status of teamBuffs) {
+        const holder = ctx.allies.find(
+          (ally) => ally !== event.unit && ally.has(status)
+        );
+        const turns = holder?.remainingTurns(status);
+        if (turns) ctx.applyStatus(event.unit, status, { turns });
       }
     }
   );

@@ -107,19 +107,26 @@ export default defineCharacter("1207", (k) => {
   }
 
   if (k.e(2)) {
-    // No event marks Energy reaching full: allies are checked after every
-    // ally action and every turn, before Ultimates are cast.
-    const checkFullEnergy = (ctx: BattleApi) => {
-      for (const ally of ctx.allies) {
-        if (ally.kind !== "character" || ally.maxEnergy <= 0) continue;
-        if (ally.energy < ally.maxEnergy - 1e-6) continue;
-        if (ctx.self.counter(e2Used(ally.id)) > 0) continue;
-        ctx.setCounter(ctx.self, e2Used(ally.id), 1);
-        ctx.gainEnergy(ctx.self, k.rankParam(2, 1));
+    // When a gain fills an ally's Energy (gains at the cap change nothing).
+    // Energy is an expected value that fills, and lets Ultimates cast,
+    // deterministically, so a filling gain of any probability triggers it
+    // in full.
+    k.on(
+      "energyGained",
+      "e2",
+      {
+        subject: "ally",
+        when: (event, self) =>
+          (event.delta ?? 0) > 1e-9 &&
+          event.unit.maxEnergy > 0 &&
+          event.unit.energy >= event.unit.maxEnergy - 1e-6 &&
+          self.counter(e2Used(event.unit.id)) <= 0,
+      },
+      (ctx, event) => {
+        ctx.setCounter(ctx.self, e2Used(event.unit.id), 1);
+        ctx.gainEnergy(ctx.self, k.rankParam(2, 1) / ctx.weight);
       }
-    };
-    k.on("actionEnd", "e2", { subject: "ally" }, checkFullEnergy);
-    k.on("turnEnd", "e2", { subject: "any" }, checkFullEnergy);
+    );
   }
 
   // The Talent raises this attack's multiplier and Toughness Reduction; it

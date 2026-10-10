@@ -10,7 +10,8 @@ export default defineCharacter("1215", (k) => {
   const attacksPerRecovery = 2;
   const recoveryLimit = k.param("02", 2);
 
-  const burden = k.status({ id: "burden", origin: "skill", debuff: true });
+  // Neither a buff nor a debuff in game (StatusType Other).
+  const burden = k.status({ id: "burden", origin: "skill" });
   const sanction = k.status({
     id: "sanction",
     origin: "talent",
@@ -34,16 +35,13 @@ export default defineCharacter("1215", (k) => {
     id: "ten-lords-decree",
     origin: "ultimate",
     duration: { turns: decreeTurns },
-    modifiers: [{ stat: "atkPct", value: k.param("03", 1) }],
-  });
-  // "SPD +20% of Hanya's SPD": turn order ignores stat-scaled SPD
-  // modifiers, so the stacks carry the flat amount read from her panel.
-  const decreeSpd = k.status({
-    id: "ten-lords-decree-spd",
-    origin: "ultimate",
-    duration: { turns: decreeTurns },
-    maxStacks: 1000,
-    modifiers: [{ stat: "spdFlat", value: 1 }],
+    modifiers: [
+      { stat: "atkPct", value: k.param("03", 1) },
+      {
+        stat: "spdFlat",
+        scaling: { source: "applier", stat: "spd", ratio: k.param("03", 3) },
+      },
+    ],
   });
 
   // Kills are not simulated; when on, the enemy with Burden is assumed to be
@@ -150,32 +148,38 @@ export default defineCharacter("1215", (k) => {
     },
   });
 
-  // The engine cannot aim an Ultimate at an ally (tracked:
-  // engine-ally-option-vocabulary): the first damage dealer, else a
-  // Nihility ally, else the first teammate.
+  // The Ultimate's ally: by default the first damage dealer, else a
+  // Nihility teammate, else the first teammate.
   const damagePaths = ["Mage", "Warrior", "Rogue", "Memory", "Elation"];
-  const decreeTarget = (ctx: BattleApi): UnitView => {
-    const others = ctx.allies.filter(
-      (ally) => ally.kind === "character" && ally !== ctx.self
-    );
-    return (
-      others.find((ally) => damagePaths.includes(ally.pathId)) ??
-      others.find((ally) => ally.pathId === "Warlock") ??
-      others[0] ??
-      ctx.self
-    );
-  };
+  const decreeMember = k.ally(
+    "decree-target",
+    "ultimate",
+    (candidates) => {
+      const others = candidates.filter((member) => member.characterId !== k.id);
+      return (
+        others.find((member) => damagePaths.includes(member.pathId)) ??
+        others.find((member) => member.pathId === "Warlock") ??
+        others[0]
+      );
+    },
+    { includeSelf: true }
+  );
+  const decreeTarget = (view: {
+    self: UnitView;
+    allies: readonly UnitView[];
+  }): UnitView =>
+    view.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === decreeMember?.slot
+    ) ?? view.self;
 
   k.ability({
     id: "ultimate",
     kind: "ultimate",
     target: "ally",
     before: (ctx) => {
-      const ally = decreeTarget(ctx);
+      const ally =
+        ctx.target && !isEnemy(ctx.target) ? ctx.target : decreeTarget(ctx);
       ctx.applyStatus(ally, decree);
-      ctx.applyStatus(ally, decreeSpd, {
-        setStacks: k.param("03", 3) * ctx.self.panelStat("spd"),
-      });
     },
   });
 
@@ -189,5 +193,6 @@ export default defineCharacter("1215", (k) => {
         ? "skill"
         : "basic";
     },
+    ultimate: (view) => ({ ability: "ultimate", target: decreeTarget(view) }),
   });
 });

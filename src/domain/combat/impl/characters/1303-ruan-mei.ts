@@ -49,7 +49,12 @@ export default defineCharacter("1303", (k) => {
     },
     modifiers: zoneModifiers,
   });
-  const rebloom = k.status({ id: "thanatoplum-rebloom", origin: "ultimate" });
+  // A debuff in game; it always lands (no base chance).
+  const rebloom = k.status({
+    id: "thanatoplum-rebloom",
+    origin: "ultimate",
+    debuff: true,
+  });
 
   k.teamStat(
     "talent",
@@ -99,6 +104,18 @@ export default defineCharacter("1303", (k) => {
     },
   });
 
+  // The Zone's buffs are halo effects in game: memosprites summoned while
+  // it lasts receive them for the remaining duration.
+  k.on(
+    "summoned",
+    "ultimate",
+    { subject: "ally", when: (event) => event.unit.kind === "memosprite" },
+    (ctx, event) => {
+      const turns = ctx.self.remainingTurns(zone);
+      if (turns) ctx.applyStatus(event.unit, zone, { turns });
+    }
+  );
+
   k.on(
     "actionEnd",
     "ultimate",
@@ -141,7 +158,8 @@ export default defineCharacter("1303", (k) => {
       );
       ctx.delayAction(
         enemy,
-        k.param("03", 3) * ctx.self.panelStat("breakEffect") + k.param("03", 4)
+        k.param("03", 3) * ctx.self.currentStat("breakEffect") +
+          k.param("03", 4)
       );
     }
   );

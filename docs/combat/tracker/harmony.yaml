@@ -31,18 +31,21 @@
 - id: yukong-e2-energy-full
   entity: "1207"
   rule: U8
-  status: open
+  status: completed
   category: approximation
   summary: >
     E2 checks allies for full Energy after each ally action and each turn end
     instead of when Energy reaches the cap, so Energy filled and spent inside
     one action is missed.
   detail: >
-    Blocked on engine-energy-received-event. The game listens to OnSPChange
-    on each teammate (MAvatar_Yukong_00_Rank02_TeamMemberCheckSP); once an
-    ally Energy-change event exists, grant the 5 Energy when an ally's Energy
-    reaches its cap (once per ally until her Ultimate resets it) and drop the
-    actionEnd/turnEnd polling.
+    E2 now listens to `energyGained` (subject ally): when a gain that
+    raises Energy leaves an ally at its cap and that ally has not
+    triggered it since Yukong's last Ultimate, Yukong regenerates 5
+    Energy. The actionEnd/turnEnd polling is gone, so allies already at
+    the cap when her Ultimate resets the count no longer re-trigger it.
+    Energy is an expected value that fills deterministically, so a filling
+    gain of any probability grants the full 5. E6 3-cycle team damage in
+    the kit check drops 15% because one fewer Ultimate fits.
 - id: yukong-talent-instance
   entity: "1207"
   rule: C2
@@ -98,33 +101,32 @@
 - id: ruan-mei-rebloom-debuff
   entity: "1303"
   rule: U3
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Thanatoplum Rebloom is modeled as an enemy status that is not a debuff,
     but the game classifies it as a debuff, so debuff counts (Acheron,
     Jiaoqiu, minTargetDebuffs filters) miss it.
   detail: >
-    AvatarStatusConfig 10013033 (MAvatar_RuanMei_PassiveArea_Enemy,
-    "Thanatoplum Rebloom") has StatusType Debuff. Declare the rebloom status
-    with `debuff: true` (no base chance: it always lands).
+    The thanatoplum-rebloom status is declared `debuff: true` (applied
+    without a base chance, so it always lands).
 - id: ruan-mei-a6-steady-break-effect
   entity: "1303"
   rule: U7
   status: open
   category: approximation
   summary: >
-    A6's Overtone bonus and Rebloom's action delay read Ruan Mei's steady
-    Break Effect, so E4's timed +100% Break Effect raises neither; in game
-    both use her current Break Effect.
+    A6's Overtone bonus reads Ruan Mei's steady Break Effect, so E4's
+    timed +100% Break Effect does not raise it; in game it uses her
+    current Break Effect.
   detail: >
     Blocked on engine-applier-momentary-stats (the Overtone A6 modifier is
-    applier-scaled); the Rebloom delay reads panelStat and also needs
-    engine-momentary-stat-read. Confirmed dynamic in game:
-    Avatar_RuanMei_Tree03_BreakDamageAddedValueShow recomputes the A6 bonus on
-    every BreakDamageAddedRatio change and refreshes Overtone on allies. Once
-    those exist, both should read Ruan Mei's current Break Effect (E4
-    included).
+    applier-scaled). Confirmed dynamic in game:
+    Avatar_RuanMei_Tree03_BreakDamageAddedValueShow recomputes the A6
+    bonus on every BreakDamageAddedRatio change and refreshes Overtone on
+    allies. Once applier scaling can read current stats, the A6 bonus
+    should follow Ruan Mei's current Break Effect (E4 included). Rebloom's
+    action delay already reads `currentStat("breakEffect")`.
 - id: bronya-e4-followup-crit
   entity: "1101"
   rule: U4
@@ -173,20 +175,18 @@
 - id: tingyun-ult-energy-err
   entity: "1202"
   rule: U10
-  status: actionable
+  status: completed
   category: bug
   summary: >
     The Ultimate's 50 Energy (60 at E6) for the ally is scaled by the
     receiver's Energy Regeneration Rate; the game gives a fixed amount.
   detail: >
-    Avatar_TingYun_Skill03_Phase02 grants it with ModifySPNew FixedAddValue
-    (#1 + E6 #1), the same field The Herta's "fixed Energy" A2 uses; ERR-scaled
-    gains (her A6) use AddValue. Call `ctx.gainEnergy(target, ultimateEnergy,
-    { fixed: true })`. Neither the receiver's nor Tingyun's ERR applies.
+    The Ultimate grants its Energy with `ctx.gainEnergy(target,
+    ultimateEnergy, { fixed: true })`.
 - id: sunday-summon-ids
   entity: "1313"
   rule: C5
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     The Skill's summon bonus and "their summon takes action" find memosprites
@@ -194,30 +194,31 @@
     (lightning-lord, numby, fuyuan, souldragon); a new summon kit is missed
     until it is added to SUMMON_IDS in 1313-sunday.ts.
   detail: >
-    Blocked on engine-summon-kind. Once summons are marked apart from
-    countdowns, list the target's summons from that flag (or track them with
-    the `summoned`/`departed` events) and delete SUMMON_IDS.
+    SUMMON_IDS is gone. The kit tracks each owner's summons from
+    `summoned` and `departed` events (kind summon, not `countdown`), in a
+    WeakMap keyed by the battle's units, and the Skill reads memosprites
+    from ctx.allies plus those tracked summons. Verified with Jing Yuan:
+    totals are unchanged from the ID list.
 - id: sunday-ultimate-target
   entity: "1313"
   rule: C3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     The Ultimate picks its ally inside the ability (the Skill's heuristic)
     instead of through the Ultimate policy, and its Energy for that ally is
     scaled by ERR although the game gives a fixed amount.
   detail: >
-    Ultimate policies can now return `{ ability: "ultimate", target }`: move
-    designate() into the Ultimate policy and read `ctx.target` in the
-    Ultimate, so the target shows in the action and `abilityTarget` events.
-    Energy: Avatar_Sunday_10 Skill03 grants it with ModifySPNew FixedAddValue
-    (fixed, like Tingyun's), so call `ctx.gainEnergy(target, amount,
-    { fixed: true })` with amount = max(20% x target Max Energy, A2 minimum).
-    A user-chosen teammate still waits on engine-ally-option-vocabulary.
+    The Ultimate policy returns { ability: "ultimate", target } and the
+    Ultimate reads ctx.target, so the target appears in its action events.
+    Its Energy is fixed (`{ fixed: true }`), max(20% of Max Energy, A2's
+    40). The ally comes from a `beneficiary` option (k.ally, origin skill)
+    that both the Skill and Ultimate policies use; the default is the
+    first teammate in team order not on a support Path.
 - id: tribbie-a4-team-hp
   entity: "1403"
   rule: U7
-  status: open
+  status: completed
   category: approximation
   summary: >
     A4's Max HP bonus (9% of the sum of all ally Characters' Max HP) is a
@@ -225,12 +226,11 @@
     set when the Zone opens; HP buffs from statuses and later changes are
     not counted.
   detail: >
-    Blocked on engine-momentary-stat-read. In game
-    (MAvatar_Tribbie_00_SKL03_PointB2) the bonus is 9% of the sum of ally
-    Avatars' (Max HP - converted HP), recomputed whenever an ally's HP stats
-    change (ListenHPChange). Once current stats can be read, sync the stacks
-    from allies' current Max HP (excluding Tribbie's own A4 bonus) at Zone
-    open and on every change.
+    The Glass Ball stacks are the sum of the ally Characters'
+    `currentStat("hp")` minus Tribbie's own A4 bonus (stacks x 9%), set
+    when the Zone opens and resynced on every statusApplied/statusRemoved
+    of a status with an hpPct or hpFlat modifier on an ally Character
+    while it lasts. Converted HP is not modelled.
 - id: tribbie-zone-highest-hp
   entity: "1403"
   rule: U12
@@ -247,19 +247,18 @@
 - id: tribbie-zone-debuff
   entity: "1403"
   rule: U3
-  status: actionable
+  status: completed
   category: bug
   summary: >
     The Zone's "enemy targets' DMG taken +30%" is an enemy status that is not
     a debuff, but the game classifies it as a debuff.
   detail: >
-    AvatarStatusConfig 10014032 (MAvatar_Tribbie_00_SKL03_Buff_Debuff, "Guess
-    Who Lives Here", Received DMG increases) has StatusType Debuff. Mark the
-    zone-vulnerability status `debuff: true` (no base chance).
+    zone-vulnerability is declared `debuff: true` (applied without a base
+    chance).
 - id: harmony-auras-late-memosprites
   entity: "1403"
   rule: U3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Timed team buffs (Tribbie's Numinosity and E1, Trailblazer Harmony's
@@ -267,14 +266,15 @@
     at cast time; a memosprite summoned or re-summoned later (Garmentmaker)
     does not get the remaining duration.
   detail: >
-    The game applies these as halo sub-modifiers of the caster's status (for
-    Tribbie, IsHaloStatus on MAvatar_Tribbie_00_SKL02_Buff), so units created
-    later receive them for the remaining time. With the new events: in each
-    kit, listen to `summoned` (subject "ally") and, while the buff is active
-    (Tribbie: Numinosity and E1 on any ally; Trailblazer Harmony
-    8005: Backup Dancer; Sunday 1313: The Beatified on the memosprite's
-    owner), apply the status to the new memosprite with
-    `turns: holder.remainingTurns(status)` read from an ally that holds it.
+    Each kit listens to `summoned` (subject ally, memosprites only) and
+    applies its halo buffs to the new memosprite with `turns` read from an
+    ally that holds them: Tribbie's Numinosity and E1, Trailblazer
+    (Harmony)'s Backup Dancer with its A2 tier, and The Beatified when the
+    memosprite's owner holds it (Sunday). The ability configs also mark
+    Ruan Mei's Zone (MAvatar_RuanMei_PassiveArea: RES PEN and E1) and Yao
+    Guang's Zone (G_MAvatar_YaoGuang_00_Skill02_ToSelf) as IsHaloStatus,
+    so both got the same listener. Verified with Aglaea acting after a
+    faster Tribbie: Garmentmaker's damage rises with Numinosity.
 - id: cerydra-coup-de-main-order
   entity: "1412"
   rule: U11
@@ -312,15 +312,14 @@
 - id: hanya-burden-not-debuff
   entity: "1215"
   rule: U3
-  status: actionable
+  status: completed
   category: bug
   summary: >
     Burden is declared a debuff, but the game classifies it as neither buff
     nor debuff, so it inflates debuff counts (Acheron, Jiaoqiu,
     minTargetDebuffs filters).
   detail: >
-    AvatarStatusConfig 10012152 (WMAvatar_Hanya_BpZhanYin, "Burden") has
-    StatusType Other. Drop `debuff: true` from the burden status.
+    `debuff: true` is dropped from the burden status.
 - id: hanya-sanction-sub-targets
   entity: "1215"
   rule: U14
@@ -340,24 +339,30 @@
 - id: tingyun-ally-target-event
   entity: "1202"
   rule: C3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Tingyun's Ultimate declares target "ally", but the Ultimate policy does not name the ally,
     so its action events report the main enemy as target and equipment that
     reads "an ability on one ally" (A Grounded Ascent, Sacerdos' Relived Ordeal, Wavestrider Captain) cannot see it.
   detail: >
-    Return { ability: "ultimate", target } from the Ultimate policy with the ally the
-    kit already picks, and use ctx.target inside the ability. Filed by Light Cone and Relic set triage: equipment reads "an ability on one ally" as event.abilityTarget === "ally" with event.target the ally (61c14f6).
+    The Ultimate policy returns { ability: "ultimate", target } with the
+    Benediction holder (else the Skill's choice), and the Ultimate reads
+    ctx.target. With Sacerdos' Relived Ordeal on Tingyun, the Ultimate now
+    gives its stack to Kafka in the kit check.
 - id: hanya-ally-target-event
   entity: "1215"
   rule: C3
-  status: actionable
+  status: completed
   category: approximation
   summary: >
     Hanya's Ultimate declares target "ally", but the Ultimate policy does not name the ally,
     so its action events report the main enemy as target and equipment that
     reads "an ability on one ally" (A Grounded Ascent, Sacerdos' Relived Ordeal, Wavestrider Captain) cannot see it.
   detail: >
-    Return { ability: "ultimate", target } from the Ultimate policy with the ally the
-    kit already picks, and use ctx.target inside the ability. Filed by Light Cone and Relic set triage: equipment reads "an ability on one ally" as event.abilityTarget === "ally" with event.target the ally (61c14f6).
+    The Ultimate policy returns { ability: "ultimate", target } and the
+    Ultimate reads ctx.target. The ally comes from a `decree-target`
+    option (k.ally, includeSelf; default: the first damage dealer, else a
+    Nihility teammate, else the first teammate). The SPD workaround is
+    gone: Ten-Lords' Decree carries `spdFlat` scaled from the applier's
+    SPD (ratio #3), which turn order now reads.
