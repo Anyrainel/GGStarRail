@@ -5,6 +5,7 @@ import type {
   PolicyView,
   UnitView,
 } from "../../kit/api";
+import type { TeamMemberInfo } from "../../kit/builder";
 import { defineCharacter } from "../../kit/character";
 import type { EffectOrigin, HitDef } from "../../kit/model";
 
@@ -34,19 +35,33 @@ export default defineCharacter("1414", (k) => {
     origin: "e6",
     modifiers: [{ stat: "defIgnore", value: k.rankParam(6, 3) }],
   });
-  // A field effect while the Bondmate exists, not an applied debuff.
+  // A field effect while the Bondmate exists; game data lists it as a
+  // (non-dispellable) Debuff, so it counts for per-debuff effects.
   const enfoldVulnerability = k.status({
     id: "one-dream-dmg-taken",
     origin: "e6",
+    debuff: true,
     modifiers: [{ stat: "vulnerability", value: k.rankParam(6, 1) }],
   });
+  // Shield amounts and their stacking cap are not modelled (U12): every
+  // Shield source (Skill, Ultimate, Souldragon) lasts 3 turns.
+  const shield = k.status({
+    id: "dan-heng-shield",
+    origin: "skill",
+    family: "shield",
+    duration: { turns: k.param("02", 3) },
+  });
+  const shieldAll = (ctx: BattleApi, turns: number) => {
+    for (const ally of ctx.allies) ctx.applyStatus(ally, shield, { turns });
+  };
 
   const bondmateOf = (allies: readonly UnitView[]) =>
     allies.find((ally) => ally.kind === "character" && ally.has(bondmate));
 
-  // Bondmate heuristic: the team's damage dealer, whose ATK scales the
-  // Souldragon's Additional DMG. Damage Paths first, then Nihility (DoT
-  // carries), then the highest ATK; Dan Heng himself only when alone.
+  // The Bondmate is the player's choice. The default is the team's damage
+  // dealer, whose ATK scales the Souldragon's Additional DMG: damage Paths
+  // first, then Nihility (DoT carries), then the earliest slot; Dan Heng
+  // himself only when alone.
   const damagePaths = new Set([
     "Warrior",
     "Rogue",
@@ -54,29 +69,30 @@ export default defineCharacter("1414", (k) => {
     "Memory",
     "Elation",
   ]);
-  const pathRank = (unit: UnitView) =>
-    damagePaths.has(unit.pathId) ? 2 : unit.pathId === "Warlock" ? 1 : 0;
-  const preferredBondmate = (view: PolicyView): UnitView => {
-    let best: UnitView | null = null;
-    for (const ally of view.allies) {
-      if (ally.kind !== "character" || ally === view.self) continue;
-      if (!best) {
-        best = ally;
-        continue;
-      }
-      const rank = pathRank(ally) - pathRank(best);
-      if (
-        rank > 0 ||
-        (rank === 0 && ally.panelStat("atk") > best.panelStat("atk") + 1e-9)
-      ) {
-        best = ally;
-      }
-    }
-    return best ?? view.self;
+  const pathRank = (member: TeamMemberInfo) => {
+    if (member.characterId === k.id) return -1;
+    if (damagePaths.has(member.pathId)) return 2;
+    return member.pathId === "Warlock" ? 1 : 0;
   };
+  const chosenBondmate = k.ally(
+    "bondmate",
+    "skill",
+    (candidates) =>
+      candidates.reduce<TeamMemberInfo | undefined>(
+        (best, member) =>
+          !best || pathRank(member) > pathRank(best) ? member : best,
+        undefined
+      ),
+    { includeSelf: true }
+  );
+  const preferredBondmate = (view: PolicyView): UnitView =>
+    view.allies.find(
+      (ally) => ally.kind === "character" && ally.slot === chosenBondmate?.slot
+    ) ?? view.self;
 
-  // Shields and debuff dispels are not modelled: a plain Souldragon action
-  // only takes its place in the Action Order.
+  // Debuff dispels are not modelled: a plain Souldragon action only renews
+  // the Shields. A6's extra Shield on the lowest-Shield ally adds an amount
+  // to an ally who is already Shielded.
   const enhancedActions = k.param("03", 3) + (k.e(2) ? k.rankParam(2, 1) : 0);
   // E2: "the Additional DMG dealt by the Bondmate becomes 200% of its
   // original DMG" during enhanced actions; the kit deals these instances
@@ -111,7 +127,12 @@ export default defineCharacter("1414", (k) => {
         ? "souldragon-follow-up"
         : "souldragon-action",
     abilities: [
-      { id: "souldragon-action", kind: "other", target: "allies" },
+      {
+        id: "souldragon-action",
+        kind: "other",
+        target: "allies",
+        after: (ctx) => shieldAll(ctx, k.param("04", 3)),
+      },
       {
         id: "souldragon-follow-up",
         kind: "followUp",
@@ -120,6 +141,7 @@ export default defineCharacter("1414", (k) => {
           { shape: "aoe", each: k.param("03", 2), toughness: { each: 20 } },
         ],
         after: (ctx) => {
+          shieldAll(ctx, k.param("04", 3));
           const owner = ctx.self.owner;
           if (!owner) return;
           const mate = bondmateOf(ctx.allies);
@@ -190,6 +212,7 @@ export default defineCharacter("1414", (k) => {
       const chosen = ctx.target;
       designate(ctx, chosen?.kind === "character" ? chosen : ctx.self);
     },
+    after: (ctx) => shieldAll(ctx, k.param("02", 3)),
   });
 
   k.ability({
@@ -203,6 +226,7 @@ export default defineCharacter("1414", (k) => {
       if (mate) ctx.applyStatus(mate, shedScales);
     },
     after: (ctx) => {
+      shieldAll(ctx, k.param("03", 6));
       ctx.setCounter(ctx.self, ENHANCED, enhancedActions);
       const mate = bondmateOf(ctx.allies);
       if (k.e(6) && mate) {
@@ -242,9 +266,9 @@ export default defineCharacter("1414", (k) => {
     );
   }
 
-  // Skill designates the Bondmate; afterwards Basic ATK feeds Skill Points
-  // (Souldragon keeps shields up), with a Skill only when a Basic ATK would
-  // overflow the Skill Point cap.
+  // Skill designates the chosen Bondmate; afterwards Basic ATK feeds Skill
+  // Points (Souldragon keeps Shields up), with a Skill only when a Basic ATK
+  // would overflow the Skill Point cap.
   k.policy({
     turn: (view) => {
       const preferred = preferredBondmate(view);

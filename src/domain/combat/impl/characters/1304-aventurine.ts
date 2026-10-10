@@ -10,8 +10,9 @@ export default defineCharacter("1304", (k) => {
   const BET_THRESHOLD = 7;
   const BET_CAP = 10;
 
-  // Fortified Wager's Shield is not modelled (U12); the status carries the
-  // Talent's Effect RES and E1's CRIT DMG and gates the Blind Bet triggers.
+  // Fortified Wager's Shield amount is not modelled (U12); the status is a
+  // Shield, carries the Talent's Effect RES and E1's CRIT DMG, and gates the
+  // Blind Bet triggers.
   const wagerModifiers: ModifierDef[] = [
     { stat: "effectRes", value: k.param("04", 4) },
   ];
@@ -21,6 +22,7 @@ export default defineCharacter("1304", (k) => {
   const wager = k.status({
     id: "fortified-wager",
     origin: "skill",
+    family: "shield",
     duration: { turns: k.param("02", 3) },
     modifiers: wagerModifiers,
   });
@@ -55,8 +57,7 @@ export default defineCharacter("1304", (k) => {
     modifiers: [{ stat: "defPct", value: k.rankParam(4, 1) }],
   });
 
-  // E6 counts teammates holding Fortified Wager; other Shields are not
-  // modelled (tracker engine-shield-state).
+  // E6 counts teammates holding a Shield from any source.
   const e6Boost = k.status({
     id: "stag-hunt-game",
     origin: "e6",
@@ -199,7 +200,7 @@ export default defineCharacter("1304", (k) => {
   if (k.e(6)) {
     k.on("actionStart", "e6", {}, (ctx) => {
       const shielded = ctx.allies.filter(
-        (ally) => ally.id !== ctx.self.id && ally.has(wager)
+        (ally) => ally.id !== ctx.self.id && ally.hasFamily("shield")
       ).length;
       if (ctx.self.has(e6Boost)) {
         ctx.setStatusStacks(ctx.self, e6Boost, shielded);

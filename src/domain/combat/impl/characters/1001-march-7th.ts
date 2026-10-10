@@ -1,25 +1,43 @@
-import { isEnemy, type UnitView } from "../../kit/api";
+import { type BattleApi, isEnemy, type UnitView } from "../../kit/api";
 import { defineCharacter } from "../../kit/character";
 import type { HitDef } from "../../kit/model";
 
 /** March 7th — Preservation, Ice. */
 export default defineCharacter("1001", (k) => {
-  // Shields and the Skill's taunt are not modelled (U12): these statuses only
-  // mark the "Shielded" allies the Talent's Counter reacts to (tracker
-  // engine-shield-state).
+  // Shield amounts are not modelled (U12); the statuses carry the Shields'
+  // durations so "Shielded" checks see them.
   const cuteness = k.status({
     id: "power-of-cuteness",
     origin: "skill",
+    family: "shield",
     duration: {
       turns: k.param("02", 2) + (k.a(2) ? k.traceParam(2, 1) : 0),
     },
   });
+  // "Greatly increases the chance of enemies attacking that ally" while its
+  // HP is at #3 or higher: #5 of the Skill (5, i.e. +500%) is that aggro
+  // increase, absent from the text.
+  const cutenessLure = k.status({
+    id: "power-of-cuteness-lure",
+    origin: "skill",
+    modifiers: [{ stat: "aggroPct", value: k.param("02", 5) }],
+  });
   const e2Shield = k.status({
     id: "e2-shield",
     origin: "e2",
+    family: "shield",
     duration: { turns: k.rankParam(2, 2) },
   });
-  const shielded = (unit: UnitView) => unit.has(cuteness) || unit.has(e2Shield);
+  // The lure lasts as long as the Skill's Shield, and only while HP is high.
+  const syncLure = (ctx: BattleApi, unit: UnitView) => {
+    const lured =
+      unit.has(cuteness, ctx.self) && unit.hpRatio >= k.param("02", 3) - 1e-9;
+    if (lured && !unit.has(cutenessLure, ctx.self)) {
+      ctx.applyStatus(unit, cutenessLure);
+    } else if (!lured && unit.has(cutenessLure, ctx.self)) {
+      ctx.removeStatus(unit, cutenessLure);
+    }
+  };
 
   const freezeChance = k.param("03", 2) + (k.a(3) ? k.traceParam(3, 1) : 0);
   const freeze = k.status({
@@ -46,7 +64,18 @@ export default defineCharacter("1001", (k) => {
     after: (ctx) => {
       const ally = ctx.target && !isEnemy(ctx.target) ? ctx.target : ctx.self;
       ctx.applyStatus(ally, cuteness);
+      syncLure(ctx, ally);
     },
+  });
+
+  k.on(
+    "hpChanged",
+    "skill",
+    { subject: "ally", when: (event, self) => event.unit.has(cuteness, self) },
+    (ctx, event) => syncLure(ctx, event.unit)
+  );
+  k.on("statusRemoved", "skill", { status: cuteness }, (ctx, event) => {
+    if (event.target) syncLure(ctx, event.target);
   });
 
   // The engine skips a Frozen enemy's turn with the base chance (Effect Hit
@@ -109,7 +138,8 @@ export default defineCharacter("1001", (k) => {
     "talent",
     {
       subject: "ally",
-      when: (event) => shielded(event.unit),
+      // Shields from any source.
+      when: (event) => event.unit.hasFamily("shield"),
       limitPerTurn: countersPerTurn,
     },
     (ctx, event) => {
@@ -119,18 +149,42 @@ export default defineCharacter("1001", (k) => {
   );
 
   if (k.e(2)) {
-    // All allies are at full HP when battle starts; the lowest-HP tie is
-    // assumed to fall on March 7th herself.
-    k.on("battleStart", "e2", { subject: "any" }, (ctx) =>
-      ctx.applyStatus(ctx.self, e2Shield)
+    // The ally with the lowest HP share; ties (every ally starts at full HP)
+    // fall on March 7th herself.
+    k.on("battleStart", "e2", { subject: "any" }, (ctx) => {
+      const lowest = ctx.allies.reduce(
+        (best, ally) => (ally.hpRatio < best.hpRatio - 1e-9 ? ally : best),
+        ctx.self
+      );
+      ctx.applyStatus(lowest, e2Shield);
+    });
+  }
+
+  if (k.e(6)) {
+    // Allies under the Skill's Shield restore #1 of their Max HP plus #2 at
+    // the start of each of their turns.
+    k.on(
+      "turnStart",
+      "e6",
+      {
+        subject: "ally",
+        when: (event, self) => event.unit.has(cuteness, self),
+      },
+      (ctx, event) => {
+        const maxHp = event.unit.panelStat("hp");
+        if (maxHp <= 0) return;
+        const boost = 1 + ctx.self.currentStat("outgoingHealing");
+        const amount = k.rankParam(6, 1) * maxHp + k.rankParam(6, 2);
+        ctx.heal(event.unit, (amount * boost) / maxHp);
+      }
     );
   }
 
-  // Shield herself (the highest base aggro, so the most Counters while the
-  // taunt is not modelled) whenever she has no shield; Basic ATK otherwise.
+  // Shield herself (the tank: the lure keeps enemy attacks, and Counters, on
+  // her) whenever her Skill's Shield is gone; Basic ATK otherwise.
   k.policy({
     turn: (view) =>
-      view.skillPoints >= 1 && !shielded(view.self)
+      view.skillPoints >= 1 && !view.self.has(cuteness)
         ? { ability: "skill", target: view.self }
         : "basic",
   });

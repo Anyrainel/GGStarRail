@@ -30,9 +30,23 @@ export default defineCharacter("1104", (k) => {
     });
   }
 
+  if (k.a(1)) {
+    // "A higher chance to be attacked": #1 of A2 (3, i.e. +300%), absent
+    // from the text.
+    k.stat("a2", { stat: "aggroPct", value: k.traceParam(1, 1) });
+  }
+
   if (k.e(4)) {
     k.teamStat("e4", { stat: "effectRes", value: k.rankParam(4, 1) });
   }
+
+  // Shield amounts are not modelled (U12); the status carries the duration.
+  const bulwark = k.status({
+    id: "enduring-bulwark",
+    origin: "ultimate",
+    family: "shield",
+    duration: { turns: k.param("03", 2) },
+  });
 
   k.ability({
     id: "basic",
@@ -55,8 +69,14 @@ export default defineCharacter("1104", (k) => {
     },
   });
 
-  // Shields for all allies: not modelled (U12).
-  k.ability({ id: "ultimate", kind: "ultimate", target: "allies" });
+  k.ability({
+    id: "ultimate",
+    kind: "ultimate",
+    target: "allies",
+    after: (ctx) => {
+      for (const ally of ctx.allies) ctx.applyStatus(ally, bulwark);
+    },
+  });
 
   // The engine skips a Frozen enemy's turn with the base chance (Effect Hit
   // Rate is not read for the timeline); the turn-start DMG uses the same
@@ -87,18 +107,12 @@ export default defineCharacter("1104", (k) => {
     // The Freeze ends with the Frozen enemy's turn. Applied during that
     // turn, the Slow lasts through the enemy's next turn; it exists where the
     // Freeze landed.
-    k.on(
-      "turnEnd",
-      "e2",
-      {
-        subject: "enemy",
-        when: (event, self) => event.unit.has(freeze, self),
-      },
-      (ctx, event) =>
-        ctx.applyStatus(event.unit, lingeringCold, {
-          baseChance: freezeChance,
-        })
-    );
+    k.on("statusRemoved", "e2", { status: freeze }, (ctx, event) => {
+      if (!isEnemy(event.target)) return;
+      ctx.applyStatus(event.target, lingeringCold, {
+        baseChance: freezeChance,
+      });
+    });
   }
 
   // The Talent (and A4, E6) trigger on a killing blow; HP is not simulated.

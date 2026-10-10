@@ -930,3 +930,32 @@
     (Incoming Healing). Affects Mortenax Blade (1507, mortenax-blade-a4-hp),
     whose Skill needs HP above 1 and whose A4 halves DMG taken and raises
     Incoming Healing by 50% while the Zone lasts.
+- id: engine-ally-dmg-redistribution
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    An enemy hit's HP loss always stays on the ally hit: an effect that
+    passes a share of an ally's DMG taken to another ally cannot move it.
+  detail: >
+    Needs a way to redirect a share of an ally's enemy-hit HP loss to
+    another ally (reported as an enemy hit, not as a consume or heal).
+    Affects Fu Xuan's Matrix of Prescience (1208, fu-xuan-matrix-hp), whose
+    Misfortune Avoidance DMG reduction also waits on
+    engine-ally-hp-modifiers.
+- id: engine-hp-gain-not-heal
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Kits can raise a unit's HP only with ctx.heal or setHp, both of which
+    report a heal from the kit's unit, so HP gains the game applies with
+    SetHP (not healing) trigger "provides healing" and "receives healing"
+    effects.
+  detail: >
+    Needs a non-healing HP gain (an hpChanged cause such as "gain") for
+    conversions. Affects Castorice (1407, castorice-netherwing-hp-counter),
+    whose Netherwing gains HP from allies' losses and A2's conversions and
+    keeps it in a counter meanwhile.

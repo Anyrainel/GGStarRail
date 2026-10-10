@@ -14,17 +14,19 @@ export default defineCharacter("8003", (k) => {
     id: "war-flaming-lance",
     origin: "ultimate",
   });
-  // Shields are not modelled; this marks the Talent's own Shield (re-applied
-  // by every Basic ATK, Skill, and Ultimate) so A6 can check for it.
+  // The Talent's Shield on all allies (amounts are not modelled, U12),
+  // renewed by every Basic ATK, Skill, and Ultimate.
   const talentShield = k.status({
     id: "treasure-of-the-architects-shield",
     origin: "talent",
+    family: "shield",
     duration: { turns: k.param("04", 2) },
   });
   const taunt = k.status({
     id: "ever-burning-amber-taunt",
     origin: "skill",
     debuff: true,
+    taunt: true,
     duration: { turns: k.param("02", 3) },
   });
   const actionBeatsOverthinking = k.status({
@@ -41,8 +43,9 @@ export default defineCharacter("8003", (k) => {
 
   const gainMagmaWill = (ctx: BattleApi, stacks: number) =>
     ctx.addCounter(ctx.self, MAGMA_WILL, stacks, maxMagmaWill);
-  const markTalentShield = (ctx: ActionContext) =>
-    ctx.applyStatus(ctx.self, talentShield);
+  const markTalentShield = (ctx: ActionContext) => {
+    for (const ally of ctx.allies) ctx.applyStatus(ally, talentShield);
+  };
 
   // E1: "additionally deals Fire DMG equal to X% of DEF", taken as a second
   // scaling part of the same instance.
@@ -87,6 +90,10 @@ export default defineCharacter("8003", (k) => {
     },
     after: (ctx) => {
       markTalentShield(ctx);
+      if (k.a(2)) {
+        const boost = 1 + ctx.self.currentStat("outgoingHealing");
+        ctx.heal(ctx.self, k.traceParam(2, 1) * boost);
+      }
       if (k.e(6)) ctx.applyStatus(ctx.self, cityForgingBulwarks);
     },
   });
@@ -132,7 +139,8 @@ export default defineCharacter("8003", (k) => {
     k.on(
       "turnStart",
       "a6",
-      { subject: "self", when: (_event, self) => self.has(talentShield) },
+      // Any Shield counts, from any source.
+      { subject: "self", when: (_event, self) => self.hasFamily("shield") },
       (ctx) => {
         ctx.applyStatus(ctx.self, actionBeatsOverthinking);
         ctx.gainEnergy(ctx.self, k.traceParam(3, 1));
