@@ -60,7 +60,12 @@ Rules that keep this valid:
   from the panels being scored, in two phases so conversions never feed
   conversions.
 - Target-state filters ("vs Burned enemies") read a snapshot taken when the
-  hit landed, so evaluation never depends on the final battle state.
+  hit landed, so evaluation never depends on the final battle state. When
+  the matching statuses were applied with a base chance, the snapshot keeps
+  them apart and evaluation scales the modifier by the chance they landed
+  (independent per status; a Poisson-binomial for "at least N debuffs").
+  Hits a kit deals "against Shocked enemies" name the debuff (`gatedBy`)
+  and inherit its landing chance the same way.
 
 `tests/combat/objective-consistency.test.ts` checks the main invariant: for
 any loadout, the objective's score equals a full simulation.

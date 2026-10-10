@@ -24,15 +24,17 @@ import {
   type StatusDef,
 } from "../kit/model";
 import type { CombatStat, CombatType } from "../model/stats";
-import type { DamageTag, TargetRole } from "../model/tags";
+import type { DamageTag, StatusFamily, TargetRole } from "../model/tags";
 import { BREAK_EFFECT_STATUS, breakEffectFor } from "./breakEffects";
 import type { ActionRecord, BreakEffect, CombatLog, HitRecord } from "./log";
 import {
   ACTION_GAUGE,
   type CombatUnit,
+  type DebuffChance,
   type EffectSource,
   type EnemyUnit,
   StatusInstance,
+  statusFamilies,
 } from "./units";
 
 export interface RegisteredListener {
@@ -651,6 +653,7 @@ export class Battle {
       mainTarget: EnemyUnit | null;
       weight: number;
       targets?: readonly EnemyUnit[];
+      gate?: StatusDef | StatusFamily;
     }
   ): void {
     const main = context.mainTarget ?? this.mainTarget;
@@ -764,6 +767,7 @@ export class Battle {
       multiplier: number;
       weight: number;
       toughness: number;
+      gate?: StatusDef | StatusFamily;
     }
   ): void {
     const statUnit = attacker.statUnit;
@@ -800,6 +804,7 @@ export class Battle {
         targetModifiers: context.target.statusModifiers("incoming"),
         targetBroken: broken,
         ...targetSnapshot(context.target),
+        ...gateChance(context.target, context.gate),
         punchline: hit.punchline ?? this.teamResources.get("punchline") ?? 0,
       });
     }
@@ -896,7 +901,20 @@ export class Battle {
         targetBroken: true,
         toughnessReduced: reduced,
       });
-      this.emitBreakDamage(breaker, enemy, tags, context);
+      // Super Break DMG exists only with a conversion for this hit.
+      const conversion = breaker.currentStat("superBreakDmg", {
+        tags,
+        kind: "superBreak",
+        combatType,
+        attackerKind: breaker.kind,
+        role: "main",
+        targetWeaknesses: enemy.weaknesses,
+        targetStatuses: new Set(enemy.statusSignature()),
+        targetDebuffs: enemy.debuffCount(),
+        targetDots: enemy.dotCount(),
+        targetBroken: true,
+      });
+      if (conversion > 0) this.emitBreakDamage(breaker, enemy, tags, context);
       return;
     }
     enemy.toughness -= reduced;
@@ -1511,6 +1529,7 @@ export class Battle {
             battle.mainTarget,
           weight: weight * (options.weight ?? 1),
           targets: options.targets as EnemyUnit[] | undefined,
+          ...(options.gatedBy ? { gate: options.gatedBy } : {}),
         });
       },
       detonateDots: (target, ratio, options = {}) => {
@@ -1711,11 +1730,37 @@ function originForKind(kind: AbilityKind): EffectOrigin {
 }
 
 /** Target state captured at a hit, for target-state hit filters. */
+/**
+ * The landing chance a gated hit inherits: none when a matching status
+ * surely landed, else the most likely matching base-chance application.
+ */
+function gateChance(
+  enemy: EnemyUnit,
+  gate: StatusDef | StatusFamily | undefined
+): { chance?: DebuffChance } {
+  if (!gate) return {};
+  let best: DebuffChance | null = null;
+  for (const status of enemy.statuses.values()) {
+    if (status.stacks <= 0) continue;
+    const matches =
+      typeof gate === "string"
+        ? statusFamilies(status.def).includes(gate)
+        : status.def === gate;
+    if (!matches) continue;
+    const chance = status.chance;
+    if (!chance) return {};
+    if (!best || chance.base > best.base) best = chance;
+  }
+  return best ? { chance: best } : {};
+}
+
 function targetSnapshot(enemy: EnemyUnit) {
+  const chances = enemy.chanceSnapshot();
   return {
     targetWeaknesses: [...enemy.weaknesses],
     targetStatuses: enemy.statusSignature(),
     targetDebuffs: enemy.debuffCount(),
     targetDots: enemy.dotCount(),
+    ...(chances ? { targetChances: chances } : {}),
   };
 }

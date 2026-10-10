@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { unitPanels } from "@/domain/combat/evaluate/damage";
 import {
   type BattleApi,
   type BattleEvent,
@@ -10,6 +11,7 @@ import {
 } from "@/domain/combat/kit/character";
 import { createKitRegistry } from "@/domain/combat/kit/registry";
 import type { CombatReferenceData } from "@/domain/combat/model/data";
+import { readStat } from "@/domain/combat/model/stats";
 import { TeamObjective } from "@/domain/combat/optimize/objective";
 import { simulateTeam } from "@/domain/combat/simulate";
 import { SCENARIO_PRESETS, type TeamInput } from "@/domain/combat/team/input";
@@ -783,6 +785,62 @@ describe("combat engine features", () => {
     expect(hits("aggro")).toBeLessThan(base);
     expect(hits("taunt")).toBeCloseTo(0, 9);
     expect(hits("departed")).toBeGreaterThan(base);
+  });
+
+  it("scales effects gated on a debuff by its landing chance", () => {
+    const { result } = run(
+      (k) => {
+        const mark = k.status({ id: "mark", origin: "skill", debuff: true });
+        k.stat("talent", {
+          stat: "dmgBoost",
+          value: 1,
+          filter: { targetStatuses: ["mark"] },
+        });
+        k.stat("talent", {
+          stat: "critDmg",
+          value: 1,
+          filter: { minTargetDebuffs: 1 },
+        });
+        k.ability({
+          id: "basic",
+          kind: "basic",
+          hits: [{ shape: "single", main: 1 }],
+          after: (ctx) => {
+            if (ctx.target && isEnemy(ctx.target)) {
+              ctx.applyStatus(ctx.target, mark, { baseChance: 0.5 });
+              ctx.deal(
+                { shape: "single", main: 1, tags: ["additional"] },
+                { gatedBy: mark, abilityId: "proc" }
+              );
+            }
+          },
+        });
+        k.policy({ turn: () => "basic", ultimate: () => false });
+      },
+      { cycles: 2, enemies: 1 }
+    );
+    const procs = result.log.hits.filter((hit) => hit.abilityId === "proc");
+    expect(procs.length).toBeGreaterThan(0);
+    expect(procs.every((hit) => hit.chance?.base === 0.5)).toBe(true);
+    const panels = unitPanels(result.team.units());
+    const gated = result.model.groups.filter((group) =>
+      group.constant.some((entry) => entry.gate)
+    );
+    expect(gated.length).toBeGreaterThan(0);
+    for (const group of gated) {
+      const stats = result.model.groupStats(group, panels);
+      const base = result.model.groupStats(
+        { ...group, constant: group.constant.filter((entry) => !entry.gate) },
+        panels
+      );
+      // 50% base chance × (1 + 0% EHR) × (1 − 30% Effect RES) = 35%.
+      expect(
+        readStat(stats, "dmgBoost") - readStat(base, "dmgBoost")
+      ).toBeCloseTo(0.35, 6);
+      expect(
+        readStat(stats, "critDmg") - readStat(base, "critDmg")
+      ).toBeCloseTo(0.35, 6);
+    }
   });
 
   it("designates an ally through a user option", () => {

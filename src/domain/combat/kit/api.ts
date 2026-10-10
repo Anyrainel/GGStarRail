@@ -92,6 +92,12 @@ export interface DealOptions {
   origin?: EffectOrigin;
   /** Expected occurrences, multiplied with the trigger's weight. */
   weight?: number;
+  /**
+   * The status (or family) on the target this hit depends on ("deals
+   * Additional DMG to Shocked enemies"): when it was applied with a base
+   * chance, the hit is scaled by its landing chance at evaluation.
+   */
+  gatedBy?: StatusDef | StatusFamily;
 }
 
 export interface ToughnessOptions {

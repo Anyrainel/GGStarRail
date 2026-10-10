@@ -85,8 +85,10 @@ adjacent ones) is `targetRoles: ["main"]`; "to enemies in a DEF reduction
 state" is `targetFamilies: ["defReduced"]`, which the engine derives from any
 status lowering DEF; "for each DoT on the target" is `minTargetDots` tiers. Do
 not apply and remove self
-statuses around hits to emulate these. Target filters see whether a status is
-present, not its landing chance.
+statuses around hits to emulate these. When the matching statuses were
+applied with a base chance, evaluation scales the modifier by the chance
+they landed (from the appliers' Effect Hit Rate), so filters need no
+chance handling in the kit.
 
 Incoming modifiers (`vulnerability`, `defReduction`, `resReduction`,
 `dmgMitigation`) on enemy-held statuses may use `scaling` with
@@ -183,7 +185,9 @@ ctx.consumeHp(unit, share) → consumed / heal(unit, share) → restored / setHp
 ctx.gainEnergy(unit, n, { fixed? }) → overflow / setEnergy / gainSkillPoints(n) / setMaxSkillPoints(n)
 ctx.advanceAction(unit, f) / delayAction / grantExtraTurn(unit) / setInActionOrder(unit, b) / setDeparted(unit, b)
 ctx.queueAction(unit, abilityId, { target?, weight? })   // follow-ups after the current action
-ctx.deal(hit, { targets?, tags?, attacker?, abilityId?, abilityKind?, origin?, weight? })
+ctx.deal(hit, { targets?, tags?, attacker?, abilityId?, abilityKind?, origin?, weight?, gatedBy? })
+// gatedBy: the status or family the hit depends on ("Additional DMG to Shocked
+// enemies"); the hit is scaled by that debuff's landing chance at evaluation
 ctx.detonateDots(enemy, ratio, { filter? })
 ctx.reduceToughness(enemy, n, { withoutWeakness?, fixed?, combatType?, origin?, abilityId? })
 ctx.implantWeakness(enemy, type, { turns? }) / removeWeakness(enemy, type)

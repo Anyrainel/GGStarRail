@@ -22,7 +22,12 @@ import {
   readStat,
   type StatVector,
 } from "../model/stats";
-import type { StatusFamily, UnitKind } from "../model/tags";
+import {
+  type HitDescriptor,
+  modifierApplies,
+  type StatusFamily,
+  type UnitKind,
+} from "../model/tags";
 
 /** The catalog entity an effect belongs to, for breakdowns and ledgers. */
 export interface EffectSource {
@@ -53,6 +58,25 @@ export interface AppliedModifier {
 export interface DebuffChance {
   readonly base: number;
   readonly applierId: string;
+}
+
+/**
+ * Target state split by certainty, when some statuses on the target were
+ * applied with a base chance: filters that only pass thanks to those are
+ * scaled by their landing chances at evaluation.
+ */
+export interface TargetChances {
+  /** Status IDs and `family:` entries of statuses that surely landed. */
+  readonly certain: readonly string[];
+  readonly certainDebuffs: number;
+  readonly certainDots: number;
+  readonly pending: readonly PendingStatus[];
+}
+
+export interface PendingStatus extends DebuffChance {
+  readonly entries: readonly string[];
+  readonly debuff: boolean;
+  readonly dot: boolean;
 }
 
 let nextModifierUid = 1;
@@ -344,6 +368,41 @@ export class CombatUnit implements UnitView {
     return [...entries].sort();
   }
 
+  /** Statuses split by landing certainty; undefined when all are certain. */
+  chanceSnapshot(): TargetChances | undefined {
+    const certain = new Set<string>();
+    const pending: PendingStatus[] = [];
+    let certainDebuffs = 0;
+    let certainDots = 0;
+    for (const status of this.statuses.values()) {
+      if (status.stacks <= 0) continue;
+      const entries = [
+        status.def.id,
+        ...statusFamilies(status.def).map((family) => `family:${family}`),
+      ];
+      const chance = status.chance;
+      if (chance) {
+        pending.push({
+          ...chance,
+          entries,
+          debuff: status.def.debuff ?? false,
+          dot: status.def.dot !== undefined,
+        });
+        continue;
+      }
+      for (const entry of entries) certain.add(entry);
+      if (status.def.debuff) certainDebuffs += 1;
+      if (status.def.dot) certainDots += 1;
+    }
+    if (pending.length === 0) return undefined;
+    return {
+      certain: [...certain].sort(),
+      certainDebuffs,
+      certainDots,
+      pending,
+    };
+  }
+
   /** DoT statuses on this unit. */
   dotCount(): number {
     let count = 0;
@@ -354,21 +413,52 @@ export class CombatUnit implements UnitView {
   }
 
   /**
-   * A stat with the statuses on this unit right now (unfiltered and not
-   * scaling), unlike `panelStat`. Recorded like `panelStat`, so optimizer
+   * A stat with the statuses and permanent modifiers on this unit right now
+   * (scaling ones included), unlike `panelStat`. Filtered modifiers count
+   * only when `hit` matches them. Recorded like `panelStat`, so optimizer
    * timelines re-simulate when it changes.
    */
-  currentStat(stat: CombatStat | "hp" | "atk" | "def" | "spd"): number {
+  currentStat(
+    stat: CombatStat | "hp" | "atk" | "def" | "spd",
+    hit?: HitDescriptor
+  ): number {
     if (stat === "spd") return this.speed;
     this.statReads.add(stat);
     const vector = this.panel.slice();
-    for (const modifier of [
-      ...this.statusModifiers("outgoing"),
-      ...this.conditional,
-    ]) {
-      const { def } = modifier;
-      if (def.filter || def.scaling || INCOMING_STATS.has(def.stat)) continue;
-      combineStat(vector, def.stat, (def.value ?? 0) * modifier.scale);
+    const add = (
+      def: ModifierDef,
+      scale: number,
+      applier: CombatUnit | null
+    ) => {
+      if (INCOMING_STATS.has(def.stat)) return;
+      if (def.filter && !(hit && modifierApplies(def.stat, def.filter, hit)))
+        return;
+      let value = (def.value ?? 0) * scale;
+      if (def.scaling) {
+        const source = def.scaling.source === "applier" ? applier : this;
+        if (source) {
+          value += scaledValue(source.scalingInput(def.scaling), {
+            ...def.scaling,
+            ratio: def.scaling.ratio * scale,
+          });
+        }
+      }
+      combineStat(vector, def.stat, value);
+    };
+    const kept = this.keptUniques();
+    for (const status of this.statuses.values()) {
+      if (status.stacks <= 0) continue;
+      if (status.def.unique && kept.get(status.def.id) !== status) continue;
+      for (const modifier of status.modifiers()) {
+        add(modifier.def, modifier.scale, status.applier);
+      }
+    }
+    for (const modifier of this.conditional) {
+      add(
+        modifier.def,
+        modifier.scale,
+        modifier.applierId === this.id ? this : null
+      );
     }
     return stat === "hp" || stat === "atk" || stat === "def"
       ? finalStat(vector, stat)
@@ -523,7 +613,7 @@ export class EnemyUnit extends CombatUnit implements EnemyView {
  * Families a status belongs to: its declared family, plus `defReduced` for
  * any status that lowers its holder's DEF.
  */
-function statusFamilies(def: StatusDef): readonly StatusFamily[] {
+export function statusFamilies(def: StatusDef): readonly StatusFamily[] {
   const families: StatusFamily[] = [];
   if (def.family) families.push(def.family);
   if (

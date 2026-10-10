@@ -24,7 +24,11 @@ import {
   type ScalingStat,
   type StatVector,
 } from "../model/stats";
-import { type HitDescriptor, modifierApplies } from "../model/tags";
+import {
+  type HitDescriptor,
+  type HitFilter,
+  modifierApplies,
+} from "../model/tags";
 
 /** Multiplier zones of one evaluated hit group, for breakdown display. */
 export interface DamageZones {
@@ -57,6 +61,14 @@ interface ScalingModifier {
   scaling: StatScaling;
   holderId: string;
   applierId: string;
+  /** Applies only as far as base-chance target statuses landed. */
+  gate?: HitFilter;
+}
+
+interface ConstantModifier {
+  stat: CombatStat;
+  value: number;
+  gate?: HitFilter;
 }
 
 /**
@@ -70,7 +82,7 @@ export interface HitGroup {
   readonly amount: number;
   readonly statUnitId: string;
   readonly scalingUnitId: string;
-  readonly constant: readonly { stat: CombatStat; value: number }[];
+  readonly constant: readonly ConstantModifier[];
   /**
    * Constant modifiers on the scaling unit when it is not the stat unit
    * (a memosprite hit on its owner's Max HP).
@@ -143,6 +155,12 @@ function groupKey(record: HitRecord): string {
     record.targetStatuses.join("+"),
     record.targetDebuffs,
     record.targetDots,
+    record.targetChances?.pending
+      .map(
+        (status) =>
+          `${status.applierId}:${status.base}:${status.debuff ? 1 : 0}${status.dot ? 1 : 0}:${status.entries.join("+")}`
+      )
+      .join(";") ?? "",
     hit.stat ?? "atk",
     hit.critOverride
       ? `${hit.critOverride.critRate}/${hit.critOverride.critDmg}`
@@ -196,13 +214,27 @@ export class DamageModel {
       this.units.get(sample.attackerId) ?? this.unit(sample.statUnitId);
     const statUnit = this.unit(sample.statUnitId);
     const hit = descriptor(sample, attacker);
-    const constant: { stat: CombatStat; value: number }[] = [];
+    const constant: ConstantModifier[] = [];
+    const chances = sample.targetChances;
+    const certain: HitDescriptor = chances
+      ? {
+          ...hit,
+          targetStatuses: new Set(chances.certain),
+          targetDebuffs: chances.certainDebuffs,
+          targetDots: chances.certainDots,
+        }
+      : hit;
     const scaling: ScalingModifier[] = [];
     const outgoing = [...statUnit.conditional, ...sample.attackerModifiers];
     for (const modifier of outgoing) {
       const { def } = modifier;
       if (INCOMING_STATS.has(def.stat)) continue;
       if (!modifierApplies(def.stat, def.filter, hit)) continue;
+      // Passes only thanks to statuses that may not have landed.
+      const gate =
+        certain !== hit && !modifierApplies(def.stat, def.filter, certain)
+          ? def.filter
+          : undefined;
       if (def.scaling) {
         scaling.push({
           stat: def.stat,
@@ -213,9 +245,14 @@ export class DamageModel {
           },
           holderId: statUnit.id,
           applierId: modifier.applierId,
+          ...(gate ? { gate } : {}),
         });
       } else if (def.value) {
-        constant.push({ stat: def.stat, value: def.value * modifier.scale });
+        constant.push({
+          stat: def.stat,
+          value: def.value * modifier.scale,
+          ...(gate ? { gate } : {}),
+        });
       }
     }
     const scalingConstant: { stat: CombatStat; value: number }[] = [];
@@ -340,11 +377,60 @@ export class DamageModel {
     return vector;
   }
 
+  /**
+   * Probability that a gated modifier applies: its target-state filter
+   * passes only if base-chance statuses landed (independent per status).
+   */
+  private gateChance(
+    filter: HitFilter,
+    record: HitRecord,
+    panels: UnitPanels
+  ): number {
+    const chances = record.targetChances;
+    const target = this.enemies.get(record.targetId);
+    if (!chances || !target) return 1;
+    const landed = chances.pending.map((status) =>
+      this.landingChance(panels, status.base, status.applierId, target)
+    );
+    let probability = 1;
+    const names = [
+      ...(filter.targetStatuses ?? []),
+      ...(filter.targetFamilies ?? []).map((family) => `family:${family}`),
+    ];
+    if (
+      names.length > 0 &&
+      !names.some((name) => chances.certain.includes(name))
+    ) {
+      let missed = 1;
+      chances.pending.forEach((status, index) => {
+        if (status.entries.some((entry) => names.includes(entry))) {
+          missed *= 1 - (landed[index] ?? 0);
+        }
+      });
+      probability *= 1 - missed;
+    }
+    if (filter.minTargetDebuffs !== undefined) {
+      probability *= atLeast(
+        filter.minTargetDebuffs - chances.certainDebuffs,
+        landed.filter((_, index) => chances.pending[index]?.debuff)
+      );
+    }
+    if (filter.minTargetDots !== undefined) {
+      probability *= atLeast(
+        filter.minTargetDots - chances.certainDots,
+        landed.filter((_, index) => chances.pending[index]?.dot)
+      );
+    }
+    return probability;
+  }
+
   /** Attacker stats for a group under the given panels. */
   groupStats(group: HitGroup, panels: UnitPanels): StatVector {
     const vector = this.panelOf(panels, group.statUnitId).slice();
-    for (const { stat, value } of group.constant)
-      combineStat(vector, stat, value);
+    for (const { stat, value, gate } of group.constant) {
+      const share = gate ? this.gateChance(gate, group.sample, panels) : 1;
+      combineStat(vector, stat, value * share);
+    }
     if (group.scaling.length === 0) return vector;
     const phaseOne = vector.slice();
     for (const modifier of group.scaling) {
@@ -361,10 +447,13 @@ export class DamageModel {
         sourceUnit,
         modifier.scaling
       );
+      const share = modifier.gate
+        ? this.gateChance(modifier.gate, group.sample, panels)
+        : 1;
       combineStat(
         vector,
         modifier.stat,
-        modifier.value + scaledValue(input, modifier.scaling)
+        (modifier.value + scaledValue(input, modifier.scaling)) * share
       );
     }
     return vector;
@@ -585,4 +674,21 @@ export function unitPanels(units: ReadonlyMap<string, CombatUnit>): UnitPanels {
     elemental: (unitId, combatType) =>
       unit(unitId).relicElemental[combatType] ?? 0,
   };
+}
+
+/** P(at least `needed` of independent events with these probabilities). */
+function atLeast(needed: number, probabilities: readonly number[]): number {
+  if (needed <= 0) return 1;
+  if (needed > probabilities.length) return 0;
+  // distribution[k] = P(exactly k events so far)
+  let distribution = [1];
+  for (const p of probabilities) {
+    const next = new Array<number>(distribution.length + 1).fill(0);
+    distribution.forEach((mass, count) => {
+      next[count] = (next[count] ?? 0) + mass * (1 - p);
+      next[count + 1] = (next[count + 1] ?? 0) + mass * p;
+    });
+    distribution = next;
+  }
+  return distribution.slice(needed).reduce((sum, mass) => sum + mass, 0);
 }
