@@ -10,3 +10,118 @@
     below 50% HP is a single on-by-default toggle for every target, because
     enemy HP is not simulated.
   detail: ""
+- id: shattered-home-enemy-hp
+  entity: "20009"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Shattered Home's DMG bonus against enemies above 50% HP is a single
+    on-by-default toggle for every target, because enemy HP is not simulated.
+  detail: ""
+- id: mutual-demise-own-hp
+  entity: "20016"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Mutual Demise's CRIT Rate below 80% HP is an off-by-default toggle (U8
+    table) for the whole battle, because HP is not simulated; HP-consuming
+    wearers such as Blade usually stay below 80%.
+  detail: "An engine HP model (engine-hp-model) would let it follow the wearer's HP."
+- id: a-secret-vow-hp-compare
+  entity: "21012"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    A Secret Vow's extra DMG against enemies whose HP percentage is at least
+    the wearer's is one on-by-default toggle (condition "active") for every
+    target: HP is not simulated, the option vocabulary has no relative-HP
+    condition, and the U8 table has no default for it.
+  detail: ""
+- id: flames-afar-hp-loss
+  entity: "21038"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Flames Afar's trigger (one HP loss or consumption above 25% of Max HP) is
+    an on-by-default toggle that fires at the start of each wearer action off
+    cooldown, an upper bound that fits Blade's and Firefly's Skills but also
+    fires for wearers without such HP costs. With the toggle off it never
+    fires, even after large enemy hits.
+  detail: >
+    Checked on Blade: triggers at his first Skill (30% HP cost) and covers
+    the following Forest of Swords turns; afterwards it fires on the first
+    wearer action after the 3-turn cooldown, which can be a Basic ATK or
+    Follow-up rather than his next Skill. An HP model with consume/loss
+    events (engine-hp-model) would make it exact.
+- id: ninja-record-hp-change
+  entity: "22003"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Ninja Record: Sound Hunt triggers from enemy hits on the wearer
+    (hitByEnemy, aggro share as stacks), and an on-by-default toggle stands
+    for the wearer's own HP costs and allies' healing by triggering at each
+    of its actions, so the CRIT DMG is effectively permanent by default.
+  detail: "Healing and HP consumption events (engine-hp-model) would replace the toggle."
+
+- id: mediation-unique-strongest
+  entity: "20019"
+  rule: U13
+  status: open
+  category: engine-gap
+  summary: >
+    Unique statuses keep the copy with the most stacks (the first applied on
+    a tie), not the strongest value, so two wearers of Mediation, Past and
+    Future, Dreamville Adventure, or Poised to Bloom at different
+    Superimpositions may keep the weaker copy; team auras compare values.
+  detail: ""
+
+- id: past-and-future-next-ally
+  entity: "21025"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Past and Future buffs the ally (Character or memosprite) earliest in the
+    Action Order when the wearer's Skill ends, after the Skill's own advances.
+    Verify whether the game instead waits for the ally that actually acts
+    next when an Ultimate, advance, or extra turn intervenes.
+  detail: ""
+- id: final-victor-crit-stacks
+  entity: "21037"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Good Fortune is gained in expectation: each hit event (every damage
+    instance on every enemy) adds the wearer's panel CRIT Rate in stacks,
+    effective from the next hit. Momentary CRIT Rate buffs are ignored, the
+    4-stack cap applies to the expected sum, and per-target counting on
+    Blast/AoE hits is assumed.
+  detail: ""
+- id: swordplay-stack-timing
+  entity: "21010"
+  rule: U6
+  status: open
+  category: verify
+  summary: >
+    Swordplay gains 1 stack per attack on the attack's main target after its
+    hits, and the first attack on a new target already grants a stack.
+    Confirm per-attack versus per-hit stacking and whether the stack counts
+    for the attack that triggers it.
+  detail: ""
+- id: shadowed-by-night-super-break
+  entity: "21047"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    The SPD buff triggers on the wearer's Weakness Breaks, Break-tagged
+    procs, and Break DoT ticks, but Super Break DMG emits no event, so Super
+    Break DMG dealt by the wearer does not trigger it.
+  detail: "Needs a hit (or break-damage) event for Super Break instances recorded in applyToughness."

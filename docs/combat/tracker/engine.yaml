@@ -335,3 +335,34 @@
     Netherwing's hits on Castorice's Max HP miss Max HP buffs on her (Hyacine's
     After Rain, Castorice-targeted HP buffs).
   detail: ""
+- id: engine-cross-kit-state
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot read or change another kit's statuses or states (Aglaea's
+    Supreme Stance, Mydei's Vendetta, Castorice's Newbud). Cyrene's Chrysos
+    Heir Odes need them; Ode to Time writes Evernight's "memoria" counter by
+    name.
+  detail: "A small registry of named, exported states per kit would let Ode-style effects target them."
+- id: engine-damage-tally
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Damage amounts exist only after the battle is evaluated, so effects that
+    deal a share of tallied DMG (Robin • Summeretto E1) cannot be modeled.
+  detail: ""
+- id: engine-memosprite-max-hp
+  entity: engine
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    MemospriteDef has no Max HP rule. Memosprites read their owner's HP, so
+    kits multiply HP-scaled memosprite multipliers by the Talent's HP ratio
+    (Evey 50%, Summer Songbirds 70%). Flat HP parts and the memosprite's own
+    Max HP buffs scale with the owner's HP instead.
+  detail: ""

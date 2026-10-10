@@ -1,1 +1,304 @@
 # Combat translation tracker: remembrance. Schema: .agents/skills/hsr-combat/tracking.md
+- id: aglaea-seam-stitch-debuff
+  entity: "1402"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    Seam Stitch is modeled as a debuff on the enemy (the text says "inflicts
+    the target with the Seam Stitch state"; guides disagree). It is reapplied
+    by every Aglaea attack, so it feeds debuff counts and on-debuff triggers.
+  detail: ""
+- id: aglaea-seam-stitch-attackers
+  entity: "1402"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    The Talent's Additional DMG (and E1 Energy) triggers after attacks by
+    Aglaea or Garmentmaker on the Seam Stitch target, once per action; the
+    Joint ATK triggers it once. The text names no attacker for this part.
+  detail: ""
+- id: aglaea-joint-atk-split
+  entity: "1402"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    Slash by a Thousandfold Kiss: the facts' Toughness (20/10) is put on
+    Aglaea's part, and Garmentmaker's part is tagged Basic ATK, Joint ATK,
+    and memosprite DMG. The per-part Toughness split and DMG types are not in
+    the data.
+  detail: ""
+- id: castorice-max-newbud
+  entity: "1407"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    Max Newbud (and Netherwing's Max HP) is hard-coded to 34,000, the
+    community value for level-80 teams (5.3125 × level²). The text only says
+    it depends on the Characters' levels; lower-level teams get less.
+  detail: ""
+- id: castorice-hp-model
+  entity: "1407"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated. Newbud and Netherwing's HP come from assumed losses:
+    allies (Characters only) at 80% HP when the Skills consume HP, 10% Max HP
+    per enemy attack, and with A2 the sustain's healing restoring each loss
+    (toggle healing-converted, capped per ally). Teammates' HP costs and heals,
+    E4, and Mooncocoon's 1-HP floor are not seen.
+  detail: >
+    An engine HP model (engine-hp-model) with heal and HP-loss events would
+    replace the assumptions; reading allies' panel HP already scales the
+    amounts with their Max HP.
+- id: castorice-netherwing-policy
+  entity: "1407"
+  rule: C3
+  status: open
+  category: verify
+  summary: >
+    Netherwing uses Breath while its HP stays above 25% (and with Ardent
+    Will), Claw to end its first two turns, and on its third turn Breathes
+    down to Wings Sweep the Ruins. Wings triggers once per departure: the
+    low-HP Breath replaces Breath with Wings, and expiry deals it otherwise.
+  detail: "Confirm common play (some players dump all HP on the first turn) and that a low-HP Breath does not also trigger the Talent Wings."
+- id: castorice-territory-debuff
+  entity: "1407"
+  rule: U3
+  status: open
+  category: verify
+  summary: >
+    Lost Netherland's All-Type RES reduction is held by every enemy as a
+    non-debuff status (a Territory), so it does not count toward debuff
+    counts. Confirm in game.
+  detail: ""
+- id: castorice-joint-atk-split
+  entity: "1407"
+  rule: C2
+  status: open
+  category: needs-data
+  summary: >
+    Boneclaw: the facts' Toughness (20 each) is put on Castorice's part, and
+    Netherwing's part is tagged Skill, Joint ATK, and memosprite DMG. The
+    per-part split and DMG types are not in the data.
+  detail: ""
+- id: hyacine-healing-tally
+  entity: "1409"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    The healing tally is computed from the heal formulas (Hyacine's panel Max
+    HP plus her After Rain and A6 bonuses, Outgoing Healing from panel, A6 and
+    the A2 toggle), counting overhealing, and kept in units of panel Max HP so
+    Rainclouds scales with it. Little Ica heals only after enemy attacks and
+    never runs out of HP; healing-received bonuses are ignored.
+  detail: >
+    Teammates' HP costs (Castorice, Blade) do not trigger Ica's healing or
+    E2, and Fall, Then Take Wing never triggers. Overhealing counting toward
+    the tally needs confirmation.
+- id: evernight-evey-hp-loss
+  entity: "1413"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Talent HP-loss triggers (CRIT DMG, +2 Memoria) come from enemy attacks
+    on Evernight (her aggro share) and her own HP costs. Enemy attacks on
+    Evey, who draws more aggro, are not modeled, so Memoria is underestimated.
+  detail: "Needs memosprites as enemy targets with aggro (see engine-aggro-modifiers, engine-hp-model)."
+- id: evernight-hp-cost-triggers
+  entity: "1413"
+  rule: U12
+  status: open
+  category: verify
+  summary: >
+    The Skill's 10% HP cost and A2's 5% HP cost are counted as one Talent
+    HP-loss trigger per ability use. Whether each cost triggers separately
+    (another +2 Memoria, +2 more with E2) needs confirmation.
+  detail: ""
+- id: evernight-whirl-instance
+  entity: "1413"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    "For every 4 Memoria, additionally deals 10% of Evey's Max HP" is added
+    to the same damage instance as the 50% base, not a separate instance.
+  detail: ""
+- id: evernight-ultimate-tags
+  entity: "1413"
+  rule: U4
+  status: open
+  category: verify
+  summary: >
+    The Ultimate's DMG is dealt by Evey and tagged as both Ultimate DMG and
+    memosprite DMG. Confirm which DMG types it counts as.
+  detail: ""
+- id: cyrene-first-ultimate-cost
+  entity: "1415"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    Facts give SPNeed 12 for both Ultimates. The first Ultimate is modeled as
+    spending its 24-point activation threshold (Talent #4, Ultimate #2), so
+    Reunion at First Sight does not follow it right away.
+  detail: "If the first Ultimate really costs 12, change its resource amount to k.param(\"04\", 5)."
+- id: cyrene-activate-ultimates
+  entity: "1415"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    "Activates all teammates' Ultimate" is modeled as filling teammates'
+    Energy. Ultimates paid with a kit resource (counters) are not filled.
+  detail: ""
+- id: cyrene-odes-unmodeled
+  entity: "1415"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Odes that change another kit's own state are not modeled: Romance (DMG
+    and DEF ignore until Supreme Stance ends), Strife, Life and Death,
+    Worldbearing, Law, Earth, Passage's extra Additional DMG, Reason's extra
+    Skill instances, Sky's healing tally, and Time's Dew DMG and Skill CRIT
+    DMG parts. Ode to Time adds Memoria to Evernight's "memoria" counter by
+    name.
+  detail: "Modeled: Genesis, Trickery, Passage DEF ignore, Ocean, Romance Energy, Reason SP/advance/True Knowledge, Sky Energy, Time Memoria, non-Chrysos DMG buff. See engine-cross-kit-state."
+- id: cyrene-ode-to-ego-sources
+  entity: "1415"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    Ode to Ego counts teammates' memosprites as different teammates, since
+    the text only excludes Demiurge. "Take action" with Future is modeled as
+    turn start (extra turns included).
+  detail: ""
+- id: cyrene-ode-policy
+  entity: "1415"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    Demiurge gives "This Ode, to All Lives" once, on its first non-Story
+    extra turn, to a heuristic damage dealer (a Chrysos Heir outside support
+    Paths, else a non-support Character), then always uses Minuet.
+  detail: "See engine-ally-option-vocabulary."
+- id: cyrene-genesis-panel
+  entity: "1415"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    Ode to Genesis reads Demiurge's steady panel: the Ultimate's CRIT Rate
+    is added as a constant, and the memosprite Talent's +24% Max HP is not
+    included in the ATK conversion. Trickery's "Patron" is the designated
+    enemy.
+  detail: ""
+- id: cyrene-minuet-toughness
+  entity: "1415"
+  rule: U1
+  status: open
+  category: needs-data
+  summary: >
+    Facts list Minuet's Toughness as main 1.67 and each 10. The 1.67 is
+    assumed to be per Ode to Ego Bounce instance, as with Mem's Bounce
+    instances.
+  detail: ""
+- id: robin-summeretto-healing-vibes
+  entity: "1512"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Vibes from teammates' healing and Shields (first per turn) and A4's
+    Groove (fixed Energy after receiving healing or Shields) are not
+    modeled, so Fever comes later and ends sooner with sustain units.
+  detail: "Needs heal/Shield events (engine-hp-model, engine-shield-state)."
+- id: robin-summeretto-e1-tally
+  entity: "1512"
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    E1's True DMG (a share of the tallied non-True DMG dealt by allies) is
+    missing: damage is evaluated after the battle, so no tally exists during
+    it.
+  detail: "See engine-damage-tally."
+- id: robin-summeretto-a2-snapshot
+  entity: "1512"
+  rule: U6
+  status: open
+  category: approximation
+  summary: >
+    A2's ATK/CRIT DMG bonus reads Vibes when it is granted instead of
+    following Vibes while it lasts (it is re-granted on every Vibes gain
+    from that ally).
+  detail: ""
+- id: robin-summeretto-e4-e6
+  entity: "1512"
+  rule: U11
+  status: open
+  category: approximation
+  summary: >
+    E4's Songbirds SPD% is converted to flat SPD at Fever entry (memosprite
+    SPD ignores SPD%). E6's second stored Ultimate keeps only overflow from
+    the kit's own Energy gains (E6, summon, Memosprite Skill), not from
+    other sources.
+  detail: "See engine-memosprite-spd-pct and engine-energy-received-event."
+- id: robin-summeretto-guest-target
+  entity: "1512"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    Special Guest goes to the first ally Character outside support Paths and
+    the Remembrance supports (Hyacine, Cyrene, Trailblazer), else the first
+    other ally Character.
+  detail: "See engine-ally-option-vocabulary."
+- id: trailblazer-remembrance-energy-charge
+  entity: "8007"
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    Mem's Charge from allies' Energy (1% per 10) samples ally Characters'
+    Energy at turns, actions, and enemy hits; Energy spent on an Ultimate
+    between two samples hides gains made in between.
+  detail: "See engine-energy-received-event."
+- id: trailblazer-remembrance-charge-rules
+  entity: "8007"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    Charge is reset to 0 when Mem uses "Lemme! Help You!", and E4's "0 Max
+    Energy" ally targets are limited to Characters (memosprites have no
+    Energy bar in the engine). Confirm both.
+  detail: ""
+- id: trailblazer-remembrance-ultimate-tags
+  entity: "8007"
+  rule: U4
+  status: open
+  category: verify
+  summary: >
+    The Ultimate's DMG is dealt by Mem and tagged as both Ultimate DMG and
+    memosprite DMG. Confirm which DMG types it counts as.
+  detail: ""
+- id: trailblazer-remembrance-support-target
+  entity: "8007"
+  rule: C3
+  status: open
+  category: approximation
+  summary: >
+    "Lemme! Help You!" goes to the first ally Character outside support Paths
+    and the Remembrance supports (Hyacine, Cyrene, Robin • Summeretto), else
+    the first other ally Character.
+  detail: "See engine-ally-option-vocabulary."
