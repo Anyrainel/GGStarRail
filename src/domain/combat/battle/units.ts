@@ -232,11 +232,11 @@ export class CombatUnit implements UnitView {
     const pct = this.statusStat("spdPct", true);
     const flat = this.statusStat("spdFlat", true);
     if (this.speedRule && this.owner) {
-      return (
-        this.owner.speed * this.speedRule.ownerRatio +
-        this.speedRule.flat +
-        flat
-      );
+      // A memosprite's base SPD comes from its owner; SPD% buffs on the
+      // memosprite scale that base.
+      const base =
+        this.owner.speed * this.speedRule.ownerRatio + this.speedRule.flat;
+      return Math.max(1, base * (1 + pct) + flat);
     }
     const vector = this.panel.slice();
     combineStat(vector, "spdPct", pct);

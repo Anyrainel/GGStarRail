@@ -754,6 +754,9 @@ export class Battle {
         targetId: context.target.id,
         weight: context.weight,
         attackerModifiers: this.outgoingSnapshot(statUnit),
+        ...(scalingUnit === statUnit
+          ? {}
+          : { scalingModifiers: this.outgoingSnapshot(scalingUnit) }),
         targetModifiers: context.target.statusModifiers("incoming"),
         targetBroken: broken,
         ...targetSnapshot(context.target),

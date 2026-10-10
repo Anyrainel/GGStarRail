@@ -459,4 +459,70 @@ describe("combat engine features", () => {
       .total;
     expect(withBreak).toBeCloseTo(direct, 6);
   });
+
+  it("gives memosprites team auras once, SPD% buffs, and owner buffs", () => {
+    const memoTurns = (hasted: boolean) => {
+      const { result } = run(
+        (k) => {
+          const vigor = k.status({
+            id: "vigor",
+            origin: "talent",
+            modifiers: [{ stat: "hpPct", value: 0.5 }],
+          });
+          const haste = k.status({
+            id: "haste",
+            origin: "memospriteTalent",
+            modifiers: [{ stat: "spdPct", value: 1 }],
+          });
+          basic(k);
+          k.memosprite({
+            servantId: "memo",
+            speed: { flat: 100 },
+            presentAtStart: true,
+            abilities: [
+              {
+                id: "claw",
+                kind: "memospriteSkill",
+                hits: [
+                  { shape: "single", main: 1, stat: "hp", statOwner: "owner" },
+                ],
+              },
+            ],
+          });
+          k.on("battleStart", "talent", {}, (ctx: BattleApi) => {
+            ctx.applyStatus(ctx.self, vigor);
+            const memo = ctx.allies.find((unit) => unit.kind === "memosprite");
+            if (hasted && memo) ctx.applyStatus(memo, haste);
+          });
+          k.policy({ turn: () => "basic", ultimate: () => false });
+        },
+        {
+          support: (k) => {
+            basic(k);
+            k.teamStat("talent", { stat: "critDmg", value: 0.5 });
+            k.policy({ turn: () => "basic", ultimate: () => false });
+          },
+          cycles: 3,
+        }
+      );
+      const claws = result.model.groups.filter(
+        (group) => group.sample.abilityId === "claw"
+      );
+      expect(claws.length).toBeGreaterThan(0);
+      for (const group of claws) {
+        const auraCritDmg = group.constant
+          .filter((entry) => entry.stat === "critDmg")
+          .reduce((sum, entry) => sum + entry.value, 0);
+        expect(auraCritDmg).toBeCloseTo(0.5, 9);
+        expect(group.scalingConstant).toContainEqual({
+          stat: "hpPct",
+          value: 0.5,
+        });
+      }
+      return result.log.actions.filter((action) =>
+        action.unitId.includes(":memo:")
+      ).length;
+    };
+    expect(memoTurns(true)).toBeGreaterThan(memoTurns(false));
+  });
 });

@@ -157,8 +157,12 @@ several partial triggers add up to at most the limit.
 ## Memosprites [GT talent text, FR, INF]
 
 - HP and SPD come from talent text. All other stats are inherited from the
-  owner's panel.
-- Owner combat statuses do not apply unless the text spreads them.
+  owner's panel. SPD% buffs on a memosprite scale its base SPD (a share of
+  the owner's SPD, or a fixed value).
+- Owner combat statuses do not apply unless the text spreads them. Hits that
+  scale with the owner's stat ("DMG equal to X% of <owner>'s Max HP") read
+  the owner's stat with the owner's statuses.
+- Permanent team auras reach memosprites once, like any ally target.
 - "Ally targets" includes memosprites; "ally characters" does not.
 - Their Energy goes to the owner.
 - Memosprites with SPD 0 have no turns.

@@ -98,12 +98,12 @@ export default defineCharacter("1512", (k) => {
     maxStacks: vibesCap,
     modifiers: [{ stat: "critDmg", value: k.traceParam(1, 4) }],
   });
-  // E4 SPD as flat SPD: memosprite SPD follows the owner and ignores SPD%.
+  // Stacks hold the SPD% ratio set at Fever entry.
   const e4Speed = k.status({
     id: "e4-songbird-spd",
     origin: "e4",
     maxStacks: 10_000,
-    modifiers: [{ stat: "spdFlat", value: 1 }],
+    modifiers: [{ stat: "spdPct", value: 1 }],
   });
 
   if (k.a(3)) k.stat("a6", { stat: "critRate", value: k.traceParam(3, 1) });
@@ -187,9 +187,7 @@ export default defineCharacter("1512", (k) => {
     ctx.setInActionOrder(robin, false);
     if (k.e(4)) {
       const ratio = k.rankParam(4, 2) + vibes * k.rankParam(4, 3);
-      ctx.applyStatus(songbirds, e4Speed, {
-        setStacks: songbirds.speed * ratio,
-      });
+      ctx.applyStatus(songbirds, e4Speed, { setStacks: ratio });
     }
     if (k.e(6) && robin.counter(FEVER_ENTERED) === 0) {
       gainEnergy(ctx, robin, k.rankParam(6, 2), true);

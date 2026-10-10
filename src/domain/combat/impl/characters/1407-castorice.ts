@@ -45,14 +45,11 @@ export default defineCharacter("1407", (k) => {
     maxStacks: k.traceParam(3, 2),
     modifiers: [{ stat: "dmgBoost", value: k.traceParam(3, 1) }],
   });
-  // Memosprite SPD statuses add flat SPD: +100% of Netherwing's 165 SPD.
   const invertedTorch = k.status({
     id: "inverted-torch-spd",
     origin: "a4",
     duration: { turns: 1 },
-    modifiers: [
-      { stat: "spdFlat", value: k.traceParam(2, 3) * k.param("03", 1) },
-    ],
+    modifiers: [{ stat: "spdPct", value: k.traceParam(2, 3) }],
   });
 
   if (k.a(2)) {

@@ -71,6 +71,11 @@ export interface HitGroup {
   readonly statUnitId: string;
   readonly scalingUnitId: string;
   readonly constant: readonly { stat: CombatStat; value: number }[];
+  /**
+   * Constant modifiers on the scaling unit when it is not the stat unit
+   * (a memosprite hit on its owner's Max HP).
+   */
+  readonly scalingConstant: readonly { stat: CombatStat; value: number }[];
   readonly scaling: readonly ScalingModifier[];
   readonly incoming: {
     vulnerability: number;
@@ -146,6 +151,7 @@ function groupKey(record: HitRecord): string {
     record.punchline ?? "",
     record.chance ? `${record.chance.base}@${record.chance.applierId}` : "",
     modifierKey(record.attackerModifiers),
+    modifierKey(record.scalingModifiers ?? []),
     modifierKey(record.targetModifiers),
   ].join("|");
 }
@@ -210,6 +216,22 @@ export class DamageModel {
         constant.push({ stat: def.stat, value: def.value * modifier.scale });
       }
     }
+    const scalingConstant: { stat: CombatStat; value: number }[] = [];
+    if (sample.scalingUnitId !== statUnit.id) {
+      const scalingUnit = this.unit(sample.scalingUnitId);
+      for (const modifier of [
+        ...scalingUnit.conditional,
+        ...(sample.scalingModifiers ?? []),
+      ]) {
+        const { def } = modifier;
+        if (INCOMING_STATS.has(def.stat) || def.scaling || !def.value) continue;
+        if (!modifierApplies(def.stat, def.filter, hit)) continue;
+        scalingConstant.push({
+          stat: def.stat,
+          value: def.value * modifier.scale,
+        });
+      }
+    }
     const target = this.enemies.get(sample.targetId);
     const incoming = {
       vulnerability: 0,
@@ -267,6 +289,7 @@ export class DamageModel {
       statUnitId: statUnit.id,
       scalingUnitId: sample.scalingUnitId,
       constant,
+      scalingConstant,
       scaling,
       incoming,
       incomingChance,
@@ -305,6 +328,14 @@ export class DamageModel {
     return panels.panel(
       unit.kind === "memosprite" && unit.owner ? unit.owner.id : unitId
     );
+  }
+
+  /** Scaling-unit stats for a group whose scaling unit is not its stat unit. */
+  private scalingStats(group: HitGroup, panels: UnitPanels): StatVector {
+    const vector = this.panelOf(panels, group.scalingUnitId).slice();
+    for (const { stat, value } of group.scalingConstant)
+      combineStat(vector, stat, value);
+    return vector;
   }
 
   /** Attacker stats for a group under the given panels. */
@@ -409,7 +440,7 @@ export class DamageModel {
         const scalingVector =
           group.scalingUnitId === group.statUnitId
             ? stats
-            : this.panelOf(panels, group.scalingUnitId);
+            : this.scalingStats(group, panels);
         const scalingStat: ScalingStat = record.hit.stat ?? "atk";
         const multiplierBoost = readStat(stats, "multiplierBoost");
         const elationTerm =

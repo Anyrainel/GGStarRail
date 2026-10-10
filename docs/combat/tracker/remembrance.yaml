@@ -248,11 +248,11 @@
   status: open
   category: approximation
   summary: >
-    E4's Songbirds SPD% is converted to flat SPD at Fever entry (memosprite
-    SPD ignores SPD%). E6's second stored Ultimate keeps only overflow from
-    the kit's own Energy gains (E6, summon, Memosprite Skill), not from
-    other sources.
-  detail: "See engine-memosprite-spd-pct and engine-energy-received-event."
+    E6's second stored Ultimate keeps only overflow from the kit's own Energy
+    gains (E6, summon, Memosprite Skill), not from other sources.
+  detail: >
+    See engine-energy-received-event. E4's Songbirds SPD% is an spdPct status
+    now that memosprite SPD reads SPD% (engine-memosprite-spd-pct).
 - id: robin-summeretto-guest-target
   entity: "1512"
   rule: C3

@@ -7,6 +7,7 @@ import {
   DEFAULT_BATTLE_OPTIONS,
 } from "../battle/battle";
 import {
+  type AppliedModifier,
   appliedModifier,
   CombatUnit,
   type EffectSource,
@@ -499,6 +500,9 @@ export function assembleTeam(
 
   // Team auras, listeners, statuses, memosprites, and summons.
   const teamModifiers: { modifier: TeamModifier; source: EffectSource }[] = [];
+  // Aura entries on each unit, so memosprites copying their owner's
+  // permanent modifiers do not receive the auras a second time.
+  const teamAuraEntries = new Set<AppliedModifier>();
   members.forEach((member, slot) => {
     const kit = characterKits[slot];
     const characterSource = characterSources[slot];
@@ -516,7 +520,13 @@ export function assembleTeam(
         teamModifiers.push({ modifier, source });
     }
     if (kit && characterSource) {
-      registerServants(battle, member.unit, kit, characterSource);
+      registerServants(
+        battle,
+        member.unit,
+        kit,
+        characterSource,
+        teamAuraEntries
+      );
     }
   });
   // Equipment auras of the same Light Cone or set from several wearers do
@@ -551,9 +561,15 @@ export function assembleTeam(
       )
         continue;
       if (modifier.paths && !modifier.paths.includes(unit.pathId)) continue;
-      unit.conditional.push(
-        appliedModifier(modifier, modifier.origin, source, source.providerId, 1)
+      const entry = appliedModifier(
+        modifier,
+        modifier.origin,
+        source,
+        source.providerId,
+        1
       );
+      teamAuraEntries.add(entry);
+      unit.conditional.push(entry);
     }
   };
   for (const member of members) applyTeamModifiers(member.unit);
@@ -631,7 +647,8 @@ function registerServants(
   battle: Battle,
   owner: CombatUnit,
   kit: CompiledCharacterKit,
-  source: EffectSource
+  source: EffectSource,
+  teamAuraEntries: ReadonlySet<AppliedModifier>
 ): void {
   for (const memosprite of kit.memosprites) {
     battle.servantFactories.set(
@@ -654,7 +671,13 @@ function registerServants(
           ownerRatio: memosprite.speed.ownerRatio ?? 0,
           flat: memosprite.speed.flat ?? 0,
         };
-        unit.conditional.push(...unitOwner.conditional);
+        // The owner's own permanent modifiers; team auras are applied to
+        // the memosprite when it is created.
+        unit.conditional.push(
+          ...unitOwner.conditional.filter(
+            (entry) => !teamAuraEntries.has(entry)
+          )
+        );
         unit.behaviour = {
           abilities: new Map(
             memosprite.abilities.map((ability) => [ability.id, ability])

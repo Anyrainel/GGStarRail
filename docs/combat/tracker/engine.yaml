@@ -223,13 +223,18 @@
 - id: engine-scaled-spd-turn-order
   entity: engine
   rule: U7
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Turn order ignores SPD modifiers with `scaling`. Hanya's Ultimate ("SPD
     +20% of Hanya's SPD") works around it with a spdFlat status worth 1 per
     stack, its stacks set from Hanya's panelStat("spd").
-  detail: "When turn order reads applier-scaled SPD, ten-lords-decree-spd in 1215-hanya.ts should use scaling { source: applier, stat: spd }."
+  detail: >
+    Turn order reads scaled SPD modifiers on statuses (applier or holder
+    source, through scalingInput), so they count for every unit. Permanent
+    `k.stat` SPD with `scaling` still does not move turns; kits use a status
+    applied at battle start instead. 1215-hanya.ts can switch its Ultimate to
+    `scaling: { source: applier, stat: spd }`.
 - id: engine-status-lifecycle
   entity: engine
   rule: U5
@@ -243,13 +248,16 @@
 - id: engine-play-override-turn-choice
   entity: engine
   rule: C3
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     playPolicy in team/assemble.ts only compares the kit's choice with the
     strings "skill"/"basic", so a `{ ability, target }` choice (Huohuo, Bailu)
     bypasses the "avoid" Skill override.
-  detail: ""
+  detail: >
+    playPolicy reads the ability of a `{ ability, target }` choice, so the
+    prefer-Skill and prefer-Basic overrides apply to it; the replacement drops
+    the ally target.
 - id: engine-elation-zero-banger
   entity: engine
   rule: U8
@@ -268,14 +276,15 @@
 - id: engine-elation-kind-tag
   entity: engine
   rule: U4
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     A hit with `kind: "elation"` does not get the `elation` tag. Only Elation
     Skill abilities add it by default, so procs dealt with `deal` must add it
     themselves, or "when dealing Elation DMG" filters (Yao Guang E1's DEF
     ignore) miss them.
-  detail: "Adding the tag automatically for kind elation would remove the convention."
+  detail: >
+    Hits with `kind: "elation"` get the `elation` tag automatically.
 - id: engine-elation-banger-events
   entity: engine
   rule: U8
@@ -294,7 +303,7 @@
 - id: engine-memosprite-team-auras-twice
   entity: engine
   rule: C5
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     Memosprites receive team auras twice: registerServants copies the owner's
@@ -302,18 +311,23 @@
     onUnitCreated applies the team auras again. Robin's Talent CRIT DMG shows
     twice on Garmentmaker, Netherwing, and Little Ica; team spdFlat auras
     also add to a memosprite's SPD on top of its owner-ratio SPD.
-  detail: "Seen in scratch runs of 1402/1407/1409 with Robin (unit.conditional of the memosprite vs its owner)."
+  detail: >
+    Memosprites copy only their owner's own permanent modifiers; team auras
+    are applied once when the memosprite is created. Remembrance teams with
+    Robin lose 1-18% memosprite damage.
 - id: engine-memosprite-spd-pct
   entity: engine
   rule: U11
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     A memosprite's SPD (owner ratio + flat) ignores spdPct statuses on it, so
     "SPD +X%" buffs on all ally targets (Robin E2, Hyacine E2) miss
     memosprites. Castorice's A4 (+100% Netherwing SPD) is converted to flat
     SPD from its 165 base.
-  detail: ""
+  detail: >
+    A memosprite's SPD is (owner SPD x ratio + flat) x (1 + SPD%) + flat SPD,
+    so SPD% statuses and auras reach it. Castorice's A4 uses spdPct again.
 - id: engine-memosprite-spd-scaling
   entity: engine
   rule: U7
@@ -328,13 +342,17 @@
 - id: engine-stat-owner-statuses
   entity: engine
   rule: C2
-  status: open
+  status: completed
   category: engine-gap
   summary: >
     `statOwner: "owner"` reads the owner's panel without its statuses, so
     Netherwing's hits on Castorice's Max HP miss Max HP buffs on her (Hyacine's
     After Rain, Castorice-targeted HP buffs).
-  detail: ""
+  detail: >
+    Hits with `statOwner: "owner"` record the owner's statuses at the hit
+    (HitRecord.scalingModifiers), and evaluation adds them and the owner's
+    permanent modifiers to the owner's panel. Little Ica's Rainclouds now
+    include After Rain and E1 Max HP.
 - id: engine-cross-kit-state
   entity: engine
   rule: C1

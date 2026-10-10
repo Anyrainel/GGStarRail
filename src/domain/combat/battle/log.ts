@@ -41,6 +41,8 @@ export interface HitRecord {
   /** Expected occurrences (probability mass, detonation ratio included). */
   readonly weight: number;
   readonly attackerModifiers: readonly AppliedModifier[];
+  /** Statuses on the scaling unit when it is not the stat unit. */
+  readonly scalingModifiers?: readonly AppliedModifier[];
   readonly targetModifiers: readonly AppliedModifier[];
   readonly targetBroken: boolean;
   /** Target state when the hit landed, for target-state hit filters. */
