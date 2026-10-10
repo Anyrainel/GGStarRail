@@ -498,3 +498,135 @@
     with no tags; E2 (x130%) and E6 (+75%) use a status held only while an
     Assist Skill resolves, and other entities cannot target Assist DMG.
   detail: ""
+- id: himeko-fua-hit-split
+  entity: "1003"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels splits the Talent Follow-Up ATK into 4 damage instances
+    (20/20/20/40% of the 140% multiplier); our kit deals it as one AoE
+    instance. Which instance count matches the game?
+  detail: >
+    fribbels uses the split only to weight Ashblazing Grand Duke stacks.
+    Neither the EN text ("performs 1 Follow-Up ATK and deals Fire DMG equal
+    to 140% of her ATK to all enemies") nor the ZH text gives an instance
+    count, and the facts give only totals (Toughness each=10, Energy 10), so
+    the text supports neither side. It matters for per-instance effects: the
+    Ashblazing 4-piece listener adds a stack per instance and target, so one
+    instance yields 1 stack per enemy hit where four would yield up to 4
+    (cap 8). Needs per-hit DMG/Toughness ratios (compare dhil-hit-splits).
+    Multipliers, Toughness, Burn, A4/A6/E1/E2 zones and defaults agree.
+- id: jade-fua-hit-split
+  entity: "1314"
+  rule: C2
+  status: open
+  category: verify
+  summary: >
+    fribbels splits the Talent Follow-Up ATK into 4 equal instances, and the
+    Ultimate-enhanced one into 5 (10/10/10/10/60%); our kit deals both as one
+    AoE instance (the enhancement is a multiplierBoost). Which instance
+    counts match the game?
+  detail: >
+    The EN text ("launch 1 instance of Follow-Up ATK, dealing Quantum DMG
+    equal to 120% of Jade's ATK to all enemies"; Ultimate "increasing its DMG
+    multiplier by 80%") and the ZH text ("发动1次追加攻击") name one attack, not
+    its damage instances, and the facts give only totals (Toughness each=10,
+    Energy 10), so the text supports neither side. fribbels uses the split
+    for Ashblazing Grand Duke weighting; in our engine one instance gives 1
+    Ashblazing stack per enemy instead of 4 or 5. Multipliers, the additive
+    80%, Toughness, Pawned Asset, A6, and E1/E2/E4/E6 agree.
+- id: the-herta-interpretation-per-hit
+  entity: "1401"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    fribbels adds the Interpretation bonus (8% per stack, doubled with 2 or
+    more Erudition characters) once to the Enhanced Skill's total
+    primary-target multiplier; our kit adds it to each of the 4 instances
+    that hit the primary target (and 4% per stack to each instance on other
+    targets). Which matches the game?
+  detail: >
+    At 42 stacks with 2 Erudition characters (L10), our primary-target total
+    is 3 x (80% + 672%) + (40% + 672%) = 2968%, against fribbels'
+    3 x 80% + 40% + 672% = 952%. EN "the multiplier for the DMG dealt
+    increases, with each stack granting an increase of 8%/4% on the primary
+    target/other targets" and ZH "造成的伤害倍率提高，每层对主目标/其他目标提高"
+    say neither "per instance" nor "once". Read as raising the DMG multiplier
+    (translator rule U2, multiplierBoost per hit), the text leans toward our
+    kit, but it is not explicit; confirm in game. Side note: fribbels gives
+    the Skill 20 and the Enhanced Skill 25 main-target Toughness, while the
+    facts (15 and 20) match our kit.
+- id: the-herta-a2-e1-threshold
+  entity: "1401"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    fribbels lowers A2's 42-stack threshold to 28 at E1 (counting E1's extra
+    50% of stacks toward it); our kit requires 42 actual stacks on the
+    primary target. Does E1's counted bonus reach the A2 check?
+  detail: >
+    A2 EN "if the primary target's Interpretation stack reaches 42" (ZH
+    "若主目标的【解读】层数达到42") names the target's stack count, while E1 only
+    changes how "the Enhanced Skill calculates the number of Interpretation
+    stacks" (ZH "强化战技计算【解读】层数时"), so the text leans toward our kit.
+    The zones agree in effect: fribbels uses Skill DMG Boost, our kit Ice DMG
+    Boost lasting only for that attack.
+- id: anaxa-skill-bounce-toughness
+  entity: "1405"
+  rule: U1
+  status: open
+  category: verify
+  summary: >
+    fribbels gives the Skill 10 Toughness for the designated hit and 5 for
+    each of the 4 extra instances (30 in total on one target); our kit gives
+    every instance 10 (50 in total). Which matches the game?
+  detail: >
+    The facts list only "toughness main=10" for the Bounce Skill and the
+    EN/ZH text gives no Toughness, so neither decides. fribbels applies the
+    same 10 + 5 per extra instance to the other 6-Energy Bounce Skills
+    (Sampo, Asta) and 10 + 10 to Welt (10 Energy), which suggests main=10 is
+    the designated hit only. The answer also applies to the Talent's
+    additional Skill. Multipliers, the per-enemy Skill DMG Boost, A4, A6, E1,
+    E2, E4, and E6 agree.
+- id: rappa-talent-super-break
+  entity: "1317"
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    fribbels counts the Talent's Break DMG Toughness Reduction (2 + 1 per
+    Charge) toward A4's Super Break; our kit converts only the Enhanced Basic
+    ATK hits (the Talent hit has only the "break" tag, outside A4's "basic"
+    filter). Which matches the game?
+  detail: >
+    A4 EN "after Rappa uses Enhanced Basic ATK to deal DMG to a Weakness
+    Broken enemy target, converts the Toughness Reduction from this instance
+    of DMG" (ZH "将本次伤害的削韧值转化为1次60%的超击破伤害") does not say whether
+    the Talent's additional Break DMG launched with the third hit belongs to
+    "this instance", so the text supports neither side. At 10 Charge it adds
+    12 Toughness per enemy to the Enhanced Basic ATK's 25 (main). Side note:
+    fribbels' Enhanced Basic ATK multiplier (200%, 232% boosted) contradicts
+    the text (100% x 2 + 100% = 300%, 324% boosted, on the main target),
+    which our kit follows.
+- id: himeko-nova-companion-buffs
+  entity: "1510"
+  rule: C1
+  status: open
+  category: verify
+  summary: >
+    fribbels models the Companion Protocol Special Effects as stat buffs
+    (Verdict, on by default: Himeko DMG +100% and Ultimate DMG +100%;
+    Decimation: all allies CRIT DMG +100% and Skill CRIT DMG +100%; 110% at
+    the boosted Skill level); our kit has no Special Effect. Do the Special
+    Effects grant these buffs?
+  detail: >
+    The dossier has no Special Effect text: the Assist Skill text (EN/ZH)
+    only says Himeko "additionally gains 1 of the Special Effects" depending
+    on which Trailblaze Companions character uses it, so the values cannot be
+    confirmed here. This adds to himeko-nova-companions, which tracks the
+    missing data and the extra Assist Skills but not these buffs. Side note:
+    fribbels gives the Ultimate 20 Toughness; the facts (each=48) match our
+    kit.
