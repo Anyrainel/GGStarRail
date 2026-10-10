@@ -1,1 +1,103 @@
 # Combat translation tracker: relic-sets. Schema: .agents/skills/hsr-combat/tracking.md
+- id: fleet-of-the-ageless-aura-dedupe
+  entity: "302"
+  rule: U13
+  status: open
+  category: engine-gap
+  summary: >
+    Equipment team auras from several wearers are deduplicated in
+    assembleTeam by stat and filter only, keeping the highest `value`. Fleet
+    of the Ageless and Broken Keel auras are threshold-scaled (value 0), so
+    the first wearer's copy is kept even when only another wearer meets the
+    SPD / Effect RES threshold; Penacony auras restricted to different
+    Combat Types (312) collapse into one, dropping the second wearer's.
+  detail: >
+    The dedupe key should include the aura's combatTypes/paths restriction,
+    and scaled auras should keep the strongest value per evaluated panel
+    (or keep all copies and take the maximum when evaluating).
+- id: hunter-of-glacial-forest-ultimate-timing
+  entity: "104"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Hunter of Glacial Forest's 4-piece CRIT DMG is applied when the Ultimate
+    ends (EN "After the wearer uses their Ultimate"), so it does not boost
+    the triggering Ultimate. The ZH text reads "when" (施放终结技时), which
+    would include it.
+  detail: >
+    Community notes agree with EN (the triggering Ultimate is not boosted);
+    confirm in game. If ZH is right, switch the listener to actionStart.
+- id: guard-of-wuthering-snow-own-hp
+  entity: "106"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Guard of Wuthering Snow's 4-piece turn-start Energy needs the wearer at
+    or below 50% HP. HP is not simulated, so it is one off-by-default toggle
+    (selfHpBelow) that applies to every turn start of the battle.
+  detail: "An engine HP model (engine-hp-model) would let it follow the wearer's HP."
+- id: longevous-disciple-hp-consumed
+  entity: "113"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Longevous Disciple's 4-piece stacks on HP consumption are assumed at the
+    start of the wearer's HP-costing ability kinds (Blade, Arlan, Mydei on by
+    default; other wearers off, and every Basic ATK, Skill, and Ultimate when
+    enabled). HP consumed by allies (e.g. Jingliu's Enhanced Skill) is not
+    modelled.
+  detail: >
+    Same assumption table as The Unreachable Side (23009). An HP model with
+    consume events (engine-hp-model) would make it exact.
+- id: messenger-traversing-hackerspace-ally-ultimate
+  entity: "114"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    "Uses their Ultimate on an ally" cannot be read from events: actionStart
+    does not carry the ability's target type, and ally Ultimates cast with a
+    plain `true` policy report the main enemy as target. The kit counts an
+    Ultimate that deals no DMG or aims at an ally.
+  detail: >
+    Exposing the ability's `target` (enemy/ally/allies/self) on
+    actionStart/actionEnd would make it exact. Watchmaker (118) uses the
+    same proxy.
+- id: watchmaker-ally-ultimate
+  entity: "118"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Watchmaker's "uses their Ultimate on an ally" uses the same proxy as
+    Messenger (an Ultimate that deals no DMG or aims at an ally), because
+    events do not carry the ability's target type.
+  detail: "See messenger-traversing-hackerspace-ally-ultimate."
+- id: prisoner-in-deep-confinement-dot-count
+  entity: "116"
+  rule: U14
+  status: open
+  category: engine-gap
+  summary: >
+    Prisoner in Deep Confinement's 4-piece DEF ignore scales with the number
+    of DoTs on the target (up to 3), but hit filters cannot count DoTs. Only
+    the first DoT counts (6%), recognized by a Burn/Shock/Bleed/Wind Shear
+    family, so DoT teams are undervalued by up to 12% DEF ignore.
+  detail: >
+    Needs a hit filter such as `minTargetDots` (or a DoT count on
+    HitDescriptor), counting each DoT status once. Note that several
+    Character DoTs (Kafka's Shock, Black Swan's Arcana) declare no family
+    today, so only Weakness Break DoTs are recognized on Kafka teams.
+- id: pioneer-diver-debuff-chance
+  entity: "117"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Pioneer Diver's doubled 4-piece effects trigger on every debuff the
+    wearer applies, whatever its landing chance: statusApplied events do not
+    carry the base chance, so a failed roll still doubles the effects.
+  detail: ""

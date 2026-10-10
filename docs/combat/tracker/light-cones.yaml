@@ -459,3 +459,199 @@
     battle start and on each Ultimate, so a memosprite summoned in between
     lacks it until the next Ultimate.
   detail: "A team modifier conditioned on a status of its provider would model the aura exactly."
+- id: in-the-name-of-the-world-skill-ehr
+  entity: "23004"
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    In the Name of the World's Effect Hit Rate "for this attack" is held on
+    the wearer during the Skill, but debuff landing chances read the
+    applier's steady panel, so it raises no landing chance. Only its ATK part
+    and the DMG bonus against debuffed enemies take effect.
+  detail: "Same gap as void-ehr-landing: landing chances would need the applier's Effect Hit Rate at application time, including statuses."
+- id: those-many-springs-cornered-chance
+  entity: "23029"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Those Many Springs upgrades Unarmored to Cornered by removing Unarmored
+    and applying Cornered with its own base chance. The upgrade is not
+    conditioned on Unarmored having landed, and a failed upgrade loses
+    Unarmored, so below capped landing chances Cornered is overstated and
+    the leftover Unarmored is missing.
+  detail: "Exact handling needs a debuff whose landing chance is the product of two rolls (or a fallback status kept when the second roll fails)."
+- id: why-does-the-ocean-sing-self-count
+  entity: "23047"
+  rule: U6
+  status: open
+  category: verify
+  summary: >
+    Enthrallment's DoT-taken stacks count every debuff the wearer has on the
+    target, Enthrallment itself included, so it starts at 1 stack. Confirm
+    whether Enthrallment counts toward its own stacks.
+  detail: ""
+- id: never-forget-her-flame-implant-event
+  entity: "23050"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Never Forget Her Flame recovers 1 Skill Point when the wearer applies a
+    Weakness, but implantWeakness emits no event. The kit counts a Weakness
+    that appears during the wearer's own action, so re-implanting a Weakness
+    the enemy already has (native, or The Dahlia's permanent Wilt implants on
+    later Ultimates) and implants outside the wearer's actions are missed.
+  detail: "Fix: emit a `weaknessImplanted` event (implanter, enemy, Combat Type) for every implant call, including refreshes."
+- id: reforged-in-hellfire-purgatory-scope
+  entity: "23059"
+  rule: U14
+  status: open
+  category: verify
+  summary: >
+    Reforged in Hellfire inflicts Purgatory on "the target" after the wearer
+    uses Skill to attack. The kit applies it to every enemy the Skill hit
+    (Mortenax Blade's Skill is AoE plus Bounce) and counts Skill uses
+    "considered as Follow-Up ATK" through their Skill tag. Confirm whether
+    only the designated target receives it.
+  detail: ""
+- id: landaus-choice-aggro
+  entity: "21009"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Landau's Choice's aggro increase (#1 = 2) is not modeled because kits
+    cannot change aggro (engine-aggro-modifiers): the wearer keeps its base
+    share of enemy attacks, which sets its hit Energy and its kit's
+    hit triggers. Its DMG reduction is not modeled (U12).
+  detail: ""
+- id: moment-of-victory-aggro
+  entity: "23005"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Moment of Victory's aggro increase (#1 = 2) is not modeled
+    (engine-aggro-modifiers), so the extra DEF when attacked is held as
+    expected stacks from the wearer's base aggro share (hitByEnemy), and hit
+    Energy uses the same share.
+  detail: ""
+- id: trend-universal-market-chance
+  entity: "21016"
+  rule: U9
+  status: open
+  category: approximation
+  summary: >
+    Trend of the Universal Market's Burn is applied to the attacking enemy
+    with base chance #2 times the wearer's aggro share of that attack.
+    Repeated attacks keep the highest chance instead of accumulating it, so
+    the Burn uptime is understated.
+  detail: ""
+- id: trend-universal-market-fire
+  entity: "21016"
+  rule: U15
+  status: open
+  category: verify
+  summary: >
+    The Light Cone's Burn deals Fire DoT whatever the wearer's Combat Type
+    (as other generic Burns); confirm that it is not the wearer's Type.
+  detail: ""
+- id: concert-for-two-shields
+  entity: "21043"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Shields are not simulated (engine-shield-state), so the number of
+    shielded Characters is the count shielded-characters, by default the
+    team size (0 for Fu Xuan, who provides no Shields), for the whole
+    battle.
+  detail: ""
+- id: journey-forever-peaceful-shields
+  entity: "21053"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Shields are not simulated (engine-shield-state): the DMG bonus of
+    shielded allies is the toggle allies-shielded (default on, off for Fu
+    Xuan) and then applies to every ally for the whole battle.
+  detail: ""
+- id: inherently-unjust-destiny-shield-sources
+  entity: "23023"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    "When the wearer provides a Shield" fires after the abilities that
+    shield in each known wearer's kit (Aventurine: battle start, Skill,
+    Follow-Up ATK; March 7th: Skill; Gepard: Ultimate; Dan Heng •
+    Permansor Terrae: Skill, Ultimate; Trailblazer: every attack; Fu Xuan:
+    none; others: Skill, Ultimate). Traces are assumed, and Eidolon Shields
+    (Aventurine E1, March 7th E2) and Souldragon's Shields are not seen.
+  detail: "A shield event or family (engine-shield-state) would replace the table."
+- id: inherently-unjust-destiny-bounce
+  entity: "23023"
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Bounce instances are recorded as one weighted hit per enemy, so the
+    DMG taken debuff applied by the first bounce of a Follow-Up ATK does not
+    reach the later bounces of the same attack (Aventurine).
+  detail: ""
+- id: she-already-shut-her-eyes-hp-loss
+  entity: "23011"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    HP is not simulated: the wearer's HP is reduced by enemy hits on it
+    (aggro share as expected stacks of the team DMG buff). The toggle
+    ally-dmg-shared (default on for Fu Xuan, whose Matrix of Prescience
+    takes part of the allies' DMG) counts hits on any ally. HP costs are not
+    seen.
+  detail: "An HP model with loss events (engine-hp-model) would make it exact."
+- id: though-worlds-apart-summons
+  entity: "23051"
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Redoubt's extra DMG for targets with summons is checked when it is
+    granted, and kits only see memosprites: summons such as Souldragon,
+    Lightning-Lord, or Numby cannot be listed, so their owners miss it.
+    Whether Souldragon counts for Dan Heng • Permansor Terrae or for the
+    Bondmate also needs confirmation.
+  detail: "Needs a way to list a unit's active summons."
+- id: time-waits-for-no-one-healing-record
+  entity: "23013"
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Time Waits for No One's Additional DMG (a share of the healing the wearer
+    recorded, dealt once per turn when an ally attacks) is not modeled: heal
+    amounts are not simulated, so there is nothing to record. Only the
+    catalog Max HP and Outgoing Healing apply.
+  detail: >
+    Needs heal events carrying the healed amount (engine-hp-model) and a
+    damage kind that ignores the attacker's buffs but keeps enemy DEF, RES,
+    vulnerability, and the Toughness multiplier (`fixed` also skips DEF and
+    RES). Then verify whether the record includes overhealing and resets
+    after each proc.
+- id: night-of-fright-heal-triggers
+  entity: "23017"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Night of Fright's ATK stacks come from the wearer's heals. Healing is not
+    simulated: a per-Character table lists the healing abilities (Skill and
+    Ultimate for unlisted wearers), heals tied to the healer's own states
+    (Divine Provision, Zone, Besotted, healing over time, Invigoration) are
+    missed, and the heal on the lowest-HP ally after each Ultimate is spread
+    evenly over ally targets.
+  detail: "Heal events from Character kits (engine-hp-model) would replace the table and pick the lowest-HP ally."
