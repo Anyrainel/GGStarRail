@@ -107,7 +107,7 @@ function SplitPlanTile({
   return (
     <div
       className={cn(
-        "relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-white/15",
+        "relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-foreground/15",
         getRarityColor(rarity, "gradient"),
         className
       )}
@@ -140,7 +140,7 @@ function SplitPlanTile({
         className="absolute bottom-[-6%] right-[-6%] z-20 h-[78%] w-[78%] object-contain drop-shadow-md"
       />
       <span
-        className="pointer-events-none absolute left-1/2 top-1/2 z-[15] h-[150%] w-px -translate-x-1/2 -translate-y-1/2 rotate-45 bg-black/25"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-[15] h-[150%] w-px -translate-x-1/2 -translate-y-1/2 rotate-45 bg-background/40"
         aria-hidden="true"
       />
       {showBadge && <PlanBadge size={size} text={t("relic.plan.twoPlusTwo")} />}

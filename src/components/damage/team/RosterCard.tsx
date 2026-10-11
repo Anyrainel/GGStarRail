@@ -25,6 +25,7 @@ import { useTeamStore } from "@/stores/useTeamStore";
 import { MemberOptions } from "../MemberOptions";
 import { CompactSelect } from "./Controls";
 import { releaseOwnedOnly } from "./gridView";
+import { useLightConeChoices } from "./lightConeChoices";
 import { CavernCell, PlanarCell } from "./MemberSetCells";
 import { TeamCharacterGrid } from "./TeamCharacterGrid";
 import { useTeamDmgData } from "./TeamDmgData";
@@ -125,9 +126,7 @@ function MemberTile({
   const characterItems = items.characters.filter(
     (item) => !others.has(canonicalCharacterId(item.id))
   );
-  const lightConeItems = character
-    ? items.lightCones.filter((item) => item.tags?.includes(character.path_id))
-    : items.lightCones;
+  const lightConeChoices = useLightConeChoices()(character?.path_id);
   const lightCone = member.lightCone;
   const lightConeItem = lightCone
     ? lookup.lightCones.get(lightCone.id)
@@ -139,7 +138,9 @@ function MemberTile({
     updateMember(team.id, slot, patch);
   const origin = (value: keyof typeof VALUE_ORIGIN_LABEL_KEYS) =>
     t(VALUE_ORIGIN_LABEL_KEYS[value]);
-  const eidolonValue = t("archive.eidolon", { value: member.eidolon });
+  const eidolonValue = t("combat.member.eidolonShort", {
+    value: member.eidolon,
+  });
 
   return (
     <article
@@ -188,7 +189,8 @@ function MemberTile({
               : undefined
           }
           value={lightCone?.id ?? null}
-          items={lightConeItems}
+          items={lightConeChoices.items}
+          filters={lightConeChoices.filters}
           triggerSize={sizes.gear}
           badge={lightCone?.superimposition}
           onChange={(id) =>
@@ -318,14 +320,14 @@ function MemberTile({
                     origin: origin(
                       member.accountEidolon === null ? "default" : "account"
                     ),
-                    value: t("archive.eidolon", {
+                    value: t("combat.member.eidolonShort", {
                       value: member.accountEidolon ?? 0,
                     }),
                   }),
                 },
                 ...[0, 1, 2, 3, 4, 5, 6].map((value) => ({
                   value: String(value),
-                  label: t("archive.eidolon", { value }),
+                  label: t("combat.member.eidolonShort", { value }),
                 })),
               ]}
               onValueChange={(value) =>

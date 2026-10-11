@@ -66,11 +66,7 @@ export default function CharacterTierListView() {
 
   if (loading || error || !data) {
     return (
-      <TierCatalogState
-        titleKey="route.tierCharacters.title"
-        loading={loading}
-        error={error}
-      />
+      <TierCatalogState category="character" loading={loading} error={error} />
     );
   }
 

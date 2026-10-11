@@ -1,5 +1,11 @@
 import { Eye, Swords, TriangleAlert } from "lucide-react";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import {
+  Fragment,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
 import { AssetImage } from "@/components/shared/AssetImage";
 import type { ItemIconSize } from "@/components/shared/ItemIcon";
@@ -58,7 +64,12 @@ import {
   statConstraints,
 } from "./ConstraintTiles";
 import { DamagePill } from "./DamagePill";
-import { MainStatChip, RelicPieceIcon, useSlotName } from "./RelicCells";
+import {
+  MainStatChip,
+  RelicPieceIcon,
+  useSlotName,
+  useStatName,
+} from "./RelicCells";
 import {
   ANY_MAIN_STAT,
   DeltaChip,
@@ -290,6 +301,108 @@ function SpeedLabel({ value }: { value: number }) {
   );
 }
 
+/** Variable main-stat slots, in game order: Body, Feet, Sphere, Rope. */
+const LOADOUT_MAIN_SLOTS = [
+  "body",
+  "feet",
+  "planarSphere",
+  "linkRope",
+] as const satisfies readonly RelicSlotId[];
+
+/**
+ * Every loadout the search ranked, each against the member's current Relics:
+ * its set bonuses, variable main stats, SPD and change. The applied one is
+ * marked.
+ */
+function LoadoutsView({
+  result,
+  applied,
+  relicByKey,
+}: {
+  result: OptimizeResponse;
+  applied: OptimizedLoadout | null;
+  relicByKey: ReadonlyMap<string, Relic>;
+}) {
+  const { t } = useI18n();
+  const stat = useStatName();
+  return (
+    <ol
+      aria-label={t("teamOptimizer.view.loadouts")}
+      className="flex flex-col divide-y divide-border text-[10px] md:text-xs"
+    >
+      {result.loadouts.map((loadout, index) => {
+        const relics = Object.values(loadout.relicKeys).flatMap((key) => {
+          const relic = relicByKey.get(key);
+          return relic ? [relic] : [];
+        });
+        const bonuses = equippedSetSummary(relics);
+        const mains = LOADOUT_MAIN_SLOTS.map((slot) =>
+          relicByKey.get(loadout.relicKeys[slot] ?? "")
+        );
+        const current = loadout === applied;
+        return (
+          <li
+            key={Object.values(loadout.relicKeys).join("|")}
+            className="flex min-w-0 flex-col gap-0.5 py-1"
+            aria-current={current || undefined}
+            data-loadout={index + 1}
+          >
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span
+                className={cn(
+                  "w-3 shrink-0 text-right font-mono font-bold tabular-nums",
+                  current ? "text-primary" : "text-muted-foreground"
+                )}
+              >
+                {index + 1}
+              </span>
+              <span className="min-w-0 flex-1">
+                <SetBonusHeaderCell kind="cavern" bonuses={bonuses.cavern} />
+              </span>
+              <SetBonusHeaderCell
+                kind="planar"
+                bonuses={bonuses.planar ? [bonuses.planar] : []}
+              />
+              <DeltaChip
+                value={loadout.damage}
+                reference={result.currentDamage}
+              />
+            </div>
+            <div className="flex min-w-0 items-start gap-1.5 pl-[1.125rem]">
+              {/* Wraps between stats rather than hiding the ones that tell
+                  the ranks apart. */}
+              <span
+                className="min-w-0 flex-1 font-semibold"
+                title={mains
+                  .map((relic) =>
+                    relic ? stat.full(relic.mainStat.statId) : "—"
+                  )
+                  .join(" / ")}
+                data-loadout-mains
+              >
+                {mains.map((relic, slotIndex) => (
+                  <Fragment key={LOADOUT_MAIN_SLOTS[slotIndex]}>
+                    {slotIndex > 0 && (
+                      <>
+                        <span className="mx-0.5 text-muted-foreground">/</span>
+                        <wbr />
+                      </>
+                    )}
+                    <span className="whitespace-nowrap">
+                      {relic ? stat.short(relic.mainStat.statId) : "—"}
+                    </span>
+                  </Fragment>
+                ))}
+              </span>
+              <SpeedLabel value={loadout.speed} />
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 interface TeamMember {
   readonly slot: number;
   readonly characterId: string;
@@ -365,10 +478,12 @@ export function RelicsDamageCard({
   const { locale, t } = useI18n();
   const { account, sources, lookup, previewOf } = useTeamDmgData();
   const [mode, setMode] = useState<RelicsMode>("current");
+  // Floors and main-stat filters belong to a Character (a team holds each
+  // Character once), so they follow it when the roster shifts slots.
   const [constraints, setConstraints] = useState<
-    Record<number, MemberConstraintInput>
+    Record<string, MemberConstraintInput>
   >({});
-  const [mainStats, setMainStats] = useState<Record<number, MainStatChoice>>(
+  const [mainStats, setMainStats] = useState<Record<string, MainStatChoice>>(
     {}
   );
   const [budget, setBudget] = useState<SubstatBudget>("realistic");
@@ -415,18 +530,18 @@ export function RelicsDamageCard({
   const constraintBySlot = useMemo(
     () =>
       Object.fromEntries(
-        slots.flatMap((slot) => {
-          const value = statConstraints(constraints[slot]);
+        members.flatMap(({ slot, characterId }) => {
+          const value = statConstraints(constraints[characterId]);
           return value ? [[slot, value]] : [];
         })
       ),
-    [slots, constraints]
+    [members, constraints]
   );
   const mainStatBySlot = useMemo(
     () =>
       Object.fromEntries(
-        slots.flatMap((slot) => {
-          const choice = mainStats[slot];
+        members.flatMap(({ slot, characterId }) => {
+          const choice = mainStats[characterId];
           const entries = Object.entries(choice ?? {}).filter(
             ([, value]) => value
           );
@@ -446,7 +561,7 @@ export function RelicsDamageCard({
             : [];
         })
       ),
-    [slots, mainStats]
+    [members, mainStats]
   );
 
   // Members are optimized in turn: each search sees the loadouts applied to
@@ -546,8 +661,8 @@ export function RelicsDamageCard({
       (entry) => entry.status === "failed"
     );
 
-  function setConstraint(slot: number, next: MemberConstraintInput) {
-    setConstraints((current) => ({ ...current, [slot]: next }));
+  function setConstraint(characterId: string, next: MemberConstraintInput) {
+    setConstraints((current) => ({ ...current, [characterId]: next }));
   }
 
   function currentTile(member: TeamMember, outcome: MemberOutcome) {
@@ -635,8 +750,8 @@ export function RelicsDamageCard({
                 ? t("combat.tools.noResults")
                 : null
         }
-        views={
-          combinedPanel && (applied || kept)
+        views={[
+          ...(combinedPanel && (applied || kept)
             ? [
                 {
                   id: "panel",
@@ -644,8 +759,23 @@ export function RelicsDamageCard({
                   content: <PanelView panel={combinedPanel} />,
                 },
               ]
-            : []
-        }
+            : []),
+          ...(result?.loadouts.length
+            ? [
+                {
+                  id: "loadouts",
+                  label: t("teamOptimizer.view.loadouts"),
+                  content: (
+                    <LoadoutsView
+                      result={result}
+                      applied={applied}
+                      relicByKey={relicByKey}
+                    />
+                  ),
+                },
+              ]
+            : []),
+        ]}
       />
     );
   }
@@ -676,11 +806,14 @@ export function RelicsDamageCard({
         headerExtra={
           <MainStatFilter
             name={member.name}
-            value={mainStats[member.slot] ?? {}}
+            value={mainStats[member.characterId] ?? {}}
             defaults={preview.get(member.slot)?.mainStats ?? {}}
             disabled={analysisRunning}
             onChange={(next) =>
-              setMainStats((current) => ({ ...current, [member.slot]: next }))
+              setMainStats((current) => ({
+                ...current,
+                [member.characterId]: next,
+              }))
             }
           />
         }

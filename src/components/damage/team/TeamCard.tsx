@@ -33,6 +33,7 @@ import { forgetTeamResults } from "@/lib/combat/resultCache";
 import { cn } from "@/lib/utils";
 import type { TeamPlan } from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
+import { useLightConeChoices } from "./lightConeChoices";
 import { CavernCell, PlanarCell } from "./MemberSetCells";
 import { useTeamDmgData } from "./TeamDmgData";
 import {
@@ -137,6 +138,7 @@ export function TeamCard({
 }: TeamCardProps) {
   const { locale, t } = useI18n();
   const { references, items, lookup, previewOf } = useTeamDmgData();
+  const lightConeChoices = useLightConeChoices();
   const setMember = useTeamStore((state) => state.setMember);
   const updateMember = useTeamStore((state) => state.updateMember);
   const removeMember = useTeamStore((state) => state.removeMember);
@@ -317,13 +319,7 @@ export function TeamCard({
                 square
                 label={t("combat.member.lightCone")}
                 value={member?.lightCone?.id ?? null}
-                items={
-                  character
-                    ? items.lightCones.filter((item) =>
-                        item.tags?.includes(character.path_id)
-                      )
-                    : items.lightCones
-                }
+                {...lightConeChoices(character?.path_id)}
                 triggerSize="md"
                 badge={member?.lightCone?.superimposition}
                 disabled={!character || ghost}

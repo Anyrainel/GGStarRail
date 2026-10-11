@@ -2,13 +2,13 @@ import { CircleAlert, Star } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { RelicStatDisplay } from "@/components/account-data/RelicStatDisplay";
+import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { RelicSlotGrid } from "@/components/shared/relic/RelicSlotGrid";
 import { Card, CardContent } from "@/components/ui/card";
-import { APP_PATHS } from "@/config/navigation";
 import {
   type Character,
   type LightCone,
@@ -64,44 +64,35 @@ interface CharacterCardProps {
 
 type LeveledTrace = Exclude<AbilityTraceKind, "technique">;
 
+/** Official ability names, abbreviated only on narrow cards. */
 const TRACE_LABELS: Readonly<
-  Record<
-    LeveledTrace,
-    { full: MessageKey; short: MessageKey; name: MessageKey }
-  >
+  Record<LeveledTrace, { short: MessageKey; name: MessageKey }>
 > = {
   basic: {
-    full: "characterLoadout.trace.basic",
     short: "characterLoadout.traceShort.basic",
     name: "combat.origin.basic",
   },
   skill: {
-    full: "characterLoadout.trace.skill",
     short: "characterLoadout.traceShort.skill",
     name: "combat.origin.skill",
   },
   ultimate: {
-    full: "characterLoadout.trace.ultimate",
     short: "characterLoadout.traceShort.ultimate",
     name: "combat.origin.ultimate",
   },
   talent: {
-    full: "characterLoadout.trace.talent",
     short: "characterLoadout.traceShort.talent",
     name: "combat.origin.talent",
   },
   memospriteSkill: {
-    full: "characterLoadout.trace.memospriteSkill",
     short: "characterLoadout.traceShort.memospriteSkill",
     name: "combat.origin.memospriteSkill",
   },
   memospriteTalent: {
-    full: "characterLoadout.trace.memospriteTalent",
     short: "characterLoadout.traceShort.memospriteTalent",
     name: "combat.origin.memospriteTalent",
   },
   elationSkill: {
-    full: "characterLoadout.trace.elationSkill",
     short: "characterLoadout.traceShort.elationSkill",
     name: "combat.origin.elationSkill",
   },
@@ -463,7 +454,7 @@ function CharacterCardComponent({
             disabled={!definition}
           >
             <Link
-              to={`${APP_PATHS.archiveCharacters}?character=${encodeURIComponent(character.definitionId)}`}
+              to={characterArchiveHref(character.definitionId)}
               aria-label={t("characterLoadout.openArchive", {
                 name: characterName,
               })}
@@ -511,13 +502,13 @@ function CharacterCardComponent({
                     <span
                       key={kind}
                       className="whitespace-nowrap"
-                      title={t(TRACE_LABELS[kind].name)}
+                      title={isMobile ? t(TRACE_LABELS[kind].name) : undefined}
                       data-trace={kind}
                     >
                       {t(
                         isMobile
                           ? TRACE_LABELS[kind].short
-                          : TRACE_LABELS[kind].full
+                          : TRACE_LABELS[kind].name
                       )}{" "}
                       <span className="text-foreground/90">
                         {level}

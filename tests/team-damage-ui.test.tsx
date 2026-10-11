@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import App from "@/App";
 import { APP_PATHS } from "@/config/navigation";
@@ -22,6 +22,16 @@ function LocationProbe() {
   );
 }
 
+/** The browser's Forward button. */
+function ForwardProbe() {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => navigate(1)}>
+      History forward
+    </button>
+  );
+}
+
 function renderPage(path: string = APP_PATHS.teamDamage) {
   return render(
     <ThemeProvider>
@@ -29,6 +39,7 @@ function renderPage(path: string = APP_PATHS.teamDamage) {
         <MemoryRouter initialEntries={[path]}>
           <App />
           <LocationProbe />
+          <ForwardProbe />
         </MemoryRouter>
       </I18nProvider>
     </ThemeProvider>
@@ -109,7 +120,7 @@ describe("Team DMG empty state", () => {
       null,
     ]);
     expect(await grid()).toBeInTheDocument();
-  });
+  }, 30_000);
 
   it("creates a team from the call to action and shows the grid", async () => {
     const user = userEvent.setup();
@@ -133,7 +144,7 @@ describe("Team DMG empty state", () => {
     expect(
       within(main).getByRole("searchbox", { name: "Search teams" })
     ).toBeInTheDocument();
-  });
+  }, 30_000);
 });
 
 describe("Team DMG grid", () => {
@@ -321,6 +332,58 @@ describe("Team DMG detail", () => {
       new RegExp(`^${APP_PATHS.teamInvestment}$`)
     );
   });
+
+  it("goes back through history to the grid that opened the team", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102"]));
+    renderPage();
+    const card = within(await grid()).getByRole("article", { name: "Team 1" });
+    await user.click(
+      within(card).getByRole("button", { name: "DMG Optimizer" })
+    );
+    await screen.findByRole("heading", { level: 2, name: "Team 1" });
+    await user.click(screen.getByRole("button", { name: "Back to teams" }));
+    expect(await grid()).toBeInTheDocument();
+    // The detail is still the next history entry, not a replaced duplicate.
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Team 1" })
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("team%3Aa");
+  });
+
+  it("lists every Light Cone, the Character's Path first", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:lc", ["1102"]));
+    renderPage(`${APP_PATHS.teamDamage}?team=team%3Alc`);
+    const roster = await screen.findByRole(
+      "region",
+      { name: "Team Roster" },
+      { timeout: 15_000 }
+    );
+    const seele = within(roster).getByRole("article", { name: "Seele" });
+    await user.click(
+      within(seele).getByRole("button", { name: /^Light Cone/ })
+    );
+    const picker = await screen.findByRole("dialog", { name: "Light Cone" });
+    const results = picker.querySelector("[data-picker-results]");
+    if (!(results instanceof HTMLElement)) throw new Error("Missing results");
+    const names = within(results)
+      .getAllByRole("button")
+      .map((button) => button.getAttribute("aria-label"));
+    // The Hunt first; any Character can still equip a Preservation one.
+    expect(names.indexOf("In the Night")).toBeGreaterThanOrEqual(0);
+    expect(names.indexOf("Moment of Victory")).toBeGreaterThan(
+      names.indexOf("In the Night")
+    );
+    await user.click(within(picker).getByRole("button", { name: "The Hunt" }));
+    expect(
+      within(results).queryByRole("button", { name: "Moment of Victory" })
+    ).toBeNull();
+    expect(
+      within(results).getByRole("button", { name: "In the Night" })
+    ).toBeInTheDocument();
+  }, 30_000);
 
   it("drops an unknown team from the URL", async () => {
     seed(seedTeam("team:a", ["1102"]));

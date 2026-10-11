@@ -119,7 +119,7 @@ describe("Team DMG Investment", () => {
     ).toBeNull();
 
     const chart = screen.getByRole("region", { name: "Chart" });
-    expect(within(chart).getByText("Run to see results")).toBeInTheDocument();
+    expect(within(chart).getByText("No results yet")).toBeInTheDocument();
     expect(
       within(chart).getByRole("button", { name: "Run Analysis" })
     ).toBeEnabled();
@@ -168,7 +168,7 @@ describe("Team DMG Investment", () => {
         "Seele"
       )
     ).toBeInTheDocument();
-    expect(within(chart).queryByText("Run to see results")).toBeNull();
+    expect(within(chart).queryByText("No results yet")).toBeNull();
 
     await user.click(within(chart).getByRole("radio", { name: "Order" }));
     expect(within(chart).getByRole("radio", { name: "Order" })).toBeChecked();

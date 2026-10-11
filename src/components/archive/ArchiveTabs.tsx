@@ -25,6 +25,21 @@ export function ArchiveTabs<T extends string>({
 }) {
   const listRef = useRef<HTMLDivElement>(null);
   const tabId = (option: T) => `${panelId}-tab-${option}`;
+  const selectedTabId = tabId(value);
+
+  useEffect(() => {
+    // A phone can scroll the strip; keep the selected tab inside it.
+    const list = listRef.current;
+    const tab = document.getElementById(selectedTabId);
+    if (!list || !tab || !list.contains(tab)) return;
+    const listBox = list.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    if (tabBox.left < listBox.left) {
+      list.scrollLeft -= listBox.left - tabBox.left;
+    } else if (tabBox.right > listBox.right) {
+      list.scrollLeft += tabBox.right - listBox.right;
+    }
+  }, [selectedTabId]);
 
   useEffect(() => {
     // Wait for the render that shows the requested tab as selected; the
@@ -76,7 +91,7 @@ export function ArchiveTabs<T extends string>({
               document.getElementById(pendingFocusId)?.focus();
             }}
             className={cn(
-              "inline-flex h-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:px-3",
+              "inline-flex h-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-1.5 py-1 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:px-3",
               active
                 ? "bg-background text-foreground shadow"
                 : "hover:text-foreground"

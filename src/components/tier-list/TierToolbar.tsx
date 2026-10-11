@@ -33,6 +33,7 @@ import {
   type TierPresentation,
 } from "@/domain/tier-list/document";
 import { useI18n } from "@/i18n/I18nContext";
+import type { MessageKey } from "@/i18n/messages.en";
 import { cn } from "@/lib/utils";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 import { TierPageActions } from "./TierPageActions";
@@ -52,6 +53,66 @@ const INPUT_CLASS =
   "h-9 w-full min-w-0 rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring";
 const ROW_CARD = "rounded-lg border border-border bg-card p-4";
 const ROW_LABEL = "shrink-0 text-sm font-medium text-muted-foreground";
+
+/** The page title of each list category, shown until a list is renamed. */
+export const TIER_ROUTE_TITLE: Readonly<
+  Record<TierDocument["category"], MessageKey>
+> = {
+  character: "route.tierCharacters.title",
+  "light-cone": "route.tierLightCones.title",
+  "relic-set": "route.tierRelics.title",
+};
+
+/**
+ * Customize and Manage lists beside the page title. Without handlers, while
+ * the catalog loads or fails, they keep their place disabled.
+ */
+export function TierTitleActions({
+  onCustomize,
+  onManage,
+}: {
+  onCustomize?: () => void;
+  onManage?: () => void;
+}) {
+  const { t } = useI18n();
+  const [actionsRef, labelsFit] = useActionLabelRoom();
+  const actionLabel = labelsFit ? "sr-only sm:not-sr-only" : "sr-only";
+  const actions = [
+    {
+      key: "customize",
+      label: t("tier.controls.customize"),
+      Icon: Settings,
+      onClick: onCustomize,
+    },
+    {
+      key: "manage",
+      label: t("tier.controls.manage"),
+      Icon: ArrowLeftRight,
+      onClick: onManage,
+    },
+  ];
+  return (
+    <div ref={actionsRef} className="flex shrink-0 items-center gap-2 sm:gap-4">
+      {actions.map(({ key, label, Icon, onClick }) => (
+        <Button
+          key={key}
+          size="sm"
+          variant="secondary"
+          className="shrink-0 gap-2"
+          aria-label={label}
+          title={label}
+          disabled={!onClick}
+          onClick={onClick}
+        >
+          <Icon className="h-4 w-4" aria-hidden="true" />
+          <span data-action-label className={actionLabel}>
+            {label}
+          </span>
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 function ListMarker({ active }: { active: boolean }) {
   return (
@@ -87,7 +148,6 @@ export function TierToolbar({
 }: TierToolbarProps) {
   const { t } = useI18n();
   const fileInput = useRef<HTMLInputElement>(null);
-  const [actionsRef, labelsFit] = useActionLabelRoom();
   const [dialog, setDialog] = useState<"customize" | "lists" | null>(null);
   const [renaming, setRenaming] = useState<{
     id: string;
@@ -104,12 +164,7 @@ export function TierToolbar({
   const activate = useTierLibraryStore((state) => state.activate);
   const remove = useTierLibraryStore((state) => state.remove);
   const title =
-    document.presentation.title ||
-    (document.category === "character"
-      ? t("route.tierCharacters.title")
-      : document.category === "light-cone"
-        ? t("route.tierLightCones.title")
-        : t("route.tierRelics.title"));
+    document.presentation.title || t(TIER_ROUTE_TITLE[document.category]);
 
   useEffect(() => {
     if (activeId) save(activeId, document);
@@ -202,7 +257,6 @@ export function TierToolbar({
     }
   }
 
-  const actionLabel = labelsFit ? "sr-only sm:not-sr-only" : "sr-only";
   const lists = Object.entries(documents).filter(
     ([, entry]) => entry.category === document.category
   );
@@ -224,38 +278,14 @@ export function TierToolbar({
         title={title}
         filters={filters}
         actions={
-          <div ref={actionsRef} className="flex shrink-0 items-center gap-4">
-            <Button
-              size="sm"
-              variant="secondary"
-              className="shrink-0 gap-2"
-              aria-label={t("tier.controls.customize")}
-              title={t("tier.controls.customize")}
-              onClick={() => setDialog("customize")}
-            >
-              <Settings className="h-4 w-4" aria-hidden="true" />
-              <span data-action-label className={actionLabel}>
-                {t("tier.controls.customize")}
-              </span>
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              className="shrink-0 gap-2"
-              aria-label={t("tier.controls.manage")}
-              title={t("tier.controls.manage")}
-              onClick={() => {
-                keepCurrent();
-                setRenaming(null);
-                setDialog("lists");
-              }}
-            >
-              <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-              <span data-action-label className={actionLabel}>
-                {t("tier.controls.manage")}
-              </span>
-            </Button>
-          </div>
+          <TierTitleActions
+            onCustomize={() => setDialog("customize")}
+            onManage={() => {
+              keepCurrent();
+              setRenaming(null);
+              setDialog("lists");
+            }}
+          />
         }
       >
         {error && (

@@ -13,6 +13,7 @@ import { loadCharacters, loadLightCones } from "@/providers/reference/catalog";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useLightConePriorityStore } from "@/stores/useLightConePriorityStore";
 import { useRelicPriorityStore } from "@/stores/useRelicPriorityStore";
+import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 
 const catalogTimeout = { timeout: 15_000 };
 
@@ -183,18 +184,49 @@ describe("HSR Tier List views", () => {
   it.each([
     ["loading", true, "status"],
     ["unavailable", false, "alert"],
-  ] as const)("keeps the page frame and title while the catalog is %s", (_state, loading, role) => {
+  ] as const)("keeps the title row while the catalog is %s", (_state, loading, role) => {
     renderView(
       <TierCatalogState
-        titleKey="route.tierLightCones.title"
+        category="light-cone"
         loading={loading}
         error={loading ? null : new Error("offline")}
       />
     );
+    const heading = screen.getByRole("heading", {
+      level: 1,
+      name: "Light Cone Priority",
+    });
+    expect(heading.closest(".sr-only")).toBeNull();
+    expect(screen.getByRole("button", { name: "Customize" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Manage lists" })).toBeDisabled();
     expect(
-      screen.getByRole("heading", { level: 1, name: "Light Cone Priority" })
-    ).toBeInTheDocument();
-    expect(screen.getByRole(role).closest(".container")).not.toBeNull();
+      screen.getByRole(role).closest("[data-wide-content]")
+    ).not.toBeNull();
+  });
+
+  it("titles the catalog state with the active list's saved name", () => {
+    act(() => {
+      const library = useTierLibraryStore.getState();
+      library.save("speed", {
+        kind: "ggstarrail.tier-list",
+        schemaVersion: 2,
+        category: "character",
+        assignments: {},
+        groupAssignments: {},
+        presentation: { title: "Speed team", labels: {}, hidden: [] },
+      });
+      library.activate("character", "speed");
+    });
+    try {
+      renderView(
+        <TierCatalogState category="character" loading error={null} />
+      );
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Speed team" })
+      ).toBeInTheDocument();
+    } finally {
+      act(() => useTierLibraryStore.getState().remove("speed"));
+    }
   });
 
   it("renders the priority controls and Relic categories in zh-CN", async () => {

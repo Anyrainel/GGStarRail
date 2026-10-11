@@ -24,6 +24,7 @@ export function OptimizerDetail({ team, onBack }: TeamDetailProps) {
       <BattleTimelineCard
         result={simulation.result}
         running={simulation.running}
+        failed={simulation.failed}
       />
       <RelicsDamageCard
         key={team.id}

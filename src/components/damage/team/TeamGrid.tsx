@@ -59,6 +59,18 @@ import type { TeamDmgTab } from "./types";
 
 const GHOST_TEAM: TeamPlan = emptyTeam("team:ghost");
 
+/**
+ * Landscape phones: the whole layout scrolls, so the toolbar moves away with
+ * the teams instead of leaving them a sliver under it. CSS alone keeps the
+ * one toolbar mounted, so search keeps focus across the breakpoint.
+ */
+const SHORT_VIEWPORT_SCROLL =
+  "[@media(max-height:500px)]:overflow-y-auto [@media(max-height:500px)]:[&>[data-scroll-body]]:flex-none [@media(max-height:500px)]:[&>[data-scroll-body]]:overflow-visible";
+
+/** Below `sm`, icon-only chips narrow so all nine Paths share one row. */
+const COMPACT_CHIP_GROUP =
+  "w-full justify-center max-sm:[&>button]:px-1.5 sm:contents";
+
 function SortableTeamCard({
   team,
   dragEnabled,
@@ -429,7 +441,7 @@ export function TeamGrid({
             </span>
           )}
           getTitle={(id) => chipName("combat-type", id)}
-          className="contents"
+          className={COMPACT_CHIP_GROUP}
         />
         <span aria-hidden className="mx-1 hidden h-5 w-px bg-border sm:block" />
         <FilterChipGroup
@@ -442,7 +454,7 @@ export function TeamGrid({
             <span className="hidden sm:inline">{chipName("path", id)}</span>
           )}
           getTitle={(id) => chipName("path", id)}
-          className="contents"
+          className={COMPACT_CHIP_GROUP}
         />
       </div>
       <div className="flex flex-wrap items-center gap-1 2xl:gap-2">
@@ -507,7 +519,12 @@ export function TeamGrid({
   );
 
   return (
-    <ScrollLayout header={header} bodyRef={bodyRef} bodyClassName="py-2">
+    <ScrollLayout
+      header={header}
+      bodyRef={bodyRef}
+      bodyClassName="py-2"
+      className={SHORT_VIEWPORT_SCROLL}
+    >
       {actions}
       <DndContext
         sensors={sensors}

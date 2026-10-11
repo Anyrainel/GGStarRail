@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import App from "@/App";
+import { BattleTimelineCard } from "@/components/damage/optimizer/BattleTimelineCard";
 import { statConstraints } from "@/components/damage/optimizer/ConstraintTiles";
 import { DamagePill } from "@/components/damage/optimizer/DamagePill";
 import { PanelView } from "@/components/damage/optimizer/StatViews";
@@ -246,6 +247,46 @@ describe("Analysis result keys", () => {
   });
 });
 
+describe("Battle Timeline card", () => {
+  it("reports a failed simulation instead of an empty roster", async () => {
+    const user = userEvent.setup();
+    render(
+      <ThemeProvider>
+        <I18nProvider>
+          <BattleTimelineCard result={null} running={false} failed />
+        </I18nProvider>
+      </ThemeProvider>
+    );
+    await user.click(screen.getByRole("button", { name: /Battle Timeline/ }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The simulation failed."
+    );
+    expect(screen.queryByText("No Characters")).toBeNull();
+  });
+
+  it("drops an earlier team's rails once its re-simulation fails", async () => {
+    const user = userEvent.setup();
+    const earlier = {
+      members: [{ slot: 0, characterId: "1102", ultimateEnergy: true }],
+      report: { byCycle: [100] },
+      startingSkillPoints: 3,
+      actions: [],
+    } as unknown as SimulateResponse;
+    render(
+      <ThemeProvider>
+        <I18nProvider>
+          <BattleTimelineCard result={earlier} running={false} failed />
+        </I18nProvider>
+      </ThemeProvider>
+    );
+    await user.click(screen.getByRole("button", { name: /Battle Timeline/ }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The simulation failed."
+    );
+    expect(document.querySelector("[data-timeline-rail]")).toBeNull();
+  });
+});
+
 describe("Energy Regeneration Rate as the panel total", () => {
   const ENERGY_REGEN = "SPRatioBase";
 
@@ -455,7 +496,7 @@ describe("DMG Optimizer detail", () => {
 
     // The pill: crit mode, damage per cycle, then the breakdown.
     expect(
-      within(card).getByRole("combobox", { name: "Crit mode" })
+      within(card).getByRole("combobox", { name: "CRIT mode" })
     ).toHaveTextContent("Expected");
     const pill = within(card).getByRole("button", { name: /DMG per cycle/ });
     expect(pill).toHaveAttribute("aria-expanded", "false");
@@ -530,6 +571,20 @@ describe("DMG Optimizer detail", () => {
       /^[+−]\d/
     );
 
+    // Every ranked loadout stays reachable; the applied one is marked.
+    await user.click(within(danHeng).getByRole("button", { name: /Loadouts/ }));
+    const ranked = within(
+      within(danHeng).getByRole("list", { name: "Loadouts" })
+    ).getAllByRole("listitem");
+    expect(ranked.length).toBeGreaterThan(0);
+    expect(ranked[0]).toHaveAttribute("aria-current", "true");
+    expect(ranked[0]).toHaveTextContent(/SPD \d/);
+    expect(ranked[0]?.querySelector("[data-delta]")).not.toBeNull();
+    // Body, Feet, Planar Sphere and Link Rope main stats, none cut off.
+    const mains = ranked[0]?.querySelector("[data-loadout-mains]");
+    expect(mains?.textContent?.split("/")).toHaveLength(4);
+    expect(mains).not.toHaveClass("truncate");
+
     await user.click(
       within(guide).getByRole("button", { name: /Relic Swap Guide/ })
     );
@@ -553,6 +608,38 @@ describe("DMG Optimizer detail", () => {
       0
     );
   }, 120_000);
+
+  it("keeps a member's floors when the roster shifts it to another slot", async () => {
+    const user = userEvent.setup();
+    seedTeam(["1102", "1309"]);
+    renderPage();
+    const card = await relicsCard();
+    await simulated(card);
+    await user.click(within(card).getByRole("radio", { name: "Ideal" }));
+    const floor = () =>
+      within(within(card).getByRole("group", { name: "Robin" })).getByRole(
+        "spinbutton",
+        { name: "SPD ≥" }
+      );
+    await user.type(floor(), "134{Enter}");
+    expect(floor()).toHaveValue(134);
+
+    const roster = screen.getByRole("region", { name: "Team Roster" });
+    await user.click(
+      within(within(roster).getByRole("article", { name: "Seele" })).getByRole(
+        "button",
+        { name: /Character actions/ }
+      )
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: "Remove from team" })
+    );
+    // Robin moves to the first slot and keeps its floor.
+    await waitFor(() =>
+      expect(within(card).getAllByRole("group")).toHaveLength(1)
+    );
+    expect(floor()).toHaveValue(134);
+  }, 60_000);
 
   it("generates ideal Relics with a chosen main stat", async () => {
     const user = userEvent.setup();

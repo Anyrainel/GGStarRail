@@ -153,6 +153,7 @@ export function CharacterFilterPanel({
         variant="sidebar"
         label={t("common.search")}
         placeholder={searchPlaceholder}
+        className="text-ellipsis"
         value={filters.query}
         onValueChange={(query) => update({ query })}
       />

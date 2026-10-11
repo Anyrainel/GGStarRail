@@ -120,19 +120,26 @@ export function CurrencyWarPropertyList({
   columns = false,
   children,
 }: {
-  /** Two columns from `sm`, for wide detail panels. */
+  /** Two columns once the list itself is wide enough for both. */
   columns?: boolean;
   children: ReactNode;
 }) {
-  return (
+  const list = (
     <dl
       className={cn(
         "grid grid-cols-1 gap-y-0.5 rounded-lg border border-border bg-card/30 p-3",
-        columns && "sm:grid-cols-2 sm:gap-x-6"
+        columns &&
+          "[@container(min-width:36rem)]:grid-cols-2 [@container(min-width:36rem)]:gap-x-6"
       )}
     >
       {children}
     </dl>
+  );
+  // A detail pane can be narrow on a wide viewport, so measure the pane.
+  return columns ? (
+    <div className="[container-type:inline-size]">{list}</div>
+  ) : (
+    list
   );
 }
 
@@ -145,7 +152,9 @@ export function CurrencyWarPropertyRow({
 }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-2 py-0.5">
-      <dt className="truncate text-sm text-muted-foreground">{label}</dt>
+      <dt className="min-w-0 break-words text-sm text-muted-foreground">
+        {label}
+      </dt>
       <dd className="shrink-0 font-mono text-sm font-medium">{value}</dd>
     </div>
   );

@@ -193,7 +193,7 @@ export default function CharacterView() {
       pathOptions={pathOptions}
       combatTypeOptions={combatTypeOptions}
       countLabel={t("common.count", { count: visibleCharacters.length })}
-      searchPlaceholder={t("search.characters")}
+      searchPlaceholder={t("characterLoadout.searchPlaceholder")}
       showLevelSort
     />
   );

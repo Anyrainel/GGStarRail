@@ -27,6 +27,9 @@ describe("GGArtifact Star Rail home", () => {
     expect(
       within(index).getByRole("link", { name: /Currency War lookup/ })
     ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);
+    expect(
+      within(index).getByRole("link", { name: /Eidolon value/ })
+    ).toHaveAttribute("href", APP_PATHS.teamInvestment);
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
         expect(

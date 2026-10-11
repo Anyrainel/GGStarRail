@@ -21,6 +21,18 @@ function view() {
   );
 }
 
+/** A title action once the catalog has loaded; it is disabled until then. */
+function loadedAction(name: string) {
+  return waitFor(
+    () => {
+      const button = screen.getByRole("button", { name });
+      expect(button).toBeEnabled();
+      return button;
+    },
+    { timeout: 15000 }
+  );
+}
+
 beforeEach(() => {
   act(() => {
     useCharacterPriorityStore.getState().resetPriorities();
@@ -32,11 +44,7 @@ describe("tier list controls", () => {
   it("preserves current rankings while creating, switching, and hydrating named lists", async () => {
     const user = userEvent.setup();
     const rendered = view();
-    const customize = await screen.findByRole(
-      "button",
-      { name: "Customize" },
-      { timeout: 15000 }
-    );
+    const customize = await loadedAction("Customize");
     await user.click(customize);
     expect(screen.getByLabelText("Title").closest("label")).not.toHaveClass(
       "flex-col"
@@ -76,7 +84,8 @@ describe("tier list controls", () => {
     await act(() => useTierLibraryStore.persist.rehydrate());
     await act(() => useCharacterPriorityStore.persist.rehydrate());
     view();
-    expect(await screen.findByText("Favorites")).toBeVisible();
+    await loadedAction("Customize");
+    expect(screen.getByRole("heading", { name: "Favorites" })).toBeVisible();
     expect(useCharacterPriorityStore.getState().assignments[id]?.tier).toBe(
       "S"
     );
@@ -85,13 +94,7 @@ describe("tier list controls", () => {
   it("renames saved and active lists from Manage lists", async () => {
     const user = userEvent.setup();
     view();
-    await user.click(
-      await screen.findByRole(
-        "button",
-        { name: "Manage lists" },
-        { timeout: 15000 }
-      )
-    );
+    await user.click(await loadedAction("Manage lists"));
     await user.click(screen.getByRole("button", { name: "New tier list" }));
     await user.click(screen.getByRole("button", { name: "Manage lists" }));
     const lists = within(screen.getByRole("dialog"));
@@ -135,11 +138,7 @@ describe("tier list controls", () => {
   it("groups the toolbar filters with icon-only Paths and an explained Owned only", async () => {
     const user = userEvent.setup();
     const rendered = view();
-    await screen.findByRole(
-      "button",
-      { name: "Customize" },
-      { timeout: 15000 }
-    );
+    await loadedAction("Customize");
     const header = rendered.container.querySelector("header");
     if (!header) throw new Error("Missing toolbar");
     const bar = within(header);
@@ -171,11 +170,7 @@ describe("tier list controls", () => {
   it("filters without removing saved rankings, and opens details from keyboard focus", async () => {
     const user = userEvent.setup();
     const rendered = view();
-    await screen.findByRole(
-      "button",
-      { name: "Customize" },
-      { timeout: 15000 }
-    );
+    await loadedAction("Customize");
     const item = rendered.container.querySelector<HTMLElement>(
       "[data-priority-item-id]"
     );

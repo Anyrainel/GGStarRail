@@ -37,6 +37,7 @@ export function ArchiveToolbar({
           onValueChange={changeSearch}
           label={searchLabel}
           placeholder={searchPlaceholder}
+          className="text-ellipsis"
         />
         {error && (
           <p

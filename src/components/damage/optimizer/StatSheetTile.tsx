@@ -60,7 +60,8 @@ export function DeltaChip({
 /**
  * One member's stat sheet: header, Relics (4 + 2), view pills and views. The
  * tile spans five rows of its grid as a subgrid, so headers, Relic sections
- * and view pills line up across a row even when the Relic layouts differ.
+ * and view pills line up across a row even when the Relic layouts differ. Its
+ * one column may shrink below its content, so long rows truncate.
  */
 export function StatSheetTile({
   slot,
@@ -89,7 +90,7 @@ export function StatSheetTile({
   return (
     <article
       aria-label={name}
-      className="row-span-5 grid min-w-0 grid-rows-subgrid gap-y-0 overflow-hidden rounded-lg border border-border"
+      className="row-span-5 grid min-w-0 grid-cols-1 grid-rows-subgrid gap-y-0 overflow-hidden rounded-lg border border-border"
       data-stat-sheet={slot}
     >
       <div className="flex w-full min-w-0 items-center gap-2 border-b border-border p-2">

@@ -4,6 +4,7 @@ import {
   ArchiveChipDivider,
   ArchiveToolbar,
 } from "@/components/archive/ArchiveToolbar";
+import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
@@ -62,16 +63,16 @@ export function CharacterCatalog() {
     useState<CharacterDescriptionMode>("full");
   const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(
-    searchParams.get("id")
+    searchParams.get(CHARACTER_ARCHIVE_ID_PARAM)
   );
   const [mobileDetailOpen, setMobileDetailOpen] = useState(
-    Boolean(searchParams.get("id"))
+    Boolean(searchParams.get(CHARACTER_ARCHIVE_ID_PARAM))
   );
   const searching = isArchiveSearchActive(query);
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
-    const linkedId = searchParams.get("id");
+    const linkedId = searchParams.get(CHARACTER_ARCHIVE_ID_PARAM);
     if (!linkedId || !resource.data?.characters.byId.has(linkedId)) return;
     setSelectedId(linkedId);
     setMobileDetailOpen(true);

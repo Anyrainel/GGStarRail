@@ -46,8 +46,11 @@ export default function HomePage() {
             eyebrow={t("nav.accountData")}
             headline={t("home.headline.accountData")}
             link={APP_PATHS.characters}
-            bgImage="assets/ggstarrail/home/third-anniversary.webp"
-            bgPosition="70% 30%"
+            bgImage="assets/ggstarrail/home/firefly.webp"
+            bgPosition="55% 20%"
+            bgScale={1.3}
+            bgOffsetX="15%"
+            bgOffsetY="10%"
             ctaText={t("home.openAccount")}
           />
           <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
@@ -56,10 +59,8 @@ export default function HomePage() {
               eyebrow={t("nav.teamDamageSection")}
               headline={t("home.headline.teamDamage")}
               link={APP_PATHS.teamDamage}
-              bgImage="assets/ggstarrail/home/firefly.webp"
-              bgPosition="55% center"
-              bgScale={1.3}
-              bgOffsetX="20%"
+              bgImage="assets/ggstarrail/home/third-anniversary.webp"
+              bgPosition="70% 30%"
               ctaText={t("home.openTeamDamage")}
             />
             <FeatureCard

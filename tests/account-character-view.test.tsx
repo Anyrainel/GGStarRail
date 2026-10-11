@@ -231,7 +231,7 @@ describe("Account Character loadouts", () => {
       })
     ).toHaveAttribute(
       "href",
-      `${APP_PATHS.archiveCharacters}?character=${ownedCharacter.definitionId}`
+      `${APP_PATHS.archiveCharacters}?id=${ownedCharacter.definitionId}`
     );
 
     const firstRelic = account.relics.find(
@@ -659,9 +659,9 @@ describe("Account Character loadouts", () => {
     const bonuses = eidolonLevelBonuses(definition, traced.eidolon);
     expect(Object.values(bonuses).some((bonus) => bonus > 0)).toBe(true);
     const labels = {
-      basic: "Basic",
+      basic: "Basic ATK",
       skill: "Skill",
-      ultimate: "Ult",
+      ultimate: "Ultimate",
       talent: "Talent",
     } as const;
     for (const [kind, level] of Object.entries(levels) as [

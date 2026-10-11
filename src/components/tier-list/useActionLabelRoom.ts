@@ -5,7 +5,10 @@ import {
   useState,
 } from "react";
 
-/** WideLayout's gap-4 between the title, its actions, and filter groups. */
+/**
+ * WideLayout's gap-4 between the title, its actions, and filter groups. It is
+ * gap-2 below 640px, where the action labels are always hidden.
+ */
 const GAP = 16;
 /** The gap-2 between an action's icon and its label. */
 const LABEL_GAP = 8;

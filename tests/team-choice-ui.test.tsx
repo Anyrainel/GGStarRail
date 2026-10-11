@@ -237,11 +237,11 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     const lightCone = within(card).getByRole("radio", { name: "Light Cone" });
     const relics = within(card).getByRole("radio", { name: "Relics" });
     expect(lightCone).toHaveAttribute("aria-checked", "true");
-    expect(card.querySelectorAll("[data-choice-constraint]")).toHaveLength(2);
+    expect(card.querySelectorAll("[data-constraint-tile]")).toHaveLength(2);
     for (const name of ["Seele", "Robin"])
       expect(
         within(within(card).getByRole("article", { name })).getByText(
-          "Run to compare"
+          "No results yet"
         )
       ).toBeInTheDocument();
 
@@ -494,10 +494,10 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     );
     expect(stubbedSetPlans.slots).toEqual([0, 1]);
 
-    const floors = card.querySelector('[data-choice-constraint="1309"]');
+    const floors = card.querySelector('[data-constraint-tile="1309"]');
     const speed = within(floors as HTMLElement).getByLabelText("SPD ≥");
     await user.type(speed, "134{Enter}");
-    expect(within(robin).getByText("Run to compare")).toBeInTheDocument();
+    expect(within(robin).getByText("No results yet")).toBeInTheDocument();
     expect(within(seele).getAllByRole("listitem")).toHaveLength(1);
 
     // Running again compares only the member without a ranking.
@@ -552,7 +552,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
 
     // Robin's ranking was computed with Seele's old sets: it is run again.
     await waitFor(() =>
-      expect(within(robin).getByText("Run to compare")).toBeInTheDocument()
+      expect(within(robin).getByText("No results yet")).toBeInTheDocument()
     );
     expect(within(seele).getAllByRole("listitem")).toHaveLength(2);
     await user.click(

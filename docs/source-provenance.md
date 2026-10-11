@@ -223,11 +223,12 @@ encoded as WebP (quality 86) without retouching. Cards use CSS cover crops.
 | `third-anniversary.webp` | [Third Anniversary Celebratory Art, April 25, 2026](https://www.hoyolab.com/article/44801456) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2026/04/24/119cbb34293863bc8bb0c928a9830d50_8712464114362706102.jpg) |
 
 The Ruan Mei source also includes Dr. Ratio and a small Herta; the card focuses
-on Ruan Mei. The Third Anniversary art is a group illustration and backs the
-featured Account Data card; its dark palette keeps the widest card in tone with
-the others. The other three images each feature a single character. Sources
-and original dimensions were verified on September 7, 2026; the Third
-Anniversary source was verified on October 10, 2026.
+on Ruan Mei. Firefly backs the featured Account Data card, scaled and offset so
+her face stays in frame at every card width. The Third Anniversary art is a
+group illustration and backs the Team DMG card. The other three images each
+feature a single character. Sources and original dimensions were verified on
+September 7, 2026; the Third Anniversary source was verified on October 10,
+2026.
 
 ## GGArtifact hero wordmark
 

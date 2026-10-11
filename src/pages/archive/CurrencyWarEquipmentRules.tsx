@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { characterCatalogName } from "@/lib/catalogPresentation";
@@ -91,7 +92,7 @@ export function CurrencyWarEquipmentRules({
               <Link
                 key={character.id}
                 className={linkClass}
-                to={`${APP_PATHS.archiveCharacters}?id=${character.id}`}
+                to={characterArchiveHref(character.id)}
               >
                 {characterCatalogName(
                   character,

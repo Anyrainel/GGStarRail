@@ -6,6 +6,11 @@ import type { MessageKey } from "@/i18n/messages.en";
 import type { CompareEntry } from "@/lib/combat/jobs";
 import type { TeamPlan } from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
+import {
+  ConstraintTiles,
+  type MemberConstraintInput,
+  statConstraints,
+} from "../optimizer/ConstraintTiles";
 import { CompactSelect, ControlField, ControlsRow } from "../team/Controls";
 import { MemberProgress } from "../team/MemberProgress";
 import { OptionButton, OptionButtonRow } from "../team/OptionButton";
@@ -14,11 +19,6 @@ import { ErrorBox } from "../team/StatusBoxes";
 import { TeamCharacterGrid } from "../team/TeamCharacterGrid";
 import { useTeamDmgData } from "../team/TeamDmgData";
 import { TeamSectionCard } from "../team/TeamSectionCard";
-import {
-  type ChoiceConstraintInput,
-  ChoiceConstraintTiles,
-  choiceConstraints,
-} from "./ChoiceConstraintTiles";
 import {
   type ChoicePanelMember,
   ChoiceRankingPanel,
@@ -49,7 +49,7 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
   const [mode, setMode] = useState<ChoiceMode>("lightCones");
   const [budget, setBudget] = useState<SubstatBudget>("realistic");
   const [constraints, setConstraints] = useState<
-    Record<string, ChoiceConstraintInput>
+    Record<string, MemberConstraintInput>
   >({});
 
   const panels = useMemo<ChoicePanelMember[]>(
@@ -74,7 +74,7 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
       panels.map((panel) => ({
         slot: panel.slot,
         characterId: panel.characterId,
-        constraints: choiceConstraints(constraints[panel.characterId]),
+        constraints: statConstraints(constraints[panel.characterId]),
       })),
     [panels, constraints]
   );
@@ -156,7 +156,7 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
           </p>
         ) : (
           <>
-            <ChoiceConstraintTiles
+            <ConstraintTiles
               members={panels}
               values={constraints}
               onChange={(characterId, next) =>

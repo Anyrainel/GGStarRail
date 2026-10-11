@@ -137,6 +137,7 @@ describe("tier category layouts", () => {
     expect(hunt.querySelector("span")).toHaveClass("sr-only", "md:not-sr-only");
     expect(hunt.querySelector("span")).not.toHaveClass("truncate");
     expect(hunt.querySelector("img")).toHaveAttribute("loading", "eager");
+    expect(hunt.querySelector("img")).toHaveAttribute("decoding", "sync");
     const active = screen.getByRole("tab", { name: "Elation" });
     expect(active.querySelector("span")).not.toHaveClass("sr-only");
     await userEvent.setup().click(hunt);

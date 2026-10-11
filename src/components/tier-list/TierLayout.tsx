@@ -35,7 +35,10 @@ function GroupIcon<Group extends string>({
   eager = false,
 }: {
   group: TierGroupConfig<Group>;
-  /** Tab icons are always above the fold. */
+  /**
+   * Tab icons are always above the fold. They also decode synchronously:
+   * async-decoded icons in the sticky strip could stay unpainted.
+   */
   eager?: boolean;
 }) {
   return group.asset ? (
@@ -43,6 +46,7 @@ function GroupIcon<Group extends string>({
       {...group.asset}
       alt=""
       loading={eager ? "eager" : "lazy"}
+      decoding={eager ? "sync" : "async"}
       className="h-6 w-6 shrink-0 object-contain"
     />
   ) : (

@@ -7,6 +7,7 @@ import {
   CollapsibleBody,
   useRowExpansion,
 } from "@/components/archive/CollapsibleBody";
+import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
@@ -15,7 +16,6 @@ import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { APP_PATHS } from "@/config/navigation";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
@@ -418,7 +418,7 @@ export function CurrencyWarCharacterLinks({
         {entries.map((character) => (
           <Link
             key={character.id}
-            to={`${APP_PATHS.archiveCharacters}?id=${character.id}`}
+            to={characterArchiveHref(character.id)}
             className="rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary/60"
           >
             {characterCatalogName(character, locale, t("terms.trailblazer"))}

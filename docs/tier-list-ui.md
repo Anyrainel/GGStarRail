@@ -68,9 +68,11 @@ Character Priority's Paths group takes a second bar line where needed. At 768px
 order to fit two. Show Paths still defaults to off on each visit; persisting it
 would be a store schema change.
 
-While the catalog loads or fails to load, each list keeps the page frame used
-by the other catalog pages: a visually hidden title and the `ScrollLayout`
-container around the shared loading or error state.
+While the catalog loads or fails to load, each list keeps its `WideLayout`
+title row: the active list's title and the Customize/Manage lists buttons,
+disabled, with the shared loading or error state in the grid's body inset.
+Below 640px the title row uses an 8px gap so every English title fits from
+360px.
 
 The full grid appears from 1000px, or from 1280px for lists with more than
 seven groups (the nine Light Cone Paths). Narrower screens show one group at a
@@ -80,10 +82,11 @@ label over a neutral body. Group tabs never truncate; they keep full labels in
 a scrolling strip, except that lists with more than seven groups (the nine
 Paths) name only the active tab below 768px and show icons for the rest, named
 by `title`. Every strip fits without scrolling from 360px. Tab icons load
-eagerly. Arrow keys, Home and End move between tabs, which use a roving
-tabindex and control one tab panel. The desktop grid sits inside a 16px inset
-(32px more from 2000px). Headers of five to seven groups stack the icon over
-the label below 1280px; denser lists always stack. Header labels are
+eagerly and decode synchronously, since async-decoded icons in the sticky
+strip could stay unpainted. Arrow keys, Home and End move between tabs, which
+use a roving tabindex and control one tab panel. The desktop grid sits inside a
+16px inset (32px more from 2000px). Headers of five to seven groups stack the
+icon over the label below 1280px; denser lists always stack. Header labels are
 text-base (text-lg from 1280px) for up to four groups, and text-sm (text-base
 from 1280px, text-lg from 1536px) for five to seven. A renamed tier widens the
 label column up to 12rem with smaller text.

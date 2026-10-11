@@ -58,7 +58,8 @@ export function WideLayout({
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
       <header className="sticky top-0 z-10 shrink-0 pb-2 2xl:pb-4">
         <div className="container flex items-center justify-between gap-4">
-          <div className="flex min-w-0 max-w-[calc(100%-3.5rem)] shrink-0 items-center gap-4 md:max-w-[60%]">
+          {/* Phones keep the title whole with a tighter gap before actions. */}
+          <div className="flex min-w-0 max-w-[calc(100%-3.5rem)] shrink-0 items-center gap-2 sm:gap-4 md:max-w-[60%]">
             <h1 className="truncate text-xl font-bold md:text-2xl">{title}</h1>
             {actions}
           </div>

@@ -1,16 +1,22 @@
 import { useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import type { TeamPlan } from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
 
 export const TEAM_PARAM = "team";
 
+/** History state of a detail entry pushed from the grid. */
+const OPENED_FROM_GRID = "teamDmgOpenedFromGrid";
+
 export interface TeamParam {
   /** The team named by `?team=`, when it exists. */
   readonly team: TeamPlan | null;
-  /** Opens a team's detail (a new history entry, so Back returns to the grid). */
+  /**
+   * Opens a team's detail: from the grid, a new history entry (so Back
+   * returns to the grid); from a detail, in place of it.
+   */
   readonly openTeam: (teamId: string) => void;
-  /** Returns to the grid. */
+  /** Returns to the grid: back through history when the grid opened it. */
   readonly closeTeam: () => void;
 }
 
@@ -21,7 +27,12 @@ export interface TeamParam {
  */
 export function useTeamParam(): TeamParam {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const requested = searchParams.get(TEAM_PARAM);
+  const openedFromGrid =
+    (location.state as Record<string, unknown> | null)?.[OPENED_FROM_GRID] ===
+    true;
   const team = useTeamStore((state) =>
     requested
       ? (state.teams.find((entry) => entry.id === requested) ?? null)
@@ -49,25 +60,33 @@ export function useTeamParam(): TeamParam {
 
   const openTeam = useCallback(
     (id: string) =>
-      setSearchParams((current) => {
-        const next = new URLSearchParams(current);
-        next.set(TEAM_PARAM, id);
-        return next;
-      }),
-    [setSearchParams]
-  );
-  const closeTeam = useCallback(
-    () =>
       setSearchParams(
         (current) => {
           const next = new URLSearchParams(current);
-          next.delete(TEAM_PARAM);
+          next.set(TEAM_PARAM, id);
           return next;
         },
-        { replace: true }
+        requested
+          ? { replace: true, state: location.state }
+          : { state: { [OPENED_FROM_GRID]: true } }
       ),
-    [setSearchParams]
+    [requested, location.state, setSearchParams]
   );
+  const closeTeam = useCallback(() => {
+    // Popping the entry openTeam pushed keeps Back and Forward symmetric.
+    if (openedFromGrid) {
+      navigate(-1);
+      return;
+    }
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete(TEAM_PARAM);
+        return next;
+      },
+      { replace: true }
+    );
+  }, [openedFromGrid, navigate, setSearchParams]);
 
   return { team, openTeam, closeTeam };
 }

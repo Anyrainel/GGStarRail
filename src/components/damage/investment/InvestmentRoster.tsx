@@ -2,6 +2,7 @@ import { UsersRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { CompactSelect } from "@/components/damage/team/Controls";
 import { releaseOwnedOnly } from "@/components/damage/team/gridView";
+import { useLightConeChoices } from "@/components/damage/team/lightConeChoices";
 import { TeamCharacterGrid } from "@/components/damage/team/TeamCharacterGrid";
 import { useTeamDmgData } from "@/components/damage/team/TeamDmgData";
 import { TeamSectionCard } from "@/components/damage/team/TeamSectionCard";
@@ -65,7 +66,7 @@ function InvestmentTile({
   onLimitsChange: (limits: InvestmentLimits) => void;
 }) {
   const { t } = useI18n();
-  const { references, items, lookup } = useTeamDmgData();
+  const { references, lookup } = useTeamDmgData();
   const updateMember = useTeamStore((state) => state.updateMember);
   const sizes = useTileSizes();
   const character = references.characters.byId.get(plan.characterId);
@@ -75,9 +76,7 @@ function InvestmentTile({
   const lightConeItem = lightCone
     ? lookup.lightCones.get(lightCone.id)
     : undefined;
-  const lightConeItems = character
-    ? items.lightCones.filter((item) => item.tags?.includes(character.path_id))
-    : items.lightCones;
+  const lightConeChoices = useLightConeChoices()(character?.path_id);
   const update = (patch: Partial<TeamMemberPlan>) =>
     updateMember(team.id, slot, patch);
   const eidolonLabel = (value: number) =>
@@ -119,7 +118,8 @@ function InvestmentTile({
               : undefined
           }
           value={lightCone?.id ?? null}
-          items={lightConeItems}
+          items={lightConeChoices.items}
+          filters={lightConeChoices.filters}
           triggerSize={sizes.lightCone}
           onChange={(id) =>
             update({

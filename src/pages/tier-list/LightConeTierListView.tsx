@@ -55,11 +55,7 @@ export default function LightConeTierListView() {
 
   if (loading || error || !data) {
     return (
-      <TierCatalogState
-        titleKey="route.tierLightCones.title"
-        loading={loading}
-        error={error}
-      />
+      <TierCatalogState category="light-cone" loading={loading} error={error} />
     );
   }
 

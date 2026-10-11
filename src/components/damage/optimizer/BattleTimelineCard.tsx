@@ -5,7 +5,7 @@ import { actionLabel, formatDamage } from "@/lib/combat/presentation";
 import { cn } from "@/lib/utils";
 import { MemberAvatar } from "../team/MemberAvatar";
 import { ProgressBar } from "../team/MemberProgress";
-import { InlineEmptyBox } from "../team/StatusBoxes";
+import { ErrorBox, InlineEmptyBox } from "../team/StatusBoxes";
 import { TeamCharacterGrid } from "../team/TeamCharacterGrid";
 import { useTeamDmgData } from "../team/TeamDmgData";
 import { TeamSectionCard } from "../team/TeamSectionCard";
@@ -203,9 +203,12 @@ function Summary({ result }: { result: SimulateResponse }) {
 export function BattleTimelineCard({
   result,
   running,
+  failed,
 }: {
   result: SimulateResponse | null;
   running: boolean;
+  /** The latest simulation failed (the roster still has members). */
+  failed: boolean;
 }) {
   const { locale, t } = useI18n();
   const rails = result ? timelineRails(result) : [];
@@ -222,7 +225,10 @@ export function BattleTimelineCard({
       bodyClassName="max-h-[65vh] overflow-y-auto p-0 2xl:p-0"
       data-section="battle-timeline"
     >
-      {!result ? (
+      {failed && !running ? (
+        // An earlier result no longer matches the plan, so it is not shown.
+        <ErrorBox className="m-2">{t("combat.damage.failed")}</ErrorBox>
+      ) : !result ? (
         running ? (
           <div
             role="status"

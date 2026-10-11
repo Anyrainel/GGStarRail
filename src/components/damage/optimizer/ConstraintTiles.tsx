@@ -56,7 +56,7 @@ function ConstraintTile({
   return (
     <fieldset
       className="flex min-w-0 flex-col gap-0.5 rounded-md border border-border px-1.5 py-1 md:px-2 md:py-1.5"
-      data-constraint-tile
+      data-constraint-tile={characterId}
     >
       <legend className="sr-only">{name}</legend>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 md:gap-x-1.5">
@@ -109,27 +109,31 @@ function ConstraintTile({
   );
 }
 
-/** One tile per filled member with its SPD and ERR floors. */
+/**
+ * One tile per filled member with its SPD and ERR floors, kept by Character
+ * so they follow the member through roster edits. The DMG Optimizer and the
+ * Light Cone & Relic Choice share it.
+ */
 export function ConstraintTiles({
   members,
   values,
   onChange,
   disabled,
 }: {
-  members: readonly { slot: number; characterId: string; name: string }[];
-  values: Readonly<Record<number, MemberConstraintInput>>;
-  onChange: (slot: number, next: MemberConstraintInput) => void;
+  members: readonly { characterId: string; name: string }[];
+  values: Readonly<Record<string, MemberConstraintInput>>;
+  onChange: (characterId: string, next: MemberConstraintInput) => void;
   disabled?: boolean;
 }) {
   return (
     <TeamCharacterGrid className="pb-1 md:pb-2">
       {members.map((member) => (
         <ConstraintTile
-          key={member.slot}
+          key={member.characterId}
           characterId={member.characterId}
           name={member.name}
-          value={values[member.slot] ?? NO_CONSTRAINT}
-          onChange={(next) => onChange(member.slot, next)}
+          value={values[member.characterId] ?? NO_CONSTRAINT}
+          onChange={(next) => onChange(member.characterId, next)}
           disabled={disabled}
         />
       ))}

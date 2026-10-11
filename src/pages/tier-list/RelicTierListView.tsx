@@ -73,11 +73,7 @@ export default function RelicTierListView() {
 
   if (loading || error || !data) {
     return (
-      <TierCatalogState
-        titleKey="route.tierRelics.title"
-        loading={loading}
-        error={error}
-      />
+      <TierCatalogState category="relic-set" loading={loading} error={error} />
     );
   }
 

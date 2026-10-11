@@ -1,13 +1,13 @@
 import { Plus } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { APP_PATHS } from "@/config/navigation";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
@@ -79,7 +79,7 @@ function CharacterBuildCardComponent({
         >
           <CatalogHoverCard kind="character" id={character.id}>
             <Link
-              to={`${APP_PATHS.archiveCharacters}?character=${encodeURIComponent(character.id)}`}
+              to={characterArchiveHref(character.id)}
               aria-label={t("characterLoadout.openArchive", {
                 name: presentation.name,
               })}
