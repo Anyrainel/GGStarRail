@@ -1,20 +1,13 @@
-import {
-  Check,
-  ChevronDown,
-  FileJson,
-  Gem,
-  Smartphone,
-  UserRound,
-} from "lucide-react";
+import { Check, FileJson, Smartphone, X } from "lucide-react";
 import { useState } from "react";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
-// Illustrative only: never read or change the player's account or builds.
+// Examples stay independent of account data and saved settings.
 export function WelcomeGuidePreview({
   kind,
 }: {
-  kind: "account" | "builds" | "filters" | "decisions" | "more";
+  kind: "account" | "builds" | "filters" | "decisions";
 }) {
   const { t } = useI18n();
   const [selected, setSelected] = useState(0);
@@ -46,6 +39,23 @@ export function WelcomeGuidePreview({
       detail: t("guide.preview.resources"),
     },
   ];
+  const weights = [
+    {
+      stat: t("guide.preview.speed"),
+      value: 100,
+      meaning: t("guide.preview.coreStat"),
+    },
+    {
+      stat: t("guide.preview.break"),
+      value: 80,
+      meaning: t("guide.preview.desiredStat"),
+    },
+    {
+      stat: t("guide.preview.hp"),
+      value: 30,
+      meaning: t("guide.preview.scoreOnly"),
+    },
+  ];
   return (
     <figure className="min-w-0 overflow-hidden rounded-xl border border-border bg-gradient-card">
       <figcaption className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-3 text-xs">
@@ -57,11 +67,6 @@ export function WelcomeGuidePreview({
       <div className="space-y-4 p-4">
         {kind === "account" && (
           <>
-            <div className="flex items-center gap-2 rounded-lg border-2 border-primary/50 bg-primary/5 p-3 text-sm font-semibold">
-              <FileJson className="size-4 text-primary" aria-hidden />
-              {t("imports.open")}
-              <ChevronDown className="ml-auto size-4" aria-hidden />
-            </div>
             <div className="grid grid-cols-2 gap-2">
               {sources.map((source, index) => (
                 <button
@@ -70,7 +75,7 @@ export function WelcomeGuidePreview({
                   aria-pressed={selected === index}
                   onClick={() => setSelected(index)}
                   className={cn(
-                    "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "flex min-h-20 flex-col items-start gap-2 rounded-lg border p-3 text-left text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     selected === index
                       ? "border-primary bg-primary/10"
                       : "border-border hover:bg-accent"
@@ -82,18 +87,10 @@ export function WelcomeGuidePreview({
               ))}
             </div>
             <p className="text-sm leading-6">{sources[selected].detail}</p>
-            <div className="flex items-center gap-2 border-t border-border pt-3 text-xs">
-              <Check className="size-4 shrink-0 text-primary" aria-hidden />
-              {t("guide.preview.review")}
-            </div>
           </>
         )}
         {kind === "builds" && (
           <>
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <UserRound className="size-5 text-primary" aria-hidden />
-              {t("guide.preview.build")}
-            </div>
             <div className="grid grid-cols-2 gap-2">
               {[t("build.cavernCards"), t("build.planarCards")].map(
                 (label, index) => (
@@ -102,96 +99,64 @@ export function WelcomeGuidePreview({
                     className="rounded-lg border border-border bg-background/50 p-3"
                   >
                     <p className="text-xs font-medium">{label}</p>
-                    <div className="mt-3 flex gap-1">
-                      {(index === 0
-                        ? ["head", "hands", "body", "feet"]
-                        : ["sphere", "rope"]
-                      ).map((slot) => (
-                        <Gem
-                          key={slot}
-                          className="size-5 text-primary"
-                          aria-hidden
-                        />
-                      ))}
-                    </div>
+                    <p className="mt-2 text-sm font-semibold">
+                      {index === 0
+                        ? t("build.cavernFourPiece")
+                        : t("build.planarTwoPiece")}
+                    </p>
                   </div>
                 )
               )}
             </div>
-            <div className="rounded-lg border border-border bg-background/50 p-3">
-              <p className="mb-3 text-xs font-semibold">
-                {t("scoring.weightsTitle")}
-              </p>
-              {[
-                { label: t("guide.preview.speed"), width: "100%" },
-                { label: t("guide.preview.break"), width: "80%" },
-                { label: t("guide.preview.hp"), width: "30%" },
-              ].map(({ label, width }) => (
-                <div key={label} className="mb-2 last:mb-0">
+            <p className="text-sm font-semibold">{t("scoring.weightsTitle")}</p>
+            <div className="space-y-3">
+              {weights.map(({ stat, value, meaning }) => (
+                <div key={stat}>
                   <div className="mb-1 flex justify-between gap-2 text-xs">
-                    <span>{label}</span>
-                    <span className="tabular-nums">{width}</span>
+                    <span>{stat}</span>
+                    <span className="tabular-nums">{value}%</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-primary"
-                      style={{ width }}
+                      style={{ width: `${value}%` }}
                     />
                   </div>
+                  <p className="mt-1 text-xs leading-5">{meaning}</p>
                 </div>
               ))}
             </div>
-            <p className="text-xs leading-5 text-muted-foreground">
-              {t("guide.preview.weights")}
-            </p>
           </>
         )}
         {kind === "filters" && (
           <>
-            <div className="flex items-center gap-2 text-sm font-semibold">
-              <Gem className="size-5 text-primary" aria-hidden />
-              {t("filters.rulesTitle")}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                t("guide.preview.head"),
-                t("guide.preview.hands"),
-                t("guide.preview.body"),
-                t("guide.preview.feet"),
-                t("guide.preview.sphere"),
-                t("guide.preview.rope"),
-              ].map((label) => (
-                <div
-                  key={label}
-                  className="rounded-lg border border-primary/40 bg-primary/5 px-2 py-3 text-center text-xs"
-                >
-                  <Gem
-                    className="mx-auto mb-2 size-5 text-primary"
-                    aria-hidden
-                  />
-                  {label}
-                </div>
-              ))}
-            </div>
+            <p className="text-sm font-semibold">{t("guide.preview.match")}</p>
             <div className="rounded-lg border border-border bg-background/50 p-3">
-              <p className="mb-2 text-xs font-semibold">
-                {t("guide.preview.match")}
+              <p className="text-xs font-medium">{t("guide.preview.body")}</p>
+              <p className="mt-2 text-sm leading-6">
+                {t("guide.preview.relicStats")}
               </p>
-              {[
-                t("filters.sets"),
-                t("filters.mainStats"),
-                t("filters.weightedStats"),
-                t("filters.minimumScore"),
-              ].map((label) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2 py-1 text-xs"
-                >
-                  <Check className="size-3.5 text-primary" aria-hidden />
-                  {label}
-                </div>
-              ))}
             </div>
+            <div className="space-y-2">
+              {[t("filters.reason.set"), t("filters.reason.mainStat")].map(
+                (label) => (
+                  <p key={label} className="flex items-start gap-2 text-sm">
+                    <Check
+                      className="mt-0.5 size-4 shrink-0 text-primary"
+                      aria-hidden
+                    />
+                    {label}
+                  </p>
+                )
+              )}
+              <p className="flex items-start gap-2 text-sm">
+                <X className="mt-0.5 size-4 shrink-0" aria-hidden />
+                {t("guide.preview.missingSpeed")}
+              </p>
+            </div>
+            <p className="border-t border-border pt-3 text-sm leading-6">
+              {t("guide.preview.filterResult")}
+            </p>
           </>
         )}
         {kind === "decisions" && (
@@ -204,7 +169,7 @@ export function WelcomeGuidePreview({
                   aria-pressed={selected === index}
                   onClick={() => setSelected(index)}
                   className={cn(
-                    "rounded-lg border px-2 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "min-h-11 rounded-lg border px-2 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     selected === index
                       ? "border-primary bg-primary/10"
                       : "border-border hover:bg-accent"
@@ -214,41 +179,18 @@ export function WelcomeGuidePreview({
                 </button>
               ))}
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-wrap gap-2">
               {decisions[selected].labels.map((label) => (
-                <div
+                <span
                   key={label}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-background/50 p-3"
+                  className="rounded-md border border-border bg-background/50 px-2 py-1.5 text-xs"
                 >
-                  <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Gem className="size-4" aria-hidden />
-                  </span>
-                  <span className="text-sm font-medium">{label}</span>
-                </div>
+                  {label}
+                </span>
               ))}
             </div>
             <p className="text-sm leading-6">{decisions[selected].detail}</p>
           </>
-        )}
-        {kind === "more" && (
-          <div className="space-y-3">
-            {[
-              { title: t("nav.tierList"), body: t("guide.preview.priority") },
-              { title: t("nav.archive"), body: t("guide.preview.archive") },
-              {
-                title: t("nav.archiveAchievements"),
-                body: t("guide.preview.achievements"),
-              },
-            ].map(({ title, body }) => (
-              <div
-                key={title}
-                className="rounded-lg border border-border bg-background/50 p-3"
-              >
-                <p className="text-sm font-semibold text-primary">{title}</p>
-                <p className="mt-1 text-xs leading-5">{body}</p>
-              </div>
-            ))}
-          </div>
         )}
       </div>
     </figure>

@@ -27,14 +27,14 @@ describe("welcome guide", () => {
     await user.click(
       dialog.getByRole("button", { name: "UID profile showcase" })
     );
-    expect(dialog.getByText(/For a quick showcase check/)).toBeVisible();
+    expect(dialog.getByText(/A UID showcase includes/)).toBeVisible();
     await user.click(dialog.getByRole("button", { name: "Next" }));
     expect(dialog.getByRole("heading", { name: "Builds" })).toBeVisible();
     expect(
       dialog.getByRole("link", { name: "Configure builds" })
     ).toHaveAttribute("href", APP_PATHS.builds);
     await user.click(dialog.getByRole("button", { name: "Filters" }));
-    expect(dialog.getByText("Planar Sphere")).toBeVisible();
+    expect(dialog.getByText(/Missing Speed, weighted at 100%/)).toBeVisible();
     await user.click(dialog.getByRole("button", { name: "Next steps" }));
     await user.click(dialog.getByRole("button", { name: "Resources" }));
     expect(dialog.getByText(/Leveling considers growth room/)).toBeVisible();
@@ -62,9 +62,12 @@ describe("welcome guide", () => {
     localStorage.setItem(STORAGE_KEYS.locale, "zh-CN");
     const user = renderGuide();
     await user.click(screen.getByRole("button", { name: "使用教程" }));
-    expect(screen.getByText(/UID 展柜不含未装备遗器/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "UID 个人展示导入" }));
+    expect(screen.getByText(/不含未装备遗器/)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "配置配装" }));
+    expect(screen.getByText(/≥60%：计入有效副词条数量/)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "整理与养成" }));
-    expect(screen.getByText(/分解复核不会自动分解物品/)).toBeVisible();
+    expect(screen.getByText(/分解复核不会自动分解/)).toBeVisible();
     expect(screen.getByRole("link", { name: "资源建议" })).toHaveAttribute(
       "href",
       APP_PATHS.resources

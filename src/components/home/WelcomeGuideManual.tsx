@@ -36,13 +36,8 @@ export function WelcomeGuideManual() {
       id: "account",
       title: t("guide.account.title"),
       icon: Database,
-      body: t("guide.account.body"),
-      hint: t("guide.account.hint"),
-      actions: [
-        t("guide.account.action1"),
-        t("guide.account.action2"),
-        t("guide.account.action3"),
-      ],
+      hint: null,
+      actions: [t("guide.account.action1"), t("guide.account.action2")],
       links: [
         { to: APP_PATHS.characters, label: t("imports.open") },
         { to: APP_PATHS.scannerDownload, label: t("guide.scanner") },
@@ -52,7 +47,6 @@ export function WelcomeGuideManual() {
       id: "builds",
       title: t("guide.builds.title"),
       icon: SlidersHorizontal,
-      body: t("guide.builds.body"),
       hint: t("guide.builds.hint"),
       actions: [
         t("guide.builds.action1"),
@@ -65,7 +59,6 @@ export function WelcomeGuideManual() {
       id: "filters",
       title: t("guide.filters.title"),
       icon: Filter,
-      body: t("guide.filters.body"),
       hint: t("guide.filters.hint"),
       actions: [
         t("guide.filters.action1"),
@@ -81,7 +74,6 @@ export function WelcomeGuideManual() {
       id: "decisions",
       title: t("guide.decisions.title"),
       icon: ShieldCheck,
-      body: t("guide.decisions.body"),
       hint: t("guide.decisions.hint"),
       actions: [
         t("guide.decisions.action1"),
@@ -97,13 +89,8 @@ export function WelcomeGuideManual() {
       id: "more",
       title: t("guide.more.title"),
       icon: Library,
-      body: t("guide.more.body"),
       hint: t("guide.more.hint"),
-      actions: [
-        t("guide.more.action1"),
-        t("guide.more.action2"),
-        t("guide.more.action3"),
-      ],
+      actions: [],
       links: [
         { to: APP_PATHS.tierCharacters, label: t("nav.tierList") },
         { to: APP_PATHS.archiveCharacters, label: t("nav.archive") },
@@ -188,25 +175,35 @@ export function WelcomeGuideManual() {
                 })}
               </p>
               <h2 className="mt-1 text-lg font-semibold">{current.title}</h2>
-              <p className="mt-1 text-sm leading-6">{current.body}</p>
             </div>
           </div>
-          <div className="grid items-start gap-5 md:grid-cols-[1.15fr_1fr]">
-            <WelcomeGuidePreview key={current.id} kind={current.id} />
+          <div
+            className={cn(
+              "grid items-start gap-5",
+              current.id !== "more" && "md:grid-cols-[1.15fr_1fr]"
+            )}
+          >
+            {current.id !== "more" && (
+              <WelcomeGuidePreview key={current.id} kind={current.id} />
+            )}
             <div className="space-y-4">
-              <ol className="space-y-3">
-                {current.actions.map((action, index) => (
-                  <li key={action} className="flex gap-3 text-sm leading-6">
-                    <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
-                      {index + 1}
-                    </span>
-                    <span>{action}</span>
-                  </li>
-                ))}
-              </ol>
-              <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6">
-                {current.hint}
-              </p>
+              {current.actions.length > 0 && (
+                <ol className="space-y-3">
+                  {current.actions.map((action, index) => (
+                    <li key={action} className="flex gap-3 text-sm leading-6">
+                      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+                        {index + 1}
+                      </span>
+                      <span>{action}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {current.hint && (
+                <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6">
+                  {current.hint}
+                </p>
+              )}
               <div className="flex flex-wrap gap-2">
                 {current.links.map((link) => (
                   <Button
