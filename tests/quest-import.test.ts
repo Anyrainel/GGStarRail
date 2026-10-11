@@ -50,7 +50,7 @@ describe("complete Quest capture imports", () => {
   it("derives achievements by public membership and preserves every other ID and counter", async () => {
     const input = await fixture();
     const draft = await parseVersionedScannerExport(input);
-    expect(draft.account.schemaVersion).toBe(4);
+    expect(draft.account.schemaVersion).toBe(5);
     expect(draft.account.achievementCompletion?.completedIds).toEqual([
       input.quests.records[1]!.id,
     ]);
@@ -100,14 +100,18 @@ describe("complete Quest capture imports", () => {
         completedIds: [[...(await loadAchievementIds())][0]!],
       },
     };
-    const old = { ...structuredClone(DEFAULT_WORKSPACE), account };
+    const old = {
+      ...structuredClone(DEFAULT_WORKSPACE),
+      schemaVersion: 1,
+      account,
+    };
     localStorage.setItem(
       STORAGE_KEYS.workspace,
       JSON.stringify({ version: 1, state: old })
     );
     await useWorkspaceStore.persist.rehydrate();
     const hydrated = useWorkspaceStore.getState().account;
-    expect(hydrated?.schemaVersion).toBe(4);
+    expect(hydrated?.schemaVersion).toBe(5);
     expect(hydrated?.characters).toEqual(account.characters);
     expect(hydrated?.achievementCompletion).toEqual(
       account.achievementCompletion
@@ -126,7 +130,7 @@ describe("complete Quest capture imports", () => {
     };
     expect(
       (await parseVersionedScannerExport(native)).account.schemaVersion
-    ).toBe(4);
+    ).toBe(5);
   });
 
   it("publishes every non-achievement Quest, including untitled and missing-condition rows", async () => {

@@ -2,8 +2,9 @@ import type { ReactNode } from "react";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
-import type { Relic, RelicSlot } from "@/domain/account/schemas";
+import type { Relic } from "@/domain/account/schemas";
 import type { RelicScore } from "@/domain/build/scoring";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
 import type { BuildReferences } from "@/lib/buildReferences";
@@ -12,17 +13,7 @@ import {
   localizedName,
 } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/reference/types";
 import { GradeBadge } from "./BuildControls";
-
-const DOMAIN_SLOT_TO_CATALOG = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<RelicSlot, RelicSlotId>;
 
 interface RelicScoreCardProps {
   relic: Relic;
@@ -47,7 +38,7 @@ export function RelicScoreCard({
   const piece = references.relicPieces.byId.get(relic.definitionId);
   const setDefinition = references.relicSets.byId.get(relic.setId);
   const slotDefinition = references.properties.relicSlotById.get(
-    DOMAIN_SLOT_TO_CATALOG[relic.slot]
+    CATALOG_RELIC_SLOT[relic.slot]
   );
   const mainProperty = references.properties.propertyById.get(
     relic.mainStat.statId

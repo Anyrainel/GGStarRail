@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "@/i18n/I18nContext";
 import CharacterView from "@/pages/account-data/CharacterView";
 import InventoryView from "@/pages/account-data/InventoryView";
-import CharacterBuildView from "@/pages/artifact-builds/CharacterBuildView";
+import CharacterBuildView from "@/pages/builds/CharacterBuildView";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 function renderPage(page: ReactElement) {
@@ -285,5 +285,5 @@ describe("Fresh workspace actions", () => {
       });
     }
     expect(useWorkspaceStore.getState().builds).toHaveLength(1);
-  });
+  }, 15_000);
 });

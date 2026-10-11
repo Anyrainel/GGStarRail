@@ -18,11 +18,12 @@ import type {
   ScoreProfile,
   TriageRules,
 } from "@/domain/build/schemas";
-import { migrateWorkspaceV1 } from "./migration/workspace";
+import { migrateWorkspaceStore } from "./migration/workspace";
 import {
   DEFAULT_WORKSPACE,
   type PersistedWorkspace,
   PersistedWorkspaceSchema,
+  WORKSPACE_SCHEMA_VERSION,
 } from "./schemas";
 
 interface WorkspaceActions {
@@ -195,7 +196,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     }),
     {
       name: STORAGE_KEYS.workspace,
-      version: 2,
+      version: WORKSPACE_SCHEMA_VERSION,
       partialize: (state) => ({
         schemaVersion: state.schemaVersion,
         characterLightConeIds: state.characterLightConeIds,
@@ -205,9 +206,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         scoreProfiles: state.scoreProfiles,
         triageRules: state.triageRules,
       }),
-      // Version 1 accounts had achievements but no Quest snapshot (account v3).
-      // The shared schema migration also covers backups and cloud snapshots.
-      migrate: migrateWorkspaceV1,
+      migrate: migrateWorkspaceStore,
       merge: (persistedState, currentState) => {
         const parsed = PersistedWorkspaceSchema.safeParse(persistedState);
         return parsed.success

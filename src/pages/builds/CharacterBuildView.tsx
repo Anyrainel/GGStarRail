@@ -9,8 +9,8 @@ import {
   characterFilterCount,
   defaultCharacterFilters,
 } from "@/components/account-data/CharacterFilterPanel";
-import { CharacterBuildCard } from "@/components/artifact-builds/CharacterBuildCard";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
+import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
 import { ConfirmDialog } from "@/components/builds/ConfirmDialog";
 import { StatusBanner } from "@/components/builds/StatusBanner";
 import { PageLayout } from "@/components/layout/PageLayout";

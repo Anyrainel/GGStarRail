@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
-import { BuildCard } from "@/components/artifact-builds/BuildCard";
+import { BuildCard } from "@/components/builds/BuildCard";
 import { STORAGE_KEYS } from "@/config/identity";
 import {
   createCharacterBuild,
@@ -20,7 +20,7 @@ import {
   createRelicScoringContext,
   loadBuildReferences,
 } from "@/lib/buildReferences";
-import ArtifactBuildsView from "@/pages/artifact-builds/ArtifactBuildsView";
+import RelicFiltersView from "@/pages/builds/RelicFiltersView";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { createDemoAccount } from "./fixtures/demoAccount";
@@ -157,7 +157,7 @@ describe("independent Cavern and Planar builds", () => {
     render(
       <I18nProvider>
         <MemoryRouter>
-          <ArtifactBuildsView />
+          <RelicFiltersView />
         </MemoryRouter>
       </I18nProvider>
     );

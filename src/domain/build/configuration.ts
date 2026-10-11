@@ -1,6 +1,11 @@
 import type { z } from "zod";
 import type { RelicSlot } from "@/domain/account/schemas";
 import {
+  CATALOG_RELIC_SLOT,
+  DMG_BOOST_STAT_BY_COMBAT_TYPE,
+  isCombatTypeId,
+} from "@/domain/stats";
+import {
   type BuildConfiguration,
   BuildConfigurationSchema,
   type CavernSetPlan,
@@ -50,25 +55,6 @@ export const DEFAULT_GRADE_THRESHOLDS = {
   b: 30,
   c: 20,
 } as const;
-
-const DOMAIN_TO_CATALOG_SLOT = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<RelicSlot, string>;
-
-const ELEMENT_MAIN_STAT = {
-  Fire: "FireAddedRatio",
-  Ice: "IceAddedRatio",
-  Imaginary: "ImaginaryAddedRatio",
-  Physical: "PhysicalAddedRatio",
-  Quantum: "QuantumAddedRatio",
-  Thunder: "ThunderAddedRatio",
-  Wind: "WindAddedRatio",
-} as const satisfies Record<string, string>;
 
 export function buildMainStats(
   build: BuildConfiguration,
@@ -152,15 +138,12 @@ function preferredMainStats(
       (entry) => entry.character_id === character.id
     )?.weights ?? {};
   const scoreBases = scoreBaseByProperty(progression, "main");
-  const elementProperty =
-    ELEMENT_MAIN_STAT[
-      character.combat_type_id as keyof typeof ELEMENT_MAIN_STAT
-    ];
+  const elementProperty = isCombatTypeId(character.combat_type_id)
+    ? DMG_BOOST_STAT_BY_COMBAT_TYPE[character.combat_type_id]
+    : undefined;
 
   const choose = (slot: "body" | "feet" | "planarSphere" | "linkRope") => {
-    const definition = properties.relicSlotById.get(
-      DOMAIN_TO_CATALOG_SLOT[slot]
-    );
+    const definition = properties.relicSlotById.get(CATALOG_RELIC_SLOT[slot]);
     const candidates = definition?.valid_main_properties ?? [];
     const weighted = candidates.map((propertyId) => {
       const scoreType = scoreBases.get(propertyId)?.scoreType;

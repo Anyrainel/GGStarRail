@@ -9,7 +9,7 @@ clearing the workspace clears both.
 
 The account-import contracts in this repository were checked against current
 upstream implementations and deployed HSR web clients on 2026-09-02. Every
-source is normalized into `AccountSnapshot` v2 before the review screen and
+source is normalized into `AccountSnapshot` v5 before the review screen and
 the same source-aware merge boundary is used by scoring, filters, build
 recommendations, and triage.
 
@@ -140,10 +140,31 @@ The optional `achievements` array contains sorted unique public completed IDs,
 validated against the reference catalog. Omission preserves completion during
 merge; a present array, including `[]`, replaces completion. V4 does not supply
 the older v3 capture-evidence object, so the importer does not invent it.
-Optional OCR skills, traces, and memosprite levels are imported when present;
-`ability_version` is not required. Trailblazer metadata is accepted, while
-Character identity and Path continue to come from each public Character ID.
-No persisted schema change is needed for these mappings.
+Optional OCR skills, traces, and memosprite levels are imported when present
+and mapped to catalog trace point IDs; `ability_version` is not required.
+Trailblazer metadata is accepted, while Character identity and Path continue to
+come from each public Character ID.
+
+## Character Trace records
+
+`Character.traces` maps catalog trace point IDs (`${characterId}${suffix}`) to
+levels for every source. Ability suffixes are `001` Basic ATK, `002` Skill,
+`003` Ultimate, `004` Talent, `007` Technique, `301`/`302` Memosprite
+Skill/Talent, and `420` Elation Skill; their values are base levels without
+Eidolon bonuses. Bonus Abilities use `101`–`103` and Stat Bonuses `201`–`210`,
+holding 1 when unlocked and 0 when the source reports them locked. A missing
+key means the source did not report that node. `src/domain/account/traces.ts`
+owns this vocabulary.
+
+Account snapshots v1–v3 accepted arbitrary keys, and the interoperable v4
+adapter stored `skill:*`, `memosprite:*`, `trace:*`, and `source:*` keys.
+Snapshot v5 accepts only point IDs and optionally preserves captured Quests.
+Workspace v3 combines the published v2 trace migration with Quest support.
+Native imports, workspace v1/v2 hydration, and backup payloads migrate older
+snapshots by mapping legacy interoperable keys and dropping source metadata.
+Both published account v4 (canonical traces) and the unpublished Quest v4
+format (legacy traces with optional Quest records) migrate without losing
+equipment, achievements, captured Quests, or workspace settings.
 
 The file importer accepts the native GGStarRail envelope,
 `goodscanner.hsr.experimental` v1 and v2, and interoperable Reliquary,

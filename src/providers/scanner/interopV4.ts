@@ -9,6 +9,14 @@ import {
   type Relic,
   type RelicSlot,
 } from "@/domain/account/schemas";
+import {
+  type AbilityTraceKind,
+  abilityTraceId,
+  bonusAbilityTraceId,
+  STAT_BONUS_COUNT,
+  statBonusTraceId,
+} from "@/domain/account/traces";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { assertNoSensitiveFields } from "@/lib/security";
 import type {
   HsrReferenceCatalog,
@@ -153,17 +161,6 @@ const SLOT_ALIASES: Readonly<Record<string, RelicSlot>> = {
   feet: "feet",
   planarsphere: "planarSphere",
   linkrope: "linkRope",
-};
-
-const DOMAIN_TO_CATALOG_SLOT: Readonly<
-  Record<RelicSlot, RelicPieceDefinition["slot"]>
-> = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
 };
 
 const MAIN_STAT_ALIASES: Readonly<Record<string, string>> = {
@@ -362,7 +359,7 @@ function findRelicPiece(
   const piece = canonicalVisibleRelicPiece(
     {
       setId: record.set_id,
-      slot: DOMAIN_TO_CATALOG_SLOT[slot],
+      slot: CATALOG_RELIC_SLOT[slot],
       rarity: record.rarity,
       mainPropertyId,
     },
@@ -402,21 +399,42 @@ function mainStatValue(
   return accountStatValue(property, rawValue);
 }
 
+const SKILL_TRACE_KINDS: Readonly<Record<string, AbilityTraceKind>> = {
+  basic: "basic",
+  skill: "skill",
+  ult: "ultimate",
+  talent: "talent",
+};
+
+const MEMOSPRITE_TRACE_KINDS: Readonly<Record<string, AbilityTraceKind>> = {
+  skill: "memospriteSkill",
+  talent: "memospriteTalent",
+};
+
+/** Maps the interoperable trace vocabulary to catalog trace point IDs. */
 function characterTraces(
+  characterId: string,
   record: z.infer<typeof V4CharacterSchema>
 ): Record<string, number> {
   const traces: Record<string, number> = {};
   for (const [key, value] of Object.entries(record.skills ?? {})) {
-    traces[`skill:${key}`] = value;
-  }
-  for (const [key, value] of Object.entries(record.traces ?? {})) {
-    traces[`trace:${key}`] = value ? 1 : 0;
+    const kind = SKILL_TRACE_KINDS[key];
+    if (kind) traces[abilityTraceId(characterId, kind)] = value;
   }
   for (const [key, value] of Object.entries(record.memosprite ?? {})) {
-    traces[`memosprite:${key}`] = value;
+    const kind = MEMOSPRITE_TRACE_KINDS[key];
+    if (kind) traces[abilityTraceId(characterId, kind)] = value;
   }
-  if (record.ability_version !== undefined) {
-    traces["source:abilityVersion"] = record.ability_version;
+  for (const [key, unlocked] of Object.entries(record.traces ?? {})) {
+    const bonusAbility = /^ability_([1-3])$/.exec(key);
+    const statBonus = /^stat_(\d{1,2})$/.exec(key);
+    const statIndex = Number(statBonus?.[1]);
+    if (bonusAbility) {
+      traces[bonusAbilityTraceId(characterId, Number(bonusAbility[1]))] =
+        unlocked ? 1 : 0;
+    } else if (statBonus && statIndex >= 1 && statIndex <= STAT_BONUS_COUNT) {
+      traces[statBonusTraceId(characterId, statIndex)] = unlocked ? 1 : 0;
+    }
   }
   return traces;
 }
@@ -479,7 +497,7 @@ export async function parseInteroperableScannerV4Export(
       level: record.level,
       ascension: record.ascension,
       eidolon: record.eidolon,
-      traces: characterTraces(record),
+      traces: characterTraces(definition.id, record),
       relicKeys: [],
     };
   });
@@ -677,7 +695,7 @@ export async function parseInteroperableScannerV4Export(
     completedIds === undefined ? undefined : { completedIds };
   const isGoodScanner = parsed.generator?.name === "GOODScanner";
   const account: AccountSnapshot = AccountSnapshotSchema.parse({
-    schemaVersion: 4,
+    schemaVersion: 5,
     profileId: `scanner:v4:${sourceKind}`,
     ...(uid ? { uid } : {}),
     characters,

@@ -25,11 +25,9 @@ const ArchivePage = lazy(() => import("@/pages/archive/ArchivePage"));
 const ScannerDownloadPage = lazy(() => import("@/pages/ScannerDownloadPage"));
 const FeedbackPage = lazy(() => import("@/pages/FeedbackPage"));
 const SupportPage = lazy(() => import("@/pages/SupportPage"));
-const ArtifactBuildsView = lazy(
-  () => import("@/pages/artifact-builds/ArtifactBuildsView")
-);
+const RelicFiltersView = lazy(() => import("@/pages/builds/RelicFiltersView"));
 const CharacterBuildView = lazy(
-  () => import("@/pages/artifact-builds/CharacterBuildView")
+  () => import("@/pages/builds/CharacterBuildView")
 );
 const CharacterTierListView = lazy(
   () => import("@/pages/tier-list/CharacterTierListView")
@@ -104,7 +102,7 @@ export default function App() {
             element={<Navigate to={APP_PATHS.builds} replace />}
           />
           <Route path={APP_PATHS.builds} element={<CharacterBuildView />} />
-          <Route path={APP_PATHS.filters} element={<ArtifactBuildsView />} />
+          <Route path={APP_PATHS.filters} element={<RelicFiltersView />} />
           <Route path={APP_PATHS.triage} element={<TriageView />} />
           <Route
             path="/builds/scoring"

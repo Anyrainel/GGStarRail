@@ -1,24 +1,33 @@
 import { z } from "zod";
-import { AchievementCompletionSchema } from "@/domain/account/schemas";
+import {
+  AccountSnapshotSchema,
+  AchievementCompletionSchema,
+} from "@/domain/account/schemas";
 import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
   TriageRulesSchema,
 } from "@/domain/build/schemas";
-import { MigratingAccountSnapshotSchema } from "./migration/accountV3";
+
+/** Workspace fields whose shape is shared by every supported store version. */
+export const WORKSPACE_USER_FIELDS = {
+  characterLightConeIds: CharacterLightConeChoicesSchema,
+  localAchievementCompletion: AchievementCompletionSchema.default({
+    completedIds: [],
+  }),
+  builds: z.array(BuildConfigurationSchema),
+  scoreProfiles: z.array(ScoreProfileSchema),
+  triageRules: TriageRulesSchema,
+} as const;
+
+export const WORKSPACE_SCHEMA_VERSION = 3;
 
 export const PersistedWorkspaceSchema = z
   .object({
-    schemaVersion: z.literal(1),
-    characterLightConeIds: CharacterLightConeChoicesSchema,
-    account: MigratingAccountSnapshotSchema.nullable(),
-    localAchievementCompletion: AchievementCompletionSchema.default({
-      completedIds: [],
-    }),
-    builds: z.array(BuildConfigurationSchema),
-    scoreProfiles: z.array(ScoreProfileSchema),
-    triageRules: TriageRulesSchema,
+    schemaVersion: z.literal(WORKSPACE_SCHEMA_VERSION),
+    account: AccountSnapshotSchema.nullable(),
+    ...WORKSPACE_USER_FIELDS,
   })
   .strict()
   .superRefine((value, context) => {
@@ -57,7 +66,7 @@ export const PersistedWorkspaceSchema = z
 export type PersistedWorkspace = z.infer<typeof PersistedWorkspaceSchema>;
 
 export const DEFAULT_WORKSPACE: PersistedWorkspace = {
-  schemaVersion: 1,
+  schemaVersion: WORKSPACE_SCHEMA_VERSION,
   characterLightConeIds: {},
   account: null,
   localAchievementCompletion: { completedIds: [] },

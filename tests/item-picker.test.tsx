@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CharacterLightCones } from "@/components/artifact-builds/CharacterLightCones";
+import { CharacterLightCones } from "@/components/builds/CharacterLightCones";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { I18nProvider } from "@/i18n/I18nContext";

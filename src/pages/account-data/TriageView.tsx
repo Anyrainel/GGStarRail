@@ -43,6 +43,7 @@ import {
 } from "@/domain/build/evaluation";
 import type { TriageRules } from "@/domain/build/schemas";
 import type { TriageDecision, TriageReason } from "@/domain/build/triage";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { createRelicScoringContext } from "@/lib/buildReferences";
@@ -53,21 +54,11 @@ import {
 } from "@/lib/managerInstructions";
 import { reconcileManagerResult } from "@/lib/managerResult";
 import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
-import type { RelicSlotId } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 type DecisionFilter = "all" | TriageDecision;
 type CategoryFilter = "all" | RelicCategory;
 type SlotFilter = "all" | RelicSlot;
-
-const DOMAIN_SLOT_TO_CATALOG = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<RelicSlot, RelicSlotId>;
 
 const DECISIONS: readonly TriageDecision[] = [
   "keep",
@@ -124,7 +115,7 @@ export function TriageView() {
     ...BUILD_SLOT_ORDER.map((slot) => ({
       value: slot,
       label: localizedName(
-        data?.properties.relicSlotById.get(DOMAIN_SLOT_TO_CATALOG[slot])?.name,
+        data?.properties.relicSlotById.get(CATALOG_RELIC_SLOT[slot])?.name,
         locale,
         slot
       ),

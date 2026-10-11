@@ -33,6 +33,7 @@ import {
   evaluateBuildFilter,
 } from "@/domain/build/filters";
 import { scoreRelic } from "@/domain/build/scoring";
+import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { buildDisplayName } from "@/lib/buildPresentation";
@@ -42,19 +43,9 @@ import {
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
-const DOMAIN_SLOT_TO_CATALOG = {
-  head: "HEAD",
-  hands: "HAND",
-  body: "BODY",
-  feet: "FOOT",
-  planarSphere: "NECK",
-  linkRope: "OBJECT",
-} as const satisfies Record<(typeof BUILD_SLOT_ORDER)[number], RelicSlotId>;
-
-export default function ArtifactBuildsView() {
+export default function RelicFiltersView() {
   const { locale, t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
@@ -267,7 +258,7 @@ export default function ArtifactBuildsView() {
             <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
               {filters.map((filter) => {
                 const slot = data.properties.relicSlotById.get(
-                  DOMAIN_SLOT_TO_CATALOG[filter.slot]
+                  CATALOG_RELIC_SLOT[filter.slot]
                 );
                 const active = selectedFilter?.id === filter.id;
                 return (
@@ -345,7 +336,7 @@ export default function ArtifactBuildsView() {
                     );
                   }
                   const slot = data.properties.relicSlotById.get(
-                    DOMAIN_SLOT_TO_CATALOG[slotId]
+                    CATALOG_RELIC_SLOT[slotId]
                   );
                   return (
                     <div

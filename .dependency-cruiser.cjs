@@ -25,7 +25,7 @@ module.exports = {
       // A pure format migration is shared by persistence and account import.
       to: {
         path: "^src/(components|contexts|pages|stores)/",
-        pathNot: "^src/stores/migration/accountV3\\.ts$",
+        pathNot: "^src/stores/migration/account\\.ts$",
       },
     },
     {
