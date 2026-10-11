@@ -207,7 +207,7 @@ encoding.
 
 ## Home card publisher wallpapers
 
-The four curated images in `public/assets/ggstarrail/home/` come directly from
+The five curated images in `public/assets/ggstarrail/home/` come directly from
 the verified Honkai: Star Rail publisher account on HoYoLAB. Each source post
 displays "Repost allowed". They are COGNOSPHERE artwork, not GGArtifact-owned
 art or assets covered by this repository's code license. The original images
@@ -220,10 +220,15 @@ encoded as WebP (quality 86) without retouching. Cards use CSS cover crops.
 | `ruan-mei.webp` | [Pom-Pom Gallery, December 15, 2023](https://www.hoyolab.com/article/23629548) | [2844 x 1600 JPEG](https://upload-os-bbs.hoyolab.com/upload/2023/12/15/95e2d452ec9a06140ca4bd7c50127167_4472802937747563065.jpeg) |
 | `hysilens.webp` | [Pom-Pom Gallery, September 4, 2025](https://www.hoyolab.com/article/40908393) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2025/08/22/aac7a06d63e1f2d9ee26ee975977e893_6439837002613710400.jpg) |
 | `evernight.webp` | [Pom-Pom Gallery, September 4, 2025](https://www.hoyolab.com/article/40908393) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2025/08/22/fc2a791fa9be6524f095e0586b8ac84f_2383941123723856191.jpg) |
+| `third-anniversary.webp` | [Third Anniversary Celebratory Art, April 25, 2026](https://www.hoyolab.com/article/44801456) | [1920 x 1080 JPG](https://upload-os-bbs.hoyolab.com/upload/2026/04/24/119cbb34293863bc8bb0c928a9830d50_8712464114362706102.jpg) |
 
 The Ruan Mei source also includes Dr. Ratio and a small Herta; the card focuses
-on Ruan Mei. The other three images each feature a single character. Sources
-and original dimensions were verified on September 7, 2026.
+on Ruan Mei. Firefly backs the featured Account Data card, scaled and offset so
+her face stays in frame at every card width. The Third Anniversary art is a
+group illustration and backs the Team DMG card. The other three images each
+feature a single character. Sources and original dimensions were verified on
+September 7, 2026; the Third Anniversary source was verified on October 10,
+2026.
 
 ## GGArtifact hero wordmark
 

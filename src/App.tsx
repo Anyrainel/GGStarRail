@@ -29,6 +29,7 @@ const RelicFiltersView = lazy(() => import("@/pages/builds/RelicFiltersView"));
 const CharacterBuildView = lazy(
   () => import("@/pages/builds/CharacterBuildView")
 );
+const TeamDamagePage = lazy(() => import("@/pages/damage/TeamDamagePage"));
 const CharacterTierListView = lazy(
   () => import("@/pages/tier-list/CharacterTierListView")
 );
@@ -38,6 +39,12 @@ const LightConeTierListView = lazy(
 const RelicTierListView = lazy(
   () => import("@/pages/tier-list/RelicTierListView")
 );
+
+/** Redirects with `replace`, keeping the query string (e.g. `?team=`). */
+function RedirectWithSearch({ to }: { to: string }) {
+  const location = useLocation();
+  return <Navigate to={{ pathname: to, search: location.search }} replace />;
+}
 
 export default function App() {
   const location = useLocation();
@@ -104,6 +111,30 @@ export default function App() {
           <Route path={APP_PATHS.builds} element={<CharacterBuildView />} />
           <Route path={APP_PATHS.filters} element={<RelicFiltersView />} />
           <Route path={APP_PATHS.triage} element={<TriageView />} />
+          <Route
+            path={APP_PATHS.teamDamage}
+            element={<TeamDamagePage tab="optimizer" />}
+          />
+          <Route
+            path={APP_PATHS.teamInvestment}
+            element={<TeamDamagePage tab="investment" />}
+          />
+          <Route
+            path={APP_PATHS.teamChoice}
+            element={<TeamDamagePage tab="choice" />}
+          />
+          <Route
+            path="/team-damage"
+            element={<RedirectWithSearch to={APP_PATHS.teamDamage} />}
+          />
+          <Route
+            path="/team-damage/*"
+            element={<RedirectWithSearch to={APP_PATHS.teamDamage} />}
+          />
+          <Route
+            path="/builds/team-damage"
+            element={<RedirectWithSearch to={APP_PATHS.teamDamage} />}
+          />
           <Route
             path="/builds/scoring"
             element={<Navigate to={APP_PATHS.builds} replace />}

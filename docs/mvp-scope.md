@@ -66,8 +66,15 @@ identity resolution before merge or replacement. Battle Chronicle and UID
 sources never claim to contain unequipped inventory. See
 [Account imports](account-imports.md).
 
+## Team damage
+
+Team damage simulation and optimization were added by an explicit scope
+decision. The engine models Energy and Skill Points inside its battle timeline
+rather than as a separate calculator. See [Team damage](combat/product.md) and
+[Combat engine architecture](combat/architecture.md).
+
 ## Non-goals
 
-The repository must not acquire team damage optimization, Genshin-specific
-formula/data engines, or energy calculators as incidental carry-over. A later
-proposal to add any of these is a separate product-scope decision.
+The repository must not acquire Genshin-specific formula/data engines or
+standalone energy calculators as incidental carry-over. Combat engine work
+stays HSR-specific and inside `src/domain/combat`.

@@ -1,5 +1,5 @@
 import { Check, Plus, Search, X } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { type ReactNode, useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -17,7 +17,14 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 import { CatalogHoverCard } from "./CatalogHoverCard";
-import { ItemIcon, type ItemIconProps, type ItemIconSize } from "./ItemIcon";
+import {
+  ItemIcon,
+  type ItemIconProps,
+  type ItemIconSize,
+  itemIconArtworkHeight,
+  itemIconRadius,
+  itemIconWidth,
+} from "./ItemIcon";
 
 export interface PickerItem {
   id: string;
@@ -35,6 +42,11 @@ export interface PickerFilter {
   options: readonly { id: string; label: string }[];
 }
 
+export interface ItemPickerTriggerState {
+  open: boolean;
+  disabled: boolean;
+}
+
 interface ItemPickerProps {
   kind: "character" | "light-cone" | "relic-set";
   items: readonly PickerItem[];
@@ -44,10 +56,25 @@ interface ItemPickerProps {
   onChange: (id: string) => void;
   onClear?: () => void;
   triggerSize?: ItemIconSize;
+  /** Light Cones only: a square trigger tile cropped from the card art. */
+  square?: boolean;
   showName?: boolean;
   badge?: number;
   compact?: boolean;
   disabled?: boolean;
+  /** Rendered at the top of the picker body, above search and filters. */
+  contentHeader?: ReactNode;
+  /** Replaces the trigger visual; the button, its label and keys stay the same. */
+  renderTrigger?: (state: ItemPickerTriggerState) => ReactNode;
+  /** Close after a pick; multi-step pickers keep the panel open. */
+  closeOnSelect?: boolean;
+  /** Highlights several items, such as both halves of a 2+2 plan. */
+  selectedIds?: readonly string[];
+  /** Overrides the trigger's accessible name and tooltip. */
+  triggerLabel?: string;
+  /** Overrides only the trigger's tooltip. */
+  triggerTitle?: string;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /** All catalog pickers share search, filters, selection, and responsive behavior. */
@@ -60,10 +87,18 @@ export function ItemPicker({
   onChange,
   onClear,
   triggerSize = "lg",
+  square = false,
   showName = false,
   badge,
   compact = false,
   disabled = false,
+  contentHeader,
+  renderTrigger,
+  closeOnSelect = true,
+  selectedIds,
+  triggerLabel,
+  triggerTitle,
+  onOpenChange,
 }: ItemPickerProps) {
   const { t } = useI18n();
   const mobile = useMediaQuery("(max-width: 767px)");
@@ -75,6 +110,10 @@ export function ItemPicker({
   const [preview, setPreview] = useState<string | null>(null);
   const headingId = useId();
   const selected = items.find((item) => item.id === value);
+  const highlighted = useMemo(
+    () => new Set(selectedIds ?? (value === null ? [] : [value])),
+    [selectedIds, value]
+  );
   const visible = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase();
     return items.filter(
@@ -92,6 +131,7 @@ export function ItemPicker({
 
   function changeOpen(next: boolean) {
     setOpen(next);
+    onOpenChange?.(next);
     if (!next) {
       setQuery("");
       setActiveFilters({});
@@ -99,20 +139,29 @@ export function ItemPicker({
     }
   }
 
+  const emptyHeight = itemIconArtworkHeight(kind, triggerSize, square);
+  const framed = compact;
+  const accessibleName =
+    triggerLabel ?? (selected ? `${label}: ${selected.name}` : label);
   const trigger = (
     <button
       type="button"
       disabled={disabled}
-      aria-label={selected ? `${label}: ${selected.name}` : label}
-      title={selected?.name ?? label}
+      aria-label={accessibleName}
+      title={triggerTitle ?? triggerLabel ?? selected?.name ?? label}
       data-item-picker={kind}
       className={cn(
-        "relative flex shrink-0 flex-col items-center gap-1 rounded-lg border border-border bg-gradient-select text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
-        showName && "pb-1",
-        compact && !selected && "h-8 w-8 justify-center"
+        "group relative flex shrink-0 flex-col items-center gap-1 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        framed
+          ? "rounded-lg border border-border bg-gradient-select text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          : "rounded-md transition-transform enabled:hover:scale-105",
+        framed && showName && "pb-1",
+        compact && !selected && !renderTrigger && "h-8 w-8 justify-center"
       )}
     >
-      {selected ? (
+      {renderTrigger ? (
+        renderTrigger({ open, disabled })
+      ) : selected ? (
         <CatalogHoverCard kind={kind} id={selected.id} disabled={open}>
           <ItemIcon
             kind={kind}
@@ -121,25 +170,18 @@ export function ItemPicker({
             rarity={selected.rarity}
             cornerAsset={selected.cornerAsset}
             badge={badge}
+            square={square}
             size={triggerSize}
             alt=""
             aria-hidden="true"
           />
         </CatalogHoverCard>
-      ) : (
-        <span
-          className={cn(
-            "flex items-center justify-center",
-            !compact &&
-              (triggerSize === "sm"
-                ? "h-12 w-12"
-                : triggerSize === "md"
-                  ? "h-14 w-14"
-                  : "h-16 w-16")
-          )}
-        >
+      ) : compact ? (
+        <span className="flex items-center justify-center">
           <Plus className="h-5 w-5" aria-hidden="true" />
         </span>
+      ) : (
+        <ItemPickerEmptyTile size={triggerSize} height={emptyHeight} />
       )}
       {showName && selected && (
         <span
@@ -156,6 +198,7 @@ export function ItemPicker({
   const content = (
     <>
       <div className="shrink-0 space-y-3 border-b border-border p-3">
+        {contentHeader}
         <div className="relative">
           <Search
             className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted-foreground"
@@ -221,16 +264,16 @@ export function ItemPicker({
               <button
                 type="button"
                 aria-label={item.name}
-                aria-pressed={item.id === value}
+                aria-pressed={highlighted.has(item.id)}
                 onMouseEnter={() => setPreview(item.name)}
                 onFocus={() => setPreview(item.name)}
                 onClick={() => {
                   onChange(item.id);
-                  changeOpen(false);
+                  if (closeOnSelect) changeOpen(false);
                 }}
                 className={cn(
                   "relative flex min-w-0 flex-col items-center gap-1 rounded-lg p-1.5 text-center outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
-                  item.id === value &&
+                  highlighted.has(item.id) &&
                     "bg-primary/20 ring-1 ring-inset ring-primary"
                 )}
               >
@@ -244,7 +287,7 @@ export function ItemPicker({
                   alt=""
                   aria-hidden="true"
                 />
-                {item.id === value && (
+                {highlighted.has(item.id) && (
                   <Check
                     className="absolute right-1 top-1 h-4 w-4 rounded-full bg-primary text-primary-foreground"
                     aria-hidden="true"
@@ -270,7 +313,7 @@ export function ItemPicker({
         <span className="text-xs text-muted-foreground">
           {preview ?? selected?.name ?? label}
         </span>
-        {onClear && value && (
+        {onClear && (Boolean(value) || (selectedIds?.length ?? 0) > 0) && (
           <Button
             variant="ghost"
             size="sm"
@@ -320,5 +363,36 @@ export function ItemPicker({
         {content}
       </PopoverContent>
     </Popover>
+  );
+}
+
+/** The empty picker trigger: an icon-sized tile with a large plus. */
+export function ItemPickerEmptyTile({
+  size,
+  height,
+}: {
+  size: ItemIconSize;
+  /** Defaults to a square tile. */
+  height?: number;
+}) {
+  const width = itemIconWidth(size);
+  return (
+    <span
+      className="relative flex items-center justify-center overflow-hidden rounded-md border-2 border-border bg-gradient-select shadow-sm ring-1 ring-inset ring-foreground/20 transition-shadow group-hover:shadow-md group-disabled:bg-muted"
+      style={{
+        width,
+        height: height ?? width,
+        borderRadius: itemIconRadius(size),
+      }}
+      data-item-picker-empty
+    >
+      <Plus
+        className={cn(
+          "stroke-[1.5] text-muted-foreground transition-colors group-hover:text-primary",
+          width <= 48 ? "h-6 w-6" : "h-8 w-8"
+        )}
+        aria-hidden="true"
+      />
+    </span>
   );
 }

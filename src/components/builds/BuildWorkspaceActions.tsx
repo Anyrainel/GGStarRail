@@ -1,7 +1,6 @@
 import { Download, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
-import { PageActions } from "@/components/layout/PageActions";
-import { Button } from "@/components/ui/button";
+import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildWorkspaceBundle } from "@/lib/buildBundle";
@@ -254,15 +253,11 @@ export function BuildWorkspaceActions({
     <>
       <PageActions
         primary={
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
+          <PageActionButton
+            icon={Download}
+            label={t("build.importAction")}
             onClick={() => inputRef.current?.click()}
-          >
-            <Upload className="h-4 w-4" aria-hidden="true" />
-            {t("build.import")}
-          </Button>
+          />
         }
         overflow={
           <>
@@ -270,14 +265,14 @@ export function BuildWorkspaceActions({
               className="sm:hidden"
               onSelect={() => inputRef.current?.click()}
             >
-              <Upload className="h-4 w-4" aria-hidden="true" />
-              {t("build.import")}
+              <Download className="h-4 w-4" aria-hidden="true" />
+              {t("build.importAction")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!hasWorkspace}
               onSelect={exportWorkspace}
             >
-              <Download className="h-4 w-4" aria-hidden="true" />
+              <Upload className="h-4 w-4" aria-hidden="true" />
               {t("build.export")}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -298,7 +293,11 @@ export function BuildWorkspaceActions({
         className="sr-only"
         onChange={(event) => void reviewImport(event.target.files?.[0])}
       />
-      {status && <StatusBanner message={status.message} tone={status.tone} />}
+      {status && (
+        <div className="wide-container shrink-0 pb-2">
+          <StatusBanner message={status.message} tone={status.tone} />
+        </div>
+      )}
 
       <ConfirmDialog
         open={pendingImport !== null}

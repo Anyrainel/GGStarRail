@@ -68,7 +68,7 @@ describe("Fresh workspace actions", () => {
     renderPage(<CharacterBuildView />);
 
     const createButtons = await screen.findAllByRole("button", {
-      name: "Add Cavern build",
+      name: "Add Cavern Relic build",
     });
     expect(screen.getAllByRole("heading", { name: "March 7th" })).toHaveLength(
       2
@@ -107,7 +107,7 @@ describe("Fresh workspace actions", () => {
     renderPage(<CharacterBuildView />);
 
     const [createButton] = await screen.findAllByRole("button", {
-      name: "Add Cavern build",
+      name: "Add Cavern Relic build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();
@@ -158,7 +158,7 @@ describe("Fresh workspace actions", () => {
     const user = userEvent.setup();
     renderPage(<CharacterBuildView />);
     const [createButton] = await screen.findAllByRole("button", {
-      name: "Add Cavern build",
+      name: "Add Cavern Relic build",
     });
     await user.click(createButton);
     const state = useWorkspaceStore.getState();

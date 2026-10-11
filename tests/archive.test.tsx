@@ -1,13 +1,22 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "@/App";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { setBetaEnabled } from "@/data/betaState";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { loadCharacters } from "@/providers/reference/catalog";
+import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
 function renderArchive(path: string = APP_PATHS.archiveCharacters) {
   return render(
@@ -87,6 +96,10 @@ describe("Character archive", () => {
     }));
   });
 
+  afterEach(() => {
+    act(() => useWorkspaceStore.getState().clearWorkspace());
+  });
+
   it("orders the roster by release patch before rarity and keeps that order across locales", async () => {
     const user = userEvent.setup();
     renderArchive();
@@ -131,10 +144,21 @@ describe("Character archive", () => {
     expect(
       within(mode).queryByRole("button", { name: "Off-Field" })
     ).not.toBeInTheDocument();
-    expect(detail.querySelectorAll("details details")).toHaveLength(0);
-    expect([...detail.querySelectorAll("details")].at(-1)).toBe(mode);
-    for (const section of detail.querySelectorAll("details"))
-      expect(section).toHaveAttribute("open");
+    // Kit sections are flat headed sections, Currency War last; cards collapse
+    // individually and start open.
+    const sections = [
+      ...detail.querySelectorAll<HTMLElement>(
+        "section[data-testid^='character-']"
+      ),
+    ].filter((section) => section.dataset.testid !== "character-base-stats");
+    expect(detail.querySelectorAll("details")).toHaveLength(0);
+    expect(sections.at(-1)).toBe(mode);
+    const cardToggles = detail.querySelectorAll(
+      "article > h4 > button[aria-expanded]"
+    );
+    expect(cardToggles.length).toBeGreaterThan(5);
+    for (const toggle of cardToggles)
+      expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(detail).not.toHaveTextContent(
       /AvatarSkillConfig|AvatarServantSkillConfig|BPSkill|Item-name provenance|Progression|Character EXP|Enhanced ID|TextMap\/|reference producer/
     );
@@ -147,6 +171,38 @@ describe("Character archive", () => {
       within(hyacineMode).getByRole("heading", { name: "Memosprites (2)" })
     ).toBeInTheDocument();
   });
+
+  it("opens the Character that Character and Character Build cards link to", async () => {
+    const user = userEvent.setup();
+    const account = await createDemoAccount(
+      new Date("2026-09-02T00:00:00.000Z")
+    );
+    act(() => useWorkspaceStore.getState().replaceAccount(account));
+    for (const page of [APP_PATHS.characters, APP_PATHS.builds]) {
+      renderArchive(page);
+      await user.click(
+        await screen.findByRole(
+          "link",
+          { name: "Open Kafka in the Character Archive" },
+          { timeout: 15_000 }
+        )
+      );
+      const region = await catalogRegion();
+      await waitFor(() =>
+        expect(
+          within(screen.getByTestId("character-detail")).getByRole("heading", {
+            name: "Kafka",
+            level: 2,
+          })
+        ).toBeInTheDocument()
+      );
+      expect(characterRow(region, "1005")).toHaveAttribute(
+        "aria-pressed",
+        "true"
+      );
+      cleanup();
+    }
+  }, 30_000);
 
   it("searches both languages, bypasses chips during search and restores their scope afterwards", async () => {
     const user = userEvent.setup();
@@ -198,17 +254,14 @@ describe("Character archive", () => {
     renderArchive(`${APP_PATHS.archiveCharacters}?id=1001`);
     const region = await catalogRegion();
     const detail = screen.getByTestId("character-detail");
-    const descriptions = within(detail).getByRole("group", {
+    const skills = within(detail).getByTestId("character-base-skills");
+    const descriptions = within(skills).getByRole("tablist", {
       name: "Description",
     });
     expect(
-      within(descriptions).getByRole("button", { name: "Full" })
-    ).toHaveAttribute("aria-pressed", "true");
-    await user.click(
-      within(descriptions).getByRole("button", { name: "Brief" })
-    );
-    const skills = within(detail).getByTestId("character-base-skills");
-    expect(skills).toHaveAttribute("open");
+      within(descriptions).getByRole("tab", { name: "Full" })
+    ).toHaveAttribute("aria-selected", "true");
+    await user.click(within(descriptions).getByRole("tab", { name: "Brief" }));
     const table = within(skills).getAllByRole("table", {
       name: "Skill values",
     })[0];
@@ -232,18 +285,28 @@ describe("Character archive", () => {
     expect(firstEidolon).not.toHaveTextContent(/Unlock|Parameters|11001/);
     await user.click(characterRow(region, "1402"));
     const aglaea = screen.getByTestId("character-detail");
-    expect(
-      within(aglaea).getByRole("button", { name: "Brief" })
-    ).toHaveAttribute("aria-pressed", "true");
+    expect(within(aglaea).getByRole("tab", { name: "Brief" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
     const servant = within(aglaea).getByTestId("character-servants");
     expect(servant).toHaveTextContent("Garmentmaker");
     expect(servant).toHaveTextContent("Thorned Snare");
     expect(servant).not.toHaveTextContent(/11402|AvatarServantSkillConfig/);
     expect(servant.querySelector("details")).toBeNull();
     await user.click(characterRow(region, "1004"));
-    expect(screen.getByTestId("character-enhancements")).toHaveAttribute(
-      "open"
-    );
+    const enhancements = screen.getByTestId("character-enhancements");
+    expect(
+      within(enhancements).getByRole("heading", {
+        name: "Character enhancements",
+        level: 3,
+      })
+    ).toBeInTheDocument();
+    const firstSkill = within(enhancements).getAllByRole("button", {
+      expanded: true,
+    })[0];
+    await user.click(firstSkill);
+    expect(firstSkill).toHaveAttribute("aria-expanded", "false");
   }, 15_000);
 
   it("opens inline character details on narrow screens and returns to the roster", async () => {
@@ -261,6 +324,9 @@ describe("Character archive", () => {
     renderArchive();
     const region = await catalogRegion();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // Phones open on the portrait grid without picking a Character.
+    expect(region.querySelector('[aria-pressed="true"]')).toBeNull();
+    expect(region).not.toHaveTextContent(/characters|★/);
     const row = characterRow(region, "1001");
     await user.click(row);
     expect(await screen.findByTestId("character-detail")).toHaveTextContent(

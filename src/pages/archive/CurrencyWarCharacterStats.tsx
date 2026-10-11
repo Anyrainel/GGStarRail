@@ -2,6 +2,10 @@ import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import { formatStarValues } from "@/lib/currencyWarPresentation";
 import type { CurrencyWarStarLevel } from "@/providers/reference/types";
+import {
+  CurrencyWarPropertyList,
+  CurrencyWarPropertyRow,
+} from "./CurrencyWarDetails";
 
 const chargeLabels: Readonly<Record<string, MessageKey>> = {
   EnergyBar: "archive.currencyWar.charge",
@@ -69,45 +73,39 @@ export function CurrencyWarCharacterStats({
     starLevels.some((star) => typeof star[entry.field] === "number")
   );
   return (
-    <section className="rounded-lg border border-border bg-card/50 p-3">
-      <h4 className="text-sm font-medium">
+    <section className="space-y-2">
+      <h4 className="px-1 text-sm font-semibold text-muted-foreground">
         {t("archive.currencyWar.combatStats")}
       </h4>
-      <div className="mt-3 space-y-3">
-        {position === "Back" &&
-          chargeTypes.some((type) => chargeLabels[type]) && (
-            <p className="text-xs">
-              <span className="font-medium">
-                {t("archive.currencyWar.scaling")}:{" "}
-              </span>
-              {chargeTypes
-                .flatMap((type) =>
-                  chargeLabels[type] ? [t(chargeLabels[type])] : []
-                )
-                .join(" · ")}
-            </p>
-          )}
-        <dl className="grid gap-2 sm:grid-cols-2">
-          {visibleValues.map((entry) => (
-            <div
-              key={entry.key}
-              className="flex items-center justify-between gap-3 rounded-lg bg-secondary/60 px-3 py-2 text-xs"
-            >
-              <dt>{t(entry.key)}</dt>
-              <dd className="font-semibold tabular-nums">
-                {formatStarValues(
-                  starLevels.map((star) =>
-                    typeof star[entry.field] === "number"
-                      ? (star[entry.field] as number)
-                      : null
-                  ),
-                  entry.ratio ? "ratio" : "flat"
-                )}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+      {position === "Back" &&
+        chargeTypes.some((type) => chargeLabels[type]) && (
+          <p className="px-1 text-xs">
+            <span className="font-medium">
+              {t("archive.currencyWar.scaling")}:{" "}
+            </span>
+            {chargeTypes
+              .flatMap((type) =>
+                chargeLabels[type] ? [t(chargeLabels[type])] : []
+              )
+              .join(" · ")}
+          </p>
+        )}
+      <CurrencyWarPropertyList columns>
+        {visibleValues.map((entry) => (
+          <CurrencyWarPropertyRow
+            key={entry.key}
+            label={t(entry.key)}
+            value={formatStarValues(
+              starLevels.map((star) =>
+                typeof star[entry.field] === "number"
+                  ? (star[entry.field] as number)
+                  : null
+              ),
+              entry.ratio ? "ratio" : "flat"
+            )}
+          />
+        ))}
+      </CurrencyWarPropertyList>
     </section>
   );
 }

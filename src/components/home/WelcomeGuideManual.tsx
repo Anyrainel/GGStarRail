@@ -92,6 +92,7 @@ export function WelcomeGuideManual() {
       hint: t("guide.more.hint"),
       actions: [],
       links: [
+        { to: APP_PATHS.teamDamage, label: t("nav.teamDamageSection") },
         { to: APP_PATHS.tierCharacters, label: t("nav.tierList") },
         { to: APP_PATHS.archiveCharacters, label: t("nav.archive") },
         {

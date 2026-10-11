@@ -62,8 +62,10 @@ function StatSelectItem({
       <LightweightSelectTrigger
         aria-label={ariaLabel}
         className={cn(
-          "h-7 w-auto bg-gradient-select text-sm hover:brightness-110",
-          compact ? "min-w-12" : "min-w-[4.5rem]"
+          // Chevron hidden so main-stat chips read as the same family as the
+          // substat weight tokens beside them.
+          "h-7 w-auto min-w-[3.5rem] justify-center border-border bg-gradient-select px-2 text-xs hover:brightness-110 [&>svg]:hidden",
+          compact && "min-w-12"
         )}
       >
         {selected ? (

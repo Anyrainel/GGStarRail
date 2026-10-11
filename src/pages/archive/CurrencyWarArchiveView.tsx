@@ -1,8 +1,13 @@
-import { ArrowRight, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, ArrowUpRight, Hammer, Link2, Users } from "lucide-react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import {
+  CollapsibleBody,
+  useRowExpansion,
+} from "@/components/archive/CollapsibleBody";
+import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
@@ -11,8 +16,8 @@ import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { APP_PATHS } from "@/config/navigation";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import { isArchiveSearchActive } from "@/lib/archiveFilters";
@@ -101,10 +106,16 @@ async function loadArchive() {
 
 export function CurrencyWarArchiveView() {
   const resource = useCatalogResource(loadArchive);
-  if (resource.loading) return <CatalogLoading />;
-  if (resource.error) return <CatalogFailure error={resource.error} />;
-  if (!resource.data) return null;
-  return <CurrencyWarArchiveContent {...resource.data} />;
+  if (resource.data) return <CurrencyWarArchiveContent {...resource.data} />;
+  return (
+    <div className="container">
+      {resource.error ? (
+        <CatalogFailure error={resource.error} />
+      ) : (
+        <CatalogLoading />
+      )}
+    </div>
+  );
 }
 
 export function CurrencyWarArchiveContent({
@@ -118,6 +129,8 @@ export function CurrencyWarArchiveContent({
 }) {
   const { locale, t } = useI18n();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const rows = useRowExpansion();
   const activeTab =
     tabs.find((tab) => tab.id === searchParams.get("tab")) ?? tabs[0];
   const [query, setQuery] = useState("");
@@ -196,12 +209,35 @@ export function CurrencyWarArchiveContent({
     setQuality(new Set());
     setSearchParams({ tab: activeTab.id, id }, { replace: true });
   };
+  const panelId = "currency-war-panel";
+  const tabPanel = (content: ReactNode) => (
+    <div
+      id={panelId}
+      role="tabpanel"
+      aria-labelledby={`${panelId}-tab-${activeTab.id}`}
+    >
+      {content}
+    </div>
+  );
   const header = (
     <ArchiveToolbar
       searchQuery={query}
       onSearchChange={setQuery}
       searchLabel={t("common.search")}
       searchPlaceholder={t("archive.currencyWar.search")}
+      tabs={
+        <ArchiveTabs
+          panelId={panelId}
+          label={t("archive.currencyWar.title")}
+          value={activeTab.id}
+          options={tabs.map((tab) => ({
+            value: tab.id,
+            label: t(tab.label),
+            count: catalog[tab.id].length,
+          }))}
+          onValueChange={changeTab}
+        />
+      }
     >
       {activeTab.id === "equipment" && (
         <FilterChipGroup
@@ -215,6 +251,7 @@ export function CurrencyWarArchiveContent({
               locale
             )
           }
+          className="contents"
         />
       )}
       {activeTab.id === "strategies" && (
@@ -224,11 +261,15 @@ export function CurrencyWarArchiveContent({
           onSelectedValuesChange={setQuality}
           getKey={(id) => id}
           getLabel={qualityName}
+          className="contents"
         />
       )}
     </ArchiveToolbar>
   );
-  const renderCard = (record: CurrencyWarRecord) => (
+  const renderCard = (
+    record: CurrencyWarRecord,
+    collapse?: { expanded: boolean; onToggle: () => void }
+  ) => (
     <CurrencyWarDetail
       key={record.id}
       record={record}
@@ -237,96 +278,121 @@ export function CurrencyWarArchiveContent({
       characters={characters}
       properties={properties}
       onSelect={select}
+      collapse={collapse}
     />
   );
 
-  return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="container shrink-0 pb-3">
-        <ArchiveTabs
-          panelId="currency-war-panel"
-          label={t("archive.currencyWar.title")}
-          value={activeTab.id}
-          options={tabs.map((tab) => ({
-            value: tab.id,
-            label: t(tab.label),
-            count: catalog[tab.id].length,
-          }))}
-          onValueChange={changeTab}
-        />
-      </div>
-      <div
-        id="currency-war-panel"
-        role="tabpanel"
-        aria-labelledby={`currency-war-panel-tab-${activeTab.id}`}
-        className="min-h-0 flex-1"
-      >
-        {activeTab.id === "bonds" ? (
-          <SidebarDetailLayout
-            header={header}
-            mobileDetailHeader={header}
-            hasSelection={Boolean(
-              selectedId && filtered.some((entry) => entry.id === selectedId)
-            )}
-            onBack={() => setSearchParams({ tab: "bonds" }, { replace: true })}
-            backLabel={t("archive.currencyWar.bonds")}
-            sidebarLabel={t("archive.currencyWar.results")}
-            sidebar={
-              <div className="space-y-1">
-                {filtered.length ? (
-                  filtered.map((entry) => (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      aria-pressed={selected?.id === entry.id}
-                      onClick={() => select(entry.id)}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-lg p-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                        selected?.id === entry.id
-                          ? "bg-primary/15 ring-1 ring-primary/30"
-                          : "hover:bg-accent"
-                      )}
-                    >
-                      <AssetImage
-                        kind={activeTab.asset}
-                        id={entry.id}
-                        sourcePath={entry.icon_path}
-                        alt=""
-                        className="h-10 w-10 shrink-0 object-contain"
-                      />
-                      <span className="min-w-0 flex-1 font-semibold">
-                        {formatGameText(getLocalizedValue(entry.name, locale))}
-                      </span>
-                      <ChevronRight
-                        className="h-4 w-4 shrink-0 text-muted-foreground"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  ))
-                ) : (
-                  <CatalogEmpty />
-                )}
-              </div>
-            }
-          >
-            {selected ? renderCard(selected) : <CatalogEmpty />}
-          </SidebarDetailLayout>
-        ) : (
-          <ScrollLayout header={header}>
-            {filtered.length ? (
-              <section
-                aria-label={t("archive.currencyWar.results")}
-                className="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3"
-              >
-                {filtered.map(renderCard)}
-              </section>
-            ) : (
-              <CatalogEmpty />
-            )}
-          </ScrollLayout>
+  if (activeTab.id === "bonds") {
+    const bondSelected = Boolean(
+      selectedId && filtered.some((entry) => entry.id === selectedId)
+    );
+    const bondName = (entry: CurrencyWarRecord) =>
+      formatGameText(getLocalizedValue(entry.name, locale));
+    return (
+      <SidebarDetailLayout
+        header={header}
+        mobileDetailHeader={header}
+        hasSelection={bondSelected}
+        onBack={() => setSearchParams({ tab: "bonds" }, { replace: true })}
+        backLabel={t("archive.currencyWar.bonds")}
+        sidebarLabel={t("archive.currencyWar.results")}
+        detailLabel={selected ? bondName(selected) : undefined}
+        sidebar={tabPanel(
+          filtered.length ? (
+            <div className="space-y-0.5">
+              {filtered.map((entry) => (
+                <button
+                  key={entry.id}
+                  type="button"
+                  aria-pressed={selected?.id === entry.id}
+                  onClick={() => select(entry.id)}
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                    selected?.id === entry.id
+                      ? "bg-primary/15 ring-1 ring-primary/30"
+                      : "hover:bg-accent/50"
+                  )}
+                >
+                  <AssetImage
+                    kind={activeTab.asset}
+                    id={entry.id}
+                    sourcePath={entry.icon_path}
+                    alt=""
+                    className="h-8 w-8 shrink-0 object-contain"
+                  />
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                    {bondName(entry)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <CatalogEmpty />
+          )
         )}
-      </div>
-    </div>
+        mobileGrid={tabPanel(
+          filtered.length ? (
+            <div className="grid grid-cols-3 gap-2 p-2">
+              {filtered.map((entry) => (
+                <button
+                  key={entry.id}
+                  type="button"
+                  aria-pressed={selected?.id === entry.id}
+                  onClick={() => select(entry.id)}
+                  className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-2 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <AssetImage
+                    kind={activeTab.asset}
+                    id={entry.id}
+                    sourcePath={entry.icon_path}
+                    alt=""
+                    className="h-12 w-12 object-contain"
+                  />
+                  <span className="line-clamp-2 w-full text-center text-sm leading-tight">
+                    {bondName(entry)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <CatalogEmpty />
+          )
+        )}
+      >
+        {selected ? (
+          isDesktop ? (
+            renderCard(selected)
+          ) : (
+            tabPanel(renderCard(selected))
+          )
+        ) : (
+          <CatalogEmpty />
+        )}
+      </SidebarDetailLayout>
+    );
+  }
+
+  return (
+    <ScrollLayout header={header}>
+      {tabPanel(
+        filtered.length ? (
+          <section
+            aria-label={t("archive.currencyWar.results")}
+            className="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3"
+          >
+            {filtered.map((record, index) => {
+              const row = rows.rowOf(index);
+              return renderCard(record, {
+                expanded: rows.isExpanded(row),
+                onToggle: () => rows.toggleRow(row),
+              });
+            })}
+          </section>
+        ) : (
+          <CatalogEmpty />
+        )
+      )}
+    </ScrollLayout>
   );
 }
 
@@ -344,12 +410,15 @@ export function CurrencyWarCharacterLinks({
   });
   if (!entries.length) return null;
   return (
-    <CurrencyWarSection title={t("archive.currencyWar.characters")}>
+    <CurrencyWarSection
+      title={t("archive.currencyWar.characters")}
+      icon={Users}
+    >
       <div className="flex flex-wrap gap-1.5">
         {entries.map((character) => (
           <Link
             key={character.id}
-            to={`${APP_PATHS.archiveCharacters}?id=${character.id}`}
+            to={characterArchiveHref(character.id)}
             className="rounded-md border border-border bg-background/60 px-2 py-1 text-xs font-medium hover:border-primary/60"
           >
             {characterCatalogName(character, locale, t("terms.trailblazer"))}
@@ -408,6 +477,7 @@ function CurrencyWarDetail({
   characters,
   properties,
   onSelect,
+  collapse,
 }: {
   record: CurrencyWarRecord;
   tab: CurrencyWarTab;
@@ -415,6 +485,8 @@ function CurrencyWarDetail({
   characters: readonly CharacterDefinition[];
   properties: PropertyCatalog;
   onSelect: (id: string) => void;
+  /** Grid cards clip long bodies; a selected Bond shows in full. */
+  collapse?: { expanded: boolean; onToggle: () => void };
 }) {
   const { locale, t } = useI18n();
   const config = tabs.find((entry) => entry.id === tab)!;
@@ -438,7 +510,7 @@ function CurrencyWarDetail({
       data-testid="currency-war-detail"
       data-strategy-quality={"quality" in record ? record.quality : undefined}
       className={cn(
-        "min-w-0 space-y-3 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "quality" in record &&
           (record.quality === "Gold" || record.quality === "Orange") &&
           "border-[hsl(var(--quality-gold)/0.65)] bg-[linear-gradient(135deg,color-mix(in_srgb,hsl(var(--quality-gold))_55%,hsl(var(--card))),color-mix(in_srgb,hsl(var(--quality-gold))_43%,hsl(var(--card))))]",
@@ -479,100 +551,135 @@ function CurrencyWarDetail({
           <BetaBadge member={config.member} id={record.id} />
         </div>
       </div>
-      <CurrencyWarText
-        text={record.description}
-        parameters={record.parameters}
-      />
-      {"dress_rule" in record && (
-        <CurrencyWarEquipmentRules
-          equipment={record}
-          characters={characters}
-          bonds={catalog.bonds}
+      <CurrencyWarCardBody collapse={collapse}>
+        <CurrencyWarText
+          text={record.description}
+          parameters={record.parameters}
         />
-      )}
-      {"tags" in record && record.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {record.tags.map((tag) => (
-            <Badge variant="outline" key={tag.en.value}>
-              {getLocalizedValue(tag, locale)}
-            </Badge>
-          ))}
-        </div>
-      )}
-      {"properties" in record && (
-        <CurrencyWarProperties
-          values={record.properties}
-          properties={properties}
-        />
-      )}
-      {"recipes" in record && record.recipes.length > 0 && (
-        <CurrencyWarSection title={t("archive.currencyWar.recipe")}>
-          {record.recipes.map((recipe) => (
-            <div
-              key={recipe.join("-")}
-              className="rounded-xl border border-border bg-background/40 p-3"
-            >
-              <EquipmentReferences
-                ids={recipe}
-                equipment={catalog.equipment}
-                onSelect={onSelect}
-              />
-            </div>
-          ))}
-        </CurrencyWarSection>
-      )}
-      {"upgrade_ids" in record && record.upgrade_ids.length > 0 && (
-        <CurrencyWarSection title={t("archive.currencyWar.upgrades")}>
-          <EquipmentReferences
-            ids={record.upgrade_ids}
-            equipment={catalog.equipment}
-            onSelect={onSelect}
+        {"dress_rule" in record && (
+          <CurrencyWarEquipmentRules
+            equipment={record}
+            characters={characters}
+            bonds={catalog.bonds}
           />
-        </CurrencyWarSection>
-      )}
-      {"tiers" in record && (
-        <CurrencyWarBondTiers tiers={record.tiers} properties={properties} />
-      )}
-      {"sub_bonds" in record &&
-        record.sub_bonds.map((bond) => (
+        )}
+        {"tags" in record && record.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {record.tags.map((tag) => (
+              <Badge variant="outline" key={tag.en.value}>
+                {getLocalizedValue(tag, locale)}
+              </Badge>
+            ))}
+          </div>
+        )}
+        {"properties" in record && (
+          <CurrencyWarProperties
+            values={record.properties}
+            properties={properties}
+          />
+        )}
+        {"recipes" in record && record.recipes.length > 0 && (
           <CurrencyWarSection
-            key={bond.id}
-            title={getLocalizedValue(bond.name, locale)}
+            title={t("archive.currencyWar.recipe")}
+            icon={Hammer}
           >
-            <CurrencyWarText
-              text={bond.description}
-              parameters={bond.parameters}
-            />
-            <CurrencyWarBondTiers tiers={bond.tiers} properties={properties} />
+            {record.recipes.map((recipe) => (
+              <div
+                key={recipe.join("-")}
+                className="rounded-lg border border-border bg-card/30 p-3"
+              >
+                <EquipmentReferences
+                  ids={recipe}
+                  equipment={catalog.equipment}
+                  onSelect={onSelect}
+                />
+              </div>
+            ))}
           </CurrencyWarSection>
-        ))}
-      {"remarks" in record && record.remarks.length > 0 && (
-        <div className="space-y-3 rounded-xl border border-border bg-secondary/35 p-3">
-          {record.remarks.map((remark) => (
-            <CurrencyWarText
-              key={
-                ("description" in remark ? remark.description : remark).en.value
-              }
-              text={"description" in remark ? remark.description : remark}
-              parameters={
-                "parameters" in remark ? remark.parameters : record.parameters
-              }
+        )}
+        {"upgrade_ids" in record && record.upgrade_ids.length > 0 && (
+          <CurrencyWarSection
+            title={t("archive.currencyWar.upgrades")}
+            icon={ArrowUpRight}
+          >
+            <EquipmentReferences
+              ids={record.upgrade_ids}
+              equipment={catalog.equipment}
+              onSelect={onSelect}
             />
+          </CurrencyWarSection>
+        )}
+        {"tiers" in record && (
+          <CurrencyWarBondTiers tiers={record.tiers} properties={properties} />
+        )}
+        {"sub_bonds" in record &&
+          record.sub_bonds.map((bond) => (
+            <CurrencyWarSection
+              key={bond.id}
+              title={getLocalizedValue(bond.name, locale)}
+              icon={Link2}
+            >
+              <CurrencyWarText
+                text={bond.description}
+                parameters={bond.parameters}
+              />
+              <CurrencyWarBondTiers
+                tiers={bond.tiers}
+                properties={properties}
+              />
+            </CurrencyWarSection>
           ))}
-        </div>
-      )}
-      {"character_ids" in record && (
-        <CurrencyWarCharacterLinks
-          ids={record.character_ids}
-          characters={characters}
-        />
-      )}
-      {"recommended_character_ids" in record && !recommendationsRepeatRule && (
-        <CurrencyWarCharacterLinks
-          ids={record.recommended_character_ids}
-          characters={characters}
-        />
-      )}
+        {"remarks" in record && record.remarks.length > 0 && (
+          <div className="space-y-2 rounded-lg border border-border bg-card/30 p-3">
+            {record.remarks.map((remark) => (
+              <CurrencyWarText
+                key={
+                  ("description" in remark ? remark.description : remark).en
+                    .value
+                }
+                text={"description" in remark ? remark.description : remark}
+                parameters={
+                  "parameters" in remark ? remark.parameters : record.parameters
+                }
+              />
+            ))}
+          </div>
+        )}
+        {"character_ids" in record && (
+          <CurrencyWarCharacterLinks
+            ids={record.character_ids}
+            characters={characters}
+          />
+        )}
+        {"recommended_character_ids" in record &&
+          !recommendationsRepeatRule && (
+            <CurrencyWarCharacterLinks
+              ids={record.recommended_character_ids}
+              characters={characters}
+            />
+          )}
+      </CurrencyWarCardBody>
     </article>
+  );
+}
+
+/** Long card bodies clip to 18rem in the grid; the fade sits on the content. */
+function CurrencyWarCardBody({
+  collapse,
+  children,
+}: {
+  collapse?: { expanded: boolean; onToggle: () => void };
+  children: ReactNode;
+}) {
+  if (!collapse) return <div className="space-y-3">{children}</div>;
+  return (
+    <CollapsibleBody
+      expanded={collapse.expanded}
+      onToggle={collapse.onToggle}
+      maxHeight={288}
+      contentClassName="space-y-3"
+    >
+      {children}
+    </CollapsibleBody>
   );
 }

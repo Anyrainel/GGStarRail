@@ -1,13 +1,22 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
-import { beforeEach, describe, expect, it } from "vitest";
+import { MemoryRouter, useLocation } from "react-router-dom";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import App from "@/App";
 import { AppShell } from "@/components/layout/AppShell";
 import { STORAGE_KEYS } from "@/config/identity";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n/I18nContext";
+import { DEFAULT_TEAM_STORE, emptyTeam } from "@/stores/teamSchemas";
+import { useTeamStore } from "@/stores/useTeamStore";
+
+function LocationProbe() {
+  const location = useLocation();
+  return (
+    <output data-testid="location">{`${location.pathname}${location.search}`}</output>
+  );
+}
 
 function renderApp(path: string) {
   return render(
@@ -15,6 +24,7 @@ function renderApp(path: string) {
       <I18nProvider>
         <MemoryRouter initialEntries={[path]}>
           <App />
+          <LocationProbe />
         </MemoryRouter>
       </I18nProvider>
     </ThemeProvider>
@@ -24,6 +34,9 @@ function renderApp(path: string) {
 describe("GGArtifact family shell", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+  afterEach(() => {
+    useTeamStore.setState(structuredClone(DEFAULT_TEAM_STORE));
   });
 
   it("offers the scanner page from the account menu on every route", async () => {
@@ -124,8 +137,9 @@ describe("GGArtifact family shell", () => {
     ).toBeInTheDocument();
     await user.keyboard("{Escape}");
     await user.click(screen.getByRole("link", { name: "Light Cone Priority" }));
+    await screen.findByRole("tab", { name: "Destruction" }, { timeout: 15000 });
     expect(
-      await screen.findByRole("heading", { name: "Light Cone Priority" })
+      screen.getByRole("heading", { name: "Light Cone Priority" })
     ).toBeInTheDocument();
     expect(
       within(appbar).getAllByRole("button", { name: "Import list" })
@@ -246,6 +260,7 @@ describe("GGArtifact family shell", () => {
     await user.click(screen.getByRole("button", { name: "Menu" }));
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Account Data")).toBeVisible();
+    expect(within(dialog).getByText("Team DMG")).toBeVisible();
     expect(within(dialog).getByText("Builds")).toBeVisible();
     expect(within(dialog).getByText("Tier List")).toBeVisible();
     expect(within(dialog).getByText("Archive")).toBeVisible();
@@ -255,6 +270,12 @@ describe("GGArtifact family shell", () => {
     expect(
       within(dialog).getByRole("link", { name: "Relic Triage" })
     ).toHaveAttribute("href", APP_PATHS.triage);
+    expect(
+      within(dialog).getByRole("link", { name: "DMG Optimizer" })
+    ).toHaveAttribute("href", APP_PATHS.teamDamage);
+    expect(
+      within(dialog).getByRole("link", { name: "Light Cone & Relic Choice" })
+    ).toHaveAttribute("href", APP_PATHS.teamChoice);
   });
 
   it("hides the redundant section tabs at mobile widths", () => {
@@ -267,11 +288,49 @@ describe("GGArtifact family shell", () => {
     const buildTabs = screen.getByRole("navigation", { name: "Builds" });
     expect(within(buildTabs).getAllByRole("link")).toHaveLength(2);
     expect(
+      within(buildTabs).queryByRole("link", { name: "DMG Optimizer" })
+    ).toBeNull();
+    expect(
       within(buildTabs).queryByRole("link", { name: "Relic Triage" })
     ).toBeNull();
     expect(
       within(buildTabs).queryByRole("link", { name: "Scoring" })
     ).toBeNull();
+  });
+
+  it("groups the three Team DMG tabs in their own section", async () => {
+    renderApp(APP_PATHS.teamInvestment);
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Investment" })
+    ).toBeInTheDocument();
+    const teamTabs = screen.getByRole("navigation", { name: "Team DMG" });
+    expect(
+      within(teamTabs)
+        .getAllByRole("link")
+        .map((link) => link.textContent)
+    ).toEqual(["DMG Optimizer", "Investment", "Light Cone & Relic Choice"]);
+    expect(screen.getByRole("link", { name: "Team DMG" })).toHaveClass(
+      "text-primary"
+    );
+  });
+
+  it.each([
+    "/builds/team-damage",
+    "/team-damage",
+    "/team-damage/frozen",
+  ])("redirects %s to the DMG Optimizer and keeps the open team", async (path) => {
+    const team = emptyTeam("team:redirect");
+    team.members[0] = { characterId: "1102", options: {}, skill: "kit" };
+    useTeamStore.setState({ teams: [team], activeTeamId: null });
+    renderApp(`${path}?team=${encodeURIComponent(team.id)}`);
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        `${APP_PATHS.teamDamage}?team=${encodeURIComponent(team.id)}`
+      )
+    );
+    expect(
+      await screen.findByRole("button", { name: "Back to teams" })
+    ).toBeInTheDocument();
   });
 
   it("keeps the app shell bounded so page layouts own content scrolling", () => {
@@ -324,7 +383,7 @@ describe("GGArtifact family shell", () => {
     const header = document.querySelector("header");
     expect(header).not.toBeNull();
     expect(
-      await within(header!).findByRole("button", { name: "Import builds" })
+      await within(header!).findByRole("button", { name: "Import" })
     ).toBeInTheDocument();
     expect(
       screen.queryByText("Build workspace backup")

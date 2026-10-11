@@ -1,5 +1,5 @@
-import { Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { SearchInput } from "@/components/shared/SearchInput";
 import { useBetaSearch } from "@/hooks/useBetaSearch";
 import { isArchiveSearchActive } from "@/lib/archiveFilters";
 
@@ -9,6 +9,9 @@ interface ArchiveToolbarProps {
   searchLabel: string;
   searchPlaceholder: string;
   filtersLabel?: string;
+  /** A centred row above the search, such as catalog tabs. */
+  tabs?: ReactNode;
+  /** Chip groups (`className="contents"`) separated by `ArchiveChipDivider`. */
   children?: ReactNode;
 }
 
@@ -18,6 +21,7 @@ export function ArchiveToolbar({
   searchLabel,
   searchPlaceholder,
   filtersLabel,
+  tabs,
   children,
 }: ArchiveToolbarProps) {
   const filtersDisabled = isArchiveSearchActive(searchQuery);
@@ -25,21 +29,25 @@ export function ArchiveToolbar({
 
   return (
     <div className="space-y-3">
-      <label className="relative mx-auto block max-w-2xl">
-        <span className="sr-only">{searchLabel}</span>
-        <Search
-          className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <input
-          type="search"
+      {tabs && <div className="flex justify-center">{tabs}</div>}
+      <div>
+        <SearchInput
+          variant="prominent"
           value={searchQuery}
-          onChange={(event) => changeSearch(event.currentTarget.value)}
+          onValueChange={changeSearch}
+          label={searchLabel}
           placeholder={searchPlaceholder}
-          className="h-11 w-full rounded-xl border border-border bg-card/50 pl-10 pr-3 text-base text-foreground outline-none shadow-sm transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
+          className="text-ellipsis"
         />
-        {error && <span role="alert">{error}</span>}
-      </label>
+        {error && (
+          <p
+            role="alert"
+            className="mx-auto mt-1 max-w-2xl px-1 text-sm text-destructive"
+          >
+            {error}
+          </p>
+        )}
+      </div>
 
       {children && (
         <fieldset
@@ -51,5 +59,15 @@ export function ArchiveToolbar({
         </fieldset>
       )}
     </div>
+  );
+}
+
+/** The thin rule between chip groups; chips wrap without it on phones. */
+export function ArchiveChipDivider() {
+  return (
+    <span
+      aria-hidden="true"
+      className="mx-1 hidden h-5 w-px bg-border sm:block"
+    />
   );
 }

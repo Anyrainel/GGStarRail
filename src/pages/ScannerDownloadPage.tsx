@@ -147,7 +147,7 @@ export default function ScannerDownloadPage() {
                     asChild
                     size="default"
                     variant={version.primary ? "default" : "secondary"}
-                    className="h-11 w-full gap-2"
+                    className="h-10 w-full gap-2"
                   >
                     <a href={version.href}>
                       <Download className="size-4" aria-hidden />
@@ -205,7 +205,7 @@ export default function ScannerDownloadPage() {
             <p className="mt-2 text-sm leading-6 text-foreground/80">
               {t("scanner.resourcesDescription")}
             </p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {files.map((file) => (
                 <a
                   key={file.href}

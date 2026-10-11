@@ -17,7 +17,7 @@ export function StatusBanner({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-lg border p-3 text-sm",
+        "flex items-start gap-2 rounded-lg border px-4 py-3 text-sm",
         tone === "success" && "border-primary/35 bg-primary/10",
         tone === "info" && "border-border bg-background/55",
         tone === "error" && "border-destructive/45 bg-destructive/10",

@@ -1,4 +1,4 @@
-import { CircleHelp, LockKeyhole } from "lucide-react";
+import { CircleHelp, LockKeyhole, type LucideIcon } from "lucide-react";
 import { forwardRef } from "react";
 import type { CatalogAssetRef } from "@/domain/assets";
 import { cn } from "@/lib/utils";
@@ -70,8 +70,66 @@ const ICON_CONFIG = {
 
 export type ItemIconSize = keyof typeof ICON_CONFIG;
 
+/** Icon sizes from largest to smallest, for callers that step down to fit. */
+export const ITEM_ICON_SIZES = [
+  "xl",
+  "lg",
+  "md",
+  "sm",
+  "xs",
+] as const satisfies readonly ItemIconSize[];
+
+/** Artwork width in CSS pixels for an icon size. */
+export function itemIconWidth(size: ItemIconSize): number {
+  return ICON_CONFIG[size].icon;
+}
+
+/** Artwork height in CSS pixels; follows each kind's card proportions. */
+export function itemIconArtworkHeight(
+  kind: CatalogAssetRef["kind"],
+  size: ItemIconSize,
+  square = false
+): number {
+  const width = ICON_CONFIG[size].icon;
+  if (kind === "character") return width * (8 / 7);
+  if (kind === "light-cone" && !square) return width * (16 / 11);
+  return width;
+}
+
+/** Corner radius of a square item tile at this size. */
+export function itemIconRadius(size: ItemIconSize): number {
+  return ICON_CONFIG[size].radius;
+}
+
+/** Corner-chip metrics, for tiles that draw their own badge in the same style. */
+export function itemIconCornerMetrics(size: ItemIconSize): {
+  size: number;
+  offset: number;
+  radius: number;
+  font: number;
+} {
+  const config = ICON_CONFIG[size];
+  return {
+    size: config.corner,
+    offset: config.cornerOffset,
+    radius: config.cornerRadius,
+    font: config.cornerFont,
+  };
+}
+
+/** The rank-badge colours shared by every item tile. */
+export const ITEM_BADGE_CLASS =
+  "bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-sm";
+
 interface CornerAsset extends CatalogAssetRef {
   alt: string;
+}
+
+export interface ItemIconMarker {
+  icon: LucideIcon;
+  /** Tooltip and accessible label; repeat it in the icon's `alt` when it matters. */
+  label: string;
+  tone?: "destructive" | "neutral";
 }
 
 export interface ItemIconProps
@@ -88,10 +146,19 @@ export interface ItemIconProps
   locked?: boolean | null;
   /** Optional Path or Combat Type marker when no lock marker takes precedence. */
   cornerAsset?: CornerAsset;
+  /** A top-left status chip such as "Not modeled"; ignored when `badge` is set. */
+  marker?: ItemIconMarker;
+  /** Light Cones only: a square tile cropped from the top of the card art. */
+  square?: boolean;
   /** Artwork width preset; height follows the asset kind's card proportions. */
   size?: ItemIconSize;
   imageClassName?: string;
 }
+
+const MARKER_TONES: Record<NonNullable<ItemIconMarker["tone"]>, string> = {
+  destructive: "bg-destructive text-destructive-foreground",
+  neutral: "bg-secondary text-foreground",
+};
 
 /**
  * A compact, game-like item portrait. Rarity, level, rank, lock state, and an
@@ -110,6 +177,8 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
       level,
       locked,
       cornerAsset,
+      marker,
+      square = false,
       size = "lg",
       imageClassName,
       className,
@@ -119,8 +188,11 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
     ref
   ) => {
     const config = ICON_CONFIG[size];
-    const radius =
-      kind === "light-cone"
+    const lightCone = kind === "light-cone";
+    const squareLightCone = lightCone && square;
+    const radius = squareLightCone
+      ? config.radius
+      : lightCone
         ? 0
         : kind === "character"
           ? config.radius / 3
@@ -128,23 +200,24 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
     const cornerRadius = Math.min(config.cornerRadius, radius);
     const showLevel = level !== undefined;
     const showStatus = locked === true || locked === null;
-    const artworkHeight =
-      config.icon *
-      (kind === "character" ? 8 / 7 : kind === "light-cone" ? 16 / 11 : 1);
+    const showMarker = marker !== undefined && badge === undefined;
+    const artworkHeight = itemIconArtworkHeight(kind, size, square);
     const totalHeight = artworkHeight + (showLevel ? config.levelHeight : 0);
 
     const artwork = (
       <div
         className={cn(
           "relative shrink-0 select-none overflow-hidden",
-          kind !== "light-cone" && "ring-1 ring-inset ring-white/15",
-          kind !== "light-cone" && getRarityColor(rarity, "gradient")
+          !lightCone && "ring-1 ring-inset ring-white/15",
+          (!lightCone || squareLightCone) && getRarityColor(rarity, "gradient")
         )}
         data-item-artwork
+        data-item-square={squareLightCone ? "" : undefined}
         style={{
           width: config.icon,
           height: artworkHeight,
-          borderTopLeftRadius: badge === undefined ? radius : cornerRadius,
+          borderTopLeftRadius:
+            badge === undefined && !showMarker ? radius : cornerRadius,
           borderTopRightRadius:
             showStatus || cornerAsset ? cornerRadius : radius,
           borderBottomRightRadius: radius,
@@ -160,19 +233,63 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           draggable={false}
           className={cn(
             "h-full w-full object-contain",
-            kind !== "light-cone" && "drop-shadow-md",
+            !lightCone && "drop-shadow-md",
             imageClassName,
             kind === "character" && "object-cover object-bottom",
             // Intrinsic width keeps Chromium's high-quality downsampling for
             // large Light Cone art; object-cover aliases these tiny thumbnails.
-            kind === "light-cone" &&
-              "absolute left-1/2 -top-px h-[calc(100%+2px)] w-auto max-w-none -translate-x-1/2"
+            lightCone &&
+              !square &&
+              "absolute left-1/2 -top-px h-[calc(100%+2px)] w-auto max-w-none -translate-x-1/2",
+            // The square tile crops past the card's thin frame.
+            squareLightCone &&
+              "absolute -left-[6%] -top-[4%] h-[112%] w-[112%] max-w-none object-cover object-top"
           )}
         />
 
+        {squareLightCone && (
+          <span
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-0",
+              getRarityColor(rarity, "bg") || "bg-muted"
+            )}
+            style={{ height: Math.max(2, Math.round(config.icon / 20)) }}
+            aria-hidden="true"
+            data-item-rarity-bar
+          />
+        )}
+
+        {showMarker && (
+          <span
+            className={cn(
+              "absolute left-0 top-0 flex items-center justify-center shadow-sm",
+              MARKER_TONES[marker.tone ?? "destructive"]
+            )}
+            style={{
+              width: config.corner,
+              height: config.corner,
+              margin: config.cornerOffset,
+              borderRadius: config.cornerRadius,
+            }}
+            role="img"
+            title={marker.label}
+            aria-label={marker.label}
+            data-item-marker={marker.tone ?? "destructive"}
+          >
+            <marker.icon
+              aria-hidden="true"
+              style={{ width: config.statusIcon, height: config.statusIcon }}
+              strokeWidth={2.5}
+            />
+          </span>
+        )}
+
         {badge !== undefined && (
           <span
-            className="absolute left-0 top-0 flex items-center justify-center bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-sm"
+            className={cn(
+              "absolute left-0 top-0 flex items-center justify-center",
+              ITEM_BADGE_CLASS
+            )}
             style={{
               width: config.corner,
               height: config.corner,

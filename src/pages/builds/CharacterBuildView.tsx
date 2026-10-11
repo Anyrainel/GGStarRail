@@ -1,12 +1,15 @@
-import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import {
   CharacterFilterPanel,
+  type CharacterFilters,
   characterFilterCount,
+  clearCharacterFilters,
   defaultCharacterFilters,
 } from "@/components/account-data/CharacterFilterPanel";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
@@ -17,7 +20,6 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ItemPicker } from "@/components/shared/ItemPicker";
 import { PageHeader } from "@/components/shared/PageHeader";
 import {
   createCharacterBuild,
@@ -27,10 +29,6 @@ import type { BuildConfiguration } from "@/domain/build/schemas";
 import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import {
-  catalogPickerItems,
-  rarityPickerFilter,
-} from "@/lib/catalogPickerItems";
 import {
   characterCatalogPresentation,
   localizedName,
@@ -54,23 +52,55 @@ export default function CharacterBuildView() {
     (state) => state.upsertScoreProfile
   );
   const { data, error, loading } = useBuildReferences();
-  const characterItems = useMemo(
-    () =>
-      data
-        ? catalogPickerItems("character", data, locale, t("terms.trailblazer"))
-        : [],
-    [data, locale, t]
-  );
-  const [filters, setFilters] = useState(defaultCharacterFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedCharacterId = searchParams.get("character");
+  // Owned Characters lead when an account exists, as GGArtifact opens on the
+  // player's own roster. The default applies once; later choices stand.
+  const [filters, setFilters] = useState<CharacterFilters>(() => ({
+    ...defaultCharacterFilters(),
+    ownedOnly: account !== null,
+  }));
+  const ownedDefaultApplied = useRef(account !== null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<BuildConfiguration | null>(
     null
   );
 
   useEffect(() => {
+    if (account && !ownedDefaultApplied.current) {
+      ownedDefaultApplied.current = true;
+      setFilters((current) => ({ ...current, ownedOnly: true }));
+    }
     if (!account && filters.ownedOnly)
       setFilters((current) => ({ ...current, ownedOnly: false }));
   }, [account, filters.ownedOnly]);
+
+  // ?character=<id> narrows the list to that Character, then leaves the URL.
+  useEffect(() => {
+    if (!linkedCharacterId || !data) return;
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("character");
+        return next;
+      },
+      { replace: true }
+    );
+    const character = data.characters.byId.get(linkedCharacterId);
+    if (!character) return;
+    ownedDefaultApplied.current = true;
+    setFilters({
+      ...defaultCharacterFilters(),
+      query: characterCatalogPresentation(
+        character,
+        data.properties,
+        locale,
+        t("terms.trailblazer")
+      ).name,
+      paths: [character.path_id],
+      combatTypes: [character.combat_type_id],
+    });
+  }, [data, linkedCharacterId, locale, setSearchParams, t]);
 
   const ownedByDefinition = useMemo(
     () =>
@@ -272,9 +302,7 @@ export default function CharacterBuildView() {
   return (
     <PageLayout>
       <PageHeader titleKey="route.builds.title" visuallyHidden />
-      <div className="container max-h-[30%] shrink-0 overflow-y-auto">
-        <BuildWorkspaceActions references={data} />
-      </div>
+      <BuildWorkspaceActions references={data} />
       {loading ? (
         <ScrollLayout>
           <CatalogLoading />
@@ -286,51 +314,10 @@ export default function CharacterBuildView() {
       ) : (
         <SidebarLayout
           sidebar={renderFilterPanel(data)}
-          triggerLabel={t("characterLoadout.filters")}
           activeFilterCount={activeFilterCount}
         >
-          <div className="min-w-0 space-y-4">
+          <div className="min-w-0 space-y-3" data-character-build-list>
             {createError && <StatusBanner message={createError} tone="error" />}
-            <div className="flex items-center gap-2">
-              <ItemPicker
-                kind="character"
-                label={t("build.selectCharacter")}
-                value={
-                  characterItems.find(
-                    (item) =>
-                      item.name === filters.query &&
-                      filters.paths.includes(
-                        data.characters.byId.get(item.id)!.path_id
-                      )
-                  )?.id ?? null
-                }
-                items={characterItems}
-                compact
-                filters={[
-                  rarityPickerFilter(characterItems, t("filter.rarity")),
-                  {
-                    id: "path",
-                    label: t("filter.path"),
-                    options: data.properties.paths.map((path) => ({
-                      id: path.id,
-                      label: localizedName(path.name, locale, path.id),
-                    })),
-                  },
-                ]}
-                onChange={(id) => {
-                  const character = data.characters.byId.get(id)!;
-                  setFilters({
-                    ...defaultCharacterFilters(),
-                    query: characterItems.find((item) => item.id === id)!.name,
-                    paths: [character.path_id],
-                  });
-                }}
-                onClear={() => setFilters(defaultCharacterFilters())}
-              />
-              <span className="text-sm font-medium">
-                {t("build.selectCharacter")}
-              </span>
-            </div>
             {visibleCharacters.map((character) => {
               return (
                 <CharacterBuildCard
@@ -348,9 +335,20 @@ export default function CharacterBuildView() {
             })}
             {visibleCharacters.length === 0 && (
               <EmptyState
+                variant="inline"
                 messageKey="build.noCatalogMatches"
-                icon={SlidersHorizontal}
-              />
+                icon={Search}
+              >
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    className="rounded-sm text-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => setFilters(clearCharacterFilters(filters))}
+                  >
+                    {t("filter.clearAll")}
+                  </button>
+                )}
+              </EmptyState>
             )}
           </div>
         </SidebarLayout>

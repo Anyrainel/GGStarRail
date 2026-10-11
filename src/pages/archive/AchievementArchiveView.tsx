@@ -4,6 +4,7 @@ import type { AchievementDisplayData } from "@/data/achievementTypes";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/gameText";
+import { loadCatalogAssetLookup } from "@/providers/reference/assets";
 import {
   type AchievementArchiveCategoryView,
   AchievementArchiveContent,
@@ -74,7 +75,15 @@ export function createAchievementArchiveViewData(
 
 export function AchievementArchiveView() {
   const { locale, t } = useI18n();
-  const loader = useCallback(() => loadAchievementDisplay(locale), [locale]);
+  // The asset lookup resolves the Stellar Jade reward icon on first paint.
+  const loader = useCallback(
+    () =>
+      Promise.all([
+        loadAchievementDisplay(locale),
+        loadCatalogAssetLookup(),
+      ]).then(([display]) => display),
+    [locale]
+  );
   const resource = useCatalogResource(loader);
   const viewData = useMemo(
     () =>
@@ -88,9 +97,19 @@ export function AchievementArchiveView() {
     [resource.data, t]
   );
 
-  if (resource.loading) return <CatalogLoading />;
-  if (resource.error) return <CatalogFailure error={resource.error} />;
-  if (!viewData) return <CatalogEmpty />;
+  if (resource.loading || resource.error || !viewData) {
+    return (
+      <div className="container">
+        {resource.loading ? (
+          <CatalogLoading />
+        ) : resource.error ? (
+          <CatalogFailure error={resource.error} />
+        ) : (
+          <CatalogEmpty />
+        )}
+      </div>
+    );
+  }
   return (
     <AchievementArchiveContent
       categories={viewData.categories}

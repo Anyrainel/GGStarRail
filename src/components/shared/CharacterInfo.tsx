@@ -16,7 +16,7 @@ export function CharacterInfo({
   const { locale, t } = useI18n();
   return (
     <div className="min-w-0 space-y-1.5">
-      <h2 className="text-lg font-bold leading-tight text-foreground md:text-xl">
+      <h2 className="truncate text-lg font-bold leading-tight text-foreground md:text-xl">
         {characterCatalogName(character, locale, t("terms.trailblazer"))}
       </h2>
       <CharacterBadgeGroup character={character} properties={properties} />

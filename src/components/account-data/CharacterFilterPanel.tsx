@@ -1,5 +1,17 @@
-import { ArrowDown, ArrowUp, Search, X } from "lucide-react";
+import { type ReactNode, useId } from "react";
+import {
+  SidebarClearButton,
+  SidebarPanel,
+  SidebarSection,
+} from "@/components/layout/SidebarPanel";
 import { AssetImage } from "@/components/shared/AssetImage";
+import { CheckboxRow } from "@/components/shared/Checkbox";
+import { SearchInput } from "@/components/shared/SearchInput";
+import {
+  SORT_TOGGLE_GRID_CLASS,
+  type SortDirection,
+  SortToggleGroup,
+} from "@/components/shared/SortToggleGroup";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
@@ -45,12 +57,24 @@ export function characterFilterCount(filters: CharacterFilters): number {
   );
 }
 
+/** Clears every filter while keeping the chosen sort. */
+export function clearCharacterFilters(
+  filters: CharacterFilters
+): CharacterFilters {
+  return {
+    ...defaultCharacterFilters(),
+    sort: filters.sort,
+    direction: filters.direction,
+  };
+}
+
 interface CharacterFilterPanelProps {
   className?: string;
   filters: CharacterFilters;
   onChange: (filters: CharacterFilters) => void;
   pathOptions: readonly CharacterFilterOption[];
   combatTypeOptions: readonly CharacterFilterOption[];
+  /** Announced to assistive technology when the result count changes. */
   countLabel: string;
   searchPlaceholder: string;
   showOwnedOnly?: boolean;
@@ -58,6 +82,8 @@ interface CharacterFilterPanelProps {
   showLevelSort?: boolean;
   hasPriorityData?: boolean;
 }
+
+const RARITIES = [5, 4] as const;
 
 export function CharacterFilterPanel({
   className,
@@ -75,252 +101,267 @@ export function CharacterFilterPanel({
   const { t } = useI18n();
   const update = (patch: Partial<CharacterFilters>) =>
     onChange({ ...filters, ...patch });
-  const toggle = <T,>(values: T[], value: T) =>
-    values.includes(value)
-      ? values.filter((entry) => entry !== value)
-      : [...values, value];
-  const optionGroup = (
-    label: string,
-    kind: "path" | "combat-type",
-    options: readonly CharacterFilterOption[],
-    selected: string[],
-    onSelected: (values: string[]) => void
-  ) => (
-    <fieldset className="space-y-2">
-      <legend className="text-sm font-medium text-foreground xl:text-base">
-        {label}
-      </legend>
-      {selected.length > 0 && (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="h-5 rounded-full px-2.5 text-xs"
-          onClick={() => onSelected([])}
-        >
-          {t("common.clear")}
-        </Button>
-      )}
-      <div
-        className={cn(
-          "grid gap-x-2 gap-y-2",
-          kind === "path" ? "grid-cols-1" : "grid-cols-2"
-        )}
-      >
-        {options.map((option) => (
-          <label
-            key={option.value}
-            className="flex min-w-0 cursor-pointer items-center gap-1.5 text-sm text-foreground"
-          >
-            <input
-              type="checkbox"
-              className="h-4 w-4 shrink-0 accent-primary"
-              checked={selected.includes(option.value)}
-              onChange={() => onSelected(toggle(selected, option.value))}
+
+  const sortOptions: {
+    value: CharacterFilters["sort"];
+    label: string;
+    disabled: boolean;
+  }[] = [
+    {
+      value: "priority",
+      label: t("filter.sortPriority"),
+      disabled: !hasPriorityData,
+    },
+    {
+      value: "release",
+      label: t("filter.sortReleaseDate"),
+      disabled: false,
+    },
+    ...(showLevelSort
+      ? [
+          {
+            value: "level" as const,
+            label: t("filter.sortLevel"),
+            disabled: false,
+          },
+        ]
+      : []),
+  ];
+  const sortValue = (sort: CharacterFilters["sort"]): SortDirection =>
+    filters.sort !== sort
+      ? "off"
+      : filters.direction === "ascending"
+        ? "asc"
+        : "desc";
+  const changeSort = (sort: CharacterFilters["sort"], value: SortDirection) => {
+    if (value === "off") {
+      // Release date is the fallback order, so turning a sort off returns to it.
+      if (filters.sort === sort && sort !== "release") {
+        update({ sort: "release", direction: "descending" });
+      }
+      return;
+    }
+    update({
+      sort,
+      direction: value === "asc" ? "ascending" : "descending",
+    });
+  };
+
+  return (
+    <SidebarPanel label={t("characterLoadout.filters")} className={className}>
+      <SearchInput
+        variant="sidebar"
+        label={t("common.search")}
+        placeholder={searchPlaceholder}
+        className="text-ellipsis"
+        value={filters.query}
+        onValueChange={(query) => update({ query })}
+      />
+
+      <SidebarSection title={t("filter.sort")}>
+        <div className={SORT_TOGGLE_GRID_CLASS}>
+          {sortOptions.map((option) => (
+            <div key={option.value} className="contents">
+              <span
+                className={cn(
+                  "text-sm font-medium",
+                  option.disabled ? "text-muted-foreground" : "text-foreground"
+                )}
+              >
+                {option.label}
+              </span>
+              <SortToggleGroup
+                label={option.label}
+                value={sortValue(option.value)}
+                onChange={(value) => changeSort(option.value, value)}
+                disabled={option.disabled}
+                disabledReason={
+                  option.value === "priority"
+                    ? t("filter.priorityUnavailable")
+                    : undefined
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </SidebarSection>
+
+      <SidebarSection
+        title={t("common.filters")}
+        action={
+          characterFilterCount(filters) > 0 && (
+            <SidebarClearButton
+              label={t("filter.clearAll")}
+              onClick={() => onChange(clearCharacterFilters(filters))}
             />
+          )
+        }
+      >
+        <div className="space-y-2">
+          {showOwnedOnly && (
+            <div
+              title={hasAccount ? undefined : t("build.ownedOnlyUnavailable")}
+            >
+              <CheckboxRow
+                label={t("build.ownedOnly")}
+                className={cn("font-medium", FILTER_ROW_CLASS)}
+                checked={filters.ownedOnly}
+                disabled={!hasAccount}
+                onCheckedChange={(ownedOnly) => update({ ownedOnly })}
+              />
+            </div>
+          )}
+          <CheckboxRow
+            label={t("filter.configuredOnly")}
+            className={cn("font-medium", FILTER_ROW_CLASS)}
+            checked={filters.configuredOnly}
+            onCheckedChange={(configuredOnly) => update({ configuredOnly })}
+          />
+        </div>
+        <OptionGroup
+          label={t("filter.combatType")}
+          kind="combat-type"
+          options={combatTypeOptions}
+          selected={filters.combatTypes}
+          onSelected={(combatTypes) => update({ combatTypes })}
+        />
+        <CheckboxGroup
+          label={t("filter.rarity")}
+          onClear={
+            filters.rarities.length > 0
+              ? () => update({ rarities: [] })
+              : undefined
+          }
+        >
+          {RARITIES.map((rarity) => (
+            <CheckboxRow
+              key={rarity}
+              label={`★ ${rarity}`}
+              className={FILTER_ROW_CLASS}
+              checked={filters.rarities.includes(rarity)}
+              onCheckedChange={() =>
+                update({ rarities: toggleValue(filters.rarities, rarity) })
+              }
+            />
+          ))}
+        </CheckboxGroup>
+        <OptionGroup
+          label={t("filter.path")}
+          kind="path"
+          options={pathOptions}
+          selected={filters.paths}
+          onSelected={(paths) => update({ paths })}
+        />
+      </SidebarSection>
+      <p className="sr-only" aria-live="polite">
+        {countLabel}
+      </p>
+    </SidebarPanel>
+  );
+}
+
+/** Every filter row shares one label size; two-column names need the smaller one. */
+const FILTER_ROW_CLASS = "xl:text-sm";
+
+function OptionGroup({
+  label,
+  kind,
+  options,
+  selected,
+  onSelected,
+}: {
+  label: string;
+  kind: "path" | "combat-type";
+  options: readonly CharacterFilterOption[];
+  selected: string[];
+  onSelected: (values: string[]) => void;
+}) {
+  return (
+    <CheckboxGroup
+      label={label}
+      // Path names are long, so Paths take the full sidebar width.
+      columns={kind === "path" ? 1 : "sidebar"}
+      onClear={selected.length > 0 ? () => onSelected([]) : undefined}
+    >
+      {options.map((option) => (
+        <CheckboxRow
+          key={option.value}
+          label={<span title={option.label}>{option.label}</span>}
+          className={FILTER_ROW_CLASS}
+          icon={
             <AssetImage
               kind={kind}
               id={option.value}
               sourcePath={option.iconPath}
               alt=""
-              className="h-5 w-5 shrink-0 object-contain"
+              className="object-contain"
             />
-            <span className="min-w-0 break-words leading-tight">
-              {option.label}
-            </span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
+          }
+          checked={selected.includes(option.value)}
+          onCheckedChange={() =>
+            onSelected(toggleValue(selected, option.value))
+          }
+        />
+      ))}
+    </CheckboxGroup>
   );
-  const sortOptions: { value: CharacterFilters["sort"]; label: string }[] = [
-    { value: "priority", label: t("filter.sortPriority") },
-    { value: "release", label: t("filter.sortReleaseDate") },
-    ...(showLevelSort
-      ? [{ value: "level" as const, label: t("filter.sortLevel") }]
-      : []),
-  ];
+}
 
+function toggleValue<T>(values: readonly T[], value: T): T[] {
+  return values.includes(value)
+    ? values.filter((entry) => entry !== value)
+    : [...values, value];
+}
+
+function CheckboxGroup({
+  label,
+  columns = 2,
+  onClear,
+  children,
+}: {
+  label: string;
+  /** `sidebar`: two columns unless the inline sidebar is at its narrow width. */
+  columns?: 1 | 2 | "sidebar";
+  onClear?: () => void;
+  children: ReactNode;
+}) {
+  const { t } = useI18n();
+  const labelId = useId();
   return (
-    <aside
-      aria-label={t("characterLoadout.filters")}
-      className={cn(
-        "rounded-xl border border-border bg-card/50 p-4 lg:sticky lg:top-3 lg:max-h-[calc(100dvh-9.5rem)] lg:overflow-y-auto lg:self-start xl:p-5",
-        className
-      )}
+    <fieldset
+      aria-labelledby={labelId}
+      className="m-0 min-w-0 space-y-2 border-0 p-0"
     >
-      <div className="relative mb-3">
-        <Search
-          className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-          aria-hidden="true"
-        />
-        <input
-          type="search"
-          aria-label={t("common.search")}
-          placeholder={searchPlaceholder}
-          value={filters.query}
-          onChange={(event) => update({ query: event.currentTarget.value })}
-          className="h-9 w-full rounded-md border border-border bg-background/70 pl-8 pr-8 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        {filters.query && (
-          <button
+      <div className="flex min-h-5 items-center justify-between gap-2">
+        <span
+          id={labelId}
+          className="text-sm font-medium text-foreground xl:text-base"
+        >
+          {label}
+        </span>
+        {onClear && (
+          <Button
             type="button"
-            aria-label={t("common.clear")}
-            onClick={() => update({ query: "" })}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            variant="secondary"
+            size="sm"
+            className="h-5 rounded-full px-2.5 text-xs"
+            onClick={onClear}
           >
-            <X className="h-4 w-4" />
-          </button>
+            {t("common.clear")}
+          </Button>
         )}
       </div>
-      <div className="space-y-5">
-        <section className="space-y-2">
-          <h2 className="text-base font-semibold xl:text-lg">
-            {t("filter.sort")}
-          </h2>
-          <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2">
-            {sortOptions.map((option) => (
-              <div key={option.value} className="contents">
-                <span className="text-sm font-medium">{option.label}</span>
-                <div className="flex rounded-md border border-border p-0.5">
-                  {(["descending", "ascending"] as const).map((direction) => (
-                    <Button
-                      key={direction}
-                      disabled={option.value === "priority" && !hasPriorityData}
-                      type="button"
-                      variant={
-                        filters.sort === option.value &&
-                        filters.direction === direction
-                          ? "secondary"
-                          : "ghost"
-                      }
-                      size="sm"
-                      className="h-6 px-2"
-                      aria-label={`${option.label}: ${direction === "ascending" ? t("filter.ascending") : t("filter.descending")}`}
-                      aria-pressed={
-                        filters.sort === option.value &&
-                        filters.direction === direction
-                      }
-                      onClick={() => update({ sort: option.value, direction })}
-                    >
-                      {direction === "ascending" ? (
-                        <ArrowUp className="h-3.5 w-3.5" />
-                      ) : (
-                        <ArrowDown className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {!hasPriorityData && (
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              {t("filter.priorityUnavailable")}
-            </p>
-          )}
-        </section>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="text-base font-semibold xl:text-lg">
-              {t("characterLoadout.filters")}
-            </h2>
-            {characterFilterCount(filters) > 0 && (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="h-6 rounded-full px-3 text-xs"
-                onClick={() =>
-                  onChange({
-                    ...defaultCharacterFilters(),
-                    sort: filters.sort,
-                    direction: filters.direction,
-                  })
-                }
-              >
-                {t("filter.reset")}
-              </Button>
-            )}
-          </div>
-          <div className="space-y-2">
-            {showOwnedOnly && (
-              <label
-                className={cn(
-                  "flex items-center gap-2 text-sm font-medium",
-                  hasAccount ? "cursor-pointer" : "text-muted-foreground"
-                )}
-                title={hasAccount ? undefined : t("build.ownedOnlyUnavailable")}
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-primary"
-                  checked={filters.ownedOnly}
-                  disabled={!hasAccount}
-                  onChange={(event) =>
-                    update({ ownedOnly: event.currentTarget.checked })
-                  }
-                />
-                {t("build.ownedOnly")}
-              </label>
-            )}
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-primary"
-                checked={filters.configuredOnly}
-                onChange={(event) =>
-                  update({ configuredOnly: event.currentTarget.checked })
-                }
-              />
-              {t("filter.configuredOnly")}
-            </label>
-          </div>
-          {optionGroup(
-            t("filter.combatType"),
-            "combat-type",
-            combatTypeOptions,
-            filters.combatTypes,
-            (combatTypes) => update({ combatTypes })
-          )}
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium xl:text-base">
-              {t("filter.rarity")}
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              {[4, 5].map((rarity) => (
-                <label
-                  key={rarity}
-                  className="flex cursor-pointer items-center gap-2 text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 accent-primary"
-                    checked={filters.rarities.includes(rarity)}
-                    onChange={() =>
-                      update({ rarities: toggle(filters.rarities, rarity) })
-                    }
-                  />
-                  <span>★ {rarity}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          {optionGroup(
-            t("filter.path"),
-            "path",
-            pathOptions,
-            filters.paths,
-            (paths) => update({ paths })
-          )}
-        </div>
-        <p
-          className="text-xs tabular-nums text-muted-foreground"
-          aria-live="polite"
-        >
-          {countLabel}
-        </p>
+      <div
+        className={cn(
+          "grid gap-1.5 xl:gap-2",
+          columns === 1 && "grid-cols-1",
+          columns === 2 && "grid-cols-2",
+          columns === "sidebar" &&
+            "grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 2xl:grid-cols-1 3xl:grid-cols-2"
+        )}
+      >
+        {children}
       </div>
-    </aside>
+    </fieldset>
   );
 }

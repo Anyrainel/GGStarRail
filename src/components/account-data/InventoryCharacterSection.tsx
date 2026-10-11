@@ -4,10 +4,23 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { InventoryToolbar } from "@/components/account/InventoryToolbar";
+import {
+  ChipGroupGap,
+  InventoryChipRow,
+  InventoryFilteredEmpty,
+  InventorySearch,
+  toggled,
+} from "@/components/account-data/InventorySection";
+import { AssetImage } from "@/components/shared/AssetImage";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ItemIcon } from "@/components/shared/ItemIcon";
-import { Card, CardContent } from "@/components/ui/card";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import {
+  ItemIcon,
+  type ItemIconSize,
+  itemIconWidth,
+} from "@/components/shared/ItemIcon";
 import type { Character } from "@/domain/account/schemas";
 import { useCharacterReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
@@ -16,31 +29,45 @@ import {
   localizedName,
   localizedSearchText,
 } from "@/lib/catalogPresentation";
+import type { CharacterDefinition } from "@/providers/reference/types";
+
+type LevelGroup = "max" | "other";
+
+const CHARACTER_RARITIES = [5, 4] as const;
+const DEFAULT_CHARACTER_LEVEL = 80;
 
 interface InventoryCharacterSectionProps {
   characters: readonly Character[];
+  iconSize: ItemIconSize;
 }
 
 export function InventoryCharacterSection({
   characters,
+  iconSize,
 }: InventoryCharacterSectionProps) {
   const { locale, t } = useI18n();
   const { data, error, loading } = useCharacterReferences();
   const [query, setQuery] = useState("");
-  const [pathId, setPathId] = useState("all");
-  const [combatTypeId, setCombatTypeId] = useState("all");
+  const [levels, setLevels] = useState<Set<LevelGroup>>(() => new Set(["max"]));
+  const [rarities, setRarities] = useState<Set<number>>(
+    () => new Set(CHARACTER_RARITIES)
+  );
+  const [combatTypes, setCombatTypes] = useState<Set<string>>(() => new Set());
+  const [paths, setPaths] = useState<Set<string>>(() => new Set());
 
   const visibleCharacters = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     return characters
-      .filter((character) => pathId === "all" || character.pathId === pathId)
+      .filter((character) => paths.size === 0 || paths.has(character.pathId))
       .filter(
         (character) =>
-          combatTypeId === "all" || character.combatTypeId === combatTypeId
+          combatTypes.size === 0 || combatTypes.has(character.combatTypeId)
       )
       .filter((character) => {
-        if (!normalizedQuery) return true;
         const definition = data?.characters.byId.get(character.definitionId);
+        if (!levels.has(levelGroup(character, definition))) return false;
+        if (definition && !rarities.has(definition.rarity)) return false;
+        if (!normalizedQuery) return true;
         const displayName = definition
           ? characterCatalogName(definition, locale, t("terms.trailblazer"))
           : character.definitionId;
@@ -66,85 +93,141 @@ export function InventoryCharacterSection({
           locale
         );
       });
-  }, [characters, combatTypeId, data, locale, pathId, query, t]);
+  }, [
+    characters,
+    combatTypes,
+    data,
+    levels,
+    locale,
+    paths,
+    query,
+    rarities,
+    t,
+  ]);
 
-  const pathOptions = useMemo(
-    () => [
-      { value: "all", label: t("filter.allPaths") },
-      ...Array.from(new Set(characters.map((character) => character.pathId)))
-        .map((id) => ({
-          value: id,
-          label: localizedName(
-            data?.properties.pathById.get(id)?.name,
-            locale,
-            id
-          ),
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    ],
-    [characters, data, locale, t]
+  const combatTypeIds = useMemo(
+    () =>
+      (data?.properties.combatTypes ?? [])
+        .map((combatType) => combatType.id)
+        .filter((id) =>
+          characters.some((character) => character.combatTypeId === id)
+        ),
+    [characters, data]
   );
-  const combatTypeOptions = useMemo(
-    () => [
-      { value: "all", label: t("filter.allCombatTypes") },
-      ...Array.from(
-        new Set(characters.map((character) => character.combatTypeId))
-      )
-        .map((id) => ({
-          value: id,
-          label: localizedName(
-            data?.properties.combatTypeById.get(id)?.name,
-            locale,
-            id
-          ),
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    ],
-    [characters, data, locale, t]
+  const pathIds = useMemo(
+    () =>
+      (data?.properties.paths ?? [])
+        .map((path) => path.id)
+        .filter((id) =>
+          characters.some((character) => character.pathId === id)
+        ),
+    [characters, data]
   );
 
   if (characters.length === 0) {
     return (
-      <EmptyState messageKey="empty.inventoryCharacters" icon={UsersRound} />
+      <EmptyState
+        variant="inline"
+        messageKey="empty.inventoryCharacters"
+        icon={UsersRound}
+      />
     );
   }
   if (loading) return <CatalogLoading />;
   if (error || !data) return <CatalogLoadError error={error} />;
 
+  const combatTypeName = (id: string) =>
+    localizedName(data.properties.combatTypeById.get(id)?.name, locale, id);
+  const pathName = (id: string) =>
+    localizedName(data.properties.pathById.get(id)?.name, locale, id);
+  const clearAll = () => {
+    setQuery("");
+    setLevels(new Set(["max", "other"]));
+    setRarities(new Set(CHARACTER_RARITIES));
+    setCombatTypes(new Set());
+    setPaths(new Set());
+  };
+
   return (
-    <div className="space-y-3">
-      <InventoryToolbar
-        query={query}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("search.characters")}
-        countLabel={
-          visibleCharacters.length === 1
-            ? t("common.oneRecord")
-            : t("common.count", { count: visibleCharacters.length })
-        }
-        onQueryChange={setQuery}
-        filters={[
-          {
-            id: "inventory-character-path",
-            label: t("filter.path"),
-            value: pathId,
-            options: pathOptions,
-            onChange: setPathId,
-          },
-          {
-            id: "inventory-character-combat-type",
-            label: t("filter.combatType"),
-            value: combatTypeId,
-            options: combatTypeOptions,
-            onChange: setCombatTypeId,
-          },
-        ]}
-      />
+    <>
+      <InventoryChipRow>
+        <CategoryChip
+          label={t("inventory.level.max")}
+          active={levels.has("max")}
+          onClick={() => setLevels((values) => toggled(values, "max"))}
+        />
+        <CategoryChip
+          label={t("inventory.level.other")}
+          active={levels.has("other")}
+          onClick={() => setLevels((values) => toggled(values, "other"))}
+        />
+        <ChipGroupGap />
+        {CHARACTER_RARITIES.map((rarity) => (
+          <CategoryChip
+            key={rarity}
+            label={t("inventory.rarity", { value: rarity })}
+            active={rarities.has(rarity)}
+            onClick={() => setRarities((values) => toggled(values, rarity))}
+          />
+        ))}
+        <InventorySearch
+          value={query}
+          onValueChange={setQuery}
+          placeholder={t("search.characters")}
+        />
+      </InventoryChipRow>
+      <InventoryChipRow className="gap-1">
+        <FilterChipGroup
+          className="contents"
+          options={pathIds}
+          selectedValues={paths}
+          onSelectedValuesChange={setPaths}
+          getKey={(id) => id}
+          getTitle={pathName}
+          getIcon={(id) => (
+            <AssetImage
+              kind="path"
+              id={id}
+              sourcePath={data.properties.pathById.get(id)?.icon_path}
+              alt=""
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 object-contain"
+            />
+          )}
+          getLabel={(id) => (
+            <span className="hidden sm:inline">{pathName(id)}</span>
+          )}
+        />
+        <ChipGroupGap />
+        <FilterChipGroup
+          className="contents"
+          label={t("filter.combatType")}
+          collapsible
+          options={combatTypeIds}
+          selectedValues={combatTypes}
+          onSelectedValuesChange={setCombatTypes}
+          getKey={(id) => id}
+          getTitle={combatTypeName}
+          getIcon={(id) => (
+            <AssetImage
+              kind="combat-type"
+              id={id}
+              sourcePath={data.properties.combatTypeById.get(id)?.icon_path}
+              alt=""
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 object-contain"
+            />
+          )}
+          getLabel={(id) => (
+            <span className="hidden sm:inline">{combatTypeName(id)}</span>
+          )}
+        />
+      </InventoryChipRow>
       {visibleCharacters.length === 0 ? (
-        <EmptyState messageKey="empty.filtered" icon={UsersRound} />
+        <InventoryFilteredEmpty icon={UsersRound} onClear={clearAll} />
       ) : (
         <section
-          className="grid grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] gap-3"
+          className="flex flex-wrap gap-3 px-2"
           aria-label={t("inventory.charactersList")}
         >
           {visibleCharacters.map((character) => {
@@ -152,13 +235,20 @@ export function InventoryCharacterSection({
             const name = definition
               ? characterCatalogName(definition, locale, t("terms.trailblazer"))
               : character.definitionId;
-            const path = data.properties.pathById.get(character.pathId);
             const combatType = data.properties.combatTypeById.get(
               character.combatTypeId
             );
             return (
-              <Card key={character.key} className="overflow-hidden">
-                <CardContent className="flex items-center gap-3 p-3">
+              <CatalogHoverCard
+                key={character.key}
+                kind="character"
+                id={definition?.id ?? character.definitionId}
+                disabled={!definition}
+              >
+                <div
+                  className="group flex shrink-0 flex-col items-center"
+                  style={{ width: itemIconWidth(iconSize) }}
+                >
                   <ItemIcon
                     kind="character"
                     id={definition?.id ?? character.definitionId}
@@ -173,34 +263,35 @@ export function InventoryCharacterSection({
                             kind: "combat-type",
                             id: combatType.id,
                             sourcePath: combatType.icon_path,
-                            alt: localizedName(
-                              combatType.name,
-                              locale,
-                              character.combatTypeId
-                            ),
+                            alt: combatTypeName(character.combatTypeId),
                           }
                         : undefined
                     }
-                    size="md"
+                    size={iconSize}
+                    tabIndex={0}
+                    className="rounded-md outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring group-hover:scale-105"
                   />
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="truncate text-sm font-semibold">{name}</p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {localizedName(path?.name, locale, character.pathId)}
-                      {" · "}
-                      {localizedName(
-                        combatType?.name,
-                        locale,
-                        character.combatTypeId
-                      )}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+                  <span
+                    className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
+                    aria-hidden="true"
+                  >
+                    {name}
+                  </span>
+                </div>
+              </CatalogHoverCard>
             );
           })}
         </section>
       )}
-    </div>
+    </>
   );
+}
+
+function levelGroup(
+  character: Character,
+  definition: CharacterDefinition | undefined
+): LevelGroup {
+  const maxLevel =
+    definition?.stat_scaling.at(-1)?.max_level ?? DEFAULT_CHARACTER_LEVEL;
+  return character.level >= maxLevel ? "max" : "other";
 }

@@ -1,6 +1,9 @@
 import { ChevronDown } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import {
+  ArchiveChipDivider,
+  ArchiveToolbar,
+} from "@/components/archive/ArchiveToolbar";
 import { LightConeCard } from "@/components/archive/LightConeCard";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
@@ -74,13 +77,11 @@ export function LightConeCatalog() {
     );
   }, [paths, query, rarities, resource.data]);
 
-  if (resource.loading) return <CatalogLoading />;
-  if (resource.error) return <CatalogFailure error={resource.error} />;
-  if (!resource.data) return null;
-  const { propertyTables } = resource.data;
-  const availablePaths = propertyTables.paths.filter((path) =>
-    resource.data?.lightCones.values.some((cone) => cone.path_id === path.id)
-  );
+  const propertyTables = resource.data?.propertyTables;
+  const availablePaths =
+    propertyTables?.paths.filter((path) =>
+      resource.data?.lightCones.values.some((cone) => cone.path_id === path.id)
+    ) ?? [];
 
   const header = (
     <ArchiveToolbar
@@ -89,42 +90,66 @@ export function LightConeCatalog() {
       searchLabel={t("common.search")}
       searchPlaceholder={t("archive.search.lightCones")}
     >
-      <FilterChipGroup
-        options={availablePaths.map((path) => path.id)}
-        selectedValues={paths}
-        onSelectedValuesChange={setPaths}
-        getKey={(id) => id}
-        getIcon={(id) => (
-          <AssetImage
-            kind="path"
-            id={id}
-            sourcePath={propertyTables.pathById.get(id)?.icon_path}
-            alt=""
-            className="h-4 w-4 object-contain"
+      {propertyTables && (
+        <>
+          <FilterChipGroup
+            options={availablePaths.map((path) => path.id)}
+            selectedValues={paths}
+            onSelectedValuesChange={setPaths}
+            getKey={(id) => id}
+            getTitle={(id) =>
+              formatGameText(
+                getLocalizedValue(
+                  propertyTables.pathById.get(id)?.name,
+                  locale
+                ) ?? id
+              )
+            }
+            getIcon={(id) => (
+              <AssetImage
+                kind="path"
+                id={id}
+                sourcePath={propertyTables.pathById.get(id)?.icon_path}
+                alt=""
+                className="h-4 w-4 object-contain"
+              />
+            )}
+            getLabel={(id) => (
+              <span className="hidden sm:inline">
+                {formatGameText(
+                  getLocalizedValue(
+                    propertyTables.pathById.get(id)?.name,
+                    locale
+                  ) ?? ""
+                )}
+              </span>
+            )}
+            className="contents"
           />
-        )}
-        getLabel={(id) =>
-          formatGameText(
-            getLocalizedValue(propertyTables.pathById.get(id)?.name, locale) ??
-              ""
-          )
-        }
-        className="contents"
-      />
-      <span
-        aria-hidden="true"
-        className="mx-1 hidden h-5 w-px bg-border sm:block"
-      />
-      <FilterChipGroup
-        options={[5, 4, 3]}
-        selectedValues={rarities}
-        onSelectedValuesChange={setRarities}
-        getKey={String}
-        getLabel={(rarity) => `★${rarity}`}
-        className="contents"
-      />
+          <ArchiveChipDivider />
+          <FilterChipGroup
+            options={[5, 4, 3]}
+            selectedValues={rarities}
+            onSelectedValuesChange={setRarities}
+            getKey={String}
+            getLabel={(rarity) => `★${rarity}`}
+            className="contents"
+          />
+        </>
+      )}
     </ArchiveToolbar>
   );
+  if (!resource.data) {
+    return (
+      <ScrollLayout header={header}>
+        {resource.error ? (
+          <CatalogFailure error={resource.error} />
+        ) : (
+          <CatalogLoading />
+        )}
+      </ScrollLayout>
+    );
+  }
   return (
     <ScrollLayout header={header} bodyClassName="space-y-4">
       <section aria-label={t("archive.lightConeList")} className="space-y-4">
@@ -139,7 +164,7 @@ export function LightConeCatalog() {
             return (
               <section
                 key={path.id}
-                className="overflow-hidden rounded-xl border border-border bg-card/50"
+                className="overflow-hidden rounded-xl border border-border bg-gradient-card"
               >
                 <h2>
                   <button
@@ -153,30 +178,32 @@ export function LightConeCatalog() {
                         return next;
                       })
                     }
-                    className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
-                    <AssetImage
-                      kind="path"
-                      id={path.id}
-                      sourcePath={path.icon_path}
-                      alt=""
-                      className="h-9 w-9 rounded-lg bg-secondary p-1.5 object-contain"
-                    />
-                    <span className="font-semibold">{name}</span>
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/70 p-2">
+                      <AssetImage
+                        kind="path"
+                        id={path.id}
+                        sourcePath={path.icon_path}
+                        alt=""
+                        className="h-full w-full object-contain"
+                      />
+                    </span>
+                    <span className="text-lg font-semibold">{name}</span>
                     <span className="text-sm text-muted-foreground">
                       ({cones.length})
                     </span>
                     <ChevronDown
                       aria-hidden="true"
                       className={cn(
-                        "ml-auto h-4 w-4 transition-transform",
+                        "h-4 w-4 text-muted-foreground transition-transform duration-200",
                         expanded && "rotate-180"
                       )}
                     />
                   </button>
                 </h2>
                 {expanded && (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2 border-t border-border p-2 sm:p-3">
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5 border-t border-border px-1.5 pb-3 pt-2 md:gap-2 md:px-3">
                     {cones.map((lightCone) => (
                       <LightConeCard
                         key={lightCone.id}

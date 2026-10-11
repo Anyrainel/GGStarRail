@@ -1,0 +1,948 @@
+# Combat engine tracker. Schema: .agents/skills/hsr-combat/tracking.md
+- id: engine-elation-punchline-amounts
+  entity: engine
+  rule: U8
+  status: open
+  category: needs-data
+  summary: >
+    Punchline gained at battle start and after each Aha action scales with the
+    number of Elation Characters; the amounts are not in the reference data, so
+    `punchlinePerElationCharacter` defaults to 0.
+  detail: "Glossary text confirms the mechanic; values need datamined config or in-game measurement."
+- id: engine-elation-participant-order
+  entity: engine
+  rule: C1
+  status: open
+  category: needs-data
+  summary: >
+    Aha Instant orders Elation Skills by hidden Participant ID; the engine uses
+    team slot order.
+  detail: ""
+- id: engine-elation-laughter
+  entity: engine
+  rule: C1
+  status: open
+  category: needs-data
+  summary: >
+    Aha's own "Let There Be Laughter" (used when no unit has an Elation Skill)
+    is not modeled; its Punchline-scaled multiplier is unknown.
+  detail: ""
+- id: engine-break-unbroken-multiplier
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    The breaking hit's Break DMG uses the 0.9 unbroken Toughness multiplier
+    (community claim); Elation DMG also uses 0.9/1.0. Both need confirmation.
+  detail: ""
+- id: engine-memosprite-buff-inheritance
+  entity: engine
+  rule: C5
+  status: open
+  category: verify
+  summary: >
+    Memosprites share the owner's panel and permanent elemental bonuses but
+    not the owner's combat statuses (fribbels model); confirm in game.
+  detail: ""
+- id: engine-super-break-zones
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    "Super Break DMG increases by X%" is modeled as DMG Boost scoped to Super
+    Break, separate from the conversion multiplier `superBreakDmg`; confirm the
+    two are different zones.
+  detail: ""
+- id: engine-energy-fixed-sources
+  entity: engine
+  rule: U10
+  status: open
+  category: verify
+  summary: >
+    All Energy except abilities' own regeneration is ERR-scaled unless a kit
+    marks it fixed; the glossary says some sources ignore ERR without listing
+    them.
+  detail: ""
+- id: engine-enemy-attack-energy
+  entity: engine
+  rule: U8
+  status: open
+  category: approximation
+  summary: >
+    Each enemy turn is one single-target attack worth 10 Energy (scenario
+    setting), distributed by aggro; real enemy skills vary (5-25, AoE).
+  detail: ""
+- id: engine-kill-triggers
+  entity: engine
+  rule: U8
+  status: wont-do
+  category: engine-gap
+  summary: >
+    Enemy HP and kills are not simulated; "upon defeating an enemy" effects
+    are user options.
+  detail: >
+    By design: enemy HP depends on equipment, and the timeline must not, so
+    kills stay user options (enemyDefeated) with the U8 defaults.
+- id: engine-pass-wave1
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Engine pass after wave 1. Kit items that worked around any of these gaps
+    should adopt the construct now available (see kit-authoring.md).
+  detail: >
+    Fixed: ActionContext Skill Points/cycle frozen at action start; status
+    landing-chance cache ignoring re-applied chances; once-per-turn limits
+    counting firings instead of weight (now weighted, plus a `when`
+    predicate checked before limits and limitPerOwnTurn); breakdown rows merging different abilities
+    (groups key on abilityId; deal inside an ability is credited to it, and
+    DealOptions.abilityId names proc rows); targetWeakness filters read after
+    the battle (now snapshotted per hit); team SPD auras ignored by turn order;
+    summons ignoring SPD statuses; enemy Slow having no effect; stat-scaled
+    incoming modifiers ignored; Break Frozen relied on a hard-coded check
+    (now skipsTurn); timeline energyAfter recorded before actionEnd; actions
+    queued at turn end running a turn late; extra turns from Ultimates waiting
+    a turn; optimizer timeline caches ignoring stats read in battle.
+    Added: HitFilter targetStatuses/targetFamilies/minTargetDebuffs/
+    targetBroken/targetRoles; StatusDef.family and skipsTurn; setStatusStacks;
+    endsTurn false; hits as a function, attack, afterHit, ctx.scratch,
+    ctx.targetsHit, actionEnd targetsHit; split shape and AoE main/each;
+    toughnessWithoutWeakness, reduceToughness options, timed implantWeakness
+    and removeWeakness; silent hits; Ultimate variants and resources,
+    castOutsideActionOrder; turn choices with an ally target and usable on
+    turn abilities; skillPointsChanged and setMaxSkillPoints; gainEnergy
+    overflow; findSummon; summons' attacks count as the owner's for self
+    listeners; UnitView pathId/slot/actionGauge/hasFamily; ctx time and
+    mainTarget; policy upcoming/extraTurn/usedThisTurn; dotTick detonation;
+    the "assist" damage tag; dossier reads AvatarSkillConfigLD and prints
+    #n[fN] values correctly.
+- id: engine-hp-model
+  entity: engine
+  rule: U12
+  status: completed
+  category: engine-gap
+  summary: >
+    HP is not simulated. Blade, Arlan, Jingliu, Mydei, Clara and others use
+    toggles or counters for HP thresholds, HP lost, and healing triggers.
+  detail: >
+    HP is an expected share of Max HP per ally: ctx.consumeHp/setHp/heal,
+    unit.hpRatio, and hpChanged (per occurrence with weight); enemy attacks
+    remove 10% split by aggro (e553888, dd13fa1).
+- id: engine-aggro-modifiers
+  entity: engine
+  rule: U12
+  status: completed
+  category: engine-gap
+  summary: >
+    Aggro cannot be modified (Taunt, aggro increases), and Departed units are
+    still targeted by enemy attacks.
+  detail: >
+    aggroPct scales targeting, taunt: true statuses redirect an enemy's attack
+    to the taunter, and setDeparted removes a unit from targeting (e7054f4).
+- id: engine-enemy-tier
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies have no tier (elite/boss vs normal); kits with elite-only effects
+    treat the middle enemy as the only elite.
+  detail: ""
+- id: engine-super-break-unbroken
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    Super Break only applies to Weakness Broken enemies; The Dahlia's Zone
+    lets it apply to unbroken ones, and deal() cannot produce Super Break.
+  detail: ""
+- id: engine-separate-timeline
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    No territory or paused-clock state: Phainon's transformation runs as a
+    chain of queued actions, and teammates still react to it.
+  detail: ""
+- id: engine-ally-turn-takeover
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot act through another ally's turn (Himeko Nova's ally-used
+    Assist Skills) or replace an ally's action choice.
+  detail: ""
+- id: engine-energy-received-event
+  entity: engine
+  rule: U10
+  status: completed
+  category: engine-gap
+  summary: >
+    No event for Energy received from a teammate (Phainon) or for Energy
+    overflow from other sources than the kit's own gainEnergy calls.
+  detail: >
+    energyGained reports Energy received with its source and overflow per
+    occurrence (85ed2c2).
+- id: engine-ally-option-vocabulary
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Single-ally designations (March 7th's Shifu, Fugue's Prayer target, The
+    Dahlia's Dance Partner, Jade's Debt Collector) are heuristics; there is no
+    option type for choosing a teammate.
+  detail: >
+    k.ally(id, origin, pick) declares a user-designated teammate stored by
+    Character ID, with a dropdown in the member options (d4ce79f).
+- id: engine-control-turn-start-dmg
+  entity: engine
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    Kit Freezes deal Additional DMG at the Frozen enemy's turn start, but a
+    status can only carry periodic damage as a `dot` (tagged DoT, detonated,
+    emits dotTick). March 7th and Gepard deal it from turnStart weighted by
+    the base chance, so Effect Hit Rate and Effect RES do not scale it.
+  detail: >
+    Needs non-DoT periodic damage on a status (Additional DMG tags) resolved
+    with the status's evaluated landing chance. E1 March 7th's Energy per
+    Frozen target uses the same base-chance weight, consistent with the
+    engine's turn skip.
+- id: engine-shield-state
+  entity: engine
+  rule: U12
+  status: completed
+  category: engine-gap
+  summary: >
+    There is no shared "Shielded" state: March 7th's Counter and Aventurine's
+    E6 see only their own shield markers, so Shields from other kits (Gepard's
+    Ultimate, Fortified Wager for March 7th) do not count and Shields broken
+    by enemy hits never drop.
+  detail: >
+    A shield status family lets Shielded checks see every source (e7054f4).
+    Shield HP and breaking are not modelled.
+- id: engine-scaled-spd-turn-order
+  entity: engine
+  rule: U7
+  status: completed
+  category: engine-gap
+  summary: >
+    Turn order ignores SPD modifiers with `scaling`. Hanya's Ultimate ("SPD
+    +20% of Hanya's SPD") works around it with a spdFlat status worth 1 per
+    stack, its stacks set from Hanya's panelStat("spd").
+  detail: >
+    Turn order reads scaled SPD modifiers on statuses (applier or holder
+    source, through scalingInput), so they count for every unit. Permanent
+    `k.stat` SPD with `scaling` still does not move turns; kits use a status
+    applied at battle start instead. 1215-hanya.ts can switch its Ultimate to
+    `scaling: { source: applier, stat: spd }`.
+- id: engine-status-lifecycle
+  entity: engine
+  rule: U5
+  status: completed
+  category: engine-gap
+  summary: >
+    No event fires when a status expires or is removed, and a kit cannot read
+    or extend a status's remaining turns ("extends Invigoration by 1 turn",
+    "when Invigoration ends"); Bailu tracks Invigoration with counters.
+  detail: >
+    statusRemoved fires on expiry, removal, and running out of stacks; kits
+    read remainingTurns and call extendStatus (61c14f6).
+- id: engine-play-override-turn-choice
+  entity: engine
+  rule: C3
+  status: completed
+  category: engine-gap
+  summary: >
+    playPolicy in team/assemble.ts only compares the kit's choice with the
+    strings "skill"/"basic", so a `{ ability, target }` choice (Huohuo, Bailu)
+    bypasses the "avoid" Skill override.
+  detail: >
+    playPolicy reads the ability of a `{ ability, target }` choice, so the
+    prefer-Skill and prefer-Basic overrides apply to it; the replacement drops
+    the ally target.
+- id: engine-elation-zero-banger
+  entity: engine
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Once Aha has joined the Action Order it acts even at 0 Punchline, and its
+    participants gain Certified Banger worth 0. certifiedBanger() sums
+    values, so kits read such a banger as not held ("while holding Certified
+    Banger").
+  detail: >
+    Seen in a Sparxie/Yao Guang/Pearl/Robin run, where an Aha Instant came
+    before anyone regained Punchline. Need to confirm whether Aha acts at 0
+    Punchline, and whether holding Certified Banger should be a state
+    separate from its value.
+- id: engine-elation-kind-tag
+  entity: engine
+  rule: U4
+  status: completed
+  category: engine-gap
+  summary: >
+    A hit with `kind: "elation"` does not get the `elation` tag. Only Elation
+    Skill abilities add it by default, so procs dealt with `deal` must add it
+    themselves, or "when dealing Elation DMG" filters (Yao Guang E1's DEF
+    ignore) miss them.
+  detail: >
+    Hits with `kind: "elation"` get the `elation` tag automatically.
+- id: engine-elation-banger-events
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    No event reports a unit gaining Certified Banger or one expiring, and Aha
+    Instant bangers always last 2 turns. Evanescia's Talent/A2/A6
+    conversions, Evanescia E6 and Aventurine • Waveflair's Talent (+1 turn),
+    and Yao Guang A6 need them.
+  detail: >
+    Evanescia reads Aha grants through ahaInstantStart/End and mirrors the
+    2-turn expiry in counters; grants from other kits (Trailblazer's Ultimate,
+    Aventurine • Waveflair's A4) are invisible to her. Gain/expiry events with
+    holder and value, plus a per-holder duration bonus, would cover all cases.
+- id: engine-memosprite-team-auras-twice
+  entity: engine
+  rule: C5
+  status: completed
+  category: engine-gap
+  summary: >
+    Memosprites receive team auras twice: registerServants copies the owner's
+    conditional modifiers (which already hold the team auras) and
+    onUnitCreated applies the team auras again. Robin's Talent CRIT DMG shows
+    twice on Garmentmaker, Netherwing, and Little Ica; team spdFlat auras
+    also add to a memosprite's SPD on top of its owner-ratio SPD.
+  detail: >
+    Memosprites copy only their owner's own permanent modifiers; team auras
+    are applied once when the memosprite is created. Remembrance teams with
+    Robin lose 1-18% memosprite damage.
+- id: engine-memosprite-spd-pct
+  entity: engine
+  rule: U11
+  status: completed
+  category: engine-gap
+  summary: >
+    A memosprite's SPD (owner ratio + flat) ignores spdPct statuses on it, so
+    "SPD +X%" buffs on all ally targets (Robin E2, Hyacine E2) miss
+    memosprites. Castorice's A4 (+100% Netherwing SPD) is converted to flat
+    SPD from its 165 base.
+  detail: >
+    A memosprite's SPD is (owner SPD x ratio + flat) x (1 + SPD%) + flat SPD,
+    so SPD% statuses and auras reach it. Castorice's A4 uses spdPct again.
+- id: engine-memosprite-spd-scaling
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Stat scaling on a memosprite reads its owner's panel, so `scaling: { stat:
+    "spd" }` never sees the memosprite's own SPD. Aglaea's A2 (ATK from both
+    SPDs) and E6 (Joint ATK DMG by each unit's SPD) sync status stacks from
+    unit.speed instead.
+  detail: ""
+- id: engine-stat-owner-statuses
+  entity: engine
+  rule: C2
+  status: completed
+  category: engine-gap
+  summary: >
+    `statOwner: "owner"` reads the owner's panel without its statuses, so
+    Netherwing's hits on Castorice's Max HP miss Max HP buffs on her (Hyacine's
+    After Rain, Castorice-targeted HP buffs).
+  detail: >
+    Hits with `statOwner: "owner"` record the owner's statuses at the hit
+    (HitRecord.scalingModifiers), and evaluation adds them and the owner's
+    permanent modifiers to the owner's panel. Little Ica's Rainclouds now
+    include After Rain and E1 Max HP.
+- id: engine-cross-kit-state
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot read or change another kit's statuses or states (Aglaea's
+    Supreme Stance, Mydei's Vendetta, Castorice's Newbud). Cyrene's Chrysos
+    Heir Odes need them; Ode to Time writes Evernight's "memoria" counter by
+    name.
+  detail: "A small registry of named, exported states per kit would let Ode-style effects target them."
+- id: engine-damage-tally
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Damage amounts exist only after the battle is evaluated, so effects that
+    deal a share of tallied DMG (Robin • Summeretto E1) cannot be modeled.
+  detail: ""
+- id: engine-memosprite-max-hp
+  entity: engine
+  rule: C5
+  status: open
+  category: engine-gap
+  summary: >
+    MemospriteDef has no Max HP rule. Memosprites read their owner's HP, so
+    kits multiply HP-scaled memosprite multipliers by the Talent's HP ratio
+    (Evey 50%, Summer Songbirds 70%). Flat HP parts and the memosprite's own
+    Max HP buffs scale with the owner's HP instead.
+  detail: ""
+- id: engine-debuff-landing-chance
+  entity: engine
+  rule: U9
+  status: open
+  category: engine-gap
+  summary: >
+    A debuff's landing chance only scales its own modifiers and DoT at
+    evaluation. Presence checks (has, hasFamily, debuffCount, target filters),
+    procs gated on them, stack counts, and Weakness implants treat a
+    base-chance application as landed with all its stacks, and repeated
+    applications keep the strongest chance instead of combining them as
+    1 - (1 - p1)(1 - p2)...
+  detail: >
+    Target-state filters (statuses, families, debuff and DoT counts) are
+    scaled by the landing chance of base-chance statuses at evaluation, and
+    ctx.deal(..., { gatedBy }) hits inherit it (a8b52aa). Battle-time presence
+    checks (has, hasFamily, stacks) still treat base-chance debuffs as landed.
+- id: engine-enemy-effect-res
+  entity: engine
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy Effect RES is a scenario constant, so enemy statuses that lower it
+    do not change landing chances: Black Swan E4 (Epiphany, -10%), Silver Wolf
+    E2 (-20% on entering combat), Guinaifen E1 (Skill, -10%), and Dr. Ratio A4
+    (-10%).
+  detail: >
+    Landing chances need to read the target's Effect RES including the
+    incoming status modifiers present when the debuff is applied (weighted by
+    the reducing debuff's own landing chance). Kit items: black-swan-e4-effect-res,
+    silver-wolf-e2-effect-res, guinaifen-e1-effect-res, dr-ratio-effect-res-debuff.
+- id: engine-dot-flat-plus-stacks
+  entity: engine
+  rule: U6
+  status: open
+  category: engine-gap
+  summary: >
+    A DoT's multiplier is per stack only. Black Swan's Arcana deals #1 + #3 x
+    stacks, so the kit splits it into a stacking DoT and a flat companion DoT,
+    which ticks and detonates as a second DoT instance (a second dotTick for
+    per-DoT triggers such as Hysilens' Zone).
+  detail: >
+    A DotDef with a flat part plus a per-stack part would let Black Swan
+    (1307, black-swan-arcana-split) use one Arcana status.
+- id: engine-weakness-ignore-modifier
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Toughness reduction against enemies without the matching Weakness is a
+    HitDef property (toughnessWithoutWeakness), so a status cannot give it to
+    its holder's hits. Fugue's Foxian Prayer lets its holder reduce Toughness
+    at 50% against such enemies, not stacking with other Weakness-ignoring
+    effects.
+  detail: >
+    A holder modifier carrying the fraction, where the larger of it and the
+    hit's own value applies, would let Fugue (1225, fugue-weakness-ignore)
+    give Foxian Prayer k.param("02", 6) (50%).
+- id: engine-secondary-toughness
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies have one Toughness bar. Fugue's Cloudflame Luster adds 40% of Max
+    Toughness that can only be reduced while the enemy is Weakness Broken and
+    deals Weakness Break DMG again when it reaches 0, so her second Break DMG
+    instance is missing.
+  detail: >
+    Needs a second Toughness pool on enemies that a kit can set, reduced only
+    while Broken, and breaking again with Break DMG when depleted. Affects
+    Fugue (1225, fugue-cloudflame-luster).
+- id: engine-status-applied-action
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    statusApplied does not say whether a debuff was applied during an ability
+    use, or which one. Acheron's Talent (once per ability use by any unit, the
+    Knot going to the debuffed target with the most Knots) opens a window at
+    ally actionStart and closes it at enemy turnStart, so it misses debuffs
+    from earlier-slot actionStart listeners and cannot see every target one
+    ability debuffed.
+  detail: >
+    statusApplied carries abilityId/abilityKind of the ability being executed
+    (85ed2c2).
+- id: engine-weakness-implanted-event
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    implantWeakness emits no event, so kits cannot react to Weaknesses that
+    other units implant. The Dahlia's A6 (SPD +30% for the implanting ally;
+    after a Fire ally character's attack that implanted, a fixed 20 Fire
+    Toughness Reduction on each implanted target and Energy) reacts only to
+    her own Wilt, and Never Forget Her Flame infers implants from Weakness
+    changes during the wearer's action.
+  detail: >
+    weaknessImplanted fires with the implanter and Combat Type when the
+    Weakness is new (85ed2c2). Refreshing an existing implant is not reported.
+- id: engine-ally-tag-rewrite
+  entity: engine
+  rule: U4
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot add damage tags to other units' abilities or hits. Mortenax
+    Blade's E2 ("When an ally character uses Ultimate to deal DMG, it is
+    considered as having launched Follow-Up ATK") only gives allies' Ultimate
+    DMG its own +75% bonus; other Follow-Up effects and "after a Follow-Up
+    ATK" triggers do not see those Ultimates.
+  detail: >
+    A team-level tag rule (allies' Ultimate actions and hits also carry
+    followUp) applied when actions start and hits are recorded. Affects
+    Mortenax Blade (1507, mortenax-blade-e2-ult-follow-up).
+- id: engine-policy-battle-end
+  entity: engine
+  rule: C3
+  status: completed
+  category: engine-gap
+  summary: >
+    PolicyView has time and cycle but not when the battle ends, so policies
+    cannot spend resources before the end. Argenti's 90-Energy Ultimate only
+    pays off when 180 Energy cannot be reached before the end, and Mortenax
+    Blade's choice to hold Fornax Ex Corpore depends on the time left.
+  detail: >
+    PolicyView and BattleApi expose endTime (85ed2c2).
+- id: engine-break-dmg-super-break
+  entity: engine
+  rule: U2
+  status: open
+  category: verify
+  summary: >
+    U2 maps "Break DMG +X%" to the break tag, which also covers Super Break
+    DMG; fribbels keeps Break and Super Break DMG separate. Confirm whether
+    Break DMG bonuses reach Super Break DMG.
+  detail: >
+    Iron Cavalry Against the Scourge (119) supports U2: its 4-piece gives
+    "Break DMG" 10% DEF ignore and says Super Break DMG "additionally ignores"
+    15% (ZH 超击破伤害额外无视), which reads as Super Break being a kind of Break
+    DMG. Affects every break-tagged bonus in Super Break teams, first Fugue's
+    E4 (1225, fugue-e4-super-break).
+- id: engine-action-targets
+  entity: engine
+  rule: U8
+  status: open
+  category: engine-gap
+  summary: >
+    actionStart names only the main target, so "when X attacks, debuff the
+    attacked enemies" effects that land before the damage reach the other
+    targets of a Blast or AoE attack only after their first hit.
+  detail: >
+    List the enemies an action will hit on actionStart (from the ability's hit
+    shapes). Affects Fugue's Foxian Prayer DEF reduction (1225,
+    fugue-def-timing: ZH 每次施放攻击时 ... 使受到攻击的敌方目标防御力降低).
+- id: engine-momentary-stat-read
+  entity: engine
+  rule: U7
+  status: completed
+  category: engine-gap
+  summary: >
+    Kits read stats only through panelStat (the steady panel), which leaves
+    out timed statuses and conditional (scaling) modifiers. Heal amounts and
+    healing tallies miss Outgoing Healing buffs, and stat-based triggers miss
+    momentary CRIT Rate or Elation.
+  detail: >
+    unit.currentStat reads a stat with current statuses and permanent
+    modifiers, scaling ones included, and filtered ones for a given hit;
+    recorded like panelStat (85ed2c2, a8b52aa).
+- id: engine-applier-momentary-stats
+  entity: engine
+  rule: U7
+  status: completed
+  category: engine-gap
+  summary: >
+    Applier-scaled modifiers and debuff landing chances read the applier's
+    steady panel, so the applier's timed statuses never count: Cadenza's ATK
+    for Robin's Concerto, and the Effect Hit Rate of Void and In the Name of
+    the World for landing chances.
+  detail: >
+    Debuff landing chances add the applier's status and aura Effect Hit Rate
+    recorded at application (c4be32a). Applier-scaled modifiers still read the
+    steady panel; Cadenza's ATK for Concerto remains open as a kit item.
+- id: engine-super-break-event
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    Super Break instances are recorded in applyToughness without an event, so
+    "after dealing Break DMG" triggers miss Super Break DMG.
+  detail: >
+    breakDamage fires for Break DMG and for Super Break DMG when the breaker
+    has a conversion for that hit (85ed2c2, a8b52aa).
+- id: engine-skill-point-overflow
+  entity: engine
+  rule: U10
+  status: completed
+  category: engine-gap
+  summary: >
+    skillPointsChanged reports gains after the cap, so Skill Points recovered
+    at the limit are invisible to effects that count them "including Skill
+    Points that exceed the limit".
+  detail: >
+    skillPointsChanged carries overflow for Skill Points recovered beyond the
+    cap (85ed2c2).
+- id: engine-ultimate-energy-spent
+  entity: engine
+  rule: U10
+  status: completed
+  category: engine-gap
+  summary: >
+    Ultimate events do not report the Energy consumed, so kits assume the
+    wearer's max Energy: wrong for Ultimates with another cost (Argenti's
+    90-Energy variant, Yunli's 120) or paid from a counter (Phainon's
+    Coreflame).
+  detail: >
+    Ultimate actionStart/actionEnd carry energySpent (85ed2c2).
+- id: engine-def-reduced-state
+  entity: engine
+  rule: U14
+  status: completed
+  category: engine-gap
+  summary: >
+    No target filter or UnitView check exists for the generic "DEF reduction
+    state" (any status carrying defReduction).
+  detail: >
+    The derived defReduced family covers any status lowering DEF, for
+    targetFamilies and hasFamily (85ed2c2).
+- id: engine-incoming-attacker-filter
+  entity: engine
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    Incoming modifiers on an enemy apply to every attacker; "receives
+    increased DMG from the wearer" needs a filter on the attacker (or the
+    applier) for incoming modifiers.
+  detail: >
+    Blocks Whereabouts Should Dreams Rest (23025), whose Routed is held as a
+    Break-tagged dmgMultiplier on the wearer and multiplies with other
+    Vulnerability. Boothill's Standoff (boothill-standoff-vulnerability,
+    hunt.yaml) has the same need.
+- id: engine-bounce-instances
+  entity: engine
+  rule: C2
+  status: open
+  category: engine-gap
+  summary: >
+    Bounce hits are recorded as one weighted hit per enemy, so a debuff
+    applied by an early bounce cannot reach later bounces of the same attack.
+  detail: "Blocks Inherently Unjust Destiny (23023) on Aventurine's Follow-Up ATK."
+- id: engine-unbuffed-damage
+  entity: engine
+  rule: U2
+  status: open
+  category: engine-gap
+  summary: >
+    No damage kind ignores the attacker's buffs while keeping enemy DEF, RES,
+    Vulnerability, and the Toughness multiplier (`fixed` also skips DEF and
+    RES).
+  detail: "Blocks Time Waits for No One (23013): 'not affected by other buffs'."
+- id: engine-target-dot-count
+  entity: engine
+  rule: U14
+  status: completed
+  category: engine-gap
+  summary: >
+    Hit filters cannot count the DoTs on the target ("for every DoT the enemy
+    target is afflicted with").
+  detail: >
+    HitFilter.minTargetDots counts DoTs on the target at the hit (85ed2c2).
+- id: engine-prebattle-panel
+  entity: engine
+  rule: E3
+  status: open
+  category: engine-gap
+  summary: >
+    "Before entering battle" stats read the steady panel, which also holds
+    unconditional in-battle kit modifiers: Castorice's A4 SPD +40% makes her
+    panel SPD 125.4 against a pre-battle 87.4.
+  detail: >
+    Blocks Poet of Mourning Collapse (124) and Diviner of Distant Reach (130).
+    Needs a pre-battle panel (base, Traces, Light Cone, Relics and set
+    properties, without kit effects) readable by scaling.
+- id: engine-hp-event-triggers
+  entity: engine
+  rule: U12
+  status: completed
+  category: engine-gap
+  summary: >
+    hpChanged fires only when HP actually changes and always with weight 1:
+    heals on full-HP allies (and costs at 1 HP) trigger nothing, and a
+    weighted cost or heal triggers listeners as a full occurrence.
+  detail: >
+    hpChanged reports the change per occurrence with its probability as
+    weight, and heals fire even at full HP (dd13fa1).
+- id: engine-break-recovery-hook
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Enemies recover from Weakness Break at their turn start with no hook, so
+    an effect that extends the Broken state and replaces that turn with an
+    action delay (Ruan Mei's Thanatoplum Rebloom) cannot be expressed.
+  detail: >
+    Needs an event or callback at the recovery attempt that lets a kit keep
+    the enemy Broken (cancelling recovery and its turn) and delay it. The
+    game flags such statuses with the BreakExtend behaviour. Affects Ruan Mei
+    (1303, ruan-mei-rebloom-break-extension).
+- id: engine-summon-kind
+  entity: engine
+  rule: C5
+  status: completed
+  category: engine-gap
+  summary: >
+    SummonDef cannot mark an in-game summon (Lightning-Lord, Numby, Fuyuan,
+    Souldragon) apart from countdowns (Concerto, Complete Combustion,
+    Supreme Stance, Infinite Fury), so effects on "their summon" hard-code
+    summon IDs.
+  detail: >
+    SummonDef countdown: true marks countdowns and markers; UnitView.countdown
+    exposes it (85ed2c2).
+- id: engine-queued-action-options
+  entity: engine
+  rule: C3
+  status: open
+  category: engine-gap
+  summary: >
+    queueAction always runs after the current action, charges and refunds the
+    queued ability's Skill Points like a normal use, and lets its Elation hits
+    read the team Punchline.
+  detail: >
+    Needs options to run a queued ability before the current one, without
+    Skill Point cost (and without emitting a spend), and with a fixed
+    Punchline for its Elation hits. Affects Cerydra's Coup de Main (1412,
+    cerydra-coup-de-main-order) and Trailblazer • Elation's Ultimate making an
+    ally use their Elation Skill at 20 Punchline (8009,
+    trailblazer-elation-ult-punchline).
+- id: engine-memosprite-enemy-targets
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy attacks only target Characters, so memosprites never lose HP or
+    trigger "when attacked" effects, although some draw extra aggro.
+  detail: >
+    Needs memosprites in the enemy-attack aggro split (with their own base
+    aggro and aggro bonuses such as Evey's "increased chance of getting
+    attacked"), their HP changes, and hitByEnemy. Affects Evernight (1413,
+    evernight-evey-hp-loss); other memosprite kits gain HP loss from it too.
+- id: engine-sp-equivalent-spend
+  entity: engine
+  rule: U10
+  status: open
+  category: engine-gap
+  summary: >
+    A kit cannot report spending its own resource as Skill Point consumption,
+    so "considered as consuming Skill Points" spends are invisible to
+    skillPointsChanged listeners.
+  detail: >
+    Needs a call that emits skillPointsChanged (negative delta) without
+    changing the team's Skill Points. Affects Sparxie's Thrill (1501,
+    sparxie-thrill-sp-event).
+- id: engine-mixed-attacker-stats
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    A hit takes all its stats from one unit, so "deals Elation DMG with the
+    attacker's stats, using Yao Guang's Elation when it is higher" cannot be
+    expressed.
+  detail: >
+    Needs a per-hit stat override (one stat from another unit, or the higher
+    of two units). Affects Yao Guang's Great Boon (1502,
+    yao-guang-great-boon-stats).
+- id: engine-banger-holder-rules
+  entity: engine
+  rule: U5
+  status: open
+  category: engine-gap
+  summary: >
+    Certified Banger has fixed rules for every holder: no cap, a set duration,
+    and no removal. Pearl's lasts indefinitely, caps at 50, and is spent as
+    Repellency.
+  detail: >
+    Needs per-holder banger rules (cap, no expiry) and a way to remove banger
+    value. Affects Pearl (1503, pearl-banger-rules). Related:
+    engine-elation-banger-events (gain/expiry events and duration bonuses).
+- id: engine-elation-skill-variants
+  entity: engine
+  rule: C1
+  status: open
+  category: engine-gap
+  summary: >
+    The Aha Instant always runs the "elationSkill" ability and an ability's
+    `attack` flag is static, so Elation Skill variants cannot differ in
+    whether they attack.
+  detail: >
+    Needs Elation Skill variants chosen per Instant (like Ultimate variants)
+    or a per-use attack flag. Affects Silver Wolf LV.999 (1506,
+    silver-wolf-lv999-elation-attack: Pro-Gamer Move vs Honkai-DMG Demo).
+- id: engine-aha-handle
+  entity: engine
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Kits have no handle on the Aha unit (an ownerless summon), so they cannot
+    apply statuses to it, such as SPD buffs, before an Aha event names it.
+  detail: >
+    Aha's SPD already reads SPD statuses on Aha. Expose Aha (for example
+    `ctx.aha`) so kits can apply them. Affects Aventurine • Waveflair's A4
+    (1513, aventurine-waveflair-aha-spd).
+- id: engine-chained-scaling
+  entity: engine
+  rule: U7
+  status: open
+  category: engine-gap
+  summary: >
+    Scaling inputs are read before any scaling modifier applies, so a
+    conversion cannot feed another conversion or an `atLeast` threshold.
+    Firefly's A6 Break Effect (from ATK above 1800) does not count toward A4's
+    200%/360% thresholds or the Enhanced Skill's Break Effect term, although
+    all three read final Break Effect in game.
+  detail: >
+    Needs ordered conversions (a modifier marked as reading the results of
+    earlier scaling modifiers, or a second evaluation pass). Affects Firefly
+    (1310, firefly-a6-chained-be).
+- id: engine-ally-killing-blow
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    The HP model keeps every ally at 1% HP or more, so "when receiving a
+    killing blow" and "when knocked down" effects never trigger: Gepard's
+    Talent revive (with A4's Energy and E6's immediate action), Mydei's
+    Vendetta exit (and A2's three saves), and Khaslana's early final hit.
+  detail: >
+    Needs a rule for when an expected-value HP share counts as a killing blow
+    (for example an enemy hit whose loss exceeds the HP left, weighted by its
+    probability) and an event for it, which kits answer instead of being
+    knocked down. Affects Gepard (1104, gepard-talent-killing-blow), Mydei
+    (1404, mydei-hp-model, mydei-a2-killing-blow), and Phainon (1408,
+    phainon-territory-timeline).
+- id: engine-implant-weakness-res
+  entity: engine
+  rule: U14
+  status: completed
+  category: verify
+  summary: >
+    An implanted Weakness moves the enemy to the weak-type RES, and damage
+    evaluation reads RES from the enemy's Weakness set after the battle
+    (evaluate/damage.ts resistanceAgainst) rather than the Weaknesses captured
+    with each hit, so expired timed implants lose the lower RES for every hit
+    and permanent ones give it to hits made before the implant.
+  detail: >
+    RES comes from the enemy's native Weaknesses only; implanted Weaknesses
+    count for Toughness and filters (ea11bf6).
+- id: engine-break-damage-no-conversion
+  entity: engine
+  rule: U8
+  status: completed
+  category: engine-gap
+  summary: >
+    breakDamage reports Super Break DMG for every Toughness reduction on a
+    Weakness Broken enemy, also by attackers without a Super Break
+    conversion, whose superBreak records then evaluate to 0 DMG. "After
+    dealing Break DMG" listeners over-trigger unless they check the
+    conversion themselves.
+  detail: >
+    Super Break breakDamage events require a superBreakDmg conversion matching
+    the hit, read with currentStat including scaling modifiers (a8b52aa).
+- id: engine-before-break-event
+  entity: engine
+  rule: U3
+  status: open
+  category: engine-gap
+  summary: >
+    weaknessBreak fires after the breaking hit's Break DMG and Break DoT, so
+    effects the game adds OnBeforeBeingBreak (debuffs on the enemy being
+    broken) miss that Break DMG.
+  detail: >
+    Needs a hook when an enemy's Toughness reaches 0, before Break DMG
+    resolves, where kits can apply statuses to it. Affects Lingsha's E1
+    (1222, lingsha-e1-before-break).
+- id: engine-ally-hp-modifiers
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Enemy hits remove a fixed share of Max HP and heals restore the share the
+    healer requests, so an ally's DMG taken reduction and Incoming Healing
+    never change its simulated HP, although kits now spend and read HP.
+  detail: >
+    Needs ally-side modifiers that scale HP lost to enemy hits (DMG taken
+    reduction, multiplicative like dmgMitigation) and HP restored by heals
+    (Incoming Healing). Affects Mortenax Blade (1507, mortenax-blade-a4-hp),
+    whose Skill needs HP above 1 and whose A4 halves DMG taken and raises
+    Incoming Healing by 50% while the Zone lasts.
+- id: engine-ally-dmg-redistribution
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    An enemy hit's HP loss always stays on the ally hit: an effect that
+    passes a share of an ally's DMG taken to another ally cannot move it.
+  detail: >
+    Needs a way to redirect a share of an ally's enemy-hit HP loss to
+    another ally (reported as an enemy hit, not as a consume or heal).
+    Affects Fu Xuan's Matrix of Prescience (1208, fu-xuan-matrix-hp), whose
+    Misfortune Avoidance DMG reduction also waits on
+    engine-ally-hp-modifiers.
+- id: engine-hp-gain-not-heal
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    Kits can raise a unit's HP only with ctx.heal or setHp, both of which
+    report a heal from the kit's unit, so HP gains the game applies with
+    SetHP (not healing) trigger "provides healing" and "receives healing"
+    effects.
+  detail: >
+    Needs a non-healing HP gain (an hpChanged cause such as "gain") for
+    conversions. Affects Castorice (1407, castorice-netherwing-hp-counter),
+    whose Netherwing gains HP from allies' losses and A2's conversions and
+    keeps it in a counter meanwhile.
+- id: engine-hit-by-enemy-before-hp
+  entity: engine
+  rule: U12
+  status: open
+  category: engine-gap
+  summary: >
+    hitByEnemy fires before the enemy hit removes HP, so "when hit, restore
+    HP" effects heal first and are capped at the HP the ally had before the
+    hit: a wearer at full HP loses the whole heal.
+  detail: >
+    Emit hitByEnemy after the hit's HP change (or add a post-hit event with
+    the same aggro weight). Affects Something Irreplaceable (23002), whose
+    Kinship heal on being hit is lost while the wearer is at full HP.

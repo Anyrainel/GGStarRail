@@ -1,6 +1,6 @@
-import { RotateCcw } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { PageActions } from "@/components/layout/PageActions";
+import { Download, FileDown, Trash2, Upload } from "lucide-react";
+import { useState } from "react";
+import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
@@ -13,18 +13,23 @@ import {
 import { useI18n } from "@/i18n/I18nContext";
 
 interface TierPageActionsProps {
-  primary: ReactNode;
-  overflow: ReactNode;
   assignedCount: number;
   totalCount: number;
+  exporting: boolean;
+  onImport: () => void;
+  onExport: () => void;
+  onDownloadImage: () => void;
   onReset: () => void;
 }
 
+/** Import in the app bar (in More below `sm`); Export, Reset and Download image in More. */
 export function TierPageActions({
-  primary,
-  overflow,
   assignedCount,
   totalCount,
+  exporting,
+  onImport,
+  onExport,
+  onDownloadImage,
   onReset,
 }: TierPageActionsProps) {
   const { t } = useI18n();
@@ -33,16 +38,33 @@ export function TierPageActions({
   return (
     <>
       <PageActions
-        primary={primary}
+        primary={
+          <PageActionButton
+            icon={Download}
+            label={t("tier.controls.import")}
+            onClick={onImport}
+          />
+        }
         overflow={
           <>
-            {overflow}
+            <DropdownMenuItem className="sm:hidden" onSelect={onImport}>
+              <Download className="h-4 w-4" aria-hidden="true" />
+              {t("tier.controls.import")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onExport}>
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              {t("tier.controls.export")}
+            </DropdownMenuItem>
             <DropdownMenuItem
               disabled={assignedCount === 0}
               onSelect={() => setResetOpen(true)}
             >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
               {t("tier.priority.reset")}
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={exporting} onSelect={onDownloadImage}>
+              <FileDown className="h-4 w-4" aria-hidden="true" />
+              {t("tier.controls.image")}
             </DropdownMenuItem>
           </>
         }

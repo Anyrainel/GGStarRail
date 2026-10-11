@@ -1,5 +1,5 @@
 import { Link2, Play, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 import { StatusBanner } from "@/components/builds/StatusBanner";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
@@ -34,6 +34,8 @@ export function ScannerManagerConnection({
   envelope,
   onResult,
   actionableCount,
+  closeAction,
+  onRunningChange,
 }: {
   envelope: ManagerInstructionEnvelope | null;
   onResult?: (
@@ -41,8 +43,13 @@ export function ScannerManagerConnection({
     submitted: ManagerInstructionEnvelope
   ) => boolean;
   actionableCount?: number;
+  /** Rendered before Apply in the footer row, such as a dialog's Close. */
+  closeAction?: ReactNode;
+  /** Lets a host dialog stay open while a game task runs. */
+  onRunningChange?: (running: boolean) => void;
 }) {
   const { locale, t } = useI18n();
+  const portId = useId();
   const [port, setPort] = useState("8765");
   const [client, setClient] = useState<ScannerManagerClient | null>(null);
   const [status, setStatus] = useState<ScannerStatus | null>(null);
@@ -60,6 +67,10 @@ export function ScannerManagerConnection({
     submitting || status?.phase === "pending" || status?.phase === "running";
   const text = (value: { zh: string; en: string }) =>
     locale === "zh-CN" ? value.zh : value.en;
+
+  useEffect(() => {
+    onRunningChange?.(running);
+  }, [onRunningChange, running]);
 
   useEffect(() => {
     if (!client) return;
@@ -169,23 +180,39 @@ export function ScannerManagerConnection({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-2 text-sm">
-          {t("manager.port")}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-1.5">
+          <label htmlFor={portId} className="block text-xs font-medium">
+            {t("manager.port")}
+          </label>
           <input
-            aria-label={t("manager.port")}
+            id={portId}
             type="number"
             min={1024}
             max={65535}
             value={port}
             disabled={Boolean(client) || submitting}
             onChange={(event) => setPort(event.target.value)}
-            className="h-9 w-20 rounded-md border border-border bg-background px-2 tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
+            className="h-9 w-24 rounded-md border border-input bg-background px-2 text-sm tabular-nums outline-none [appearance:textfield] focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
-        </label>
+        </div>
+        <span className="flex h-9 min-w-0 items-center gap-2 text-sm text-muted-foreground">
+          <span
+            className={cn(
+              "h-2 w-2 shrink-0 rounded-full",
+              client ? "bg-primary" : "bg-muted-foreground"
+            )}
+            aria-hidden="true"
+          />
+          <span className="truncate">
+            {client ? t("manager.connected") : t("manager.disconnected")}
+          </span>
+        </span>
         <Button
+          type="button"
           size="sm"
           variant="outline"
+          className="ml-auto h-9"
           disabled={running}
           onClick={() => {
             if (client) {
@@ -197,31 +224,7 @@ export function ScannerManagerConnection({
           <Link2 className="h-4 w-4" aria-hidden />
           {client ? t("manager.disconnect") : t("manager.connect")}
         </Button>
-        {running && status?.jobId ? (
-          <Button size="sm" variant="outline" onClick={() => void stop()}>
-            <Square className="h-4 w-4" aria-hidden />
-            {t("manager.stop")}
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            disabled={
-              !client ||
-              !(actionableCount ?? envelope?.instructions.length) ||
-              submitting
-            }
-            onClick={() => void apply()}
-          >
-            <Play className="h-4 w-4" aria-hidden />
-            {t("manager.apply")}
-          </Button>
-        )}
       </div>
-      {!client && !error && (
-        <p className="text-sm text-muted-foreground">
-          {t("manager.disconnected")}
-        </p>
-      )}
       {client && status?.progress.message && (
         <p className="text-sm font-semibold" role="status">
           {text(status.progress.message)}
@@ -314,6 +317,28 @@ export function ScannerManagerConnection({
           )}
         </>
       )}
+      <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+        {closeAction}
+        {running && status?.jobId ? (
+          <Button type="button" variant="outline" onClick={() => void stop()}>
+            <Square className="h-4 w-4" aria-hidden />
+            {t("manager.stop")}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            disabled={
+              !client ||
+              !(actionableCount ?? envelope?.instructions.length) ||
+              submitting
+            }
+            onClick={() => void apply()}
+          >
+            <Play className="h-4 w-4" aria-hidden />
+            {t("manager.apply")}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -62,7 +62,7 @@ export function BetaPreviews({ kind }: { kind: keyof typeof previewKinds }) {
           "grid items-start gap-3",
           kind === "relicSets"
             ? "md:grid-cols-2 xl:grid-cols-3"
-            : "grid-cols-[repeat(auto-fill,minmax(180px,1fr))]"
+            : "grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5 md:gap-2"
         )}
       >
         {resource.data.map((entry) => (
@@ -117,7 +117,7 @@ function PreviewCard({
         <button
           type="button"
           aria-label={name}
-          className="flex min-h-20 items-center gap-3 rounded-lg border border-border bg-card/60 p-2 text-left transition-colors hover:border-primary/50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-full min-w-0 items-center gap-2 rounded-lg bg-card/50 p-2 text-left transition-all hover:scale-[1.02] hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ItemIcon
             kind={config.asset}
@@ -127,14 +127,14 @@ function PreviewCard({
             rarity={entry.rarity}
             size="sm"
           />
-          <span className="min-w-0">
-            <span className="line-clamp-2 block text-sm font-medium">
+          <span className="min-w-0 flex-1 space-y-1">
+            <span className="line-clamp-2 text-sm font-medium leading-tight">
               {name}
             </span>
             <RarityStars rarity={entry.rarity} />
-            <Badge variant="outline" className="mt-1">
+            <span className="inline-flex rounded border border-border px-1 py-0.5 text-[9px] font-semibold uppercase leading-none text-muted-foreground">
               {t("beta.previewBadge")}
-            </Badge>
+            </span>
           </span>
         </button>
       </ResponsiveDialogTrigger>

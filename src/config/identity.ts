@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   locale: "ggstarrail:locale:v1",
   theme: "ggstarrail:theme:v1",
   workspace: "ggstarrail:workspace:v1",
+  teams: "ggstarrail:teams:v1",
   resourceSettings: "ggstarrail:resource-settings:v1",
   characterPriority: "ggstarrail:character-priority:v1",
   lightConePriority: "ggstarrail:light-cone-priority:v1",

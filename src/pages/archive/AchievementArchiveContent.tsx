@@ -310,7 +310,7 @@ function AchievementSeriesCard({
               <div className="relative z-10 flex w-10 shrink-0 items-center justify-center sm:w-12">
                 <Trophy className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
-              <div className="relative z-10 flex min-w-0 flex-1 flex-col gap-2 xl:flex-row xl:items-center xl:gap-3">
+              <div className="relative z-10 flex min-w-0 flex-1 flex-col items-stretch gap-1.5 lg:flex-row lg:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                     <h3
@@ -336,7 +336,7 @@ function AchievementSeriesCard({
                     {achievement.description}
                   </p>
                 </div>
-                <div className="flex w-[17rem] max-w-full shrink-0 items-center justify-end gap-1 self-end xl:self-center">
+                <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
                   <GuideLink
                     site="youtube"
                     achievementName={achievement.name}
@@ -346,11 +346,11 @@ function AchievementSeriesCard({
                     achievementName={achievement.name}
                   />
                   <span
-                    className="mx-1 h-6 w-px shrink-0 bg-border"
+                    className="mx-1 h-6 w-px shrink-0 bg-border sm:mx-2"
                     aria-hidden="true"
                   />
-                  <span className="flex h-9 w-12 shrink-0 items-center justify-end gap-1 text-sm font-medium tabular-nums">
-                    <span className="w-5 text-right">
+                  <span className="flex h-10 shrink-0 items-center gap-1 text-sm font-medium tabular-nums">
+                    <span className="w-[2ch] text-right">
                       {achievement.rewardCount}
                     </span>
                     <AssetImage

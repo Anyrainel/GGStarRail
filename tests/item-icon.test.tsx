@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { Ban } from "lucide-react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getRarityColor } from "@/components/shared/colors";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
@@ -167,5 +168,56 @@ describe("ItemIcon", () => {
     expect(container.querySelector("[data-item-artwork]")).toHaveClass(
       "bg-rarity-gradient-neutral"
     );
+  });
+
+  it("crops Light Cone art into a square tile with a rarity strip", () => {
+    const { container } = render(
+      <ItemIcon
+        kind="light-cone"
+        id="23005"
+        alt="In the Night"
+        rarity={5}
+        size="md"
+        badge={3}
+        square
+      />
+    );
+    const art = container.querySelector<HTMLElement>("[data-item-artwork]")!;
+    expect(art).toHaveAttribute("data-item-square");
+    expect(Number.parseFloat(art.style.width)).toBe(
+      Number.parseFloat(art.style.height)
+    );
+    expect(Number.parseFloat(art.style.borderBottomLeftRadius)).toBe(8);
+    expect(art.querySelector("img")).toHaveClass("object-cover", "object-top");
+    expect(art.querySelector("[data-item-rarity-bar]")).not.toBeNull();
+    expect(container.querySelector("[data-item-badge='3']")).not.toBeNull();
+  });
+
+  it("adds a labelled corner marker unless a rank badge takes the corner", () => {
+    const { container, rerender } = render(
+      <ItemIcon
+        kind="relic-set"
+        id="101"
+        alt="Passerby, not modeled"
+        rarity={4}
+        marker={{ icon: Ban, label: "Not modeled" }}
+      />
+    );
+    const marker = container.querySelector("[data-item-marker]")!;
+    expect(marker).toHaveAttribute("data-item-marker", "destructive");
+    expect(marker).toHaveAttribute("title", "Not modeled");
+    expect(marker).toHaveClass("bg-destructive");
+
+    rerender(
+      <ItemIcon
+        kind="relic-set"
+        id="101"
+        alt="Passerby"
+        rarity={4}
+        badge={4}
+        marker={{ icon: Ban, label: "Not modeled", tone: "neutral" }}
+      />
+    );
+    expect(container.querySelector("[data-item-marker]")).toBeNull();
   });
 });

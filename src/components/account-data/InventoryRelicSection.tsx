@@ -1,41 +1,42 @@
-import { Gem } from "lucide-react";
+import { ChevronDown, Gem, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { InventoryToolbar } from "@/components/account/InventoryToolbar";
 import {
-  type InventoryFilterChip,
-  InventoryFilterChips,
-} from "@/components/account-data/InventoryFilterChips";
+  ChipGroupGap,
+  InventoryChipRow,
+  InventoryFilteredEmpty,
+  InventorySearch,
+  toggled,
+} from "@/components/account-data/InventorySection";
+import { AssetImage } from "@/components/shared/AssetImage";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ItemIcon } from "@/components/shared/ItemIcon";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  type Relic,
-  type RelicCategory,
-  type RelicSlot,
-  relicCategory,
-} from "@/domain/account/schemas";
+import { FilterChip } from "@/components/shared/FilterChip";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
+import { RelicSlotChips } from "@/components/shared/relic/RelicSlotChips";
+import { type Relic, relicCategory } from "@/domain/account/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import type { MessageKey } from "@/i18n/messages.en";
+import { localizedName, localizedSearchText } from "@/lib/catalogPresentation";
 import {
-  formatAccountStatValue,
-  localizedName,
-  localizedSearchText,
-} from "@/lib/catalogPresentation";
-import type {
-  PropertyCatalog,
-  RelicPieceDefinition,
-} from "@/providers/reference/types";
+  RELIC_SLOTS,
+  type RelicKind,
+  type RelicSlotId,
+} from "@/lib/relicPresentation";
+import { cn } from "@/lib/utils";
+import type { RelicPieceDefinition } from "@/providers/reference/types";
 
 type EquipmentGroup = "equipped" | "unequipped";
 type RelicLevelGroup = "max" | "enhanced" | "zero";
 type RelicStatus =
-  | "all"
   | "locked"
   | "unlocked"
   | "unknown-lock"
@@ -43,45 +44,83 @@ type RelicStatus =
   | "not-discarded"
   | "unknown-discard";
 
-const SLOT_ORDER: Record<RelicSlot, number> = {
-  head: 0,
-  hands: 1,
-  body: 2,
-  feet: 3,
-  planarSphere: 4,
-  linkRope: 5,
-};
-
-const RELIC_RARITIES = [5, 4, 3, 2, 1] as const;
+const RELIC_RARITIES = [5, 4, 3, 2] as const;
+const RELIC_KINDS = [
+  "cavern",
+  "planar",
+] as const satisfies readonly RelicKind[];
+const STATUSES: readonly { value: RelicStatus; labelKey: MessageKey }[] = [
+  { value: "locked", labelKey: "filter.locked" },
+  { value: "unlocked", labelKey: "filter.unlocked" },
+  { value: "unknown-lock", labelKey: "filter.unknownLock" },
+  { value: "discarded", labelKey: "filter.discarded" },
+  { value: "not-discarded", labelKey: "filter.notDiscarded" },
+  { value: "unknown-discard", labelKey: "filter.unknownDiscard" },
+];
+const LEVEL_GROUPS: readonly {
+  value: RelicLevelGroup;
+  labelKey: MessageKey;
+}[] = [
+  { value: "max", labelKey: "inventory.level.max" },
+  { value: "enhanced", labelKey: "inventory.level.enhanced" },
+  { value: "zero", labelKey: "inventory.level.zero" },
+];
+const SLOT_ORDER = new Map<RelicSlotId, number>(
+  RELIC_SLOTS.map((slot, index) => [slot, index])
+);
 
 interface InventoryRelicSectionProps {
   relics: readonly Relic[];
+  iconSize: ItemIconSize;
 }
 
-export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
+export function InventoryRelicSection({
+  relics,
+  iconSize,
+}: InventoryRelicSectionProps) {
   const { locale, t } = useI18n();
   const { data, error, loading } = useRelicReferences();
   const [query, setQuery] = useState("");
-  const [categories, setCategories] = useState<Set<RelicCategory>>(
-    () => new Set(["cavern", "planar"])
-  );
+  const [slots, setSlots] = useState<Set<RelicSlotId>>(() => new Set());
   const [equipmentGroups, setEquipmentGroups] = useState<Set<EquipmentGroup>>(
-    () => new Set(["equipped", "unequipped"])
+    () => new Set(["unequipped"])
   );
   const [levelGroups, setLevelGroups] = useState<Set<RelicLevelGroup>>(
-    () => new Set(["max", "enhanced", "zero"])
+    () => new Set(["max"])
   );
   const [rarities, setRarities] = useState<Set<number>>(
     () => new Set(RELIC_RARITIES)
   );
-  const [slot, setSlot] = useState<"all" | RelicSlot>("all");
-  const [setId, setSetId] = useState("all");
-  const [status, setStatus] = useState<RelicStatus>("all");
+  const [setIds, setSetIds] = useState<Set<string>>(() => new Set());
+  const [setsOpen, setSetsOpen] = useState(false);
+  const [statuses, setStatuses] = useState<Set<RelicStatus>>(() => new Set());
+
+  const setOptions = useMemo(() => {
+    const counts = new Map<string, { kind: RelicKind; count: number }>();
+    for (const relic of relics) {
+      const entry = counts.get(relic.setId);
+      if (entry) entry.count += 1;
+      else
+        counts.set(relic.setId, {
+          kind: relicCategory(relic.slot),
+          count: 1,
+        });
+    }
+    const options = [...counts].map(([id, { kind, count }]) => ({
+      id,
+      kind,
+      count,
+      name: localizedName(data?.relicSets.byId.get(id)?.name, locale, id),
+      iconPath: data?.relicSets.byId.get(id)?.icon_path,
+    }));
+    options.sort((left, right) => left.name.localeCompare(right.name, locale));
+    return options;
+  }, [data, locale, relics]);
 
   const visibleRelics = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
     return relics
-      .filter((relic) => categories.has(relicCategory(relic.slot)))
+      .filter((relic) => slots.size === 0 || slots.has(relic.slot))
       .filter((relic) =>
         equipmentGroups.has(
           relic.equippedCharacterKey ? "equipped" : "unequipped"
@@ -91,10 +130,17 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
         const piece = data?.relicPieces.byId.get(relic.definitionId);
         return levelGroups.has(relicLevelGroup(relic, piece));
       })
-      .filter((relic) => rarities.has(relic.rarity))
-      .filter((relic) => slot === "all" || relic.slot === slot)
-      .filter((relic) => setId === "all" || relic.setId === setId)
-      .filter((relic) => matchesStatus(relic, status))
+      .filter(
+        (relic) =>
+          !(RELIC_RARITIES as readonly number[]).includes(relic.rarity) ||
+          rarities.has(relic.rarity)
+      )
+      .filter((relic) => setIds.size === 0 || setIds.has(relic.setId))
+      .filter(
+        (relic) =>
+          statuses.size === 0 ||
+          [...statuses].some((status) => matchesStatus(relic, status))
+      )
       .filter((relic) => {
         if (!normalizedQuery) return true;
         const piece = data?.relicPieces.byId.get(relic.definitionId);
@@ -105,11 +151,6 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
         ].some((value) => value.includes(normalizedQuery));
       })
       .sort((left, right) => {
-        const categoryDifference =
-          (relicCategory(left.slot) === "planar" ? 1 : 0) -
-          (relicCategory(right.slot) === "planar" ? 1 : 0);
-        if (categoryDifference !== 0) return categoryDifference;
-
         const leftSet = data?.relicSets.byId.get(left.setId);
         const rightSet = data?.relicSets.byId.get(right.setId);
         const setDifference = localizedName(
@@ -121,13 +162,12 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
           locale
         );
         if (setDifference !== 0) return setDifference;
-
-        const slotDifference = SLOT_ORDER[left.slot] - SLOT_ORDER[right.slot];
+        const slotDifference =
+          (SLOT_ORDER.get(left.slot) ?? 0) - (SLOT_ORDER.get(right.slot) ?? 0);
         if (slotDifference !== 0) return slotDifference;
         return right.level - left.level;
       });
   }, [
-    categories,
     data,
     equipmentGroups,
     levelGroups,
@@ -135,299 +175,295 @@ export function InventoryRelicSection({ relics }: InventoryRelicSectionProps) {
     query,
     rarities,
     relics,
-    setId,
-    slot,
-    status,
+    setIds,
+    slots,
+    statuses,
   ]);
 
-  const slotOptions = useMemo(
-    () => [
-      { value: "all", label: t("filter.allSlots") },
-      ...Array.from(new Set(relics.map((relic) => relic.slot)))
-        .sort((left, right) => SLOT_ORDER[left] - SLOT_ORDER[right])
-        .map((domainSlot) => ({
-          value: domainSlot,
-          label: localizedName(
-            data?.properties.relicSlotById.get(CATALOG_RELIC_SLOT[domainSlot])
-              ?.name,
-            locale,
-            domainSlot
-          ),
-        })),
-    ],
-    [data, locale, relics, t]
-  );
-
-  const setOptions = useMemo(
-    () => [
-      { value: "all", label: t("filter.allSets") },
-      ...Array.from(new Set(relics.map((relic) => relic.setId)))
-        .map((id) => ({
-          value: id,
-          label: localizedName(data?.relicSets.byId.get(id)?.name, locale, id),
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    ],
-    [data, locale, relics, t]
-  );
-
-  const categoryChips: InventoryFilterChip[] = [
-    {
-      value: "cavern",
-      label: t("inventory.category.cavern"),
-      active: categories.has("cavern"),
-      onToggle: () => setCategories((values) => toggled(values, "cavern")),
-    },
-    {
-      value: "planar",
-      label: t("inventory.category.planar"),
-      active: categories.has("planar"),
-      onToggle: () => setCategories((values) => toggled(values, "planar")),
-    },
-  ];
-  const equipmentChips: InventoryFilterChip[] = [
-    {
-      value: "equipped",
-      label: t("filter.equipped"),
-      active: equipmentGroups.has("equipped"),
-      onToggle: () =>
-        setEquipmentGroups((values) => toggled(values, "equipped")),
-    },
-    {
-      value: "unequipped",
-      label: t("filter.unequipped"),
-      active: equipmentGroups.has("unequipped"),
-      onToggle: () =>
-        setEquipmentGroups((values) => toggled(values, "unequipped")),
-    },
-  ];
-  const levelChips: InventoryFilterChip[] = [
-    {
-      value: "max",
-      label: t("inventory.level.max"),
-      active: levelGroups.has("max"),
-      onToggle: () => setLevelGroups((values) => toggled(values, "max")),
-    },
-    {
-      value: "enhanced",
-      label: t("inventory.level.enhanced"),
-      active: levelGroups.has("enhanced"),
-      onToggle: () => setLevelGroups((values) => toggled(values, "enhanced")),
-    },
-    {
-      value: "zero",
-      label: t("inventory.level.zero"),
-      active: levelGroups.has("zero"),
-      onToggle: () => setLevelGroups((values) => toggled(values, "zero")),
-    },
-  ];
-  const rarityChips: InventoryFilterChip[] = RELIC_RARITIES.map((rarity) => ({
-    value: String(rarity),
-    label: t("field.rarity", { value: rarity }),
-    active: rarities.has(rarity),
-    onToggle: () => setRarities((values) => toggled(values, rarity)),
-  }));
-
   if (relics.length === 0) {
-    return <EmptyState messageKey="empty.relicsAll" icon={Gem} />;
+    return (
+      <EmptyState variant="inline" messageKey="empty.relicsAll" icon={Gem} />
+    );
   }
   if (loading) return <CatalogLoading />;
   if (error || !data) return <CatalogLoadError error={error} />;
 
-  return (
-    <div className="space-y-3">
-      <section
-        className="grid gap-3 rounded-xl border border-border bg-card/70 p-4 sm:grid-cols-2 xl:grid-cols-4"
-        aria-label={t("inventory.quickFilters")}
+  const slotName = (slot: RelicSlotId) =>
+    localizedName(
+      data.properties.relicSlotById.get(CATALOG_RELIC_SLOT[slot])?.name,
+      locale,
+      slot
+    );
+  const clearAll = () => {
+    setQuery("");
+    setSlots(new Set());
+    setEquipmentGroups(new Set(["equipped", "unequipped"]));
+    setLevelGroups(new Set(["max", "enhanced", "zero"]));
+    setRarities(new Set(RELIC_RARITIES));
+    setSetIds(new Set());
+    setStatuses(new Set());
+  };
+  const setChipIcon = (iconPath: string | undefined, id: string) => (
+    <AssetImage
+      kind="relic-set"
+      id={id}
+      sourcePath={iconPath}
+      alt=""
+      aria-hidden="true"
+      className="h-4 w-4 shrink-0 object-contain"
+    />
+  );
+  const setChipGroup = (kind: RelicKind) => {
+    const options = setOptions.filter((option) => option.kind === kind);
+    if (options.length === 0) return null;
+    return (
+      <div
+        key={kind}
+        className="flex basis-full flex-wrap items-center gap-1"
+        data-relic-set-row={kind}
       >
-        <InventoryFilterChips
-          label={t("filter.category")}
-          chips={categoryChips}
+        <RelicKindIcon kind={kind} className="mr-0.5 text-muted-foreground" />
+        <FilterChipGroup
+          className="contents"
+          options={options}
+          selectedValues={
+            new Set(options.filter((option) => setIds.has(option.id)))
+          }
+          emptyMeansAll={setIds.size === 0}
+          onSelectedValuesChange={(next) => {
+            const others = [...setIds].filter(
+              (id) => !options.some((option) => option.id === id)
+            );
+            setSetIds(new Set([...others, ...[...next].map((o) => o.id)]));
+          }}
+          getKey={(option) => option.id}
+          getTitle={(option) => option.name}
+          getIcon={(option) => setChipIcon(option.iconPath, option.id)}
+          getCount={(option) => option.count}
+          getLabel={(option) => (
+            <span className="max-w-40 truncate">{option.name}</span>
+          )}
         />
-        <InventoryFilterChips
-          label={t("inventory.filter.equipment")}
-          chips={equipmentChips}
+      </div>
+    );
+  };
+
+  return (
+    <>
+      <InventoryChipRow className="gap-1">
+        <RelicSlotChips
+          value={slots}
+          onChange={setSlots}
+          slotLabel={slotName}
         />
-        <InventoryFilterChips label={t("filter.level")} chips={levelChips} />
-        <InventoryFilterChips label={t("filter.rarity")} chips={rarityChips} />
-      </section>
-      <InventoryToolbar
-        query={query}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("search.relics")}
-        countLabel={
-          visibleRelics.length === 1
-            ? t("common.oneRecord")
-            : t("common.count", { count: visibleRelics.length })
-        }
-        onQueryChange={setQuery}
-        filters={[
-          {
-            id: "inventory-relic-slot",
-            label: t("filter.slot"),
-            value: slot,
-            options: slotOptions,
-            onChange: (value) => setSlot(value as "all" | RelicSlot),
-          },
-          {
-            id: "inventory-relic-set",
-            label: t("filter.set"),
-            value: setId,
-            options: setOptions,
-            onChange: setSetId,
-          },
-          {
-            id: "inventory-relic-status",
-            label: t("filter.status"),
-            value: status,
-            options: [
-              { value: "all", label: t("filter.allStatuses") },
-              { value: "locked", label: t("filter.locked") },
-              { value: "unlocked", label: t("filter.unlocked") },
-              { value: "unknown-lock", label: t("filter.unknownLock") },
-              { value: "discarded", label: t("filter.discarded") },
-              {
-                value: "not-discarded",
-                label: t("filter.notDiscarded"),
-              },
-              {
-                value: "unknown-discard",
-                label: t("filter.unknownDiscard"),
-              },
-            ],
-            onChange: (value) => setStatus(value as RelicStatus),
-          },
-        ]}
-      />
-      {visibleRelics.length === 0 ? (
-        <EmptyState messageKey="empty.filtered" icon={Gem} />
-      ) : (
-        <section
-          className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-3"
-          aria-label={t("inventory.relicsList")}
+      </InventoryChipRow>
+      <InventoryChipRow>
+        <CategoryChip
+          label={t("filter.unequipped")}
+          active={equipmentGroups.has("unequipped")}
+          onClick={() =>
+            setEquipmentGroups((values) => toggled(values, "unequipped"))
+          }
+        />
+        <CategoryChip
+          label={t("filter.equipped")}
+          active={equipmentGroups.has("equipped")}
+          onClick={() =>
+            setEquipmentGroups((values) => toggled(values, "equipped"))
+          }
+        />
+        <ChipGroupGap />
+        {LEVEL_GROUPS.map(({ value: group, labelKey }) => (
+          <CategoryChip
+            key={group}
+            label={t(labelKey)}
+            active={levelGroups.has(group)}
+            onClick={() => setLevelGroups((values) => toggled(values, group))}
+          />
+        ))}
+        <ChipGroupGap />
+        {RELIC_RARITIES.map((rarity) => (
+          <CategoryChip
+            key={rarity}
+            label={t("inventory.rarity", { value: rarity })}
+            active={rarities.has(rarity)}
+            onClick={() => setRarities((values) => toggled(values, rarity))}
+          />
+        ))}
+        <InventorySearch
+          value={query}
+          onValueChange={setQuery}
+          placeholder={t("search.relics")}
+        />
+      </InventoryChipRow>
+      <InventoryChipRow className="gap-1">
+        <button
+          type="button"
+          aria-expanded={setsOpen}
+          onClick={() => setSetsOpen((value) => !value)}
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-none transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring"
         >
-          {visibleRelics.map((relic) => {
-            const piece = data.relicPieces.byId.get(relic.definitionId);
-            const setDefinition = data.relicSets.byId.get(relic.setId);
-            const name = localizedName(piece?.name, locale, relic.definitionId);
-            const setName = localizedName(
-              setDefinition?.name,
-              locale,
-              relic.setId
+          {t("inventory.filterBySet")}
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 transition-transform",
+              setsOpen && "rotate-180"
+            )}
+            aria-hidden="true"
+          />
+        </button>
+        {!setsOpen &&
+          setOptions
+            .filter((option) => setIds.has(option.id))
+            .map((option) => (
+              <FilterChip
+                key={option.id}
+                active
+                onClick={() =>
+                  setSetIds((values) => toggled(values, option.id))
+                }
+                icon={setChipIcon(option.iconPath, option.id)}
+                count={option.count}
+                title={option.name}
+                aria-label={option.name}
+              >
+                <span className="max-w-40 truncate">{option.name}</span>
+              </FilterChip>
+            ))}
+        <ChipGroupGap />
+        <FilterChipGroup
+          className="contents"
+          label={t("filter.status")}
+          collapsible
+          singleSelect
+          options={STATUSES}
+          selectedValues={
+            new Set(STATUSES.filter((status) => statuses.has(status.value)))
+          }
+          onSelectedValuesChange={(next) =>
+            setStatuses(new Set([...next].map((status) => status.value)))
+          }
+          getKey={(status) => status.value}
+          getLabel={(status) => t(status.labelKey)}
+        />
+        {setsOpen && RELIC_KINDS.map(setChipGroup)}
+      </InventoryChipRow>
+      {visibleRelics.length === 0 ? (
+        <InventoryFilteredEmpty icon={Gem} onClear={clearAll} />
+      ) : (
+        <section className="space-y-3" aria-label={t("inventory.relicsList")}>
+          {RELIC_KINDS.map((kind) => {
+            const group = visibleRelics.filter(
+              (relic) => relicCategory(relic.slot) === kind
             );
-            const slotDefinition = data.properties.relicSlotById.get(
-              CATALOG_RELIC_SLOT[relic.slot]
-            );
+            if (group.length === 0) return null;
             return (
-              <Card key={relic.key} className="overflow-hidden">
-                <CardContent className="space-y-2.5 p-3">
-                  <div className="flex items-start gap-3">
-                    <ItemIcon
-                      kind="relic-piece"
-                      id={piece?.id ?? relic.definitionId}
-                      sourcePath={piece?.icon_path ?? ""}
-                      alt={`${name}, +${relic.level}`}
-                      rarity={relic.rarity}
-                      level={`+${relic.level}`}
-                      locked={relic.locked}
-                      size="md"
+              <div key={kind} className="space-y-2" data-relic-group={kind}>
+                <h3 className="flex items-center gap-1.5 px-2 text-sm font-medium text-foreground/90">
+                  <RelicKindIcon
+                    kind={kind}
+                    decorative
+                    className="text-muted-foreground"
+                  />
+                  {t("inventory.groupCount", {
+                    name: t(
+                      kind === "cavern"
+                        ? "relic.kind.cavern"
+                        : "relic.kind.planar"
+                    ),
+                    count: group.length,
+                  })}
+                </h3>
+                <div className="flex flex-wrap gap-3 px-2">
+                  {group.map((relic) => (
+                    <RelicTile
+                      key={relic.key}
+                      relic={relic}
+                      piece={data.relicPieces.byId.get(relic.definitionId)}
+                      setName={localizedName(
+                        data.relicSets.byId.get(relic.setId)?.name,
+                        locale,
+                        relic.setId
+                      )}
+                      slotName={slotName(relic.slot)}
+                      iconSize={iconSize}
                     />
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <p className="line-clamp-2 text-sm font-semibold leading-5">
-                        {name}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {setName}
-                      </p>
-                      <div className="flex flex-wrap gap-1">
-                        <Badge variant="outline">
-                          {localizedName(
-                            slotDefinition?.name,
-                            locale,
-                            relic.slot
-                          )}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {relic.equippedCharacterKey && (
-                      <Badge variant="outline">{t("field.equipped")}</Badge>
-                    )}
-                    {relic.discarded === true && (
-                      <Badge variant="outline">{t("field.discarded")}</Badge>
-                    )}
-                    {relic.discarded === null && (
-                      <Badge variant="outline">
-                        {t("field.discardUnknown")}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-border pt-2">
-                    <StatLine
-                      statId={relic.mainStat.statId}
-                      value={relic.mainStat.value}
-                      properties={data.properties}
-                      prominent
-                    />
-                    {relic.substats.map((stat) => (
-                      <StatLine
-                        key={stat.statId}
-                        statId={stat.statId}
-                        value={stat.value}
-                        properties={data.properties}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                  ))}
+                </div>
+              </div>
             );
           })}
         </section>
       )}
-    </div>
+    </>
   );
-
-  function StatLine({
-    statId,
-    value,
-    properties,
-    prominent = false,
-  }: {
-    statId: string;
-    value: number;
-    properties: PropertyCatalog;
-    prominent?: boolean;
-  }) {
-    const property = properties.propertyById.get(statId);
-    return (
-      <p
-        className={
-          prominent
-            ? "col-span-2 flex min-w-0 justify-between gap-2 text-xs font-medium"
-            : "flex min-w-0 justify-between gap-2 text-xs text-muted-foreground"
-        }
-      >
-        <span className="truncate">
-          {localizedName(
-            property?.relic_name ?? property?.name,
-            locale,
-            statId
-          )}
-        </span>
-        <span className="shrink-0 tabular-nums">
-          {formatAccountStatValue(value, property, locale)}
-        </span>
-      </p>
-    );
-  }
 }
 
-function toggled<T>(values: ReadonlySet<T>, value: T): Set<T> {
-  const next = new Set(values);
-  if (next.has(value)) next.delete(value);
-  else next.add(value);
-  return next;
+function RelicTile({
+  relic,
+  piece,
+  setName,
+  slotName,
+  iconSize,
+}: {
+  relic: Relic;
+  piece: RelicPieceDefinition | undefined;
+  setName: string;
+  slotName: string;
+  iconSize: ItemIconSize;
+}) {
+  const { locale, t } = useI18n();
+  const name = localizedName(piece?.name, locale, relic.definitionId);
+  const label = [
+    name,
+    `+${relic.level}`,
+    setName,
+    slotName,
+    relic.equippedCharacterKey ? t("field.equipped") : null,
+    relic.locked === true
+      ? t("field.locked")
+      : relic.locked === null
+        ? t("field.lockUnknown")
+        : null,
+    relic.discarded === true
+      ? t("field.discarded")
+      : relic.discarded === null
+        ? t("field.discardUnknown")
+        : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return (
+    <CatalogHoverCard
+      kind="relic-piece"
+      id={piece?.id ?? relic.definitionId}
+      relic={relic}
+      disabled={!piece}
+    >
+      <ItemIcon
+        kind="relic-piece"
+        id={piece?.id ?? relic.definitionId}
+        sourcePath={piece?.icon_path ?? ""}
+        alt={label}
+        rarity={relic.rarity}
+        level={`+${relic.level}`}
+        locked={relic.locked}
+        marker={
+          relic.discarded === true
+            ? {
+                icon: Trash2,
+                label: t("field.discarded"),
+                tone: "destructive",
+              }
+            : undefined
+        }
+        size={iconSize}
+        tabIndex={0}
+        className="rounded-md outline-none transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring"
+        data-relic-key={relic.key}
+      />
+    </CatalogHoverCard>
+  );
 }
 
 function relicLevelGroup(
@@ -455,7 +491,5 @@ function matchesStatus(relic: Relic, status: RelicStatus): boolean {
       return relic.discarded === false;
     case "unknown-discard":
       return relic.discarded === null;
-    case "all":
-      return true;
   }
 }

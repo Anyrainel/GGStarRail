@@ -1,7 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCallback, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FilterChip } from "./FilterChip";
 
@@ -14,9 +13,15 @@ interface FilterChipGroupProps<T> {
   getIcon?: (option: T, active: boolean) => ReactNode;
   getValue?: (option: T) => T;
   getColor?: (option: T) => "rarity-5" | "rarity-4" | "rarity-3" | undefined;
+  /** Matching records per option, shown after its label. */
+  getCount?: (option: T) => number | undefined;
+  /** Accessible name and tooltip, for icon-only chips. */
+  getTitle?: (option: T) => string | undefined;
   label?: ReactNode;
   className?: string;
   emptyMeansAll?: boolean;
+  /** One value at a time; clicking the active chip again returns to all. */
+  singleSelect?: boolean;
   collapsible?: boolean;
   disabled?: boolean;
 }
@@ -30,9 +35,12 @@ export function FilterChipGroup<T>({
   getIcon,
   getValue = (option) => option,
   getColor,
+  getCount,
+  getTitle,
   label,
   className,
   emptyMeansAll = true,
+  singleSelect = false,
   collapsible = false,
   disabled = false,
 }: FilterChipGroupProps<T>) {
@@ -40,28 +48,34 @@ export function FilterChipGroup<T>({
 
   const handleToggle = useCallback(
     (value: T) => {
+      if (singleSelect) {
+        onSelectedValuesChange(
+          selectedValues.has(value) && selectedValues.size === 1
+            ? new Set()
+            : new Set([value])
+        );
+        return;
+      }
       const nextValues = new Set(selectedValues);
       if (nextValues.has(value)) nextValues.delete(value);
       else nextValues.add(value);
       onSelectedValuesChange(nextValues);
     },
-    [onSelectedValuesChange, selectedValues]
+    [onSelectedValuesChange, selectedValues, singleSelect]
   );
 
   const showAllOptions = !collapsible || expanded;
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+    <div className={cn("flex flex-wrap items-center gap-1", className)}>
       {label &&
         (collapsible ? (
-          <Button
+          <button
             type="button"
-            size="sm"
-            variant="outline"
             aria-expanded={expanded}
             disabled={disabled}
             onClick={() => setExpanded((value) => !value)}
-            className="h-7 shrink-0 gap-1.5 rounded-full px-3"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-none transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             {label}
             <ChevronDown
@@ -71,7 +85,7 @@ export function FilterChipGroup<T>({
               )}
               aria-hidden="true"
             />
-          </Button>
+          </button>
         ) : (
           <span className="shrink-0 text-sm font-medium text-foreground">
             {label}:
@@ -84,6 +98,7 @@ export function FilterChipGroup<T>({
 
         const active =
           (emptyMeansAll && selectedValues.size === 0) || explicitlySelected;
+        const title = getTitle?.(option);
 
         return (
           <FilterChip
@@ -92,8 +107,11 @@ export function FilterChipGroup<T>({
             active={active}
             onClick={() => handleToggle(value)}
             disabled={disabled}
+            icon={getIcon?.(option, active)}
+            count={getCount?.(option)}
+            title={title}
+            aria-label={title}
           >
-            {getIcon?.(option, active)}
             {getLabel(option, active)}
           </FilterChip>
         );

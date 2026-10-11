@@ -1,6 +1,9 @@
 import { Download } from "lucide-react";
 import { type ReactNode, useState } from "react";
-import { AccountImportPanel } from "@/components/account/AccountImportPanel";
+import {
+  type AccountImportMethod,
+  AccountImportPanel,
+} from "@/components/account/AccountImportPanel";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   ResponsiveDialog,
@@ -17,6 +20,8 @@ interface AccountImportActionProps {
   size?: ButtonProps["size"];
   className?: string;
   compactOnMobile?: boolean;
+  /** The import method opened first. */
+  initialMethod?: AccountImportMethod;
 }
 
 /**
@@ -29,12 +34,17 @@ export function AccountImportAction({
   size = "default",
   className,
   compactOnMobile = false,
+  initialMethod,
 }: AccountImportActionProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   return (
-    <AccountImportDialog open={open} onOpenChange={setOpen}>
+    <AccountImportDialog
+      open={open}
+      onOpenChange={setOpen}
+      initialMethod={initialMethod}
+    >
       <ResponsiveDialogTrigger asChild>
         <Button
           type="button"
@@ -56,10 +66,12 @@ export function AccountImportAction({
 export function AccountImportDialog({
   open,
   onOpenChange,
+  initialMethod,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialMethod?: AccountImportMethod;
   children?: ReactNode;
 }) {
   const { t } = useI18n();
@@ -78,7 +90,7 @@ export function AccountImportDialog({
             </ResponsiveDialogTitle>
           </ResponsiveDialogHeader>
           <div className="mt-4">
-            <AccountImportPanel />
+            <AccountImportPanel initialMethod={initialMethod} />
           </div>
         </ResponsiveDialogContent>
       )}

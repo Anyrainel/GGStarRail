@@ -8,6 +8,11 @@ interface FilterChipProps {
   className?: string;
   disabled?: boolean;
   color?: "rarity-5" | "rarity-4" | "rarity-3";
+  icon?: ReactNode;
+  /** Matching records, shown after the label. */
+  count?: number;
+  title?: string;
+  "aria-label"?: string;
 }
 
 const CHIP_COLORS = {
@@ -35,23 +40,36 @@ export function FilterChip({
   className,
   disabled = false,
   color,
+  icon,
+  count,
+  title,
+  "aria-label": ariaLabel,
 }: FilterChipProps) {
   return (
     <button
       type="button"
       aria-pressed={active}
+      aria-label={ariaLabel}
+      title={title}
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex min-h-7 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         active
-          ? "border-primary/40 bg-card text-foreground shadow-sm"
+          ? "border-primary/40 bg-card text-foreground"
           : "border-border bg-transparent text-muted-foreground hover:bg-card hover:text-foreground",
         color && CHIP_COLORS[color][active ? "active" : "inactive"],
         className
       )}
     >
+      {icon}
       {children}
+      {count !== undefined && " "}
+      {count !== undefined && (
+        <span className="font-mono text-[11px] text-muted-foreground">
+          {count}
+        </span>
+      )}
     </button>
   );
 }

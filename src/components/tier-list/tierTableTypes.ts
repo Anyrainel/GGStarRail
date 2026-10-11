@@ -18,4 +18,6 @@ export interface TierGroupConfig<Group extends string> {
   name: string;
   asset?: CatalogAssetRef;
   icon?: ReactNode;
+  /** A chip-sized icon for group filters. */
+  filterIcon?: ReactNode;
 }

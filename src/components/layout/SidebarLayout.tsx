@@ -1,4 +1,4 @@
-import { type LucideIcon, SlidersHorizontal } from "lucide-react";
+import { Filter, type LucideIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,8 @@ import { useI18n } from "@/i18n/I18nContext";
 interface SidebarLayoutProps {
   sidebar: ReactNode;
   triggerIcon?: LucideIcon;
-  triggerLabel: string;
+  /** Mobile trigger and sheet title; defaults to "Filters". */
+  triggerLabel?: string;
   activeFilterCount?: number;
   children: ReactNode;
 }
@@ -21,7 +22,7 @@ interface SidebarLayoutProps {
 /** Shared desktop sidebar and mobile filter sheet, adapted from GGArtifact's SidebarLayout. */
 export function SidebarLayout({
   sidebar,
-  triggerIcon: TriggerIcon = SlidersHorizontal,
+  triggerIcon: TriggerIcon = Filter,
   triggerLabel,
   activeFilterCount = 0,
   children,
@@ -31,6 +32,7 @@ export function SidebarLayout({
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
   useGlobalScroll(containerRef, mainRef);
+  const label = triggerLabel ?? t("common.filters");
   return (
     <div
       ref={containerRef}
@@ -39,11 +41,11 @@ export function SidebarLayout({
       <div className="shrink-0 lg:hidden">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
-            <Button type="button" variant="outline" size="sm">
+            <Button type="button" variant="outline" className="gap-2">
               <TriggerIcon className="h-4 w-4" aria-hidden="true" />
-              {triggerLabel}
+              {label}
               {activeFilterCount > 0 && (
-                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground tabular-nums">
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground tabular-nums">
                   {activeFilterCount}
                 </span>
               )}
@@ -53,10 +55,13 @@ export function SidebarLayout({
             aria-describedby={undefined}
             side="left"
             closeLabel={t("common.close")}
-            className="overflow-y-auto"
+            className="w-80 p-0"
           >
-            <SheetTitle>{triggerLabel}</SheetTitle>
-            <div className="mt-4 [&_aside]:border-0 [&_aside]:bg-transparent [&_aside]:p-0 [&_aside]:shadow-none">
+            <div className="flex h-16 items-center gap-2 border-b border-border p-4 pr-12">
+              <TriggerIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              <SheetTitle className="truncate">{label}</SheetTitle>
+            </div>
+            <div className="h-[calc(100%-4rem)] overflow-y-auto overscroll-contain p-3">
               {sidebar}
             </div>
           </SheetContent>

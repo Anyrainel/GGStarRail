@@ -57,7 +57,7 @@ describe("BuildCard", () => {
     };
     const onBuildChange = vi.fn();
     const user = userEvent.setup();
-    render(
+    const view = render(
       <I18nProvider>
         <BuildCard
           build={mixedBuild}
@@ -69,21 +69,85 @@ describe("BuildCard", () => {
         />
       </I18nProvider>
     );
+    const trigger = screen.getByRole("button", {
+      name: `Cavern Relic set: ${first.name.en.value} 2-piece + ${second.name.en.value} 2-piece`,
+    });
+    expect(trigger.querySelector('[data-set-plan="split"]')).not.toBeNull();
     expect(
-      screen.getByRole("button", { name: /Second Cavern 2-piece set:/ })
-    ).toBeVisible();
-    await user.click(
-      screen.getByRole("button", { name: /First Cavern 2-piece set:/ })
+      view.container.querySelector("[data-set-plan-names]")
+    ).toHaveTextContent(`${first.name.en.value}${second.name.en.value}`);
+    expect(
+      screen.queryByRole("button", { name: /^Cavern mode|^4$|^2\+2$/ })
+    ).toBeNull();
+
+    await user.click(trigger);
+    expect(screen.getByRole("tab", { name: "2+2" })).toHaveAttribute(
+      "aria-selected",
+      "true"
     );
     expect(
-      screen.queryByRole("button", { name: second.name.en.value })
-    ).toBeNull();
+      screen.getByRole("button", { name: first.name.en.value })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: second.name.en.value })
+    ).toHaveAttribute("aria-pressed", "true");
     await user.click(
       screen.getByRole("button", { name: replacement.name.en.value })
     );
     expect(onBuildChange).toHaveBeenLastCalledWith({
       ...mixedBuild,
       cavern: { mode: "two-plus-two", setIds: [replacement.id, second.id] },
+    });
+  });
+
+  it("switches a 4-piece plan to 2+2 inside the set picker and back", async () => {
+    const { build, profile, references } = await prepareCard();
+    if (build.category !== "cavern" || build.cavern.mode !== "four-piece")
+      throw new Error("Expected a 4-piece Cavern build");
+    const current = build.cavern.setId;
+    const other = references.relicSets.values.find(
+      (set) => set.kind === "cavern_relic" && set.id !== current
+    );
+    if (!other) throw new Error("Second Cavern set missing");
+    const onBuildChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <I18nProvider>
+        <BuildCard
+          build={build}
+          profile={profile}
+          references={references}
+          onBuildChange={onBuildChange}
+          onProfileChange={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </I18nProvider>
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /^Cavern Relic set: .* 4-piece$/ })
+    );
+    await user.click(screen.getByRole("tab", { name: "2+2" }));
+    expect(screen.getByRole("button", { name: /^2nd/ })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    await user.click(screen.getByRole("button", { name: other.name.en.value }));
+    expect(onBuildChange).toHaveBeenLastCalledWith({
+      ...build,
+      cavern: { mode: "two-plus-two", setIds: [current, other.id] },
+    });
+
+    onBuildChange.mockClear();
+    await user.click(
+      screen.getByRole("button", { name: /^Cavern Relic set: .* 4-piece$/ })
+    );
+    await user.click(screen.getByRole("tab", { name: "2+2" }));
+    const currentName = references.relicSets.byId.get(current)!.name.en.value;
+    await user.click(screen.getByRole("button", { name: currentName }));
+    expect(onBuildChange).toHaveBeenLastCalledWith({
+      ...build,
+      cavern: { mode: "four-piece", setId: current },
     });
   });
 
@@ -107,10 +171,10 @@ describe("BuildCard", () => {
     expect(card?.querySelectorAll("[data-build-slot]")).toHaveLength(2);
 
     const cavernTrigger = screen.getByRole("button", {
-      name: /Cavern 4-piece set:/,
+      name: /^Cavern Relic set: .* 4-piece$/,
     });
     expect(
-      screen.queryByRole("button", { name: /Planar 2-piece set:/ })
+      screen.queryByRole("button", { name: /^Planar Ornament set:/ })
     ).toBeNull();
     const cavernIcon = cavernTrigger.querySelector(
       '[data-item-icon-kind="relic-set"]'
@@ -255,11 +319,11 @@ describe("BuildCard", () => {
     if (!replacement) throw new Error("Second Cavern set reference missing");
 
     await user.click(
-      screen.getByRole("button", { name: /Cavern 4-piece set:/ })
+      screen.getByRole("button", { name: /^Cavern Relic set:/ })
     );
     expect(
       await screen.findByRole("searchbox", {
-        name: "Search: Cavern 4-piece set",
+        name: "Search: Cavern Relic set",
       })
     ).toBeVisible();
     await user.click(
@@ -295,5 +359,49 @@ describe("BuildCard", () => {
       within(screen.getByRole("dialog")).queryByRole("combobox")
     ).toBeNull();
     expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
+  });
+  it("adds a substat weight from the label row and keeps chips in one family", async () => {
+    const { build, profile, references } = await prepareCard();
+    const [unweighted] = Object.keys(profile.statWeights);
+    if (!unweighted) throw new Error("Score profile weights missing");
+    const editedProfile = {
+      ...profile,
+      statWeights: { ...profile.statWeights, [unweighted]: 0 },
+    };
+    const onProfileChange = vi.fn();
+    const user = userEvent.setup();
+    const view = render(
+      <I18nProvider>
+        <BuildCard
+          build={build}
+          profile={editedProfile}
+          references={references}
+          onBuildChange={vi.fn()}
+          onProfileChange={onProfileChange}
+          onDelete={vi.fn()}
+        />
+      </I18nProvider>
+    );
+    const substats = view.container.querySelector("[data-build-substats]");
+    if (!(substats instanceof HTMLElement))
+      throw new Error("Substat row missing");
+    expect(within(substats).getByText("Substats")).toBeVisible();
+    const bodyChip = within(
+      view.container.querySelector('[data-build-slot="body"]') as HTMLElement
+    ).getAllByRole("combobox")[0]!;
+    expect(bodyChip).toHaveClass("h-7", "min-w-[3.5rem]", "[&>svg]:hidden");
+
+    await user.click(
+      within(substats).getByRole("combobox", { name: "Add a substat weight" })
+    );
+    await user.click(
+      await screen.findByRole("option", {
+        name: localizedPropertyName(unweighted, references.properties, "en"),
+      })
+    );
+    expect(onProfileChange).toHaveBeenLastCalledWith({
+      ...editedProfile,
+      statWeights: { ...editedProfile.statWeights, [unweighted]: 1 },
+    });
   });
 });

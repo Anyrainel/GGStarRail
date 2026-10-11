@@ -1,0 +1,368 @@
+# Combat translation tracker: harmony. Schema: .agents/skills/hsr-combat/tracking.md
+- id: asta-burn-base
+  entity: "1009"
+  rule: C2
+  status: wont-do
+  category: verify
+  summary: >
+    A2 Burn ("50% of DMG dealt by Asta's Basic ATK") is a DoT worth 50% of the
+    Basic ATK multiplier on ATK; whether it instead copies the Basic ATK's
+    actual damage needs confirmation.
+  detail: >
+    Kit is right. TurnBasedGameData Avatar_Asta_00_Ability (Skill01_Phase02)
+    adds MCommon_DOT_Burn with Modifier_Burn_DamagePercentage = Basic ATK #1 x
+    A2 #3 (opcode multiply), a normal ATK-scaled Burn DoT, not a copy of the
+    hit's damage.
+- id: yukong-a6-actions
+  entity: "1207"
+  rule: U8
+  status: wont-do
+  category: verify
+  summary: >
+    A6 grants Energy after every action of an ally Character or memosprite,
+    Ultimates and follow-ups included (summons excluded); whether those count
+    as "taking action" needs confirmation.
+  detail: >
+    Kit is right. Avatar_Yukong_00_Ability puts MAvatar_Yukong_00_Flower on
+    AllTeamMemberWithUnselectable and on every Servant created later
+    (ServantFlowerListen); A6 is that modifier's OnAfterSkillUse callback, so
+    every ability use by a Character or memosprite holding it (Basic, Skill,
+    Ultimate, follow-up, memosprite skills) regenerates the Energy.
+- id: yukong-e2-energy-full
+  entity: "1207"
+  rule: U8
+  status: completed
+  category: approximation
+  summary: >
+    E2 checks allies for full Energy after each ally action and each turn end
+    instead of when Energy reaches the cap, so Energy filled and spent inside
+    one action is missed.
+  detail: >
+    E2 now listens to `energyGained` (subject ally): when a gain that
+    raises Energy leaves an ally at its cap and that ally has not
+    triggered it since Yukong's last Ultimate, Yukong regenerates 5
+    Energy. The actionEnd/turnEnd polling is gone, so allies already at
+    the cap when her Ultimate resets the count no longer re-trigger it.
+    Energy is an expected value that fills deterministically, so a filling
+    gain of any probability grants the full 5. E6 3-cycle team damage in
+    the kit check drops 15% because one fewer Ultimate fits.
+- id: yukong-talent-instance
+  entity: "1207"
+  rule: C2
+  status: wont-do
+  category: verify
+  summary: >
+    The Talent's extra 80% ATK is added to the Basic ATK as one damage
+    instance with doubled Toughness Reduction; if the game deals it as a
+    separate instance, per-hit effects miss one hit.
+  detail: >
+    Kit is right. Avatar_Yukong_00_Skill01_Phase02 deals the enhanced Basic
+    ATK as one attack whose DamagePercentage is Basic #1 + Talent #1 and whose
+    StanceValue is x(1 + Talent #2). The game splits that attack into 20/20/60%
+    sub-hits like most attacks; sub-hit splits are not modelled engine-wide.
+- id: hanya-burden-counting
+  entity: "1215"
+  rule: U8
+  status: open
+  category: verify
+  summary: >
+    Hanya's own Skill that applies Burden is not counted toward Burden's
+    "every 2 Basic ATKs, Skills, or Ultimates"; whether the game counts it
+    is unconfirmed.
+  detail: >
+    Settled from Avatar_Hanya_00_Ability (WMAvatar_Hanya_BpZhanYin): any ally
+    Basic ATK/Skill/Ultimate whose target or sub-target list contains the
+    Burden enemy counts (Blast/AoE included); the Skill resets the recovery
+    count (ZhanYinCount = #2, ZhanYinCount_01 = 0) and a new Burden starts at
+    0 attacks. Sanction and debuff findings: hanya-sanction-sub-targets,
+    hanya-burden-not-debuff.
+    Still open: Burden is added inside the Skill (after its hit) and counts on
+    OnListenAfterSkillUse, so the applying Skill may count as the first
+    attack; the config alone does not show whether a modifier created
+    mid-skill receives that skill's AfterSkillUse event. Needs an in-game
+    check (Burden mark half-filled right after Hanya's Skill or not).
+- id: ruan-mei-rebloom-break-extension
+  entity: "1303"
+  rule: U11
+  status: open
+  category: engine-gap
+  summary: >
+    Thanatoplum Rebloom should cancel the enemy's Weakness Break recovery
+    (it stays Broken) and delay that turn. The engine recovers the enemy at
+    the same turn start and lets it act, so the kit deals the Break DMG and
+    delays the enemy's next turn instead; Broken-only effects (Super Break,
+    E2, the Broken Toughness multiplier) miss the extended window.
+  detail: >
+    Blocked on engine-break-recovery-hook. Once it exists, Rebloom handles
+    the recovery attempt: keep the enemy Broken, deal 50% Ice Break DMG,
+    replace the enemy's turn with a delay of (20% x Break Effect + 10%), and
+    remove Rebloom (re-application waits for the real recovery). The game
+    marks the modifier with the BreakExtend behaviour flag.
+- id: ruan-mei-rebloom-debuff
+  entity: "1303"
+  rule: U3
+  status: completed
+  category: bug
+  summary: >
+    Thanatoplum Rebloom is modeled as an enemy status that is not a debuff,
+    but the game classifies it as a debuff, so debuff counts (Acheron,
+    Jiaoqiu, minTargetDebuffs filters) miss it.
+  detail: >
+    The thanatoplum-rebloom status is declared `debuff: true` (applied
+    without a base chance, so it always lands).
+- id: ruan-mei-a6-steady-break-effect
+  entity: "1303"
+  rule: U7
+  status: open
+  category: approximation
+  summary: >
+    A6's Overtone bonus reads Ruan Mei's steady Break Effect, so E4's
+    timed +100% Break Effect does not raise it; in game it uses her
+    current Break Effect.
+  detail: >
+    Blocked on engine-applier-momentary-stats (the Overtone A6 modifier is
+    applier-scaled). Confirmed dynamic in game:
+    Avatar_RuanMei_Tree03_BreakDamageAddedValueShow recomputes the A6
+    bonus on every BreakDamageAddedRatio change and refreshes Overtone on
+    allies. Once applier scaling can read current stats, the A6 bonus
+    should follow Ruan Mei's current Break Effect (E4 included). Rebloom's
+    action delay already reads `currentStat("breakEffect")`.
+- id: bronya-e4-followup-crit
+  entity: "1101"
+  rule: U4
+  status: wont-do
+  category: verify
+  summary: >
+    E4's Follow-Up ATK ("80% of her Basic ATK DMG") is modeled as Follow-Up
+    DMG with 80% of the Basic ATK multiplier, so A2's 100% Basic ATK CRIT
+    Rate does not apply. Confirm whether it inherits Basic ATK's CRIT Rate.
+  detail: >
+    Kit is right. Avatar_Bronya_00_Ability: A2 is M_Bronya_Critcal, added only
+    during the Basic ATK (Skill01_Phase02) and filtered ByAttackType Normal;
+    the E4 attack (Avatar_Bronya_00_Rank04_ATK) is AttackType Insert
+    (Follow-Up) with DamagePercentage = Basic #1 x E4 #1. Toughness 10 and
+    Energy 5 from the Talent facts row stay as they are.
+- id: sparkle-e6-spread-duration
+  entity: "1306"
+  rule: U5
+  status: wont-do
+  category: approximation
+  summary: >
+    E6's Ultimate spreads the Skill's CRIT DMG Boost to Cipher teammates
+    with a fresh duration instead of the remaining duration of the ally it
+    spreads from.
+  detail: >
+    Kit matches the game. Avatar_Sparkle_00_Skill03_Phase02 re-adds
+    MAvatar_Sparkle_Skill02_CritDmgAddedRatio01 to the teammates with the
+    Skill's own LifeTime value (same key as the Skill), a fresh duration.
+- id: tingyun-benediction-cap-snapshot
+  entity: "1202"
+  rule: U7
+  status: wont-do
+  category: approximation
+  summary: >
+    Benediction's "ATK +50%, up to 25% of Tingyun's current ATK" is decided
+    once per Skill from steady panels (holder's base ATK x 50% vs Tingyun's
+    ATK x 25%), applying either the percent or the capped flat form; in game
+    the cap follows Tingyun's current ATK.
+  detail: >
+    The game also decides once per Skill. Avatar_TingYun_Skill02_Phase02
+    computes min(target BaseAttack x #2, Tingyun Attack x #4) when the Skill
+    is used and grants it as flat ATK (MWAvatar_TingYun_00_BPSkill_AttackDelta);
+    it does not follow Tingyun's ATK afterwards. The only gap is Tingyun's
+    momentary ATK buffs at cast time, which the engine's steady-panel applier
+    reads exclude everywhere.
+- id: tingyun-ult-energy-err
+  entity: "1202"
+  rule: U10
+  status: completed
+  category: bug
+  summary: >
+    The Ultimate's 50 Energy (60 at E6) for the ally is scaled by the
+    receiver's Energy Regeneration Rate; the game gives a fixed amount.
+  detail: >
+    The Ultimate grants its Energy with `ctx.gainEnergy(target,
+    ultimateEnergy, { fixed: true })`.
+- id: sunday-summon-ids
+  entity: "1313"
+  rule: C5
+  status: completed
+  category: engine-gap
+  summary: >
+    The Skill's summon bonus and "their summon takes action" find memosprites
+    in ctx.allies but stat-less summons only through hard-coded kit-local IDs
+    (lightning-lord, numby, fuyuan, souldragon); a new summon kit is missed
+    until it is added to SUMMON_IDS in 1313-sunday.ts.
+  detail: >
+    SUMMON_IDS is gone. The kit tracks each owner's summons from
+    `summoned` and `departed` events (kind summon, not `countdown`), in a
+    WeakMap keyed by the battle's units, and the Skill reads memosprites
+    from ctx.allies plus those tracked summons. Verified with Jing Yuan:
+    totals are unchanged from the ID list.
+- id: sunday-ultimate-target
+  entity: "1313"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    The Ultimate picks its ally inside the ability (the Skill's heuristic)
+    instead of through the Ultimate policy, and its Energy for that ally is
+    scaled by ERR although the game gives a fixed amount.
+  detail: >
+    The Ultimate policy returns { ability: "ultimate", target } and the
+    Ultimate reads ctx.target, so the target appears in its action events.
+    Its Energy is fixed (`{ fixed: true }`), max(20% of Max Energy, A2's
+    40). The ally comes from a `beneficiary` option (k.ally, origin skill)
+    that both the Skill and Ultimate policies use; the default is the
+    first teammate in team order not on a support Path.
+- id: tribbie-a4-team-hp
+  entity: "1403"
+  rule: U7
+  status: completed
+  category: approximation
+  summary: >
+    A4's Max HP bonus (9% of the sum of all ally Characters' Max HP) is a
+    stacking hpFlat status whose stacks are the summed steady-panel Max HP,
+    set when the Zone opens; HP buffs from statuses and later changes are
+    not counted.
+  detail: >
+    The Glass Ball stacks are the sum of the ally Characters'
+    `currentStat("hp")` minus Tribbie's own A4 bonus (stacks x 9%), set
+    when the Zone opens and resynced on every statusApplied/statusRemoved
+    of a status with an hpPct or hpFlat modifier on an ally Character
+    while it lasts. Converted HP is not modelled.
+- id: tribbie-zone-highest-hp
+  entity: "1403"
+  rule: U12
+  status: open
+  category: approximation
+  summary: >
+    Enemy HP is not simulated, so the Zone's Additional DMG goes to the main
+    target (the boss) when the attack hit it, else to the first enemy hit,
+    instead of the hit target with the highest current HP.
+  detail: >
+    Blocked on engine-kill-triggers (enemy HP). The boss-first choice matches
+    the usual case; once enemy HP exists, pick the hit enemy with the highest
+    current HP.
+- id: tribbie-zone-debuff
+  entity: "1403"
+  rule: U3
+  status: completed
+  category: bug
+  summary: >
+    The Zone's "enemy targets' DMG taken +30%" is an enemy status that is not
+    a debuff, but the game classifies it as a debuff.
+  detail: >
+    zone-vulnerability is declared `debuff: true` (applied without a base
+    chance).
+- id: harmony-auras-late-memosprites
+  entity: "1403"
+  rule: U3
+  status: completed
+  category: approximation
+  summary: >
+    Timed team buffs (Tribbie's Numinosity and E1, Trailblazer Harmony's
+    Backup Dancer, Sunday's The Beatified) are applied to the allies present
+    at cast time; a memosprite summoned or re-summoned later (Garmentmaker)
+    does not get the remaining duration.
+  detail: >
+    Each kit listens to `summoned` (subject ally, memosprites only) and
+    applies its halo buffs to the new memosprite with `turns` read from an
+    ally that holds them: Tribbie's Numinosity and E1, Trailblazer
+    (Harmony)'s Backup Dancer with its A2 tier, and The Beatified when the
+    memosprite's owner holds it (Sunday). The ability configs also mark
+    Ruan Mei's Zone (MAvatar_RuanMei_PassiveArea: RES PEN and E1) and Yao
+    Guang's Zone (G_MAvatar_YaoGuang_00_Skill02_ToSelf) as IsHaloStatus,
+    so both got the same listener. Verified with Aglaea acting after a
+    faster Tribbie: Garmentmaker's damage rises with Numinosity.
+- id: cerydra-coup-de-main-order
+  entity: "1412"
+  rule: U11
+  status: open
+  category: approximation
+  summary: >
+    Coup de Main ("copy and immediately use the ability about to be used, then
+    use the original") is queued after the Peerage holder's Skill: the first
+    use keeps Peerage and the queued use runs with Military Merit after 6
+    Charge is consumed. The queued use's Skill Points are refunded through
+    skillPointsChanged (other kits see a spend and a refund), and it
+    regenerates the holder's Skill Energy again, which is unverified.
+  detail: >
+    Blocked on engine-queued-action-options. Once queueAction can run an
+    ability before the current one and free of Skill Points, insert the copy
+    first (no SP spend, no refund), keep Peerage for both uses, and revert to
+    Military Merit (consuming 6 Charge) after the original. Coup de Main text
+    from ExtraEffectConfig 10000023 (not in the dossier).
+- id: trailblazer-harmony-a2-zone
+  entity: "8005"
+  rule: U2
+  status: wont-do
+  category: verify
+  summary: >
+    A2 ("the Super Break DMG triggered by Backup Dancer increases by 20-60%")
+    is modeled as extra superBreakDmg on the Backup Dancer conversion rate
+    (100% + 60% against one enemy, as community calculators do), not as DMG
+    Boost scoped to Super Break per the U2 table. Confirm the zone.
+  detail: >
+    Kit is right. Avatar_PlayerBoy_20 MAvatar_PlayerBoy_20_SkillP01_ListenBreakDamage
+    sets the Super Break percentage to conversion x (1 + A2 value for the
+    alive enemy count), a conversion multiplier, not DMG Boost. The Ultimate's
+    conversion (#2) is 1 at every level, so 1 + A2 equals the kit's additive
+    superBreakDmg.
+- id: hanya-burden-not-debuff
+  entity: "1215"
+  rule: U3
+  status: completed
+  category: bug
+  summary: >
+    Burden is declared a debuff, but the game classifies it as neither buff
+    nor debuff, so it inflates debuff counts (Acheron, Jiaoqiu,
+    minTargetDebuffs filters).
+  detail: >
+    `debuff: true` is dropped from the burden status.
+- id: hanya-sanction-sub-targets
+  entity: "1215"
+  rule: U14
+  status: open
+  category: bug
+  summary: >
+    Sanction only checks the action's designated target for Burden; the game
+    also grants it when Burden is on a Blast or AoE sub-target.
+  detail: >
+    Avatar_Hanya_00_Ability: WMAvatar_Hanya_BpZhanYin's OnListenBeforeSkillUse
+    grants Sanction (MAvatar_Hanya_Passive_AddDamage) when the Burden holder is
+    in the ability's SkillTargetEntityList or SkillSubTargetEntityList (Basic
+    ATK/Skill/Ultimate), before the hits. Blocked on engine-action-targets:
+    actionStart carries only the designated target, and the enemies an
+    ability will hit are known only at actionEnd. Once actionStart lists
+    them, grant Sanction when any of them has Burden.
+- id: tingyun-ally-target-event
+  entity: "1202"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Tingyun's Ultimate declares target "ally", but the Ultimate policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (A Grounded Ascent, Sacerdos' Relived Ordeal, Wavestrider Captain) cannot see it.
+  detail: >
+    The Ultimate policy returns { ability: "ultimate", target } with the
+    Benediction holder (else the Skill's choice), and the Ultimate reads
+    ctx.target. With Sacerdos' Relived Ordeal on Tingyun, the Ultimate now
+    gives its stack to Kafka in the kit check.
+- id: hanya-ally-target-event
+  entity: "1215"
+  rule: C3
+  status: completed
+  category: approximation
+  summary: >
+    Hanya's Ultimate declares target "ally", but the Ultimate policy does not name the ally,
+    so its action events report the main enemy as target and equipment that
+    reads "an ability on one ally" (A Grounded Ascent, Sacerdos' Relived Ordeal, Wavestrider Captain) cannot see it.
+  detail: >
+    The Ultimate policy returns { ability: "ultimate", target } and the
+    Ultimate reads ctx.target. The ally comes from a `decree-target`
+    option (k.ally, includeSelf; default: the first damage dealer, else a
+    Nihility teammate, else the first teammate). The SPD workaround is
+    gone: Ten-Lords' Decree carries `spdFlat` scaled from the applier's
+    SPD (ratio #3), which turn order now reads.

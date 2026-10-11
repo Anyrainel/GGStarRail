@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import {
+  ArchiveChipDivider,
+  ArchiveToolbar,
+} from "@/components/archive/ArchiveToolbar";
+import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
-import { RarityStars } from "@/components/shared/RarityStars";
-import { Button } from "@/components/ui/button";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
 import {
@@ -49,7 +53,7 @@ async function loadCharacterArchiveData() {
 }
 
 export function CharacterCatalog() {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const resource = useCatalogResource(loadCharacterArchiveData);
   const [query, setQuery] = useState("");
   const [paths, setPaths] = useState<Set<string>>(new Set());
@@ -59,15 +63,16 @@ export function CharacterCatalog() {
     useState<CharacterDescriptionMode>("full");
   const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(
-    searchParams.get("id")
+    searchParams.get(CHARACTER_ARCHIVE_ID_PARAM)
   );
   const [mobileDetailOpen, setMobileDetailOpen] = useState(
-    Boolean(searchParams.get("id"))
+    Boolean(searchParams.get(CHARACTER_ARCHIVE_ID_PARAM))
   );
   const searching = isArchiveSearchActive(query);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   useEffect(() => {
-    const linkedId = searchParams.get("id");
+    const linkedId = searchParams.get(CHARACTER_ARCHIVE_ID_PARAM);
     if (!linkedId || !resource.data?.characters.byId.has(linkedId)) return;
     setSelectedId(linkedId);
     setMobileDetailOpen(true);
@@ -126,25 +131,12 @@ export function CharacterCatalog() {
   useEffect(() => {
     // Preserve incoming deep links until the async catalog has actually loaded.
     if (!resource.data) return;
-    if (!filtered.length) setSelectedId(null);
-    else if (!selectedId || !filtered.some((entry) => entry.id === selectedId))
-      setSelectedId(filtered[0].id);
-  }, [filtered, selectedId, resource.data]);
+    if (selectedId && filtered.some((entry) => entry.id === selectedId)) return;
+    // Phones open on the grid; only the desktop master-detail picks the first.
+    const next = isDesktop ? (filtered[0]?.id ?? null) : null;
+    if (next !== selectedId) setSelectedId(next);
+  }, [filtered, selectedId, resource.data, isDesktop]);
 
-  if (resource.loading) return <CatalogLoading />;
-  if (resource.error) return <CatalogFailure error={resource.error} />;
-  if (!resource.data) return null;
-  const { characters, propertyTables } = resource.data;
-  const selected = selectedId ? characters.byId.get(selectedId) : undefined;
-  const detail = selected ? (
-    <CharacterDetail
-      key={selected.id}
-      character={selected}
-      propertyTables={propertyTables}
-      descriptionMode={descriptionMode}
-      onDescriptionModeChange={setDescriptionMode}
-    />
-  ) : null;
   const header = (
     <ArchiveToolbar
       searchQuery={query}
@@ -152,14 +144,153 @@ export function CharacterCatalog() {
       searchLabel={t("common.search")}
       searchPlaceholder={t("archive.search.characters")}
     >
+      {resource.data && (
+        <CharacterFilterChips
+          propertyTables={resource.data.propertyTables}
+          combatTypes={combatTypes}
+          onCombatTypesChange={setCombatTypes}
+          rarities={rarities}
+          onRaritiesChange={setRarities}
+          paths={paths}
+          onPathsChange={setPaths}
+          disabled={searching}
+        />
+      )}
+    </ArchiveToolbar>
+  );
+  const layout = {
+    className: "h-full min-h-0",
+    header,
+    onBack: () => setMobileDetailOpen(false),
+    backLabel: t("archive.backToCharacters"),
+    detailLabel: t("archive.characterDetails"),
+  };
+  if (!resource.data) {
+    const status = resource.error ? (
+      <CatalogFailure error={resource.error} />
+    ) : (
+      <CatalogLoading />
+    );
+    return (
+      <SidebarDetailLayout
+        {...layout}
+        sidebar={status}
+        mobileGrid={status}
+        hasSelection={false}
+      >
+        {null}
+      </SidebarDetailLayout>
+    );
+  }
+  const { characters, propertyTables } = resource.data;
+  const selected = selectedId ? characters.byId.get(selectedId) : undefined;
+  const select = (id: string) => {
+    setSelectedId(id);
+    setMobileDetailOpen(true);
+  };
+  const empty = filtered.length === 0;
+  return (
+    <SidebarDetailLayout
+      {...layout}
+      sidebar={
+        <section
+          className="space-y-0.5"
+          aria-label={t("archive.characterList")}
+        >
+          <p className="px-2 text-xs text-muted-foreground" aria-live="polite">
+            {t(
+              filtered.length === 1
+                ? "archive.characterCountOne"
+                : "archive.characterCount",
+              { count: filtered.length }
+            )}
+          </p>
+          {empty ? (
+            <CatalogEmpty />
+          ) : (
+            filtered.map((character) => (
+              <CharacterListRow
+                key={character.id}
+                character={character}
+                selected={character.id === selectedId}
+                propertyTables={propertyTables}
+                onSelect={() => select(character.id)}
+              />
+            ))
+          )}
+        </section>
+      }
+      mobileGrid={
+        <section aria-label={t("archive.characterList")}>
+          {empty ? (
+            <CatalogEmpty />
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2 p-2">
+              {filtered.map((character) => (
+                <CharacterGridTile
+                  key={character.id}
+                  character={character}
+                  selected={character.id === selectedId}
+                  onSelect={() => select(character.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      }
+      hasSelection={mobileDetailOpen && Boolean(selected)}
+    >
+      {selected ? (
+        <CharacterDetail
+          key={selected.id}
+          character={selected}
+          propertyTables={propertyTables}
+          descriptionMode={descriptionMode}
+          onDescriptionModeChange={setDescriptionMode}
+        />
+      ) : null}
+    </SidebarDetailLayout>
+  );
+}
+
+function CharacterFilterChips({
+  propertyTables,
+  combatTypes,
+  onCombatTypesChange,
+  rarities,
+  onRaritiesChange,
+  paths,
+  onPathsChange,
+  disabled,
+}: {
+  propertyTables: PropertyCatalog;
+  combatTypes: ReadonlySet<string>;
+  onCombatTypesChange: (values: Set<string>) => void;
+  rarities: ReadonlySet<number>;
+  onRaritiesChange: (values: Set<number>) => void;
+  paths: ReadonlySet<string>;
+  onPathsChange: (values: Set<string>) => void;
+  disabled: boolean;
+}) {
+  const { locale } = useI18n();
+  const combatTypeName = (id: string) =>
+    getLocalizedValue(propertyTables.combatTypeById.get(id)?.name, locale) ??
+    id;
+  const pathName = (id: string) =>
+    formatGameText(
+      getLocalizedValue(propertyTables.pathById.get(id)?.name, locale) ?? id
+    );
+  return (
+    <>
       <FilterChipGroup
         options={propertyTables.combatTypes.map((entry) => entry.id)}
         selectedValues={combatTypes}
-        onSelectedValuesChange={setCombatTypes}
+        onSelectedValuesChange={onCombatTypesChange}
         getKey={(id) => id}
-        getLabel={(id) =>
-          getLocalizedValue(propertyTables.combatTypeById.get(id)?.name, locale)
-        }
+        getTitle={combatTypeName}
+        getLabel={(id) => (
+          <span className="hidden sm:inline">{combatTypeName(id)}</span>
+        )}
         getIcon={(id) => (
           <AssetImage
             kind="combat-type"
@@ -170,33 +301,27 @@ export function CharacterCatalog() {
           />
         )}
         className="contents"
-        disabled={searching}
+        disabled={disabled}
       />
-      <span
-        aria-hidden="true"
-        className="mx-1 hidden h-5 w-px bg-border sm:block"
-      />
+      <ArchiveChipDivider />
       <FilterChipGroup
         options={[5, 4]}
         selectedValues={rarities}
-        onSelectedValuesChange={setRarities}
+        onSelectedValuesChange={onRaritiesChange}
         getKey={String}
         getLabel={(value) => `${value} ★`}
         className="contents"
-        disabled={searching}
+        disabled={disabled}
       />
-      <span
-        aria-hidden="true"
-        className="mx-1 hidden h-5 w-px bg-border sm:block"
-      />
+      <ArchiveChipDivider />
+      {/* Nine Paths: icon chips keep the whole filter row on one line. */}
       <FilterChipGroup
         options={propertyTables.paths.map((entry) => entry.id)}
         selectedValues={paths}
-        onSelectedValuesChange={setPaths}
+        onSelectedValuesChange={onPathsChange}
         getKey={(id) => id}
-        getLabel={(id) =>
-          getLocalizedValue(propertyTables.pathById.get(id)?.name, locale)
-        }
+        getTitle={pathName}
+        getLabel={() => null}
         getIcon={(id) => (
           <AssetImage
             kind="path"
@@ -207,57 +332,9 @@ export function CharacterCatalog() {
           />
         )}
         className="contents"
-        disabled={searching}
+        disabled={disabled}
       />
-    </ArchiveToolbar>
-  );
-  const roster = (
-    <div className="min-w-0 space-y-2">
-      <p className="px-2 text-xs text-muted-foreground" aria-live="polite">
-        {t(
-          filtered.length === 1
-            ? "archive.characterCountOne"
-            : "archive.characterCount",
-          { count: filtered.length }
-        )}
-      </p>
-      <section
-        className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-1 md:grid-cols-1 md:gap-0.5 md:p-1"
-        aria-label={t("archive.characterList")}
-      >
-        {filtered.length === 0 ? (
-          <CatalogEmpty />
-        ) : (
-          filtered.map((character) => (
-            <CharacterListRow
-              key={character.id}
-              character={character}
-              selected={character.id === selectedId}
-              propertyTables={propertyTables}
-              onSelect={() => {
-                setSelectedId(character.id);
-                setMobileDetailOpen(true);
-              }}
-            />
-          ))
-        )}
-      </section>
-    </div>
-  );
-  return (
-    <SidebarDetailLayout
-      className="h-full min-h-0"
-      header={header}
-      sidebar={roster}
-      mobileGrid={roster}
-      hasSelection={mobileDetailOpen && Boolean(selected)}
-      onBack={() => setMobileDetailOpen(false)}
-      backLabel={t("archive.backToCharacters")}
-      detailLabel={t("archive.characterDetails")}
-      sidebarWidth="w-[240px] xl:w-[280px]"
-    >
-      {detail}
-    </SidebarDetailLayout>
+    </>
   );
 }
 
@@ -270,7 +347,7 @@ function CharacterListRow({
   character: CharacterDefinition;
   selected: boolean;
   propertyTables: PropertyCatalog;
-  onSelect: (trigger: HTMLButtonElement) => void;
+  onSelect: () => void;
 }) {
   const { locale, t } = useI18n();
   const name = characterCatalogName(character, locale, t("terms.trailblazer"));
@@ -280,10 +357,10 @@ function CharacterListRow({
       type="button"
       data-character-id={character.id}
       aria-pressed={selected}
-      onClick={(event) => onSelect(event.currentTarget)}
+      onClick={onSelect}
       className={cn(
-        "flex min-w-0 flex-col items-center gap-1.5 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:w-full md:flex-row md:gap-2",
-        selected ? "bg-primary/15 ring-1 ring-primary/30" : "hover:bg-accent/60"
+        "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        selected ? "bg-primary/15 ring-1 ring-primary/30" : "hover:bg-accent/50"
       )}
     >
       <ItemIcon
@@ -293,6 +370,7 @@ function CharacterListRow({
         alt={name}
         rarity={character.rarity}
         size="sm"
+        className="shrink-0"
         imageClassName="object-cover object-top"
         cornerAsset={
           combat
@@ -305,13 +383,48 @@ function CharacterListRow({
             : undefined
         }
       />
-      <span className="w-full min-w-0 text-center md:flex-1 md:text-left">
-        <span className="block w-full truncate text-xs font-medium md:text-sm">
+      <span className="flex min-w-0 flex-1 items-center gap-1.5">
+        <span className="truncate text-sm font-medium">{name}</span>
+        <BetaBadge member="characters" id={character.id} />
+      </span>
+    </button>
+  );
+}
+
+function CharacterGridTile({
+  character,
+  selected,
+  onSelect,
+}: {
+  character: CharacterDefinition;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { locale, t } = useI18n();
+  const name = characterCatalogName(character, locale, t("terms.trailblazer"));
+  return (
+    <button
+      type="button"
+      data-character-id={character.id}
+      aria-pressed={selected}
+      onClick={onSelect}
+      className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-1 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <ItemIcon
+        kind="character"
+        id={character.id}
+        sourcePath={character.icon_path}
+        alt={name}
+        rarity={character.rarity}
+        size="sm"
+        imageClassName="object-cover object-top"
+      />
+      <span className="flex w-full min-w-0 items-center justify-center gap-1">
+        <span className="min-w-0 truncate text-center text-xs text-foreground">
           {name}
         </span>
-        <RarityStars rarity={character.rarity} />
+        <BetaBadge member="characters" id={character.id} />
       </span>
-      <BetaBadge member="characters" id={character.id} />
     </button>
   );
 }
@@ -332,64 +445,54 @@ function CharacterDetail({
   return (
     <aside data-testid="character-detail">
       <Card className="bg-gradient-card">
-        <CardContent className="space-y-5 px-3 py-4 md:space-y-6 md:px-6 md:py-6">
-          <div className="flex items-center gap-4">
-            <ItemIcon
-              kind="character"
-              id={character.id}
-              sourcePath={character.icon_path}
-              alt={name}
-              rarity={character.rarity}
-              size="xl"
-              imageClassName="object-cover object-top"
-            />
-            <div className="min-w-0 space-y-2">
-              <h2 className="text-xl font-bold md:text-2xl">{name}</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <CharacterBadgeGroup
-                  character={character}
-                  properties={propertyTables}
-                />
-                <BetaBadge member="characters" id={character.id} />
+        <CardContent className="space-y-4 px-3 py-4 md:space-y-6 md:px-6 md:py-6">
+          <div className="flex flex-col gap-4 min-[1920px]:flex-row min-[1920px]:items-start min-[1920px]:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
+              <ItemIcon
+                kind="character"
+                id={character.id}
+                sourcePath={character.icon_path}
+                alt={name}
+                rarity={character.rarity}
+                size="xl"
+                className="shrink-0"
+                imageClassName="object-cover object-top"
+              />
+              <div className="min-w-0 space-y-2">
+                <h2 className="text-xl font-bold md:text-2xl">{name}</h2>
+                <div className="flex flex-wrap items-center gap-2">
+                  <CharacterBadgeGroup
+                    character={character}
+                    properties={propertyTables}
+                  />
+                  <BetaBadge member="characters" id={character.id} />
+                </div>
               </div>
+            </div>
+            <div className="min-[1920px]:w-[32rem] min-[1920px]:shrink-0">
+              <CharacterBaseStats character={character} />
             </div>
           </div>
           <CurrencyWarText
             text={character.description}
-            className="text-muted-foreground"
+            className="px-1 text-muted-foreground"
           />
-          <CharacterBaseStats character={character} />
-          <fieldset
-            className="flex flex-wrap items-center gap-2"
-            aria-label={t("archive.descriptionMode")}
-          >
-            <legend className="sr-only">{t("archive.descriptionMode")}</legend>
-            <span className="mr-auto text-sm font-medium">
-              {t("archive.descriptionMode")}
-            </span>
-            <div className="flex rounded-lg border border-border bg-secondary/40 p-0.5">
-              <Button
-                size="sm"
-                variant={descriptionMode === "short" ? "default" : "ghost"}
-                aria-pressed={descriptionMode === "short"}
-                onClick={() => onDescriptionModeChange("short")}
-              >
-                {t("archive.descriptionShort")}
-              </Button>
-              <Button
-                size="sm"
-                variant={descriptionMode === "full" ? "default" : "ghost"}
-                aria-pressed={descriptionMode === "full"}
-                onClick={() => onDescriptionModeChange("full")}
-              >
-                {t("archive.descriptionFull")}
-              </Button>
-            </div>
-          </fieldset>
           <CharacterExtendedDetails
             character={character}
             propertyTables={propertyTables}
             descriptionMode={descriptionMode}
+            skillsAction={
+              <SegmentedTabs
+                size="sm"
+                label={t("archive.descriptionMode")}
+                value={descriptionMode}
+                onValueChange={onDescriptionModeChange}
+                items={[
+                  { value: "short", label: t("archive.descriptionShort") },
+                  { value: "full", label: t("archive.descriptionFull") },
+                ]}
+              />
+            }
           />
           {character.currency_war.length > 0 && (
             <CharacterCurrencyWarDetails
