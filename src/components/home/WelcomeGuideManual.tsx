@@ -6,9 +6,10 @@ import {
   Database,
   Filter,
   Library,
-  Trophy,
+  ShieldCheck,
+  SlidersHorizontal,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,59 +23,103 @@ import {
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+import { WelcomeGuidePreview } from "./WelcomeGuidePreview";
 import "./WelcomeGuideManual.css";
 
-// Adapt the GGArtifact welcome guide's step navigation and manual entry point.
 export function WelcomeGuideManual() {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
   const steps = [
     {
-      title: t("nav.accountData"),
+      id: "account",
+      title: t("guide.account.title"),
       icon: Database,
       body: t("guide.account.body"),
       hint: t("guide.account.hint"),
+      actions: [
+        t("guide.account.action1"),
+        t("guide.account.action2"),
+        t("guide.account.action3"),
+      ],
       links: [
-        { to: APP_PATHS.characters, label: t("home.openAccount") },
+        { to: APP_PATHS.characters, label: t("imports.open") },
+        { to: APP_PATHS.scannerDownload, label: t("guide.scanner") },
+      ],
+    },
+    {
+      id: "builds",
+      title: t("guide.builds.title"),
+      icon: SlidersHorizontal,
+      body: t("guide.builds.body"),
+      hint: t("guide.builds.hint"),
+      actions: [
+        t("guide.builds.action1"),
+        t("guide.builds.action2"),
+        t("guide.builds.action3"),
+      ],
+      links: [{ to: APP_PATHS.builds, label: t("home.openBuilds") }],
+    },
+    {
+      id: "filters",
+      title: t("guide.filters.title"),
+      icon: Filter,
+      body: t("guide.filters.body"),
+      hint: t("guide.filters.hint"),
+      actions: [
+        t("guide.filters.action1"),
+        t("guide.filters.action2"),
+        t("guide.filters.action3"),
+      ],
+      links: [
+        { to: APP_PATHS.filters, label: t("nav.filters") },
         { to: APP_PATHS.inventory, label: t("nav.inventory") },
       ],
     },
     {
-      title: t("nav.planning"),
-      icon: Filter,
-      body: t("guide.builds.body"),
-      hint: t("guide.builds.hint"),
+      id: "decisions",
+      title: t("guide.decisions.title"),
+      icon: ShieldCheck,
+      body: t("guide.decisions.body"),
+      hint: t("guide.decisions.hint"),
+      actions: [
+        t("guide.decisions.action1"),
+        t("guide.decisions.action2"),
+        t("guide.decisions.action3"),
+      ],
       links: [
-        { to: APP_PATHS.builds, label: t("nav.builds") },
-        { to: APP_PATHS.filters, label: t("nav.filters") },
+        { to: APP_PATHS.triage, label: t("nav.triage") },
+        { to: APP_PATHS.resources, label: t("nav.resources") },
       ],
     },
     {
-      title: t("nav.tierList"),
-      icon: Trophy,
-      body: t("guide.priority.body"),
-      hint: t("guide.priority.hint"),
-      links: [
-        { to: APP_PATHS.tierCharacters, label: t("nav.tierCharacters") },
-        { to: APP_PATHS.tierLightCones, label: t("nav.tierLightCones") },
-        { to: APP_PATHS.tierRelics, label: t("nav.tierRelics") },
-      ],
-    },
-    {
-      title: t("nav.archive"),
+      id: "more",
+      title: t("guide.more.title"),
       icon: Library,
-      body: t("guide.archive.body"),
-      hint: t("guide.archive.hint"),
+      body: t("guide.more.body"),
+      hint: t("guide.more.hint"),
+      actions: [
+        t("guide.more.action1"),
+        t("guide.more.action2"),
+        t("guide.more.action3"),
+      ],
       links: [
-        { to: APP_PATHS.archiveCharacters, label: t("nav.archiveCharacters") },
-        { to: APP_PATHS.archiveLightCones, label: t("nav.archiveLightCones") },
-        { to: APP_PATHS.archiveRelicSets, label: t("nav.archiveRelicSets") },
+        { to: APP_PATHS.tierCharacters, label: t("nav.tierList") },
+        { to: APP_PATHS.archiveCharacters, label: t("nav.archive") },
+        {
+          to: APP_PATHS.archiveAchievements,
+          label: t("nav.archiveAchievements"),
+        },
       ],
     },
-  ];
+  ] as const;
   const current = steps[step];
   const Icon = current.icon;
+  function navigate(index: number) {
+    setStep(index);
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  }
   return (
     <ResponsiveDialog
       open={open}
@@ -84,85 +129,125 @@ export function WelcomeGuideManual() {
       }}
     >
       <ResponsiveDialogTrigger asChild>
-        <Button className="h-11 gap-2.5 bg-black px-6 text-lg text-foreground hover:bg-black/80">
-          <Compass className="size-5" aria-hidden="true" />
+        <Button className="h-11 gap-2.5 px-6 text-lg" variant="outline">
+          <Compass className="size-5 text-primary" aria-hidden="true" />
           <span className="guide-text-shimmer">{t("guide.open")}</span>
         </Button>
       </ResponsiveDialogTrigger>
       <ResponsiveDialogContent
         closeLabel={t("common.close")}
-        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0 md:w-[min(48rem,calc(100vw-2rem))] md:p-0"
+        className="flex max-h-[92dvh] flex-col gap-0 overflow-hidden p-0 md:w-[min(56rem,calc(100vw-2rem))] md:p-0"
       >
-        <div className="overflow-y-auto px-6 pb-5 pt-6">
+        <div className="shrink-0 border-b border-border px-5 pb-4 pt-6 sm:px-6">
           <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle className="flex items-center gap-2">
-              <Icon className="size-5 text-primary" aria-hidden="true" />
-              {current.title}
-            </ResponsiveDialogTitle>
+            <ResponsiveDialogTitle>{t("guide.open")}</ResponsiveDialogTitle>
             <ResponsiveDialogDescription>
-              {t("guide.progress", { current: step + 1, total: steps.length })}
+              {t("guide.intro")}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
-          <div className="mt-5 space-y-4">
-            <p className="text-sm leading-6 text-foreground">{current.body}</p>
-            <div className="grid gap-2 rounded-lg border-2 border-primary/50 bg-primary/5 p-3 sm:grid-cols-2">
-              {current.links.map((link) => (
-                <Button
-                  key={link.to}
-                  asChild
-                  variant="outline"
-                  className="h-auto min-h-11 justify-between whitespace-normal text-left"
+          <nav
+            aria-label={t("guide.contents")}
+            className="mt-4 grid grid-cols-5 gap-1 sm:gap-2"
+          >
+            {steps.map((item, index) => {
+              const StepIcon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-current={index === step ? "step" : undefined}
+                  onClick={() => navigate(index)}
+                  className={cn(
+                    "flex min-w-0 flex-col items-center gap-1.5 rounded-lg border px-1 py-2 text-center text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    index === step
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
+                  )}
                 >
-                  <Link to={link.to} onClick={() => setOpen(false)}>
-                    {link.label}
-                    <ArrowUpRight
-                      className="size-4 shrink-0"
-                      aria-hidden="true"
-                    />
-                  </Link>
-                </Button>
-              ))}
+                  <StepIcon className="size-4" aria-hidden="true" />
+                  <span>{item.title}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+        <div
+          ref={contentRef}
+          className="min-h-0 overflow-y-auto px-5 py-5 sm:px-6"
+          aria-live="polite"
+        >
+          <div className="mb-4 flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Icon className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-xs font-medium text-primary">
+                {t("guide.progress", {
+                  current: step + 1,
+                  total: steps.length,
+                })}
+              </p>
+              <h2 className="mt-1 text-lg font-semibold">{current.title}</h2>
+              <p className="mt-1 text-sm leading-6">{current.body}</p>
             </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {current.hint}
-            </p>
+          </div>
+          <div className="grid items-start gap-5 md:grid-cols-[1.15fr_1fr]">
+            <WelcomeGuidePreview key={current.id} kind={current.id} />
+            <div className="space-y-4">
+              <ol className="space-y-3">
+                {current.actions.map((action, index) => (
+                  <li key={action} className="flex gap-3 text-sm leading-6">
+                    <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+                      {index + 1}
+                    </span>
+                    <span>{action}</span>
+                  </li>
+                ))}
+              </ol>
+              <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm leading-6">
+                {current.hint}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {current.links.map((link) => (
+                  <Button
+                    key={link.to}
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-auto min-h-10 whitespace-normal"
+                  >
+                    <Link to={link.to} onClick={() => setOpen(false)}>
+                      {link.label}
+                      <ArrowUpRight
+                        className="size-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-4 py-4 sm:px-6">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-5 py-4 sm:px-6">
           <Button
             variant="ghost"
             size="sm"
             disabled={step === 0}
-            onClick={() => setStep(step - 1)}
+            onClick={() => navigate(step - 1)}
             className="gap-1"
           >
             <ChevronLeft className="size-4" aria-hidden="true" />
             {t("guide.previous")}
           </Button>
-          <div className="flex">
-            {steps.map((item, index) => (
-              <button
-                key={item.title}
-                type="button"
-                aria-label={item.title}
-                aria-current={index === step ? "step" : undefined}
-                onClick={() => setStep(index)}
-                className="flex size-6 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span
-                  className={cn(
-                    "size-2 rounded-full transition-colors",
-                    index === step ? "bg-primary" : "bg-border"
-                  )}
-                />
-              </button>
-            ))}
-          </div>
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {step + 1} / {steps.length}
+          </span>
           <Button
             size="sm"
             className="gap-1"
             onClick={() =>
-              step === steps.length - 1 ? setOpen(false) : setStep(step + 1)
+              step === steps.length - 1 ? setOpen(false) : navigate(step + 1)
             }
           >
             {step === steps.length - 1 ? t("guide.done") : t("guide.next")}

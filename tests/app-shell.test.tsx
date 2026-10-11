@@ -79,7 +79,7 @@ describe("GGArtifact family shell", () => {
     expect(screen.getByText(/manage your Star Rail roster/)).toBeVisible();
     expect(screen.getByText(/Thanks to HoYoWiki and Nanoka/)).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Quick Guide" }));
-    expect(screen.getByRole("dialog")).toHaveTextContent("Quick guide · 1 / 4");
+    expect(screen.getByRole("dialog")).toHaveTextContent("Quick guide · 1 / 5");
     expect(screen.queryByRole("link", { name: "Data Sources" })).toBeNull();
   });
 

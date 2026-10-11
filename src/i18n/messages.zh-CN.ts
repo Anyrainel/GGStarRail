@@ -180,19 +180,88 @@ export const messagesZhCn = {
   "guide.next": "下一步",
   "guide.done": "开始使用",
   "guide.progress": "使用教程 · {current} / {total}",
+  "guide.intro": "从导入背包到筛选、整理遗器，按这五步开始。",
+  "guide.contents": "教程目录",
+  "guide.scanner": "获取扫描器",
+  "guide.account.title": "导入账号",
   "guide.account.body":
-    "进入账号数据，点击「导入账号」。选择兼容的扫描器 JSON 文件，或通过 UID 获取公开角色展柜数据，确认预览后再导入。",
+    "先把角色和遗器带进来，后面的评分、筛选与整理才有依据。",
+  "guide.account.action1":
+    "进入「账号数据」，点击「导入账号」。想整理整个背包，选择扫描器导出的 JSON 文件。",
+  "guide.account.action2":
+    "只想查看展示角色？选择 UID 个人展示导入，输入游戏 UID，获取角色及其已装备物品。",
+  "guide.account.action3":
+    "导入前确认 UID、物品数量和覆盖范围。导入后，在「角色」看当前装备，在「背包」查看光锥与遗器。",
   "guide.account.hint":
-    "公开展柜仅包含展示的角色及其装备。要导入背包中的其他装备，请使用扫描器导出的文件。",
+    "UID 展柜不含未装备遗器。背包里少了东西时，先检查导入来源；整理完整背包需要包含完整库存的扫描文件。",
+  "guide.builds.title": "配置配装",
   "guide.builds.body":
-    "选择角色，指定隧洞遗器和位面饰品套装来创建配装。设置主词条和副词条权重后，前往遗器筛选查看匹配装备。",
+    "告诉工具你要为谁留什么遗器。同一件遗器，对不同角色的价值可能完全不同。",
+  "guide.builds.action1":
+    "在「角色配装」选择目标角色，添加外圈配装与内圈配装，并选择各自的套装。",
+  "guide.builds.action2":
+    "设置躯干、脚部、位面球、连结绳等部位可接受的主词条；有多种选择时，可以同时保留。",
+  "guide.builds.action3":
+    "打开评分设置，按角色需求调整副词条权重与评级门槛。重要词条权重高，不需要的词条设为 0。",
   "guide.builds.hint":
-    "无需导入账号即可配置配装；查看匹配装备则需要先导入遗器。",
-  "guide.priority.body": "将角色、光锥和遗器套装排入自己的优先级档位。",
-  "guide.priority.hint": "可以随时按角色池和目标调整优先级。",
-  "guide.archive.body":
-    "查阅角色、光锥和遗器套装。通过搜索与筛选找到配装所需的信息。",
-  "guide.archive.hint": "浏览图鉴无需导入账号。",
+    "可以先配装、后导入。评分反映你设定的词条偏好；它不是伤害提升，也不能替代实战中的速度配速与属性目标。",
+  "guide.filters.title": "筛选遗器",
+  "guide.filters.body": "把配装要求变成筛选条件，找出背包里符合目标的遗器。",
+  "guide.filters.action1":
+    "打开「遗器筛选」，选择角色与对应配装，查看套装、主词条、有效副词条和最低评分要求。",
+  "guide.filters.action2":
+    "点击某个部位的筛选卡，查看该部位的背包遗器；切换「仅显示匹配遗器」可以对照未通过的原因。",
+  "guide.filters.action3":
+    "查看推荐装备与缺失部位。没有候选时，先检查导入是否包含库存，再回配装页调整过严的要求。",
+  "guide.filters.hint":
+    "外圈和内圈分别配置与筛选。推荐只来自已导入遗器；这里的单件评分推荐不等于队伍伤害最优。",
+  "guide.decisions.title": "整理与养成",
+  "guide.decisions.body":
+    "找到目标以后，再决定哪些值得留、哪些值得继续投入。两类建议都依赖账号数据与已配置配装。",
+  "guide.decisions.action1":
+    "在「遗器整理」设置保留和人工复核分数，确认已锁定、已装备遗器的保护开关。",
+  "guide.decisions.action2":
+    "分别查看「保留」「人工复核」「分解复核」，结合匹配配装和判定原因，逐件确认。先把准备培养的角色配装补齐。",
+  "guide.decisions.action3":
+    "在「资源建议」切换强化遗器、合成遗器或使用变量骰子，按提升空间筛选，再查看目标角色与建议详情。",
+  "guide.decisions.hint":
+    "分解复核不会自动分解物品；未配置角色的需求也不会被完整考虑。评分空间与乐观上限不代表实际强化或重掷一定提升。",
+  "guide.more.title": "更多工具",
+  "guide.more.body": "不导入账号，也能规划目标、查资料和记录成就。",
+  "guide.more.action1":
+    "用「优先级榜单」整理自己的角色、光锥和遗器套装目标；调整档位后可导出分享。",
+  "guide.more.action2":
+    "在「图鉴」搜索角色、光锥与遗器套装，查看技能和套装效果，再回配装页设定需求。",
+  "guide.more.action3":
+    "在「成就」搜索目标并记录完成情况。以后需要重看教程，回首页点击「使用教程」即可。",
+  "guide.more.hint":
+    "第一次使用建议先选一个正在培养的角色，走完「导入 → 配装 → 筛选」，再逐步补齐其他角色的配装。",
+  "guide.preview.title": "操作示意",
+  "guide.preview.example": "示例 · 非账号数据",
+  "guide.preview.json":
+    "想找背包里的未装备遗器：导入包含完整库存的扫描器 JSON 文件。",
+  "guide.preview.uid":
+    "想快速看展示角色：使用 UID。只包含个人展示角色和他们已装备的光锥、遗器。",
+  "guide.preview.review": "确认账号、数量与覆盖范围，再应用导入。",
+  "guide.preview.build": "一个角色，两类配装",
+  "guide.preview.speed": "速度",
+  "guide.preview.break": "击破特攻",
+  "guide.preview.hp": "生命值百分比",
+  "guide.preview.weights": "权重仅作示意，请按目标角色的实际需求调整。",
+  "guide.preview.head": "头部",
+  "guide.preview.hands": "手部",
+  "guide.preview.body": "躯干",
+  "guide.preview.feet": "脚部",
+  "guide.preview.sphere": "位面球",
+  "guide.preview.rope": "连结绳",
+  "guide.preview.match": "匹配遗器需要通过哪些条件？",
+  "guide.preview.triage":
+    "先检查保护规则，再看判定原因。「分解复核」里的遗器仍然需要你确认。",
+  "guide.preview.resources":
+    "强化看剩余成长空间，合成看缺口，变量骰子看重掷空间。结果有随机性，投入前查看详情。",
+  "guide.preview.priority": "把角色、光锥、套装排进自己的目标档位。",
+  "guide.preview.archive": "查技能、光锥效果和套装效果，辅助确定配装需求。",
+  "guide.preview.achievements": "搜索成就并记录进度，无需先导入账号。",
   "home.openBuilds": "配置配装",
   "home.openTiers": "整理优先级",
   "build.chooseSet": "选择套装",

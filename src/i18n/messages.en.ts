@@ -186,21 +186,96 @@ export const messagesEn = {
   "guide.next": "Next",
   "guide.done": "Let's go",
   "guide.progress": "Quick guide · {current} / {total}",
+  "guide.intro":
+    "Five steps from importing your inventory to finding and managing Relics.",
+  "guide.contents": "Guide chapters",
+  "guide.scanner": "Get the scanner",
+  "guide.account.title": "Import",
   "guide.account.body":
-    "Open Account Data and choose Import account. Import a compatible scanner JSON file or look up your public UID showcase, then review the data before applying it.",
+    "Bring in your Characters and Relics so scoring, filters, and triage can use your gear.",
+  "guide.account.action1":
+    "Open Account Data and choose Import account. To manage your whole inventory, select a scanner JSON export.",
+  "guide.account.action2":
+    "Just checking showcased Characters? Choose UID showcase import and enter your game UID to fetch them and their equipped gear.",
+  "guide.account.action3":
+    "Review the UID, item counts, and coverage before applying. Then check equipped gear in Characters and browse Light Cones and Relics in Inventory.",
   "guide.account.hint":
-    "A public showcase only includes displayed Characters and equipped gear. Use a scanner export for the rest of your inventory.",
+    "A UID showcase excludes unequipped Relics. If items are missing, check your import source. Full inventory triage requires an export with complete inventory coverage.",
+  "guide.builds.title": "Builds",
   "guide.builds.body":
-    "Choose a Character and create a build with Cavern Relic and Planar Ornament sets. Set main stats and substat weights, then open Relic Filters to see matching pieces.",
+    "Tell the tool who needs which Relics. The same piece can have very different value for different Characters.",
+  "guide.builds.action1":
+    "Select a Character in Character Builds. Add Cavern and Planar builds and choose the sets for each.",
+  "guide.builds.action2":
+    "Choose acceptable main stats for the Body, Feet, Planar Sphere, and Link Rope. Allow multiple options when appropriate.",
+  "guide.builds.action3":
+    "Open scoring settings and adjust substat weights and grade thresholds. Give important stats higher weights and unwanted stats a weight of 0.",
   "guide.builds.hint":
-    "You can configure builds before importing an account. Matching gear requires imported Relics.",
-  "guide.priority.body":
-    "Arrange Characters, Light Cones, and Relic sets into your own priority tiers.",
-  "guide.priority.hint":
-    "Adjust your priorities as your roster and goals change.",
-  "guide.archive.body":
-    "Browse Characters, Light Cones, and Relic sets. Search or filter to find details for your builds.",
-  "guide.archive.hint": "No account import is needed to browse the Archive.",
+    "Builds work before importing. Scores reflect your stat preferences; they are not damage gains and do not replace checking Speed tuning or stat targets.",
+  "guide.filters.title": "Filters",
+  "guide.filters.body":
+    "Turn your build requirements into filters and find suitable pieces in your inventory.",
+  "guide.filters.action1":
+    "Open Relic Filters, choose a Character and build, and review the set, main stat, desired substat, and minimum score criteria.",
+  "guide.filters.action2":
+    "Select a slot card to inspect its inventory pieces. Toggle Matches only to compare why other pieces failed.",
+  "guide.filters.action3":
+    "Check recommended gear and missing slots. If there are no candidates, check inventory coverage first, then loosen overly strict build requirements.",
+  "guide.filters.hint":
+    "Cavern and Planar builds are configured and filtered separately. Recommendations use imported Relics and individual scores; they do not optimize team damage.",
+  "guide.decisions.title": "Next steps",
+  "guide.decisions.body":
+    "Decide what to keep and where to invest next. Both tools need imported gear and configured builds.",
+  "guide.decisions.action1":
+    "In Relic Triage, set Keep and Review score thresholds and check the protection toggles for locked and equipped pieces.",
+  "guide.decisions.action2":
+    "Inspect Keep, Manual review, and Salvage review, checking matching builds and decision reasons. Configure builds for Characters you plan to raise first.",
+  "guide.decisions.action3":
+    "In Resources, switch between leveling, synthesis, and Variable Dice suggestions. Filter by improvement room and inspect the target Character and details.",
+  "guide.decisions.hint":
+    "Salvage review does not salvage items automatically. Unconfigured Characters may have needs the rules miss. Score gaps and optimistic ceilings do not guarantee better rolls.",
+  "guide.more.title": "Explore",
+  "guide.more.body":
+    "Plan goals, look up game information, and track achievements even without an account import.",
+  "guide.more.action1":
+    "Use Tier List to arrange your Character, Light Cone, and Relic set goals. Adjust tiers and export your list to share.",
+  "guide.more.action2":
+    "Search the Archive for Characters, Light Cones, and Relic sets. Check abilities and effects before setting build requirements.",
+  "guide.more.action3":
+    "Search Achievements and record completion. To revisit this guide, choose Quick Guide on the home page.",
+  "guide.more.hint":
+    "Start with one Character you are raising: Import → Builds → Filters. Then add builds for the rest of your roster.",
+  "guide.preview.title": "How it works",
+  "guide.preview.example": "Example · not your account",
+  "guide.preview.json":
+    "To find unequipped inventory Relics, import a scanner JSON file with complete inventory coverage.",
+  "guide.preview.uid":
+    "For a quick showcase check, use a UID. It includes only displayed Characters and their equipped Light Cones and Relics.",
+  "guide.preview.review":
+    "Check the account, counts, and coverage before applying.",
+  "guide.preview.build": "One Character, two build categories",
+  "guide.preview.speed": "Speed",
+  "guide.preview.break": "Break Effect",
+  "guide.preview.hp": "HP %",
+  "guide.preview.weights":
+    "Illustrative weights only. Adjust them for your target Character.",
+  "guide.preview.head": "Head",
+  "guide.preview.hands": "Hands",
+  "guide.preview.body": "Body",
+  "guide.preview.feet": "Feet",
+  "guide.preview.sphere": "Planar Sphere",
+  "guide.preview.rope": "Link Rope",
+  "guide.preview.match": "What must a matching piece pass?",
+  "guide.preview.triage":
+    "Check protection settings, then inspect decision reasons. Salvage review still needs your judgment.",
+  "guide.preview.resources":
+    "Leveling considers growth room, synthesis considers gaps, and Variable Dice considers reroll room. Outcomes are random; inspect details before spending.",
+  "guide.preview.priority":
+    "Place Characters, Light Cones, and sets into your own goal tiers.",
+  "guide.preview.archive":
+    "Look up abilities and equipment effects to choose build requirements.",
+  "guide.preview.achievements":
+    "Search achievements and track progress without importing an account.",
   "home.openBuilds": "Configure builds",
   "home.openTiers": "Arrange priorities",
   "build.chooseSet": "Choose a set",

@@ -26,3 +26,10 @@
   color: transparent;
   animation: guide-text-shimmer 3s linear infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-text-shimmer {
+    animation: none;
+    color: hsl(var(--foreground));
+  }
+}
