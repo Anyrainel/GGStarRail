@@ -63,19 +63,21 @@ two hours and expose Refresh data for an immediate update; offline clients can
 continue using their last validated local cache or bundled reference.
 
 Packet capture preserves the complete Quest response without downloading
-achievement IDs. The website uses its achievement catalog to classify records,
-and loads the independent `quests` member for `/archive/quests`. That member
-contains all non-achievement QuestData rows, including untitled objectives,
-with explicit system categories, conditions and rewards. New uncatalogued IDs
-remain visible under Other objectives. The full OCR mapping remains independently
+achievement IDs. The website uses exact achievement catalog membership to
+extract completed achievements. It preserves every Quest record in account
+snapshots and backups, but does not display non-achievement objectives or count
+them toward achievement completion. The independent `quests` catalog remains
+available for research; no active page loads it. A mission archive needs verified
+MainMission/SubMission relationships and corresponding account states before
+it can report task progress. The full OCR mapping remains independently
 published as `/good/mapping_achievements.json`. Inventory scanning and manager
 operations do not download it. The old achievement-ID endpoint is removed;
 website and companion releases must be published together.
 
-The objective archive excludes DailyQuest, BattlePassQuest and periodic
-CycleQuest targets. CycleQuest is a registration table, not proof of recurrence:
+DailyQuest, BattlePassQuest and periodic CycleQuest targets are not displayed.
+CycleQuest is a registration table, not proof of recurrence:
 `IsNonPeriodic: true` explicitly marks one-time targets. Full capture records
-remain intact; filtering only affects the archive, including completion totals.
+remain intact for future analysis.
 Achievement membership always uses AchievementData, never the numeric `40xxxxx`
 range, which contains ordinary targets too.
 

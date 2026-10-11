@@ -63,10 +63,6 @@ const INDEX_COPY: Partial<
     title: "home.index.archiveAchievements.title",
     description: "home.index.archiveAchievements.description",
   },
-  [APP_PATHS.archiveQuests]: {
-    title: "home.index.archiveQuests.title",
-    description: "home.index.archiveQuests.description",
-  },
   [APP_PATHS.archiveCurrencyWar]: {
     title: "home.index.archiveCurrencyWar.title",
     description: "home.index.archiveCurrencyWar.description",

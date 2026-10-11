@@ -14,6 +14,9 @@ excludes achievements and Quest definitions; packet capture exports all Quest
 records without an ID allowlist. The independent website `quests` member
 contains only non-achievement objectives, classified by DailyQuest,
 BattlePassQuest, CycleQuest and LinearQuest membership rather than ID prefixes.
+It is retained for research and has no user-facing archive route. Account imports
+preserve complete Quest snapshots while the achievement page classifies records
+using exact AchievementData membership; other objectives do not affect its totals.
 This repository requires no producer-root environment variable. For a fresh clone,
 run `npm run data:restore`, `npm run assets:webp`, and `npm run check`.
 
