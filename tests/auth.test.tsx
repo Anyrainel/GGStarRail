@@ -14,7 +14,13 @@ import AuthCallbackPage from "@/pages/AuthCallbackPage";
 const sdk = vi.hoisted(() => ({
   signIn: vi.fn(async () => undefined),
   signOut: vi.fn(async () => undefined),
-  getIdTokenClaims: vi.fn(async () => ({ email: "trailblazer@example.test" })),
+  getIdTokenClaims: vi.fn(async () => ({
+    email: "trailblazer@example.test",
+    sub: "synthetic-subject",
+  })),
+  getAccessToken: vi.fn(async () => "synthetic-access-token"),
+  getIdToken: vi.fn(async () => "synthetic-id-token"),
+  tokenReceived: vi.fn(),
   authenticated: false,
   callback: undefined as (() => void) | undefined,
   callbackError: undefined as Error | undefined,
@@ -30,6 +36,8 @@ vi.mock("@logto/react", () => ({
     isAuthenticated: sdk.authenticated,
     isLoading: false,
     getIdTokenClaims: sdk.getIdTokenClaims,
+    getAccessToken: sdk.getAccessToken,
+    getIdToken: sdk.getIdToken,
     signIn: sdk.signIn,
     signOut: sdk.signOut,
   }),
@@ -49,6 +57,12 @@ function AuthActions() {
       </button>
       <button type="button" onClick={() => void auth.signOut()}>
         Logout
+      </button>
+      <button
+        type="button"
+        onClick={() => void auth.getFeedbackToken().then(sdk.tokenReceived)}
+      >
+        Feedback token
       </button>
     </>
   );
@@ -115,6 +129,21 @@ describe("Star Rail website authentication", () => {
     ).toBe("synthetic-session");
     await storage.removeItem("idToken");
     expect(await storage.getItem("idToken")).toBeNull();
+  });
+
+  it("refreshes the default token before acquiring the shared feedback ID token", async () => {
+    render(
+      <AuthProvider>
+        <AuthActions />
+      </AuthProvider>
+    );
+    fireEvent.click(screen.getByText("Feedback token"));
+    await waitFor(() =>
+      expect(sdk.tokenReceived).toHaveBeenCalledWith("synthetic-id-token")
+    );
+    expect(sdk.getAccessToken.mock.invocationCallOrder[0]).toBeLessThan(
+      sdk.getIdToken.mock.invocationCallOrder[0]!
+    );
   });
 
   it.each([

@@ -26,6 +26,14 @@ describe("HSR route foundation", () => {
         </I18nProvider>
       </ThemeProvider>
     );
+    if (route.path === APP_PATHS.feedback) {
+      expect(
+        await screen.findByRole("dialog", {
+          name: messagesEn["feedback.signInTitle"],
+        })
+      ).toBeInTheDocument();
+      return;
+    }
     expect(
       await screen.findByRole("heading", {
         level: 1,

@@ -24,9 +24,14 @@ Login returns through the Star Rail callback to the originating Star Rail page.
 Browser sessions stay separate per origin; the identity provider supplies SSO.
 Authentication is independent of account imports.
 There is no cloud account backup API or upload/download menu in this product.
-Feedback and developer support open the family's shared pages on GGArtifact;
-feedback uses that site's own session. Publish the GenshinTools
-`/account/feedback` route together with these links.
+Feedback and developer support are native Star Rail pages. Feedback sends an
+ID token to the existing GGArtifact feedback API with cookies omitted and
+`game: "HSR"`; both sites share `feedback_submissions`. Before publishing,
+apply GenshinTools' `0006_feedback_game.sql` migration to `ggartifact-backup`,
+then publish that shared API and this client. Historical feedback defaults to
+GI. Production needs no new feedback service or database binding here.
+For a local shared-API test, `VITE_FEEDBACK_API_ORIGIN` can override the default
+`https://ggartifact.com`; set it to the local Genshin Worker origin at build time.
 
 See [Logto's React integration guide](https://docs.logto.io/quick-starts/react).
 

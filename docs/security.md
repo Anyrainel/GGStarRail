@@ -36,9 +36,15 @@ restricted to the current origin and cannot point back to the callback route.
 Website tokens never enter account stores, imports, or exported files. This
 is separate from the one-request HoYoLAB credential contract above.
 
-No authenticated Worker API or cloud backup is implemented. Feedback and
-developer support open the shared GGArtifact website without passing website
-tokens or account data between the products. Live sign-in requires deployment
+No authenticated Star Rail Worker API or cloud backup is implemented. Feedback
+uses the shared GGArtifact API and feedback table. The browser sends its Logto
+ID token only to that configured API, in the Authorization header with cookies
+omitted. It is never persisted in the feedback draft or sent in a URL. The API
+validates issuer, audience and signature through the existing auth boundary.
+The automatically supplied GI/HSR label is validated as a known game but is not
+a security boundary. Cooldown remains per authenticated user across both games.
+Support is a local page with the same developer support images.
+Live sign-in requires deployment
 redirect configuration and a real-user check; mocked callback tests do not establish
 the tenant's redirect allowlist or production build configuration.
 

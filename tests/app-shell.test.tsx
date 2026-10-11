@@ -35,11 +35,11 @@ describe("GGArtifact family shell", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Feedback" })).toHaveAttribute(
       "href",
-      "https://ggartifact.com/account/feedback"
+      "/account/feedback"
     );
     expect(
       screen.getByRole("menuitem", { name: "Support development" })
-    ).toHaveAttribute("href", "https://ggartifact.com/account/support");
+    ).toHaveAttribute("href", "/account/support");
     expect(
       screen.queryByRole("menuitem", { name: /cloud|upload|backup/i })
     ).toBeNull();

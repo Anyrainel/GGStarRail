@@ -20,6 +20,8 @@ import type { MessageKey } from "@/i18n/messages.en";
 export const APP_PATHS = {
   home: "/",
   scannerDownload: "/download-scanner",
+  feedback: "/account/feedback",
+  support: "/account/support",
   characters: "/account-data/characters",
   inventory: "/account-data/inventory",
   resources: "/account-data/resources",

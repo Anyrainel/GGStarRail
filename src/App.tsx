@@ -23,6 +23,8 @@ const TriageView = lazy(() =>
 );
 const ArchivePage = lazy(() => import("@/pages/archive/ArchivePage"));
 const ScannerDownloadPage = lazy(() => import("@/pages/ScannerDownloadPage"));
+const FeedbackPage = lazy(() => import("@/pages/FeedbackPage"));
+const SupportPage = lazy(() => import("@/pages/SupportPage"));
 const ArtifactBuildsView = lazy(
   () => import("@/pages/artifact-builds/ArtifactBuildsView")
 );
@@ -70,6 +72,8 @@ export default function App() {
         }
       >
         <Routes>
+          <Route path={APP_PATHS.feedback} element={<FeedbackPage />} />
+          <Route path={APP_PATHS.support} element={<SupportPage />} />
           <Route path="/callback" element={<AuthCallbackPage />} />
           <Route
             path={APP_PATHS.scannerDownload}

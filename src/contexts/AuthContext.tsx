@@ -14,6 +14,8 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   label: string | null;
+  accountId: string | null;
+  getFeedbackToken: () => Promise<string>;
   error: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -23,6 +25,10 @@ const unavailable: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   label: null,
+  accountId: null,
+  getFeedbackToken: async () => {
+    throw new Error("AUTH_REQUIRED");
+  },
   error: false,
   signIn: async () => {
     throw new Error("AUTH_NOT_CONFIGURED");
@@ -36,14 +42,19 @@ const AuthContext = createContext<AuthState>(unavailable);
 function ConnectedAuthProvider({ children }: { children: ReactNode }) {
   const auth = useLogto();
   const [label, setLabel] = useState<string | null>(null);
+  const [accountId, setAccountId] = useState<string | null>(null);
   useEffect(() => {
     let active = true;
     setLabel(null);
+    setAccountId(null);
     if (auth.isAuthenticated) {
       void auth
         .getIdTokenClaims()
         .then((claims) => {
-          if (active) setLabel(claims?.email ?? claims?.name ?? null);
+          if (active) {
+            setLabel(claims?.email ?? claims?.name ?? null);
+            setAccountId(claims?.sub ?? null);
+          }
         })
         .catch(() => {
           /* The menu can still display its localized fallback. */
@@ -60,6 +71,14 @@ function ConnectedAuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: auth.isAuthenticated,
         isLoading: auth.isLoading,
         label,
+        accountId,
+        getFeedbackToken: async () => {
+          // Refresh the default token when needed before reading its ID token.
+          await auth.getAccessToken();
+          const token = await auth.getIdToken();
+          if (!token) throw new Error("AUTH_REQUIRED");
+          return token;
+        },
         error: Boolean(auth.error),
         signIn: async () => {
           rememberAuthReturnPath();

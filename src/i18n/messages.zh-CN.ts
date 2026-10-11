@@ -1,6 +1,27 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "support.title": "支持 GGArtifact",
+  "support.description": "感谢你支持项目的持续开发与维护。",
+  "feedback.description": "感谢您的宝贵时间。",
+  "feedback.gameSite": "游戏站点",
+  "feedback.ratingLabel": "你对 hsr.ggartifact.com 的使用体验满意吗？",
+  "feedback.stars": "{count} 星",
+  "feedback.suggestion": "建议/体验",
+  "feedback.suggestionPlaceholder":
+    "你希望 GGArtifact 怎样改进？或者有什么使用体验想要分享？",
+  "feedback.bugReport": "问题反馈",
+  "feedback.bugPlaceholder": "哪里出了问题？如果方便，可以写下复现步骤。",
+  "feedback.contact": "联系方式（选填）",
+  "feedback.contactPlaceholder": "优先填写 Discord 或 QQ",
+  "feedback.submit": "提交反馈",
+  "feedback.submitting": "提交中…",
+  "feedback.success": "感谢反馈，已发送。",
+  "feedback.failed": "反馈未能发送，请稍后再试。",
+  "feedback.rateLimited": "请等待 5 分钟后再提交反馈。",
+  "feedback.signInTitle": "登录后提交反馈",
+  "feedback.signInDescription": "请登录后再提交反馈。",
+  "feedback.sessionExpired": "登录状态已过期，请重新登录后再试。",
   "auth.signIn": "登录",
   "auth.signOut": "退出登录",
   "auth.signedIn": "已登录账号",

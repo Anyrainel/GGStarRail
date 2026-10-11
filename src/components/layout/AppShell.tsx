@@ -167,24 +167,16 @@ function AccountMenu() {
             </DropdownMenuItem>
           )}
           <DropdownMenuItem asChild>
-            <a
-              href={`${GENSHIN_SITE_URL}/account/feedback`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link to={APP_PATHS.feedback}>
               <MessageSquare className="size-4" aria-hidden />
               {t("account.feedback")}
-            </a>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <a
-              href={`${GENSHIN_SITE_URL}/account/support`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link to={APP_PATHS.support}>
               <HeartHandshake className="size-4" aria-hidden />
               {t("account.support")}
-            </a>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setImportOpen(true)}>

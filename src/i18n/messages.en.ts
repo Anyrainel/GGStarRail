@@ -1,4 +1,27 @@
 export const messagesEn = {
+  "support.title": "Support GGArtifact",
+  "support.description":
+    "Thank you for supporting continued development and maintenance.",
+  "feedback.description": "Thanks for your time.",
+  "feedback.gameSite": "Game site",
+  "feedback.ratingLabel": "How satisfied are you with hsr.ggartifact.com?",
+  "feedback.stars": "{count} stars",
+  "feedback.suggestion": "Suggestion / Experience",
+  "feedback.suggestionPlaceholder":
+    "What would make GGArtifact better? Or what would you like to share about your experience?",
+  "feedback.bugReport": "Bug report",
+  "feedback.bugPlaceholder": "What went wrong? Include steps if you can.",
+  "feedback.contact": "Contact method (optional)",
+  "feedback.contactPlaceholder": "Prefer Discord or QQ",
+  "feedback.submit": "Submit feedback",
+  "feedback.submitting": "Submitting…",
+  "feedback.success": "Thanks, your feedback was sent.",
+  "feedback.failed": "Your feedback could not be sent. Please try again later.",
+  "feedback.rateLimited":
+    "Please wait five minutes before sending more feedback.",
+  "feedback.signInTitle": "Sign in to send feedback",
+  "feedback.signInDescription": "Sign in before sending feedback.",
+  "feedback.sessionExpired": "Your session has expired. Please sign in again.",
   "auth.signIn": "Sign in",
   "auth.signOut": "Sign out",
   "auth.signedIn": "Signed-in account",
