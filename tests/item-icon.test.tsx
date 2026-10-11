@@ -1,6 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { getRarityColor } from "@/components/shared/colors";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import { buildUiCss, utilityDeclarations } from "./helpers/tailwindCss";
+
+const stylesheet = document.createElement("style");
+beforeAll(async () => {
+  const css = await buildUiCss();
+  // JSDOM cannot parse some unrelated modern utilities; load the real gradient rules only.
+  stylesheet.textContent = [1, 2, 3, 4, 5]
+    .map((rarity) => {
+      const className = getRarityColor(rarity, "gradient");
+      const gradient = utilityDeclarations(css, className)["background-image"];
+      return `.${className} { background-image: ${gradient}; }`;
+    })
+    .join("\n");
+  document.head.append(stylesheet);
+});
+afterAll(() => stylesheet.remove());
 
 describe("ItemIcon", () => {
   it.each([
@@ -147,9 +164,8 @@ describe("ItemIcon", () => {
       "data-item-rarity",
       "unknown"
     );
-    expect(container.querySelector("[data-item-artwork]")).toHaveStyle({
-      backgroundImage:
-        "linear-gradient(180deg, hsl(var(--muted)), hsl(var(--secondary)))",
-    });
+    expect(container.querySelector("[data-item-artwork]")).toHaveClass(
+      "bg-rarity-gradient-neutral"
+    );
   });
 });

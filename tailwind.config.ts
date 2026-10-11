@@ -1,6 +1,13 @@
 import type { Config } from "tailwindcss";
 import plugin from "tailwindcss/plugin";
 import tailwindcssAnimate from "tailwindcss-animate";
+import {
+  COMBAT_TYPE_TOKENS,
+  ITEM_TOKENS,
+  RARITY_GRADIENTS,
+  RARITY_TOKENS,
+  TIER_TOKENS,
+} from "./src/config/gameColors";
 
 const wideContainerPlugin = plugin(({ addComponents }) => {
   addComponents({
@@ -71,6 +78,10 @@ export default {
         "3xl": "2048px",
       },
       colors: {
+        item: ITEM_TOKENS,
+        combat: COMBAT_TYPE_TOKENS,
+        tier: TIER_TOKENS,
+        rarity: RARITY_TOKENS,
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -114,6 +125,7 @@ export default {
         glow: "0 0 40px hsl(var(--primary) / 0.12)",
       },
       backgroundImage: {
+        ...RARITY_GRADIENTS,
         "gradient-page": "var(--gradient-page)",
         "gradient-card": "var(--gradient-card)",
         "gradient-select": "var(--gradient-select)",

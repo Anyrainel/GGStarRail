@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
+import { getCombatTypeColor, getTierColor } from "@/components/shared/colors";
 import { PRIORITY_ROWS } from "@/domain/tier-list/constants";
 import type { TierPresentation } from "@/domain/tier-list/document";
 import type { PriorityTier } from "@/domain/tier-list/types";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { combatTypeHeaderColor, tierColor } from "@/lib/gameColors";
 import { cn } from "@/lib/utils";
 import { TierCell } from "./TierCell";
 import type { TierGroupConfig, TierItemData } from "./tierTableTypes";
@@ -33,9 +33,9 @@ function GroupHeader<Group extends string>({
 }) {
   return (
     <div
-      style={{ backgroundColor: combatTypeHeaderColor(group.id) }}
       className={cn(
         "flex min-w-0 min-h-12 items-center justify-center gap-2 rounded-t-md border-b border-r border-gray-600 bg-secondary px-2 text-center font-bold text-gray-100",
+        getCombatTypeColor(group.id, "header"),
         dense && "flex-col gap-1 py-2"
       )}
     >
@@ -73,9 +73,9 @@ function TierLabel({
 }) {
   return (
     <div
-      style={{ backgroundColor: tierColor(tier, "header") }}
       className={cn(
         "flex min-w-0 items-center justify-center border-b border-r border-gray-600 px-2 text-center font-bold text-gray-100 [overflow-wrap:anywhere]",
+        getTierColor(tier, "header"),
         compact
           ? "min-h-9 rounded-t-lg px-3 text-sm"
           : "min-h-[5rem] rounded-l-md text-xl"

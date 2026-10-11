@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import type { CatalogAssetRef } from "@/domain/assets";
 import { cn } from "@/lib/utils";
 import { AssetImage } from "./AssetImage";
+import { getRarityColor } from "./colors";
 
 const ICON_CONFIG = {
   xs: {
@@ -92,25 +93,6 @@ export interface ItemIconProps
   imageClassName?: string;
 }
 
-function rarityBackground(rarity: number | null): string {
-  if (rarity === null) {
-    return "linear-gradient(180deg, hsl(var(--muted)), hsl(var(--secondary)))";
-  }
-
-  switch (rarity) {
-    case 5:
-      return "linear-gradient(180deg, #a35d55, #d0aa6e)";
-    case 4:
-      return "linear-gradient(180deg, #3f4064, #9c65d7)";
-    case 3:
-      return "linear-gradient(180deg, #3a3b62, #4c86c9)";
-    case 2:
-      return "linear-gradient(180deg, #374760, #44908c)";
-    default:
-      return "linear-gradient(180deg, #3e404e, #88888e)";
-  }
-}
-
 /**
  * A compact, game-like item portrait. Rarity, level, rank, lock state, and an
  * optional domain marker are deliberately composed into the icon rather than
@@ -155,12 +137,11 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
       <div
         className={cn(
           "relative shrink-0 select-none overflow-hidden",
-          kind !== "light-cone" && "ring-1 ring-inset ring-white/15"
+          kind !== "light-cone" && "ring-1 ring-inset ring-white/15",
+          kind !== "light-cone" && getRarityColor(rarity, "gradient")
         )}
         data-item-artwork
         style={{
-          backgroundImage:
-            kind === "light-cone" ? undefined : rarityBackground(rarity),
           width: config.icon,
           height: artworkHeight,
           borderTopLeftRadius: badge === undefined ? radius : cornerRadius,
@@ -191,7 +172,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
         {badge !== undefined && (
           <span
-            className="absolute left-0 top-0 flex items-center justify-center bg-[#4a3b2a] font-semibold leading-none text-[#f3d88c] shadow-sm"
+            className="absolute left-0 top-0 flex items-center justify-center bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-sm"
             style={{
               width: config.corner,
               height: config.corner,
@@ -289,7 +270,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           <div className="relative z-10">{artwork}</div>
           {showLevel && (
             <span
-              className="flex select-none items-end justify-center bg-[#f5f0e6] font-bold leading-none text-[#3d3d3d]"
+              className="flex select-none items-end justify-center bg-item-level font-bold leading-none text-item-level-foreground"
               style={{
                 width: config.icon,
                 height: config.levelHeight + config.cornerFill,

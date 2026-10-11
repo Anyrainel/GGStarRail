@@ -15,10 +15,10 @@ import {
   localizedName,
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
-import { combatTypeColor } from "@/lib/gameColors";
 import { formatGameText } from "@/lib/gameText";
 import { formatGameTextVariants } from "@/lib/gameTextVariants";
 import { groupLightConeEffects } from "@/lib/lightConeEffects";
+import { getCombatTypeColor } from "./colors";
 import { ItemIcon } from "./ItemIcon";
 import { RarityStars } from "./RarityStars";
 
@@ -116,7 +116,7 @@ function CatalogHoverContent({
           {"rarity" in entry && <RarityStars rarity={entry.rarity} />}
           <div className="flex flex-wrap gap-2 text-xs">
             {combatType && (
-              <span style={{ color: combatTypeColor(combatType.id) }}>
+              <span className={getCombatTypeColor(combatType.id, "text")}>
                 {localizedName(combatType.name, locale, combatType.id)}
               </span>
             )}

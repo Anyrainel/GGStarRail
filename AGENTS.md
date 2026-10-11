@@ -69,6 +69,22 @@ directory name is used by the current HSR build UI; it is not a Genshin engine.
 
 ## UI And Localization
 
+### Shared UI Entry Points
+
+| Need | Source of truth |
+| --- | --- |
+| Theme colors and surfaces | `tailwind.config.ts`, `src/lib/themeGenerator.ts`: use `bg-background`, `text-foreground`, `bg-primary`, `bg-gradient-card`, `bg-gradient-select` |
+| Dynamic Combat Type, rarity and Tier classes | `src/components/shared/colors.ts`: `getCombatTypeColor(id, "text")`, `getRarityColor(rarity, "gradient")`, `getTierColor(tier, "header")`; compose with `cn()` |
+| Game palettes / raw chart colors | `src/config/gameColors.ts`; `src/lib/gameColors.ts` exposes actual CSS values for non-DOM consumers. Change values in the palette, not in individual components |
+| Item identity and filter controls | `src/components/shared/ItemIcon.tsx`, `AssetImage.tsx`, `FilterChip.tsx`, `FilterChipGroup.tsx` |
+| Page structure | `src/components/layout/{PageLayout,SidebarLayout,WideLayout,ScrollLayout,SidebarDetailLayout}.tsx`; inspect a sibling page before creating a scroll shell |
+| Responsive dialogs | `src/components/ui/responsive-dialog.tsx` and its existing callers |
+
+- Use complete literal Tailwind classes or the typed helpers; never interpolate color class names (such as `text-combat-${id}`).
+- `getRarityColor(rarity, "bg")` is a solid accent; `"text"` is the readable foreground; `"gradient"` is the item artwork background. Preserve their distinct palettes. Unknown Combat Type/group IDs use neutral inherited styling; missing item rarity uses the neutral gradient.
+- `bg-item-badge`, `text-item-badge-foreground`, `bg-item-level` and `text-item-level-foreground` are item chrome tokens; use `ItemIcon` to compose them.
+- UI invariant tests reject new literal colors, interpolated color utilities, and opacity on `text-muted-foreground` / `border-border` in components and pages (including adjacent CSS). Existing debt is capped by exact file/rule/fragment counts in `tests/fixtures/ui-invariants-baseline.json`; remove entries when fixing debt, never expand it to make a new violation pass. Dedicated chart palettes belong in the color definition module.
+
 - Player-facing update history lives in `src/content/updatelog/{en,zh-CN}.md`
   and is opened by the home page Pac-Man. Follow `docs/update-log.md`: draft
   bilingual entries for review before writing them, and update only on request.

@@ -12,19 +12,19 @@ interface FilterChipProps {
 
 const CHIP_COLORS = {
   "rarity-5": {
-    active: "bg-amber-500/25 border-amber-500/50 text-amber-400",
+    active: "bg-rarity-5/25 border-rarity-5/50 text-rarity-5-foreground",
     inactive:
-      "bg-amber-500/10 border-amber-500/30 text-amber-400/60 hover:text-amber-400",
+      "bg-rarity-5/10 border-rarity-5/30 text-rarity-5-foreground/60 hover:text-rarity-5-foreground",
   },
   "rarity-4": {
-    active: "bg-purple-500/25 border-purple-500/50 text-purple-400",
+    active: "bg-rarity-4/25 border-rarity-4/50 text-rarity-4-foreground",
     inactive:
-      "bg-purple-500/10 border-purple-500/30 text-purple-400/60 hover:text-purple-400",
+      "bg-rarity-4/10 border-rarity-4/30 text-rarity-4-foreground/60 hover:text-rarity-4-foreground",
   },
   "rarity-3": {
-    active: "bg-blue-500/25 border-blue-500/50 text-blue-400",
+    active: "bg-rarity-3/25 border-rarity-3/50 text-rarity-3-foreground",
     inactive:
-      "bg-blue-500/10 border-blue-500/30 text-blue-400/60 hover:text-blue-400",
+      "bg-rarity-3/10 border-rarity-3/30 text-rarity-3-foreground/60 hover:text-rarity-3-foreground",
   },
 } as const;
 
