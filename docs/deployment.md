@@ -27,8 +27,10 @@ There is no cloud account backup API or upload/download menu in this product.
 Feedback and developer support are native Star Rail pages. Feedback sends an
 ID token to the existing GGArtifact feedback API with cookies omitted and
 `game: "HSR"`; both sites share `feedback_submissions`. Before publishing,
-apply GenshinTools' `0006_feedback_game.sql` migration to `ggartifact-backup`,
-then publish that shared API and this client. Historical feedback defaults to
+push GenshinTools first and wait for its Cloudflare deployment to succeed.
+Its production `npm run build` automatically applies pending D1 migrations
+(including `0006_feedback_game.sql`) before deploying the shared API. Then
+publish this client. Historical feedback defaults to
 GI. Production needs no new feedback service or database binding here.
 For a local shared-API test, `VITE_FEEDBACK_API_ORIGIN` can override the default
 `https://ggartifact.com`; set it to the local Genshin Worker origin at build time.
