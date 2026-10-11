@@ -1,6 +1,7 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "community.discussion": "角色讨论",
   "home.index.feedback.description": "玩家反馈与建议",
   "community.loading": "正在加载…",
   "community.failed": "加载失败。",

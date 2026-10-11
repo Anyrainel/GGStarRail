@@ -1,4 +1,5 @@
 export const messagesEn = {
+  "community.discussion": "Discussion",
   "home.index.feedback.description": "Player feedback and suggestions",
   "community.loading": "Loading posts…",
   "community.failed": "Couldn't load posts.",

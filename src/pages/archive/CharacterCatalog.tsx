@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { MessageSquare } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   ArchiveChipDivider,
@@ -442,6 +443,7 @@ function CharacterDetail({
   onDescriptionModeChange: (mode: CharacterDescriptionMode) => void;
 }) {
   const { locale, t } = useI18n();
+  const commentsTarget = useRef<HTMLDivElement>(null);
   const name = characterCatalogName(character, locale, t("terms.trailblazer"));
   return (
     <aside data-testid="character-detail">
@@ -469,6 +471,27 @@ function CharacterDetail({
                   <BetaBadge member="characters" id={character.id} />
                 </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => {
+                  const target = commentsTarget.current;
+                  if (!target) return;
+                  target.focus({ preventScroll: true });
+                  target.scrollIntoView({
+                    block: "start",
+                    behavior: window.matchMedia(
+                      "(prefers-reduced-motion: reduce)"
+                    ).matches
+                      ? "auto"
+                      : "smooth",
+                  });
+                }}
+              >
+                <MessageSquare className="size-4" />
+                {t("community.discussion")}
+              </Button>
             </div>
             <div className="min-[1920px]:w-[32rem] min-[1920px]:shrink-0">
               <CharacterBaseStats character={character} />
@@ -506,7 +529,9 @@ function CharacterDetail({
               descriptionMode={descriptionMode}
             />
           )}
-          <CharacterComments key={character.id} characterId={character.id} />
+          <div ref={commentsTarget} tabIndex={-1} className="scroll-mt-4">
+            <CharacterComments key={character.id} characterId={character.id} />
+          </div>
         </CardContent>
       </Card>
     </aside>
