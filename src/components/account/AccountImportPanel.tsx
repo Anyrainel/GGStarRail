@@ -320,14 +320,19 @@ export function AccountImportPanel({
             summary={t("imports.method.file")}
             badge={t("imports.method.recommended")}
           >
+            <p className="text-sm leading-5">{t("imports.scannerHint")}</p>
             <div className="flex flex-wrap gap-2">
-              <Button asChild variant="secondary" className="gap-2">
+              <Button
+                asChild
+                variant="outline"
+                className="gap-2 border-primary/40 bg-primary/10 hover:bg-primary/20"
+              >
                 <a href={APP_PATHS.scannerDownload}>
                   <Download className="size-4" aria-hidden />
                   {t("scanner.menu")}
                 </a>
               </Button>
-              <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-border bg-background/70 px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+              <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
                 <FileJson className="h-4 w-4" aria-hidden />
                 {busy ? t("common.loading") : t("imports.selectFile")}
                 <input
@@ -342,11 +347,6 @@ export function AccountImportPanel({
             <p className="text-xs leading-5 text-muted-foreground">
               {t("imports.fileHelp")}
             </p>
-            {account && (
-              <p className="text-sm text-muted-foreground">
-                {t("imports.existingWarning")}
-              </p>
-            )}
           </ImportMethodItem>
           <ImportMethodItem
             value="uid"
@@ -377,6 +377,14 @@ export function AccountImportPanel({
               <Button type="submit" disabled={busy || !/^\d{9}$/.test(uid)}>
                 {busy ? t("common.loading") : t("imports.uid.action")}
               </Button>
+              <a
+                href="https://status.enka.network/"
+                target="_blank"
+                rel="noreferrer"
+                className="block w-fit text-xs text-primary underline underline-offset-4"
+              >
+                {t("imports.enkaStatus")}
+              </a>
             </form>
           </ImportMethodItem>
           <ImportMethodItem

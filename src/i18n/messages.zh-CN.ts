@@ -808,7 +808,10 @@ export const messagesZhCn = {
   "imports.method.uid": "仅公开展柜及已装备物品",
   "imports.method.hoyolab": "仅角色及已装备物品",
   "imports.selectFile": "选择 JSON 文件",
-  "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",
+  "imports.scannerHint":
+    "在 Windows 电脑上运行 GGScanner，将账号数据导出为 .json 文件。",
+  "imports.enkaStatus": "Enka 服务状态",
+  "imports.fileHelp": "文件仅在本地处理。",
   "imports.review.title": "导入前确认",
   "imports.review.source": "来源：{source} {version}",
   "imports.review.revision": "参考数据修订：{revision}",
@@ -859,12 +862,10 @@ export const messagesZhCn = {
   "imports.uid.title": "UID 个人展示导入",
   "imports.uid.label": "星铁 UID",
   "imports.uid.placeholder": "9 位 UID",
-  "imports.uid.help":
-    "只导入当前个人展示中的角色，以及这些角色已装备的光锥和遗器；绝不是完整背包导入。",
+  "imports.uid.help": "请在游戏「个人展示」中开启「显示角色详情」。",
   "imports.uid.action": "预览 UID 展示",
   "imports.credentials.title": "HoYoLAB / 米游社凭据导入",
-  "imports.credentials.body":
-    "仅限本人账号的角色及已装备物品，不含未装备背包。凭据导入尚未通过实测。",
+  "imports.credentials.body": "仅限本人账号；此方式尚未通过实测。",
   "imports.credentials.region": "账号服务",
   "imports.credentials.global": "国际服 · HoYoLAB",
   "imports.credentials.cn": "国服 · 米游社",

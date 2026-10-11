@@ -854,8 +854,10 @@ export const messagesEn = {
   "imports.method.uid": "Public showcase and equipped items only",
   "imports.method.hoyolab": "Characters and equipped items only",
   "imports.selectFile": "Choose JSON file",
-  "imports.fileHelp":
-    "JSON only. Importing never sends the file or account data over the network.",
+  "imports.scannerHint":
+    "Run GGScanner on Windows to export your account as a .json file.",
+  "imports.enkaStatus": "Enka service status",
+  "imports.fileHelp": "Files are processed locally.",
   "imports.review.title": "Review before import",
   "imports.review.source": "Source: {source} {version}",
   "imports.review.revision": "Reference revision: {revision}",
@@ -912,11 +914,10 @@ export const messagesEn = {
   "imports.uid.label": "Star Rail UID",
   "imports.uid.placeholder": "9-digit UID",
   "imports.uid.help":
-    "Imports only Characters currently displayed in the profile, plus their equipped Light Cones and Relics. This is never a full inventory import.",
+    "Enable character details in your in-game profile showcase.",
   "imports.uid.action": "Review UID showcase",
   "imports.credentials.title": "HoYoLAB / 米游社 credential import",
-  "imports.credentials.body":
-    "Owned Characters and equipped gear only. Unequipped inventory unavailable. Live credential import unverified.",
+  "imports.credentials.body": "Use your own account. Live import unverified.",
   "imports.credentials.region": "Account service",
   "imports.credentials.global": "Global · HoYoLAB",
   "imports.credentials.cn": "China · 米游社",
