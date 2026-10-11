@@ -23,7 +23,14 @@ describe("GGArtifact Star Rail home", () => {
       within(index)
         .getAllByRole("heading", { level: 3 })
         .map((heading) => heading.textContent)
-    ).toEqual(["Feedback", "Account Data", "Team DMG", "Builds", "Tier List", "Archive"]);
+    ).toEqual([
+      "Feedback",
+      "Account Data",
+      "Team DMG",
+      "Builds",
+      "Tier List",
+      "Archive",
+    ]);
     expect(
       within(index).getByRole("link", { name: /Currency War lookup/ })
     ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);

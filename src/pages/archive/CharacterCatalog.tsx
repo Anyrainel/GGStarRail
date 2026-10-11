@@ -5,8 +5,8 @@ import {
   ArchiveChipDivider,
   ArchiveToolbar,
 } from "@/components/archive/ArchiveToolbar";
-import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
 import { CharacterComments } from "@/components/archive/CharacterComments";
+import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
@@ -14,6 +14,7 @@ import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useMediaQuery } from "@/hooks/useMediaQuery";

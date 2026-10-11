@@ -52,6 +52,24 @@ Cloudflare manages its DNS and certificate. Normal releases use Git pushes;
 
 ## Reproducible clean builds
 
+`npm ci` / `npm install` installs the tracked `.githooks/pre-push` hook through
+`prepare`. For an existing checkout, run `npm run prepare` once. Installation
+refuses to overwrite a different `core.hooksPath`. Pushes require a clean tree
+and run `git diff --check` plus the same complete `npm run check` used by CI
+and Cloudflare; any nonzero exit blocks the push. Branch pushes must match the
+checked-out commit so an unrelated clean checkout cannot validate them. Git hooks can be bypassed,
+so remote validation remains required.
+
+UI tests track real timeouts and intervals per test. After unmounting, teardown
+allows 25 ms for deferred focus cleanup, then fails and cancels outstanding
+timers with their scheduling stacks before jsdom is destroyed. Do not hide
+leaks with blanket timer clearing or ignore unhandled errors. Await async work
+and cancel component timers on unmount. This catches delayed callback leaks
+without depending on local/CI execution speed; it cannot prove the absence of
+every possible asynchronous bug.
+Shared async UI assertions allow 5 seconds (tests default to 10 seconds) for
+parallel catalog loading; this does not extend or bypass the timer-leak check.
+
 ```sh
 npm ci
 npm run data:restore

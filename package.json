@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "prepare": "node scripts/install-git-hooks.mjs",
+    "test:tooling": "node --test scripts/git-hooks.test.mjs",
     "dev": "vite",
     "demo:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-demo.ps1",
     "dev:wrangler": "npm run dev:worker",
@@ -34,7 +36,7 @@
     "depcheck": "depcruise src tests worker --config .dependency-cruiser.cjs",
     "check:worker-config": "node scripts/check-worker-config.mjs",
     "check:worker": "npm run check:worker-config && npm run type-check:worker && npm run test:worker",
-    "check": "npm run data:check && npm run assets:check && npm run data:website:check && npm run test:data-sources && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker",
+    "check": "npm run data:check && npm run assets:check && npm run data:website:check && npm run test:data-sources && npm run test:tooling && npm run type-check && npm run lint && npm run test && npm run depcheck && npm run build && npm run check:worker",
     "combat:dossier": "node scripts/combat-dossier.mjs"
   },
   "dependencies": {

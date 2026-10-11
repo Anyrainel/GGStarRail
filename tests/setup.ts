@@ -1,8 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, vi } from "vitest";
+import { installTimerGuard } from "./timerGuard";
+
+let timerGuard: ReturnType<typeof installTimerGuard>;
+
+// Full-suite parallel catalog loading can exceed Testing Library's 1 s default.
+configure({ asyncUtilTimeout: 5_000 });
 
 if (typeof Element.prototype.scrollIntoView !== "function") {
   Element.prototype.scrollIntoView = vi.fn();
@@ -41,6 +47,7 @@ function installFixtureTransport() {
 beforeAll(installFixtureTransport);
 
 beforeEach(() => {
+  timerGuard = installTimerGuard();
   localStorage.clear();
   installFixtureTransport();
   Object.defineProperty(window, "matchMedia", {
@@ -58,8 +65,13 @@ beforeEach(() => {
   });
 });
 
-afterEach(() => {
-  cleanup();
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
+afterEach(async () => {
+  try {
+    cleanup();
+    await timerGuard.verify();
+  } finally {
+    timerGuard.restore();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  }
 });

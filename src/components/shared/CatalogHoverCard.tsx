@@ -49,8 +49,16 @@ export function CatalogHoverCard({
     >
       <HoverCard.Trigger
         asChild
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
+        onFocus={(event) => {
+          // Focus is immediate; suppress Radix's second delayed open. Otherwise
+          // hover + focus overwrites its timer handle and escapes unmount cleanup.
+          event.preventDefault();
+          setOpen(true);
+        }}
+        onBlur={(event) => {
+          event.preventDefault();
+          setOpen(false);
+        }}
         onPointerDown={() => setOpen(false)}
       >
         {children}

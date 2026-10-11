@@ -1,7 +1,8 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CharacterLightCones } from "@/components/builds/CharacterLightCones";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { I18nProvider } from "@/i18n/I18nContext";
@@ -15,6 +16,22 @@ import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 afterEach(() => act(() => useWorkspaceStore.getState().clearWorkspace()));
 
 describe("shared catalog picker", () => {
+  it("cancels pending hover timers when focus and pointer events precede unmount", () => {
+    const view = render(
+      <I18nProvider>
+        <CatalogHoverCard kind="character" id="1001" disabled>
+          <button type="button">Hover target</button>
+        </CatalogHoverCard>
+      </I18nProvider>
+    );
+    const target = screen.getByRole("button", { name: "Hover target" });
+    fireEvent.pointerEnter(target, { pointerType: "mouse" });
+    fireEvent.focus(target);
+    fireEvent.blur(target);
+    fireEvent.pointerLeave(target, { pointerType: "mouse" });
+    view.unmount();
+    // The global teardown guard proves that no delayed callback survives.
+  });
   it.each([
     "character",
     "light-cone",
