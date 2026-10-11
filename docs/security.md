@@ -25,6 +25,22 @@ are `no-store`, upstream bodies are not echoed on failure, and failed imports
 do not mutate the workspace. Authenticated success remains explicitly
 unverified without a user-authorized live credential test.
 
+## Website authentication
+
+Website sign-in uses a dedicated Logto SPA configured at build time. The SDK
+handles OIDC state, PKCE, token exchange and token validation. Its browser
+storage adapter namespaces all keys under `ggstarrail:auth:`; transient sign-in
+state and the originating route live in sessionStorage. Return navigation is
+restricted to the current origin and cannot point back to the callback route.
+Website tokens never enter account stores, imports, or exported files. This
+is separate from the one-request HoYoLAB credential contract above.
+
+No authenticated Worker API or cloud backup is implemented. Feedback and
+developer support open the shared GGArtifact website without passing website
+tokens or account data between the products. Live sign-in requires deployment
+configuration and a real-user check; mocked callback tests do not establish
+the tenant's redirect allowlist or production build configuration.
+
 ## File imports
 
 Scanner imports validate the versioned outer format and canonical account

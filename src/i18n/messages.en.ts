@@ -1,4 +1,13 @@
 export const messagesEn = {
+  "auth.signIn": "Sign in",
+  "auth.signOut": "Sign out",
+  "auth.signedIn": "Signed-in account",
+  "auth.completing": "Completing sign-in…",
+  "auth.failed": "Sign-in failed. Please return and try again.",
+  "auth.unavailable":
+    "Sign-in is temporarily unavailable. Please try again later.",
+  "account.feedback": "Feedback",
+  "account.support": "Support development",
   "whatsNew.title": "What’s New",
   "whatsNew.roadmap": "Roadmap",
   "whatsNew.features": "New features",
@@ -7,7 +16,7 @@ export const messagesEn = {
   "imports.review.quests": "Complete Quest snapshot: {count} records",
   "app.developmentNotice": "The Star Rail site is still under development.",
   "scanner.menu": "Download GGScanner",
-  "scanner.platform": "For Windows PCs · Genshin Impact & Star Rail",
+  "scanner.platform": "Windows",
   "scanner.tagline": "Your collection, ready for GGArtifact.",
   "scanner.introduction":
     "Save Characters, Light Cones, Relics, and achievements as a JSON file to import into GGArtifact.",
@@ -21,7 +30,6 @@ export const messagesEn = {
   "scanner.managerFeature": "Relic locks & discard marks",
   "scanner.downloadCapture": "Download GGScanner",
   "scanner.downloadOcr": "Download GGScannerOCR",
-  "scanner.choiceNote": "Capture starts only when you choose it.",
   "scanner.included": "Included",
   "scanner.notIncluded": "Not included",
   "scanner.allReleases": "GitHub releases & direct downloads",

@@ -162,7 +162,6 @@ export default function ScannerDownloadPage() {
           </section>
 
           <div className="flex flex-col items-center gap-3 text-center text-sm">
-            <p className="text-foreground/80">{t("scanner.choiceNote")}</p>
             <a
               href={SCANNER_RELEASES}
               target="_blank"

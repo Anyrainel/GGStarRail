@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ErrorBoundary } from "./components/shared/ErrorBoundary";
+import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { I18nProvider } from "./i18n/I18nContext";
 import "./index.css";
@@ -16,7 +17,9 @@ createRoot(rootElement).render(
       <I18nProvider>
         <ErrorBoundary>
           <BrowserRouter>
-            <App />
+            <AuthProvider>
+              <App />
+            </AuthProvider>
           </BrowserRouter>
         </ErrorBoundary>
       </I18nProvider>

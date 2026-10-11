@@ -4,6 +4,30 @@ Production is a single Cloudflare Worker named `ggstarrail` at
 https://hsr.ggartifact.com. It serves the Vite output and the existing `/api/`
 import handlers. No database, bucket, or GenshinTools credentials are needed.
 
+## Website sign-in
+
+Create a dedicated **Single Page App** in the existing Logto tenant for Star Rail.
+Register `https://hsr.ggartifact.com/callback` as its redirect URI and
+`https://hsr.ggartifact.com/` as its post sign-out redirect URI. If the tenant
+requires an allowed-origin list, add `https://hsr.ggartifact.com`.
+Set `VITE_LOGTO_ENDPOINT=https://auth.ggartifact.com` and
+`VITE_LOGTO_APP_ID=<the Star Rail SPA app ID>` in the Cloudflare **build**
+environment (and `.env.local` for local development). Rebuild after changing
+these values; runtime Worker variables do not configure the Vite bundle.
+Do not configure a client secret for this browser SPA.
+
+For local testing register the exact dev origin, for example
+`http://localhost:5173/callback` and `http://localhost:5173/`.
+Test sign-in, callback, return to the originating page, reload, and sign-out.
+The site remains usable without authentication configuration; sign-in then
+reports unavailability. Authentication is independent of account imports.
+There is no cloud account backup API or upload/download menu in this product.
+Feedback and developer support open the family's shared pages on GGArtifact;
+feedback uses that site's own session. Publish the GenshinTools
+`/account/feedback` route together with these links.
+
+See [Logto's React integration guide](https://docs.logto.io/quick-starts/react).
+
 ## Automatic publishing
 
 Connect `Anyrainel/GGStarRail` in Workers & Pages > ggstarrail > Settings >

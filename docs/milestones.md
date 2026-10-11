@@ -50,8 +50,9 @@
 ## Remaining: backup and infrastructure
 
 - Add local backup import/export UI first.
-- Introduce authentication or cloud backup only after an explicit product and
-  threat-model decision.
+- Website sign-in is implemented with a dedicated Logto SPA; configure its
+  application ID and redirect allowlist before live verification (see deployment.md).
+- Introduce cloud backup only after an explicit product and threat-model decision.
 - Provision independent Worker resources through reviewed configuration; never
   reuse GenshinTools accounts, IDs, buckets, databases, routes, or secrets.
 

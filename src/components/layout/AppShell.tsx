@@ -3,8 +3,12 @@ import {
   ChevronDown,
   Download,
   ExternalLink,
+  HeartHandshake,
   Languages,
+  LogIn,
+  LogOut,
   Menu,
+  MessageSquare,
   MoreVertical,
   Palette,
   UserRound,
@@ -48,6 +52,7 @@ import {
   NAVIGATION_SECTIONS,
   navigationSection,
 } from "@/config/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
@@ -128,7 +133,17 @@ function SiteSwitcher() {
 
 function AccountMenu() {
   const { t } = useI18n();
+  const auth = useAuth();
   const [importOpen, setImportOpen] = useState(false);
+  const [actionFailed, setActionFailed] = useState(false);
+  async function authenticate(action: () => Promise<void>) {
+    setActionFailed(false);
+    try {
+      await action();
+    } catch {
+      setActionFailed(true);
+    }
+  }
   return (
     <>
       <DropdownMenu>
@@ -138,6 +153,40 @@ function AccountMenu() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {auth.isAuthenticated ? (
+            <DropdownMenuItem disabled className="max-w-64 truncate">
+              {auth.label ?? t("auth.signedIn")}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              disabled={auth.isLoading}
+              onSelect={() => void authenticate(auth.signIn)}
+            >
+              <LogIn className="size-4" aria-hidden />
+              {t("auth.signIn")}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+            <a
+              href={`${GENSHIN_SITE_URL}/account/feedback`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MessageSquare className="size-4" aria-hidden />
+              {t("account.feedback")}
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <a
+              href={`${GENSHIN_SITE_URL}/account/support`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <HeartHandshake className="size-4" aria-hidden />
+              {t("account.support")}
+            </a>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setImportOpen(true)}>
             <Download className="size-4" aria-hidden />
             {t("imports.open")}
@@ -148,8 +197,28 @@ function AccountMenu() {
               {t("scanner.menu")}
             </Link>
           </DropdownMenuItem>
+          {auth.isAuthenticated && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={auth.isLoading}
+                onSelect={() => void authenticate(auth.signOut)}
+              >
+                <LogOut className="size-4" aria-hidden />
+                {t("auth.signOut")}
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
+      {(actionFailed || auth.error) && (
+        <div
+          role="alert"
+          className="absolute right-4 top-full max-w-xs rounded-md border border-destructive bg-card p-3 text-sm text-foreground"
+        >
+          {t("auth.unavailable")}
+        </div>
+      )}
       <AccountImportDialog open={importOpen} onOpenChange={setImportOpen} />
     </>
   );

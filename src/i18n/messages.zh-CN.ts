@@ -1,6 +1,14 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "auth.signIn": "登录",
+  "auth.signOut": "退出登录",
+  "auth.signedIn": "已登录账号",
+  "auth.completing": "正在完成登录…",
+  "auth.failed": "登录失败，请返回后重试。",
+  "auth.unavailable": "暂时无法登录，请稍后再试。",
+  "account.feedback": "反馈",
+  "account.support": "支持开发",
   "whatsNew.title": "更新日志",
   "whatsNew.roadmap": "计划",
   "whatsNew.features": "新增功能",
@@ -9,7 +17,7 @@ export const messagesZhCn = {
   "imports.review.quests": "完整目标快照：{count} 条记录",
   "app.developmentNotice": "星穹铁道站仍在开发中。",
   "scanner.menu": "下载 GGScanner",
-  "scanner.platform": "Windows 电脑 · 原神与星穹铁道",
+  "scanner.platform": "Windows",
   "scanner.tagline": "把游戏背包，带进 GGArtifact。",
   "scanner.introduction":
     "将角色、光锥、遗器与成就保存为 JSON 文件，导入 GGArtifact。",
@@ -23,7 +31,6 @@ export const messagesZhCn = {
   "scanner.managerFeature": "遗器锁定、弃置",
   "scanner.downloadCapture": "下载 GGScanner",
   "scanner.downloadOcr": "下载 GGScannerOCR",
-  "scanner.choiceNote": "抓包由你手动启动。",
   "scanner.included": "包含",
   "scanner.notIncluded": "不包含",
   "scanner.allReleases": "GitHub 发布页与直接下载",
