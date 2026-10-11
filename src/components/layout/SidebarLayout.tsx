@@ -1,12 +1,8 @@
 import { Filter, type LucideIcon } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
+import { LocalizedSheetContent as SheetContent } from "@/components/shared/LocalizedSheetContent";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useGlobalScroll } from "@/hooks/useGlobalScroll";
 import { useI18n } from "@/i18n/I18nContext";
 

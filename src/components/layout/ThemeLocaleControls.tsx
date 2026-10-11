@@ -2,7 +2,6 @@ import { Languages, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuCheck,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -33,7 +32,6 @@ export function ThemeChoices() {
           value={id}
           onSelect={() => setTheme(id)}
         >
-          <DropdownMenuCheck visible={theme === id} />
           <span
             className="h-3.5 w-3.5 shrink-0 rounded-full border border-foreground/30"
             style={{ backgroundColor: getThemePrimaryColor(id) }}
@@ -50,11 +48,9 @@ export function LocaleChoices() {
   return (
     <DropdownMenuRadioGroup value={locale}>
       <DropdownMenuRadioItem value="en" onSelect={() => setLocale("en")}>
-        <DropdownMenuCheck visible={locale === "en"} />
         {t("app.locale.english")}
       </DropdownMenuRadioItem>
       <DropdownMenuRadioItem value="zh-CN" onSelect={() => setLocale("zh-CN")}>
-        <DropdownMenuCheck visible={locale === "zh-CN"} />
         {t("app.locale.chinese")}
       </DropdownMenuRadioItem>
     </DropdownMenuRadioGroup>

@@ -28,6 +28,8 @@ import {
   ThemeChoices,
   ThemeLocaleControls,
 } from "@/components/layout/ThemeLocaleControls";
+import { LocalizedSheetContent as SheetContent } from "@/components/shared/LocalizedSheetContent";
+import { StableDropdownSubTrigger as DropdownMenuSubTrigger } from "@/components/shared/StableDropdownSubTrigger";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -37,12 +39,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
   Sheet,
-  SheetContent,
   SheetDescription,
   SheetTitle,
   SheetTrigger,

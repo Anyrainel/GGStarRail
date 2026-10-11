@@ -1,5 +1,6 @@
 import { type ReactNode, useCallback, useRef, useState } from "react";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { LocalizedSheetContent as SheetContent } from "@/components/shared/LocalizedSheetContent";
+import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { useI18n } from "@/i18n/I18nContext";
 
 const NARROW_ARCHIVE_QUERY = "(max-width: 1023px)";
