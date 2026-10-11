@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { WhatsNew } from "@/components/shared/WhatsNew";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { parseUpdateLog } from "@/lib/updateLog";
+import { parseUpdateLog, updateLogs } from "@/lib/updateLog";
 
 describe("update history", () => {
   it("keeps roadmap, dates and feature/fix bullets separate", () => {
@@ -46,8 +46,31 @@ describe("update history", () => {
     const pacman = screen.getByLabelText("What’s New");
     fireEvent.click(pacman);
     expect(screen.getByRole("dialog", { name: "What’s New" })).toBeVisible();
-    expect(screen.getByText("No updates yet.")).toBeVisible();
+    for (const entry of updateLogs.en.entries) {
+      expect(screen.getByText(entry.date)).toBeVisible();
+      for (const section of entry.sections) {
+        for (const item of section.items) {
+          expect(screen.getByText(item)).toBeVisible();
+        }
+      }
+    }
+    expect(screen.queryByText("No updates yet.")).not.toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("publishes matching bilingual dates, sections and bullet counts", () => {
+    const structure = (history: typeof updateLogs.en) => ({
+      roadmapCount: history.roadmap.length,
+      entries: history.entries.map((entry) => ({
+        date: entry.date,
+        sections: entry.sections.map((section) => ({
+          category: section.category,
+          count: section.items.length,
+        })),
+      })),
+    });
+    expect(updateLogs.en.entries.length).toBeGreaterThan(0);
+    expect(structure(updateLogs.en)).toEqual(structure(updateLogs["zh-CN"]));
   });
 });
