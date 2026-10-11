@@ -1,4 +1,9 @@
 export const messagesEn = {
+  "whatsNew.title": "What’s New",
+  "whatsNew.roadmap": "Roadmap",
+  "whatsNew.features": "New features",
+  "whatsNew.fixes": "Fixes",
+  "whatsNew.empty": "No updates yet.",
   "imports.review.quests": "Complete Quest snapshot: {count} records",
   "app.developmentNotice": "The Star Rail site is still under development.",
   "scanner.menu": "Download GGScanner",

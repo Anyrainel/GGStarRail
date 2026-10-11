@@ -69,6 +69,10 @@ directory name is used by the current HSR build UI; it is not a Genshin engine.
 
 ## UI And Localization
 
+- Player-facing update history lives in `src/content/updatelog/{en,zh-CN}.md`
+  and is opened by the home page Pac-Man. Follow `docs/update-log.md`: draft
+  bilingual entries for review before writing them, and update only on request.
+
 - Use `cn()` from `src/lib/utils.ts` for conditional Tailwind classes.
 - Reuse shared components and fix recurring defects in the shared primitive.
 - Use theme tokens from the existing ThemeContext/themeGenerator system rather

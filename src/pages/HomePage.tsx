@@ -3,6 +3,7 @@ import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
 import { WelcomeGuideManual } from "@/components/home/WelcomeGuideManual";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { WhatsNew } from "@/components/shared/WhatsNew";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
@@ -39,44 +40,46 @@ export default function HomePage() {
           <WelcomeGuideManual />
         </div>
       </section>
-      <section className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
-        <FeatureCard
-          icon={<Database className="size-6" />}
-          title={t("nav.accountData")}
-          link={APP_PATHS.characters}
-          bgImage="assets/ggstarrail/home/firefly.webp"
-          bgPosition="55% center"
-          bgScale={1.3}
-          bgOffsetX="20%"
-          ctaText={t("home.openAccount")}
-        />
-        <FeatureCard
-          icon={<Filter className="size-6" />}
-          title={t("nav.planning")}
-          link={APP_PATHS.builds}
-          bgImage="assets/ggstarrail/home/ruan-mei.webp"
-          bgPosition="80% center"
-          ctaText={t("home.openBuilds")}
-        />
-        <FeatureCard
-          icon={<Award className="size-6" />}
-          title={t("nav.tierList")}
-          link={APP_PATHS.tierCharacters}
-          bgImage="assets/ggstarrail/home/hysilens.webp"
-          bgPosition="45% center"
-          ctaText={t("home.openTiers")}
-        />
-        <FeatureCard
-          icon={<Library className="size-6" />}
-          title={t("nav.archive")}
-          link={APP_PATHS.archiveCharacters}
-          bgImage="assets/ggstarrail/home/evernight.webp"
-          bgPosition="55% center"
-          bgScale={1.1}
-          bgOffsetX="20%"
-          ctaText={t("home.openArchive")}
-        />
-      </section>
+      <WhatsNew>
+        <section className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+          <FeatureCard
+            icon={<Database className="size-6" />}
+            title={t("nav.accountData")}
+            link={APP_PATHS.characters}
+            bgImage="assets/ggstarrail/home/firefly.webp"
+            bgPosition="55% center"
+            bgScale={1.3}
+            bgOffsetX="20%"
+            ctaText={t("home.openAccount")}
+          />
+          <FeatureCard
+            icon={<Filter className="size-6" />}
+            title={t("nav.planning")}
+            link={APP_PATHS.builds}
+            bgImage="assets/ggstarrail/home/ruan-mei.webp"
+            bgPosition="80% center"
+            ctaText={t("home.openBuilds")}
+          />
+          <FeatureCard
+            icon={<Award className="size-6" />}
+            title={t("nav.tierList")}
+            link={APP_PATHS.tierCharacters}
+            bgImage="assets/ggstarrail/home/hysilens.webp"
+            bgPosition="45% center"
+            ctaText={t("home.openTiers")}
+          />
+          <FeatureCard
+            icon={<Library className="size-6" />}
+            title={t("nav.archive")}
+            link={APP_PATHS.archiveCharacters}
+            bgImage="assets/ggstarrail/home/evernight.webp"
+            bgPosition="55% center"
+            bgScale={1.1}
+            bgOffsetX="20%"
+            ctaText={t("home.openArchive")}
+          />
+        </section>
+      </WhatsNew>
       <FeatureMatrix />
       <footer className="mt-auto space-y-1 border-t border-border/20 pb-2 pt-6 text-center text-xs leading-relaxed text-muted-foreground">
         <p>

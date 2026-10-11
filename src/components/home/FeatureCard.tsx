@@ -30,6 +30,7 @@ export function FeatureCard({
 }: FeatureCardProps) {
   return (
     <Link
+      data-wn-card
       to={link}
       className="group relative flex min-h-[180px] flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:min-h-[200px]"
     >

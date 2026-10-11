@@ -1,6 +1,11 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "whatsNew.title": "更新日志",
+  "whatsNew.roadmap": "计划",
+  "whatsNew.features": "新增功能",
+  "whatsNew.fixes": "修复优化",
+  "whatsNew.empty": "暂无更新记录。",
   "imports.review.quests": "完整目标快照：{count} 条记录",
   "app.developmentNotice": "星穹铁道站仍在开发中。",
   "scanner.menu": "下载 GGScanner",
