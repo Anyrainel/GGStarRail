@@ -78,12 +78,6 @@ function ConnectedAuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  if (!AUTH_CONFIG)
-    return (
-      <AuthContext.Provider value={unavailable}>
-        {children}
-      </AuthContext.Provider>
-    );
   return (
     <LogtoProvider config={AUTH_CONFIG} LogtoClientClass={StarRailAuthClient}>
       <ConnectedAuthProvider>{children}</ConnectedAuthProvider>

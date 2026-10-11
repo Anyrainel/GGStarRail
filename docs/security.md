@@ -27,7 +27,8 @@ unverified without a user-authorized live credential test.
 
 ## Website authentication
 
-Website sign-in uses a dedicated Logto SPA configured at build time. The SDK
+Website sign-in shares the existing GGArtifact Logto SPA, explicitly requested
+for both game sites. Each origin completes its own callback. The SDK
 handles OIDC state, PKCE, token exchange and token validation. Its browser
 storage adapter namespaces all keys under `ggstarrail:auth:`; transient sign-in
 state and the originating route live in sessionStorage. Return navigation is
@@ -38,7 +39,7 @@ is separate from the one-request HoYoLAB credential contract above.
 No authenticated Worker API or cloud backup is implemented. Feedback and
 developer support open the shared GGArtifact website without passing website
 tokens or account data between the products. Live sign-in requires deployment
-configuration and a real-user check; mocked callback tests do not establish
+redirect configuration and a real-user check; mocked callback tests do not establish
 the tenant's redirect allowlist or production build configuration.
 
 ## File imports

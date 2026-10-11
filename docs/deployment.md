@@ -6,21 +6,23 @@ import handlers. No database, bucket, or GenshinTools credentials are needed.
 
 ## Website sign-in
 
-Create a dedicated **Single Page App** in the existing Logto tenant for Star Rail.
-Register `https://hsr.ggartifact.com/callback` as its redirect URI and
-`https://hsr.ggartifact.com/` as its post sign-out redirect URI. If the tenant
-requires an allowed-origin list, add `https://hsr.ggartifact.com`.
-Set `VITE_LOGTO_ENDPOINT=https://auth.ggartifact.com` and
-`VITE_LOGTO_APP_ID=<the Star Rail SPA app ID>` in the Cloudflare **build**
-environment (and `.env.local` for local development). Rebuild after changing
-these values; runtime Worker variables do not configure the Vite bundle.
-Do not configure a client secret for this browser SPA.
+Both game sites share the existing Logto **Single Page App**
+`tglrsenlbfrfrnevjwlan` at `https://auth.ggartifact.com`.
+In that app, add `https://hsr.ggartifact.com/callback` as a redirect URI and
+`https://hsr.ggartifact.com/` as a post sign-out redirect URI, keeping the
+Genshin URLs. If the tenant requires an allowed-origin list, add
+`https://hsr.ggartifact.com`. No new Logto application or client secret is needed.
+These public defaults are bundled, so no new Cloudflare variables are needed.
+Optional `VITE_LOGTO_ENDPOINT` / `VITE_LOGTO_APP_ID` overrides belong in the
+Cloudflare **build** environment or `.env.local`, followed by a rebuild;
+runtime Worker variables do not configure the Vite bundle.
 
 For local testing register the exact dev origin, for example
 `http://localhost:5173/callback` and `http://localhost:5173/`.
 Test sign-in, callback, return to the originating page, reload, and sign-out.
-The site remains usable without authentication configuration; sign-in then
-reports unavailability. Authentication is independent of account imports.
+Login returns through the Star Rail callback to the originating Star Rail page.
+Browser sessions stay separate per origin; the identity provider supplies SSO.
+Authentication is independent of account imports.
 There is no cloud account backup API or upload/download menu in this product.
 Feedback and developer support open the family's shared pages on GGArtifact;
 feedback uses that site's own session. Publish the GenshinTools

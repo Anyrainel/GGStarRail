@@ -2,7 +2,6 @@ import { useHandleSignInCallback } from "@logto/react";
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { AUTH_CONFIG } from "@/config/auth";
 import { useI18n } from "@/i18n/I18nContext";
 import { consumeAuthReturnPath } from "@/lib/authNavigation";
 
@@ -35,12 +34,5 @@ function Callback() {
 }
 
 export default function AuthCallbackPage() {
-  const { t } = useI18n();
-  if (!AUTH_CONFIG)
-    return (
-      <div className="p-6 text-center" role="alert">
-        {t("auth.unavailable")}
-      </div>
-    );
   return <Callback />;
 }
