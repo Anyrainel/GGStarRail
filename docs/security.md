@@ -25,6 +25,29 @@ are `no-store`, upstream bodies are not echoed on failure, and failed imports
 do not mutate the workspace. Authenticated success remains explicitly
 unverified without a user-authorized live credential test.
 
+## Website authentication
+
+Website sign-in shares the existing GGArtifact Logto SPA, explicitly requested
+for both game sites. Each origin completes its own callback. The SDK
+handles OIDC state, PKCE, token exchange and token validation. Its browser
+storage adapter namespaces all keys under `ggstarrail:auth:`; transient sign-in
+state and the originating route live in sessionStorage. Return navigation is
+restricted to the current origin and cannot point back to the callback route.
+Website tokens never enter account stores, imports, or exported files. This
+is separate from the one-request HoYoLAB credential contract above.
+
+No authenticated Star Rail Worker API or cloud backup is implemented. Feedback
+uses the shared GGArtifact API and feedback table. The browser sends its Logto
+ID token only to that configured API, in the Authorization header with cookies
+omitted. It is never persisted in the feedback draft or sent in a URL. The API
+validates issuer, audience and signature through the existing auth boundary.
+The automatically supplied GI/HSR label is validated as a known game but is not
+a security boundary. Cooldown remains per authenticated user across both games.
+Support is a local page with the same developer support images.
+Live sign-in requires deployment
+redirect configuration and a real-user check; mocked callback tests do not establish
+the tenant's redirect allowlist or production build configuration.
+
 ## File imports
 
 Scanner imports validate the versioned outer format and canonical account

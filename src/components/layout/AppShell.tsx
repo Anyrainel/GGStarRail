@@ -4,8 +4,12 @@ import {
   CircleUserRound,
   Download,
   ExternalLink,
+  HeartHandshake,
   Languages,
+  LogIn,
+  LogOut,
   Menu,
+  MessageSquare,
   MoreVertical,
   Palette,
 } from "lucide-react";
@@ -48,6 +52,7 @@ import {
   NAVIGATION_SECTIONS,
   navigationSection,
 } from "@/config/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
 import { cn } from "@/lib/utils";
@@ -128,31 +133,89 @@ function SiteSwitcher() {
 
 function AccountMenu({ onImport }: { onImport: () => void }) {
   const { t } = useI18n();
+  const auth = useAuth();
+  const [actionFailed, setActionFailed] = useState(false);
+  async function authenticate(action: () => Promise<void>) {
+    setActionFailed(false);
+    try {
+      await action();
+    } catch {
+      setActionFailed(true);
+    }
+  }
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t("nav.account")}
-          className="h-9 w-9 rounded-full p-0 2xl:mr-4"
-        >
-          <CircleUserRound className="size-5" aria-hidden />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={onImport}>
-          <Download className="size-4" aria-hidden />
-          {t("imports.open")}
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to={APP_PATHS.scannerDownload}>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("nav.account")}
+            className="h-9 w-9 rounded-full p-0 2xl:mr-4"
+          >
+            <CircleUserRound className="size-5" aria-hidden />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {auth.isAuthenticated ? (
+            <DropdownMenuItem disabled className="max-w-64 truncate">
+              {auth.label ?? t("auth.signedIn")}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              disabled={auth.isLoading}
+              onSelect={() => void authenticate(auth.signIn)}
+            >
+              <LogIn className="size-4" aria-hidden />
+              {t("auth.signIn")}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.feedback}>
+              <MessageSquare className="size-4" aria-hidden />
+              {t("account.feedback")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.support}>
+              <HeartHandshake className="size-4" aria-hidden />
+              {t("account.support")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onImport}>
             <Download className="size-4" aria-hidden />
-            {t("scanner.menu")}
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {t("imports.open")}
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.scannerDownload}>
+              <Download className="size-4" aria-hidden />
+              {t("scanner.menu")}
+            </Link>
+          </DropdownMenuItem>
+          {auth.isAuthenticated && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={auth.isLoading}
+                onSelect={() => void authenticate(auth.signOut)}
+              >
+                <LogOut className="size-4" aria-hidden />
+                {t("auth.signOut")}
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {(actionFailed || auth.error) && (
+        <div
+          role="alert"
+          className="absolute right-4 top-full max-w-xs rounded-md border border-destructive bg-card p-3 text-sm text-foreground"
+        >
+          {t("auth.unavailable")}
+        </div>
+      )}
+    </>
   );
 }
 

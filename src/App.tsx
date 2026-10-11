@@ -5,6 +5,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PRODUCT_NAME } from "@/config/identity";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import HomePage from "@/pages/HomePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
@@ -22,6 +23,8 @@ const TriageView = lazy(() =>
 );
 const ArchivePage = lazy(() => import("@/pages/archive/ArchivePage"));
 const ScannerDownloadPage = lazy(() => import("@/pages/ScannerDownloadPage"));
+const FeedbackPage = lazy(() => import("@/pages/FeedbackPage"));
+const SupportPage = lazy(() => import("@/pages/SupportPage"));
 const RelicFiltersView = lazy(() => import("@/pages/builds/RelicFiltersView"));
 const CharacterBuildView = lazy(
   () => import("@/pages/builds/CharacterBuildView")
@@ -49,7 +52,12 @@ export default function App() {
 
   useEffect(() => {
     const route = routeDefinition(location.pathname);
-    const title = route ? t(route.titleKey) : t("route.notFound.title");
+    const title =
+      location.pathname === "/callback"
+        ? t("auth.signIn")
+        : route
+          ? t(route.titleKey)
+          : t("route.notFound.title");
     const description = route
       ? t(route.descriptionKey)
       : t("route.notFound.description");
@@ -69,6 +77,9 @@ export default function App() {
         }
       >
         <Routes>
+          <Route path={APP_PATHS.feedback} element={<FeedbackPage />} />
+          <Route path={APP_PATHS.support} element={<SupportPage />} />
+          <Route path="/callback" element={<AuthCallbackPage />} />
           <Route
             path={APP_PATHS.scannerDownload}
             element={<ScannerDownloadPage />}

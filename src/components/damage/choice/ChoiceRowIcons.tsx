@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
-import { itemRarityBackground } from "@/components/shared/ItemIcon";
+import { getRarityColor } from "@/components/shared/colors";
 import type { PickerItem } from "@/components/shared/ItemPicker";
 import type { PlanSets } from "@/lib/combat/teamPreview";
 import { cn } from "@/lib/utils";
@@ -28,12 +28,11 @@ function RowTile({
       className={cn(
         "relative block shrink-0 select-none overflow-hidden rounded-[4px] lg:rounded-md",
         ROW_ICON,
-        empty && "border border-dashed border-border",
+        empty
+          ? "border border-dashed border-border"
+          : getRarityColor(rarity ?? null, "gradient"),
         className
       )}
-      style={
-        empty ? undefined : { backgroundImage: itemRarityBackground(rarity) }
-      }
     >
       {children}
     </span>

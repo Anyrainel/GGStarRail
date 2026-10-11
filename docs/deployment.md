@@ -4,6 +4,39 @@ Production is a single Cloudflare Worker named `ggstarrail` at
 https://hsr.ggartifact.com. It serves the Vite output and the existing `/api/`
 import handlers. No database, bucket, or GenshinTools credentials are needed.
 
+## Website sign-in
+
+Both game sites share the existing Logto **Single Page App**
+`tglrsenlbfrfrnevjwlan` at `https://auth.ggartifact.com`.
+In that app, add `https://hsr.ggartifact.com/callback` as a redirect URI and
+`https://hsr.ggartifact.com/` as a post sign-out redirect URI, keeping the
+Genshin URLs. If the tenant requires an allowed-origin list, add
+`https://hsr.ggartifact.com`. No new Logto application or client secret is needed.
+These public defaults are bundled, so no new Cloudflare variables are needed.
+Optional `VITE_LOGTO_ENDPOINT` / `VITE_LOGTO_APP_ID` overrides belong in the
+Cloudflare **build** environment or `.env.local`, followed by a rebuild;
+runtime Worker variables do not configure the Vite bundle.
+
+For local testing register the exact dev origin, for example
+`http://localhost:5173/callback` and `http://localhost:5173/`.
+Test sign-in, callback, return to the originating page, reload, and sign-out.
+Login returns through the Star Rail callback to the originating Star Rail page.
+Browser sessions stay separate per origin; the identity provider supplies SSO.
+Authentication is independent of account imports.
+There is no cloud account backup API or upload/download menu in this product.
+Feedback and developer support are native Star Rail pages. Feedback sends an
+ID token to the existing GGArtifact feedback API with cookies omitted and
+`game: "HSR"`; both sites share `feedback_submissions`. Before publishing,
+push GenshinTools first and wait for its Cloudflare deployment to succeed.
+Its production `npm run build` automatically applies pending D1 migrations
+(including `0006_feedback_game.sql`) before deploying the shared API. Then
+publish this client. Historical feedback defaults to
+GI. Production needs no new feedback service or database binding here.
+For a local shared-API test, `VITE_FEEDBACK_API_ORIGIN` can override the default
+`https://ggartifact.com`; set it to the local Genshin Worker origin at build time.
+
+See [Logto's React integration guide](https://docs.logto.io/quick-starts/react).
+
 ## Automatic publishing
 
 Connect `Anyrainel/GGStarRail` in Workers & Pages > ggstarrail > Settings >

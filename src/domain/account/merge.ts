@@ -372,6 +372,11 @@ function mergeAccountSections(
     characters,
     lightCones,
     relics,
+    ...(incoming.questProgress !== undefined
+      ? { questProgress: incoming.questProgress }
+      : current.questProgress !== undefined
+        ? { questProgress: current.questProgress }
+        : {}),
     ...(incoming.achievementCompletion !== undefined
       ? { achievementCompletion: incoming.achievementCompletion }
       : current.achievementCompletion !== undefined

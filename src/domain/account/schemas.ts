@@ -412,14 +412,47 @@ export const AccountSnapshotV3Schema = z
   .strict()
   .superRefine(validateAccountEquipmentIntegrity);
 
+export const QuestProgressRecordSchema = z
+  .object({
+    id: AchievementIdSchema,
+    status: z.number().int().min(0).max(4),
+    progress: z.number().int().nonnegative().max(0xffff_ffff),
+    counters: z.array(z.number().int().nonnegative().max(0xffff_ffff)).max(256),
+  })
+  .strict();
+
+export const QuestProgressRecordsSchema = z
+  .array(QuestProgressRecordSchema)
+  .max(50_000)
+  .superRefine((records, context) => {
+    for (let index = 1; index < records.length; index++) {
+      if (records[index]!.id <= records[index - 1]!.id) {
+        context.addIssue({
+          code: "custom",
+          message: "Quest IDs must be unique and sorted",
+          path: [index, "id"],
+        });
+      }
+    }
+  });
+
 export const AccountSnapshotSchema = z
   .object({
-    schemaVersion: z.literal(4),
+    schemaVersion: z.literal(5),
     ...AccountSnapshotFields,
     achievementCompletion: AchievementCompletionSchema.optional(),
+    questProgress: z
+      .object({
+        records: QuestProgressRecordsSchema,
+        importedAt: z.string().datetime(),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
   .superRefine(validateAccountEquipmentIntegrity);
+
+export type QuestProgressRecord = z.infer<typeof QuestProgressRecordSchema>;
 
 /** Canonical account shape used by the foundation before build-management work. */
 export const AccountSnapshotV1Schema = z
@@ -575,7 +608,7 @@ export function migrateAccountSnapshotV1(
   const equipment = normalizeLegacyEquipment(input);
   return AccountSnapshotSchema.parse({
     ...input,
-    schemaVersion: 4,
+    schemaVersion: 5,
     ...equipment,
     source: {
       ...input.source,
@@ -609,7 +642,7 @@ export function migrateAccountSnapshotV3(
 ): AccountSnapshot {
   return AccountSnapshotSchema.parse({
     ...input,
-    schemaVersion: 4,
+    schemaVersion: 5,
     characters: input.characters.map(canonicalLegacyTraces),
   });
 }

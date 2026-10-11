@@ -5,6 +5,7 @@ import {
   parseBackup,
   serializeBackup,
 } from "@/lib/backup";
+import { parseScannerExport } from "@/providers/scanner/schema";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "./fixtures";
@@ -50,7 +51,7 @@ describe("independent persistence and backup identity", () => {
 
   it("rejects unsupported workspace versions instead of guessing", () => {
     const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
-    for (const version of [0, 3, 4, 5]) {
+    for (const version of [0, 4, 5, 6]) {
       expect(() =>
         parseBackup(
           JSON.stringify({
@@ -72,8 +73,82 @@ describe("independent persistence and backup identity", () => {
       })
     );
     await useWorkspaceStore.persist.rehydrate();
-    expect(useWorkspaceStore.getState().schemaVersion).toBe(2);
+    expect(useWorkspaceStore.getState().schemaVersion).toBe(3);
     expect(useWorkspaceStore.getState().builds).toEqual([]);
+    useWorkspaceStore.getState().clearWorkspace();
+    localStorage.removeItem(STORAGE_KEYS.workspace);
+  });
+
+  it.each([
+    "published",
+    "quest-branch",
+  ] as const)("preserves %s v4 accounts through hydration, backup and native import", async (format) => {
+    const legacy = legacyV3Account();
+    const questProgress = {
+      records: [{ id: 4000001, status: 3, progress: 100, counters: [2, 7] }],
+      importedAt: legacy.source.importedAt,
+    };
+    const account = {
+      ...legacy,
+      schemaVersion: 4,
+      characters:
+        format === "published"
+          ? legacy.characters.map((character) => ({
+              ...character,
+              traces: CANONICAL_TRACES,
+            }))
+          : legacy.characters,
+      achievementCompletion: { completedIds: [101, 102] },
+      ...(format === "quest-branch" ? { questProgress } : {}),
+    };
+    const previous = {
+      ...structuredClone(DEFAULT_WORKSPACE),
+      schemaVersion: format === "published" ? 2 : 1,
+      characterLightConeIds: { "1101": ["20001"] },
+      localAchievementCompletion: { completedIds: [103] },
+      triageRules: { ...DEFAULT_WORKSPACE.triageRules, keepScoreAtLeast: 77 },
+      account,
+    };
+    useWorkspaceStore.getState().clearWorkspace();
+    localStorage.setItem(
+      STORAGE_KEYS.workspace,
+      JSON.stringify({ version: 2, state: previous })
+    );
+    await useWorkspaceStore.persist.rehydrate();
+    const hydrated = useWorkspaceStore.getState();
+    expect(hydrated.schemaVersion).toBe(3);
+    expect(hydrated.account).toEqual({
+      ...account,
+      schemaVersion: 5,
+      characters: account.characters.map((character) => ({
+        ...character,
+        traces: CANONICAL_TRACES,
+      })),
+    });
+    expect(hydrated.characterLightConeIds).toEqual(
+      previous.characterLightConeIds
+    );
+    expect(hydrated.localAchievementCompletion).toEqual(
+      previous.localAchievementCompletion
+    );
+    expect(hydrated.triageRules).toEqual(previous.triageRules);
+    const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
+    const restored = parseBackup(
+      JSON.stringify({ ...backup, payload: previous })
+    ).payload;
+    expect(restored).toEqual({
+      ...previous,
+      schemaVersion: 3,
+      account: hydrated.account,
+    });
+    const native = parseScannerExport({
+      format: "ggstarrail-scanner-export",
+      schemaVersion: 1,
+      sourceApp: { name: "GGScanner", version: "old" },
+      exportedAt: account.source.importedAt,
+      account,
+    });
+    expect(native.account).toEqual(hydrated.account);
     useWorkspaceStore.getState().clearWorkspace();
     localStorage.removeItem(STORAGE_KEYS.workspace);
   });
@@ -93,8 +168,8 @@ describe("independent persistence and backup identity", () => {
     );
     await useWorkspaceStore.persist.rehydrate();
     const hydrated = useWorkspaceStore.getState();
-    expect(hydrated.schemaVersion).toBe(2);
-    expect(hydrated.account?.schemaVersion).toBe(4);
+    expect(hydrated.schemaVersion).toBe(3);
+    expect(hydrated.account?.schemaVersion).toBe(5);
     expect(hydrated.account?.characters[0]?.traces).toEqual(CANONICAL_TRACES);
     useWorkspaceStore.getState().clearWorkspace();
     localStorage.removeItem(STORAGE_KEYS.workspace);
@@ -103,7 +178,7 @@ describe("independent persistence and backup identity", () => {
     const parsed = parseBackup(
       JSON.stringify({ ...backup, payload: persistedV1 })
     );
-    expect(parsed.payload.schemaVersion).toBe(2);
+    expect(parsed.payload.schemaVersion).toBe(3);
     expect(parsed.payload.account?.characters[0]?.traces).toEqual(
       CANONICAL_TRACES
     );

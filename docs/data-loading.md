@@ -62,15 +62,26 @@ source revision, with no achievement data or account data. Clients check it ever
 two hours and expose Refresh data for an immediate update; offline clients can
 continue using their last validated local cache or bundled reference.
 
-`/good/hsr_achievement_ids.json` carries the public achievement ID set and source
-revision. Only achievement capture downloads it, and its revision must match the
-inventory reference. The full OCR mapping remains independently published as
-`/good/mapping_achievements.json`. Inventory scanning and manager operations do
-not download either achievement file. The old combined endpoint is removed;
+Packet capture preserves the complete Quest response without downloading
+achievement IDs. The website uses exact achievement catalog membership to
+extract completed achievements. It preserves every Quest record in account
+snapshots and backups, but does not display non-achievement objectives or count
+them toward achievement completion. The independent `quests` catalog remains
+available for research; no active page loads it. A mission archive needs verified
+MainMission/SubMission relationships and corresponding account states before
+it can report task progress. The full OCR mapping remains independently
+published as `/good/mapping_achievements.json`. Inventory scanning and manager
+operations do not download it. The old achievement-ID endpoint is removed;
 website and companion releases must be published together.
 
-The data producer writes `src/data/game/`, `public/good/hsr_scanner_data.json`
-and `public/good/hsr_achievement_ids.json`
+DailyQuest, BattlePassQuest and periodic CycleQuest targets are not displayed.
+CycleQuest is a registration table, not proof of recurrence:
+`IsNonPeriodic: true` explicitly marks one-time targets. Full capture records
+remain intact for future analysis.
+Achievement membership always uses AchievementData, never the numeric `40xxxxx`
+range, which contains ordinary targets too.
+
+The data producer writes `src/data/game/` and `public/good/hsr_scanner_data.json`
 into its selected website checkout and retains identical local exports. The website
 does not locate or invoke the producer. `data:website:check` rejects revision or
 catalog coverage drift.

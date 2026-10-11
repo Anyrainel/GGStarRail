@@ -329,7 +329,7 @@ export async function createDemoAccount(
   });
 
   return AccountSnapshotSchema.parse({
-    schemaVersion: 4,
+    schemaVersion: 5,
     profileId: "demo-account:v3",
     trailblazeLevel: 70,
     characters,

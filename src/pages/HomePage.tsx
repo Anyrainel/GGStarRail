@@ -3,6 +3,7 @@ import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
 import { WelcomeGuideManual } from "@/components/home/WelcomeGuideManual";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { WhatsNew } from "@/components/shared/WhatsNew";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
 import { getAssetUrl } from "@/lib/assets";
@@ -37,60 +38,62 @@ export default function HomePage() {
           <WelcomeGuideManual />
         </div>
       </section>
-      <div className="relative flex flex-col gap-8">
-        <FeatureCard
-          featured
-          icon={<Database className="size-6" />}
-          eyebrow={t("nav.accountData")}
-          headline={t("home.headline.accountData")}
-          link={APP_PATHS.characters}
-          bgImage="assets/ggstarrail/home/third-anniversary.webp"
-          bgPosition="70% 30%"
-          ctaText={t("home.openAccount")}
-        />
-        <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
+      <WhatsNew>
+        <div className="flex flex-col gap-8">
           <FeatureCard
-            icon={<Swords className="size-6" />}
-            eyebrow={t("nav.teamDamageSection")}
-            headline={t("home.headline.teamDamage")}
-            link={APP_PATHS.teamDamage}
-            bgImage="assets/ggstarrail/home/firefly.webp"
-            bgPosition="55% center"
-            bgScale={1.3}
-            bgOffsetX="20%"
-            ctaText={t("home.openTeamDamage")}
+            featured
+            icon={<Database className="size-6" />}
+            eyebrow={t("nav.accountData")}
+            headline={t("home.headline.accountData")}
+            link={APP_PATHS.characters}
+            bgImage="assets/ggstarrail/home/third-anniversary.webp"
+            bgPosition="70% 30%"
+            ctaText={t("home.openAccount")}
           />
-          <FeatureCard
-            icon={<Filter className="size-6" />}
-            eyebrow={t("nav.planning")}
-            headline={t("home.headline.builds")}
-            link={APP_PATHS.builds}
-            bgImage="assets/ggstarrail/home/ruan-mei.webp"
-            bgPosition="80% center"
-            ctaText={t("home.openBuilds")}
-          />
-          <FeatureCard
-            icon={<Award className="size-6" />}
-            eyebrow={t("nav.tierList")}
-            headline={t("home.headline.tierList")}
-            link={APP_PATHS.tierCharacters}
-            bgImage="assets/ggstarrail/home/hysilens.webp"
-            bgPosition="45% center"
-            ctaText={t("home.openTiers")}
-          />
-          <FeatureCard
-            icon={<Library className="size-6" />}
-            eyebrow={t("nav.archive")}
-            headline={t("home.headline.archive")}
-            link={APP_PATHS.archiveCharacters}
-            bgImage="assets/ggstarrail/home/evernight.webp"
-            bgPosition="55% center"
-            bgScale={1.1}
-            bgOffsetX="20%"
-            ctaText={t("home.openArchive")}
-          />
+          <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
+            <FeatureCard
+              icon={<Swords className="size-6" />}
+              eyebrow={t("nav.teamDamageSection")}
+              headline={t("home.headline.teamDamage")}
+              link={APP_PATHS.teamDamage}
+              bgImage="assets/ggstarrail/home/firefly.webp"
+              bgPosition="55% center"
+              bgScale={1.3}
+              bgOffsetX="20%"
+              ctaText={t("home.openTeamDamage")}
+            />
+            <FeatureCard
+              icon={<Filter className="size-6" />}
+              eyebrow={t("nav.planning")}
+              headline={t("home.headline.builds")}
+              link={APP_PATHS.builds}
+              bgImage="assets/ggstarrail/home/ruan-mei.webp"
+              bgPosition="80% center"
+              ctaText={t("home.openBuilds")}
+            />
+            <FeatureCard
+              icon={<Award className="size-6" />}
+              eyebrow={t("nav.tierList")}
+              headline={t("home.headline.tierList")}
+              link={APP_PATHS.tierCharacters}
+              bgImage="assets/ggstarrail/home/hysilens.webp"
+              bgPosition="45% center"
+              ctaText={t("home.openTiers")}
+            />
+            <FeatureCard
+              icon={<Library className="size-6" />}
+              eyebrow={t("nav.archive")}
+              headline={t("home.headline.archive")}
+              link={APP_PATHS.archiveCharacters}
+              bgImage="assets/ggstarrail/home/evernight.webp"
+              bgPosition="55% center"
+              bgScale={1.1}
+              bgOffsetX="20%"
+              ctaText={t("home.openArchive")}
+            />
+          </div>
         </div>
-      </div>
+      </WhatsNew>
       <FeatureMatrix />
       <footer className="mt-auto space-y-1 border-t border-border/20 pb-2 pt-6 text-center text-xs leading-relaxed text-muted-foreground">
         <p>

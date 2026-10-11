@@ -21,7 +21,7 @@ export function makeRelic(overrides: Partial<Relic> = {}): Relic {
 
 export function makeAccountSnapshot(): AccountSnapshot {
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     profileId: "profile:local",
     uid: "600000001",
     region: "prod_official_usa",

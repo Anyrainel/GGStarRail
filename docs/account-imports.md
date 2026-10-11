@@ -9,7 +9,7 @@ clearing the workspace clears both.
 
 The account-import contracts in this repository were checked against current
 upstream implementations and deployed HSR web clients on 2026-09-02. Every
-source is normalized into `AccountSnapshot` v2 before the review screen and
+source is normalized into `AccountSnapshot` v5 before the review screen and
 the same source-aware merge boundary is used by scoring, filters, build
 recommendations, and triage.
 
@@ -158,9 +158,13 @@ owns this vocabulary.
 
 Account snapshots v1–v3 accepted arbitrary keys, and the interoperable v4
 adapter stored `skill:*`, `memosprite:*`, `trace:*`, and `source:*` keys.
-Snapshot v4 accepts only point IDs. Native imports, workspace store v1
-hydration, and backup payloads migrate older snapshots by mapping the legacy
-interoperable keys and dropping source metadata.
+Snapshot v5 accepts only point IDs and optionally preserves captured Quests.
+Workspace v3 combines the published v2 trace migration with Quest support.
+Native imports, workspace v1/v2 hydration, and backup payloads migrate older
+snapshots by mapping legacy interoperable keys and dropping source metadata.
+Both published account v4 (canonical traces) and the unpublished Quest v4
+format (legacy traces with optional Quest records) migrate without losing
+equipment, achievements, captured Quests, or workspace settings.
 
 The file importer accepts the native GGStarRail envelope,
 `goodscanner.hsr.experimental` v1 and v2, and interoperable Reliquary,

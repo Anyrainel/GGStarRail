@@ -1,9 +1,10 @@
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
+import { getCombatTypeColor, getTierColor } from "@/components/shared/colors";
 import { PRIORITY_ROWS } from "@/domain/tier-list/constants";
 import type { TierPresentation } from "@/domain/tier-list/document";
 import type { PriorityTier } from "@/domain/tier-list/types";
-import { combatTypeHeaderColor, tierColor } from "@/lib/gameColors";
+
 import { cn } from "@/lib/utils";
 import { TierCell } from "./TierCell";
 import { isDenseTierGrid, useTierLayout } from "./tierLayoutMode";
@@ -66,10 +67,10 @@ function GroupHeader<Group extends string>({
 }) {
   return (
     <div
-      style={{ backgroundColor: combatTypeHeaderColor(group.id) }}
       className={cn(
         "flex min-w-0 min-h-12 items-center justify-center gap-2 rounded-t-md bg-secondary px-2 text-center font-bold text-gray-100",
         GRID_BORDER,
+        getCombatTypeColor(group.id, "header"),
         stack === "always" && "flex-col gap-1 py-2",
         stack === "belowXl" &&
           "flex-col gap-1 py-2 xl:flex-row xl:gap-2 xl:py-0"
@@ -107,8 +108,10 @@ function TierLabel({
   if (variant === "card") {
     return (
       <div
-        style={{ backgroundColor: tierColor(tier, "header") }}
-        className="flex min-h-7 items-center justify-start rounded-t-md px-3 py-1 text-sm font-bold text-gray-100 [overflow-wrap:anywhere]"
+        className={cn(
+          "flex min-h-7 items-center justify-start rounded-t-md px-3 py-1 text-sm font-bold text-gray-100 [overflow-wrap:anywhere]",
+          getTierColor(tier, "header")
+        )}
       >
         {text}
       </div>
@@ -117,10 +120,10 @@ function TierLabel({
   const desktop = variant === "desktop";
   return (
     <div
-      style={{ backgroundColor: tierColor(tier, "header") }}
       className={cn(
         "flex min-w-0 items-center justify-center rounded-l-md p-2",
         GRID_BORDER,
+        getTierColor(tier, "header"),
         desktop ? "min-h-[5rem]" : "min-h-[4rem]",
         desktop && label && "max-w-48"
       )}

@@ -35,6 +35,14 @@ describe("HSR route foundation", () => {
         </I18nProvider>
       </ThemeProvider>
     );
+    if (route.path === APP_PATHS.feedback) {
+      expect(
+        await screen.findByRole("dialog", {
+          name: messagesEn["feedback.signInTitle"],
+        })
+      ).toBeInTheDocument();
+      return;
+    }
     // Catalog pages keep their h1 while loading, then render the loaded page.
     await waitFor(() =>
       expect(

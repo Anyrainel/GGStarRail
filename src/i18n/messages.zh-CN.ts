@@ -1,9 +1,44 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "support.title": "支持 GGArtifact",
+  "support.description": "感谢你支持项目的持续开发与维护。",
+  "feedback.description": "感谢您的宝贵时间。",
+  "feedback.gameSite": "游戏站点",
+  "feedback.ratingLabel": "你对 hsr.ggartifact.com 的使用体验满意吗？",
+  "feedback.stars": "{count} 星",
+  "feedback.suggestion": "建议/体验",
+  "feedback.suggestionPlaceholder":
+    "你希望 GGArtifact 怎样改进？或者有什么使用体验想要分享？",
+  "feedback.bugReport": "问题反馈",
+  "feedback.bugPlaceholder": "哪里出了问题？如果方便，可以写下复现步骤。",
+  "feedback.contact": "联系方式（选填）",
+  "feedback.contactPlaceholder": "优先填写 Discord 或 QQ",
+  "feedback.submit": "提交反馈",
+  "feedback.submitting": "提交中…",
+  "feedback.success": "感谢反馈，已发送。",
+  "feedback.failed": "反馈未能发送，请稍后再试。",
+  "feedback.rateLimited": "请等待 5 分钟后再提交反馈。",
+  "feedback.signInTitle": "登录后提交反馈",
+  "feedback.signInDescription": "请登录后再提交反馈。",
+  "feedback.sessionExpired": "登录状态已过期，请重新登录后再试。",
+  "auth.signIn": "登录",
+  "auth.signOut": "退出登录",
+  "auth.signedIn": "已登录账号",
+  "auth.completing": "正在完成登录…",
+  "auth.failed": "登录失败，请返回后重试。",
+  "auth.unavailable": "暂时无法登录，请稍后再试。",
+  "account.feedback": "反馈",
+  "account.support": "支持开发",
+  "whatsNew.title": "更新日志",
+  "whatsNew.roadmap": "计划",
+  "whatsNew.features": "新增功能",
+  "whatsNew.fixes": "修复优化",
+  "whatsNew.empty": "暂无更新记录。",
+  "imports.review.quests": "完整目标快照：{count} 条记录",
   "app.developmentNotice": "星穹铁道站仍在开发中。",
   "scanner.menu": "下载 GGScanner",
-  "scanner.platform": "Windows 电脑 · 原神与星穹铁道",
+  "scanner.platform": "Windows",
   "scanner.tagline": "把游戏背包，带进 GGArtifact。",
   "scanner.introduction":
     "将角色、光锥、遗器与成就保存为 JSON 文件，导入 GGArtifact。",
@@ -17,7 +52,6 @@ export const messagesZhCn = {
   "scanner.managerFeature": "遗器锁定、弃置",
   "scanner.downloadCapture": "下载 GGScanner",
   "scanner.downloadOcr": "下载 GGScannerOCR",
-  "scanner.choiceNote": "抓包由你手动启动。",
   "scanner.included": "包含",
   "scanner.notIncluded": "不包含",
   "scanner.allReleases": "GitHub 发布页与直接下载",
@@ -179,23 +213,58 @@ export const messagesZhCn = {
   "guide.next": "下一步",
   "guide.done": "开始使用",
   "guide.progress": "使用教程 · {current} / {total}",
-  "guide.account.body":
-    "进入账号数据，点击「导入账号」。选择兼容的扫描器 JSON 文件，或通过 UID 获取公开角色展柜数据，确认预览后再导入。",
-  "guide.account.hint":
-    "公开展柜仅包含展示的角色及其装备。要导入背包中的其他装备，请使用扫描器导出的文件。",
-  "guide.builds.body":
-    "选择角色，指定隧洞遗器和位面饰品套装来创建配装。设置主词条和副词条权重后，前往遗器筛选查看匹配装备。",
-  "guide.builds.hint":
-    "无需导入账号即可配置配装；查看匹配装备则需要先导入遗器。",
-  "guide.priority.body": "将角色、光锥和遗器套装排入自己的优先级档位。",
-  "guide.priority.hint": "可以随时按角色池和目标调整优先级。",
-  "guide.archive.body":
-    "查阅角色、光锥和遗器套装。通过搜索与筛选找到配装所需的信息。",
-  "guide.archive.hint": "浏览图鉴无需导入账号。",
-  "guide.teamDamage.body":
-    "组建最多四名角色的队伍，模拟多个轮次的战斗。可以优化遗器，按伤害提升排列星魂与叠影，并对比光锥与遗器套装。",
-  "guide.teamDamage.hint":
-    "未导入账号时，队员使用你的配装或推荐的光锥与遗器套装。",
+  "guide.intro": "导入 → 配装 → 筛选 → 整理，按需要选择章节。",
+  "guide.contents": "教程目录",
+  "guide.scanner": "获取扫描器",
+  "guide.account.title": "导入账号",
+  "guide.account.action1":
+    "在「账号数据」点击「导入账号」，选择 JSON 文件或 UID 导入。",
+  "guide.account.action2": "检查预览中的 UID、物品数量与导入提醒，再确认导入。",
+  "guide.builds.title": "配置配装",
+  "guide.builds.action1": "选择目标角色，分别添加外圈、内圈配装并指定套装。",
+  "guide.builds.action2": "选择可接受的主词条；同一部位可以接受多种主词条。",
+  "guide.builds.action3":
+    "在评分设置中调整副词条权重和评级门槛；0% 的词条不计分，最低筛选分数取 C 级门槛。",
+  "guide.builds.hint": "遗器的主词条会从副词条要求中排除，即使它的权重很高。",
+  "guide.filters.title": "筛选遗器",
+  "guide.filters.action1": "选择角色、外圈和内圈配装，点击部位查看候选遗器。",
+  "guide.filters.action2": "关闭「仅显示匹配遗器」，对照每件遗器未通过的条件。",
+  "guide.filters.action3":
+    "没有候选时，检查套装、主词条、权重与 C 级门槛是否过严，再回配装页调整。",
+  "guide.filters.hint":
+    "评分高也可能不匹配：套装、主词条、有效副词条和最低评分需同时满足。",
+  "guide.decisions.title": "整理与养成",
+  "guide.decisions.action1":
+    "先为准备培养的角色配置配装，避免整理时漏掉他们需要的遗器。",
+  "guide.decisions.action2":
+    "设置保留、复核分数及锁定和装备保护，按判定原因检查整理结果。",
+  "guide.decisions.action3":
+    "在「资源建议」选择强化、合成或变量骰子，查看目标角色与预期提升空间。",
+  "guide.decisions.hint": "整理仅提出建议，分解复核不会自动分解。",
+  "guide.more.title": "更多工具",
+  "guide.more.hint":
+    "先为一个正在培养的角色走完「导入 → 配装 → 筛选」，再补齐其他角色。其他工具可从下方直接进入。",
+  "guide.preview.title": "操作示意",
+  "guide.preview.example": "示例",
+  "guide.preview.json": "包含完整库存的扫描文件：可筛选背包里未装备的遗器。",
+  "guide.preview.uid": "UID 展柜：仅含展示角色和已装备物品，不含未装备遗器。",
+  "guide.preview.speed": "速度",
+  "guide.preview.break": "击破特攻",
+  "guide.preview.hp": "生命值百分比",
+  "guide.preview.coreStat": "≥90%：重点词条，筛选需命中至少一项。",
+  "guide.preview.desiredStat": "≥60%：计入有效副词条数量。",
+  "guide.preview.scoreOnly": "<60%：参与评分，不计入有效副词条。",
+  "guide.preview.body": "躯干",
+  "guide.preview.match": "主词条合适，为什么仍未匹配？",
+  "guide.preview.relicStats":
+    "套装、主词条符合要求，副词条有击破特攻、生命值，没有速度。",
+  "guide.preview.missingSpeed": "没有命中 100% 权重的速度。",
+  "guide.preview.filterResult":
+    "按上一章的示例权重，这件遗器未通过副词条条件。",
+  "guide.preview.triage":
+    "保留：达到保留分或受保护。人工复核：逐件检查。分解复核：确认无其他角色需求后再决定。",
+  "guide.preview.resources":
+    "强化看剩余成长空间，合成看配装缺口，变量骰子看重掷空间；乐观上限不保证实际提升。",
   "home.openBuilds": "配置配装",
   "home.openTiers": "整理优先级",
   "build.chooseSet": "选择套装",
@@ -520,6 +589,8 @@ export const messagesZhCn = {
   "build.coverageNoticeTitle": "结果受导入来源覆盖范围限制",
   "build.coverageNoticeBody":
     "评分、筛选和整理只会使用当前本地快照中的遗器。个人展示和仅已装备来源无法证明未出现的物品不存在于完整背包中。",
+  "build.cavernFourPiece": "隧洞遗器 4 件套",
+  "build.planarTwoPiece": "位面饰品 2 件套",
   "scoring.needsAccount":
     "评分方案已就绪。导入账号后即可为背包遗器评分，并评估角色当前装备。",
   "scoring.profile": "评分方案",
@@ -590,6 +661,8 @@ export const messagesZhCn = {
   "filters.reason.mainStatMissing": "主词条不符",
   "filters.reason.substatsMissing": "有效副词条不足",
   "filters.reason.scoreMissing": "评分未达标",
+  "filters.reason.set": "套装匹配",
+  "filters.reason.mainStat": "主词条可用",
   "triage.needsAccount": "需要先导入账号。",
   "triage.needsBuild": "尚未配置配装。",
   "triage.rulesTitle": "整理规则",
@@ -766,7 +839,10 @@ export const messagesZhCn = {
   "imports.method.uid": "仅公开展柜及已装备物品",
   "imports.method.hoyolab": "仅角色及已装备物品",
   "imports.selectFile": "选择 JSON 文件",
-  "imports.fileHelp": "仅支持 JSON。导入过程不会通过网络发送文件或账号数据。",
+  "imports.scannerHint":
+    "在 Windows 电脑上运行 GGScanner，将账号数据导出为 .json 文件。",
+  "imports.enkaStatus": "Enka 服务状态",
+  "imports.fileHelp": "文件仅在本地处理。",
   "imports.review.title": "导入前确认",
   "imports.review.source": "来源：{source} {version}",
   "imports.review.revision": "参考数据修订：{revision}",
@@ -817,12 +893,10 @@ export const messagesZhCn = {
   "imports.uid.title": "UID 个人展示导入",
   "imports.uid.label": "星铁 UID",
   "imports.uid.placeholder": "9 位 UID",
-  "imports.uid.help":
-    "只导入当前个人展示中的角色，以及这些角色已装备的光锥和遗器；绝不是完整背包导入。",
+  "imports.uid.help": "请在游戏「个人展示」中开启「显示角色详情」。",
   "imports.uid.action": "预览 UID 展示",
   "imports.credentials.title": "HoYoLAB / 米游社凭据导入",
-  "imports.credentials.body":
-    "仅限本人账号的角色及已装备物品，不含未装备背包。凭据导入尚未通过实测。",
+  "imports.credentials.body": "仅限本人账号；此方式尚未通过实测。",
   "imports.credentials.region": "账号服务",
   "imports.credentials.global": "国际服 · HoYoLAB",
   "imports.credentials.cn": "国服 · 米游社",

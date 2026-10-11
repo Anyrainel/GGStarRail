@@ -1,7 +1,45 @@
 export const messagesEn = {
+  "support.title": "Support GGArtifact",
+  "support.description":
+    "Thank you for supporting continued development and maintenance.",
+  "feedback.description": "Thanks for your time.",
+  "feedback.gameSite": "Game site",
+  "feedback.ratingLabel": "How satisfied are you with hsr.ggartifact.com?",
+  "feedback.stars": "{count} stars",
+  "feedback.suggestion": "Suggestion / Experience",
+  "feedback.suggestionPlaceholder":
+    "What would make GGArtifact better? Or what would you like to share about your experience?",
+  "feedback.bugReport": "Bug report",
+  "feedback.bugPlaceholder": "What went wrong? Include steps if you can.",
+  "feedback.contact": "Contact method (optional)",
+  "feedback.contactPlaceholder": "Prefer Discord or QQ",
+  "feedback.submit": "Submit feedback",
+  "feedback.submitting": "Submitting…",
+  "feedback.success": "Thanks, your feedback was sent.",
+  "feedback.failed": "Your feedback could not be sent. Please try again later.",
+  "feedback.rateLimited":
+    "Please wait five minutes before sending more feedback.",
+  "feedback.signInTitle": "Sign in to send feedback",
+  "feedback.signInDescription": "Sign in before sending feedback.",
+  "feedback.sessionExpired": "Your session has expired. Please sign in again.",
+  "auth.signIn": "Sign in",
+  "auth.signOut": "Sign out",
+  "auth.signedIn": "Signed-in account",
+  "auth.completing": "Completing sign-in…",
+  "auth.failed": "Sign-in failed. Please return and try again.",
+  "auth.unavailable":
+    "Sign-in is temporarily unavailable. Please try again later.",
+  "account.feedback": "Feedback",
+  "account.support": "Support development",
+  "whatsNew.title": "What’s New",
+  "whatsNew.roadmap": "Roadmap",
+  "whatsNew.features": "New features",
+  "whatsNew.fixes": "Fixes",
+  "whatsNew.empty": "No updates yet.",
+  "imports.review.quests": "Complete Quest snapshot: {count} records",
   "app.developmentNotice": "The Star Rail site is still under development.",
   "scanner.menu": "Download GGScanner",
-  "scanner.platform": "For Windows PCs · Genshin Impact & Star Rail",
+  "scanner.platform": "Windows",
   "scanner.tagline": "Your collection, ready for GGArtifact.",
   "scanner.introduction":
     "Save Characters, Light Cones, Relics, and achievements as a JSON file to import into GGArtifact.",
@@ -15,7 +53,6 @@ export const messagesEn = {
   "scanner.managerFeature": "Relic locks & discard marks",
   "scanner.downloadCapture": "Download GGScanner",
   "scanner.downloadOcr": "Download GGScannerOCR",
-  "scanner.choiceNote": "Capture starts only when you choose it.",
   "scanner.included": "Included",
   "scanner.notIncluded": "Not included",
   "scanner.allReleases": "GitHub releases & direct downloads",
@@ -185,25 +222,70 @@ export const messagesEn = {
   "guide.next": "Next",
   "guide.done": "Let's go",
   "guide.progress": "Quick guide · {current} / {total}",
-  "guide.account.body":
-    "Open Account Data and choose Import account. Import a compatible scanner JSON file or look up your public UID showcase, then review the data before applying it.",
-  "guide.account.hint":
-    "A public showcase only includes displayed Characters and equipped gear. Use a scanner export for the rest of your inventory.",
-  "guide.builds.body":
-    "Choose a Character and create a build with Cavern Relic and Planar Ornament sets. Set main stats and substat weights, then open Relic Filters to see matching pieces.",
+  "guide.intro":
+    "Import → Builds → Filters → Triage. Choose the chapter you need.",
+  "guide.contents": "Guide chapters",
+  "guide.scanner": "Get the scanner",
+  "guide.account.title": "Import",
+  "guide.account.action1":
+    "In Account Data, choose Import account, then select a JSON file or UID import.",
+  "guide.account.action2":
+    "Check the UID, item counts, and import notices in the preview, then confirm.",
+  "guide.builds.title": "Builds",
+  "guide.builds.action1":
+    "Select a Character, add Cavern and Planar builds separately, and choose their sets.",
+  "guide.builds.action2":
+    "Select acceptable main stats. Each slot can accept more than one option.",
+  "guide.builds.action3":
+    "Adjust substat weights and grade thresholds in scoring settings. A 0% stat adds no score; the C-grade threshold sets the minimum filter score.",
   "guide.builds.hint":
-    "You can configure builds before importing an account. Matching gear requires imported Relics.",
-  "guide.priority.body":
-    "Arrange Characters, Light Cones, and Relic sets into your own priority tiers.",
-  "guide.priority.hint":
-    "Adjust your priorities as your roster and goals change.",
-  "guide.archive.body":
-    "Browse Characters, Light Cones, and Relic sets. Search or filter to find details for your builds.",
-  "guide.archive.hint": "No account import is needed to browse the Archive.",
-  "guide.teamDamage.body":
-    "Build teams of up to four Characters and simulate their battle over several cycles. Optimize Relics, rank Eidolons and Superimpositions by the DMG they add, and compare Light Cones and Relic sets.",
-  "guide.teamDamage.hint":
-    "Without an account import, members use your builds or the recommended Light Cone and Relic sets.",
+    "The actual main stat is excluded from substat requirements, even if its weight is high.",
+  "guide.filters.title": "Filters",
+  "guide.filters.action1":
+    "Choose a Character and Cavern and Planar builds, then select a slot to inspect candidates.",
+  "guide.filters.action2":
+    "Turn off Matches only to inspect the criteria each piece failed.",
+  "guide.filters.action3":
+    "If there are no candidates, check whether sets, main stats, weights, or the C-grade threshold are too strict, then adjust the build.",
+  "guide.filters.hint":
+    "A high score alone does not qualify: set, main stat, desired substats, and minimum score must all pass.",
+  "guide.decisions.title": "Next steps",
+  "guide.decisions.action1":
+    "Configure builds for Characters you plan to raise first, so triage considers their Relic needs.",
+  "guide.decisions.action2":
+    "Set Keep and Review scores and locked/equipped protection, then inspect each decision reason.",
+  "guide.decisions.action3":
+    "In Resources, choose leveling, synthesis, or Variable Dice and inspect the target Character and improvement room.",
+  "guide.decisions.hint":
+    "Triage suggests decisions; Salvage review does not salvage items automatically.",
+  "guide.more.title": "Explore",
+  "guide.more.hint":
+    "Try Import → Builds → Filters for one Character you are raising, then add the rest. Other tools are linked below.",
+  "guide.preview.title": "How it works",
+  "guide.preview.example": "Example",
+  "guide.preview.json":
+    "An export with complete inventory coverage lets you filter unequipped Relics.",
+  "guide.preview.uid":
+    "A UID showcase includes displayed Characters and equipped gear, but excludes unequipped Relics.",
+  "guide.preview.speed": "Speed",
+  "guide.preview.break": "Break Effect",
+  "guide.preview.hp": "HP %",
+  "guide.preview.coreStat":
+    "≥90%: a priority stat; at least one must be present.",
+  "guide.preview.desiredStat": "≥60%: counts toward desired substats.",
+  "guide.preview.scoreOnly":
+    "<60%: adds score, but does not count as a desired substat.",
+  "guide.preview.body": "Body",
+  "guide.preview.match": "The main stat fits. Why does this piece fail?",
+  "guide.preview.relicStats":
+    "The set and main stat fit. Substats include Break Effect and HP, but no Speed.",
+  "guide.preview.missingSpeed": "Missing Speed, weighted at 100%.",
+  "guide.preview.filterResult":
+    "With the previous chapter’s example weights, this piece fails the substat criteria.",
+  "guide.preview.triage":
+    "Keep: meets the score or is protected. Manual review: inspect each piece. Salvage review: check other Characters’ needs before deciding.",
+  "guide.preview.resources":
+    "Leveling considers growth room, synthesis considers build gaps, and Variable Dice considers reroll room. Optimistic ceilings do not guarantee an upgrade.",
   "home.openBuilds": "Configure builds",
   "home.openTiers": "Arrange priorities",
   "build.chooseSet": "Choose a set",
@@ -546,6 +628,8 @@ export const messagesEn = {
   "build.coverageNoticeTitle": "Results follow the imported source coverage",
   "build.coverageNoticeBody":
     "Scores, filters, and triage use only pieces present in this local snapshot. Showcase and equipped-only sources cannot prove that an absent item is missing from the full inventory.",
+  "build.cavernFourPiece": "Cavern 4-piece set",
+  "build.planarTwoPiece": "Planar 2-piece set",
   "scoring.needsAccount":
     "This scoring profile is ready. Import an account to score inventory Relics and evaluate the equipped build.",
   "scoring.profile": "Scoring profile",
@@ -618,6 +702,8 @@ export const messagesEn = {
   "filters.reason.mainStatMissing": "Main stat not accepted",
   "filters.reason.substatsMissing": "Needs weighted substats",
   "filters.reason.scoreMissing": "Below minimum score",
+  "filters.reason.set": "Set matched",
+  "filters.reason.mainStat": "Main stat accepted",
   "triage.needsAccount": "Account import required.",
   "triage.needsBuild": "No builds configured.",
   "triage.rulesTitle": "Triage rules",
@@ -801,8 +887,10 @@ export const messagesEn = {
   "imports.method.uid": "Public showcase and equipped items only",
   "imports.method.hoyolab": "Characters and equipped items only",
   "imports.selectFile": "Choose JSON file",
-  "imports.fileHelp":
-    "JSON only. Importing never sends the file or account data over the network.",
+  "imports.scannerHint":
+    "Run GGScanner on Windows to export your account as a .json file.",
+  "imports.enkaStatus": "Enka service status",
+  "imports.fileHelp": "Files are processed locally.",
   "imports.review.title": "Review before import",
   "imports.review.source": "Source: {source} {version}",
   "imports.review.revision": "Reference revision: {revision}",
@@ -859,11 +947,10 @@ export const messagesEn = {
   "imports.uid.label": "Star Rail UID",
   "imports.uid.placeholder": "9-digit UID",
   "imports.uid.help":
-    "Imports only Characters currently displayed in the profile, plus their equipped Light Cones and Relics. This is never a full inventory import.",
+    "Enable character details in your in-game profile showcase.",
   "imports.uid.action": "Review UID showcase",
   "imports.credentials.title": "HoYoLAB / 米游社 credential import",
-  "imports.credentials.body":
-    "Owned Characters and equipped gear only. Unequipped inventory unavailable. Live credential import unverified.",
+  "imports.credentials.body": "Use your own account. Live import unverified.",
   "imports.credentials.region": "Account service",
   "imports.credentials.global": "Global · HoYoLAB",
   "imports.credentials.cn": "China · 米游社",

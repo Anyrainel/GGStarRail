@@ -3,6 +3,7 @@ import { forwardRef } from "react";
 import type { CatalogAssetRef } from "@/domain/assets";
 import { cn } from "@/lib/utils";
 import { AssetImage } from "./AssetImage";
+import { getRarityColor } from "./colors";
 
 const ICON_CONFIG = {
   xs: {
@@ -118,7 +119,7 @@ export function itemIconCornerMetrics(size: ItemIconSize): {
 
 /** The rank-badge colours shared by every item tile. */
 export const ITEM_BADGE_CLASS =
-  "bg-[#4a3b2a] font-semibold leading-none text-[#f3d88c] shadow-sm";
+  "bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-sm";
 
 interface CornerAsset extends CatalogAssetRef {
   alt: string;
@@ -152,30 +153,6 @@ export interface ItemIconProps
   /** Artwork width preset; height follows the asset kind's card proportions. */
   size?: ItemIconSize;
   imageClassName?: string;
-}
-
-function rarityBackground(rarity: number | null, direction = "180deg"): string {
-  if (rarity === null) {
-    return `linear-gradient(${direction}, hsl(var(--muted)), hsl(var(--secondary)))`;
-  }
-
-  switch (rarity) {
-    case 5:
-      return `linear-gradient(${direction}, #a35d55, #d0aa6e)`;
-    case 4:
-      return `linear-gradient(${direction}, #3f4064, #9c65d7)`;
-    case 3:
-      return `linear-gradient(${direction}, #3a3b62, #4c86c9)`;
-    case 2:
-      return `linear-gradient(${direction}, #374760, #44908c)`;
-    default:
-      return `linear-gradient(${direction}, #3e404e, #88888e)`;
-  }
-}
-
-/** The in-game rarity frame used behind item art, for split or custom tiles. */
-export function itemRarityBackground(rarity: number | null): string {
-  return rarityBackground(rarity);
 }
 
 const MARKER_TONES: Record<NonNullable<ItemIconMarker["tone"]>, string> = {
@@ -231,15 +208,12 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
       <div
         className={cn(
           "relative shrink-0 select-none overflow-hidden",
-          !lightCone && "ring-1 ring-inset ring-white/15"
+          !lightCone && "ring-1 ring-inset ring-white/15",
+          (!lightCone || squareLightCone) && getRarityColor(rarity, "gradient")
         )}
         data-item-artwork
         data-item-square={squareLightCone ? "" : undefined}
         style={{
-          backgroundImage:
-            lightCone && !squareLightCone
-              ? undefined
-              : rarityBackground(rarity),
           width: config.icon,
           height: artworkHeight,
           borderTopLeftRadius:
@@ -275,11 +249,11 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
         {squareLightCone && (
           <span
-            className="pointer-events-none absolute inset-x-0 bottom-0"
-            style={{
-              height: Math.max(2, Math.round(config.icon / 20)),
-              backgroundImage: rarityBackground(rarity, "90deg"),
-            }}
+            className={cn(
+              "pointer-events-none absolute inset-x-0 bottom-0",
+              getRarityColor(rarity, "bg") || "bg-muted"
+            )}
+            style={{ height: Math.max(2, Math.round(config.icon / 20)) }}
             aria-hidden="true"
             data-item-rarity-bar
           />
@@ -413,7 +387,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           <div className="relative z-10">{artwork}</div>
           {showLevel && (
             <span
-              className="flex select-none items-end justify-center bg-[#f5f0e6] font-bold leading-none text-[#3d3d3d]"
+              className="flex select-none items-end justify-center bg-item-level font-bold leading-none text-item-level-foreground"
               style={{
                 width: config.icon,
                 height: config.levelHeight + config.cornerFill,

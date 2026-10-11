@@ -22,7 +22,11 @@ module.exports = {
       name: "providers-do-not-own-ui-or-state",
       severity: "error",
       from: { path: "^src/providers/" },
-      to: { path: "^src/(components|contexts|pages|stores)/" },
+      // A pure format migration is shared by persistence and account import.
+      to: {
+        path: "^src/(components|contexts|pages|stores)/",
+        pathNot: "^src/stores/migration/account\\.ts$",
+      },
     },
     {
       name: "persisted-state-cannot-see-hoyolab-auth",

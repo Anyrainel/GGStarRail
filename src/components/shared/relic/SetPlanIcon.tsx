@@ -1,4 +1,5 @@
 import { AssetImage } from "@/components/shared/AssetImage";
+import { getRarityColor } from "@/components/shared/colors";
 import {
   ITEM_BADGE_CLASS,
   ItemIcon,
@@ -6,7 +7,6 @@ import {
   itemIconCornerMetrics,
   itemIconRadius,
   itemIconWidth,
-  itemRarityBackground,
 } from "@/components/shared/ItemIcon";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
@@ -108,13 +108,13 @@ function SplitPlanTile({
     <div
       className={cn(
         "relative shrink-0 select-none overflow-hidden ring-1 ring-inset ring-white/15",
+        getRarityColor(rarity, "gradient"),
         className
       )}
       style={{
         width,
         height: width,
         borderRadius: itemIconRadius(size),
-        backgroundImage: itemRarityBackground(rarity),
       }}
       data-set-plan="split"
       {...(decorative

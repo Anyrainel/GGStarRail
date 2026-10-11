@@ -1,8 +1,8 @@
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import { getTierColor } from "@/components/shared/colors";
 import type { ItemIconSize } from "@/components/shared/ItemIcon";
 import type { PriorityTier } from "@/domain/tier-list/types";
-import { tierColor } from "@/lib/gameColors";
 import { cn } from "@/lib/utils";
 import { TierItem } from "./TierItem";
 import type { TierItemData } from "./tierTableTypes";
@@ -40,16 +40,15 @@ export function TierCell<Group extends string>({
       ref={droppable.setNodeRef}
       data-priority-tier={tier}
       data-priority-group={group}
-      style={
-        card ? undefined : { backgroundColor: tierColor(tier, "background") }
-      }
       className={cn(
         "flex min-w-0 flex-wrap gap-2 p-2 transition-colors",
         card
           ? "min-h-[4rem] justify-start rounded-b-md border border-t-0 border-border bg-card/50"
           : "min-h-[5rem] content-start items-end justify-center border-b border-r border-gray-600 bg-clip-padding",
         dense && "px-1",
-        droppable.isOver && "bg-primary/10 ring-2 ring-inset ring-primary/55"
+        !card && getTierColor(tier, "bg"),
+        droppable.isOver && "ring-2 ring-inset ring-primary/55",
+        droppable.isOver && card && "bg-primary/10"
       )}
     >
       <SortableContext

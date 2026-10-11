@@ -21,7 +21,7 @@ export const WORKSPACE_USER_FIELDS = {
   triageRules: TriageRulesSchema,
 } as const;
 
-export const WORKSPACE_SCHEMA_VERSION = 2;
+export const WORKSPACE_SCHEMA_VERSION = 3;
 
 export const PersistedWorkspaceSchema = z
   .object({

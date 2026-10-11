@@ -9,6 +9,7 @@ import { currencyWarMembers } from "./validate-currency-war.mjs";
 import { validateCurrentReference } from "./validate-current-reference.mjs";
 
 const baseMembers = [
+  "quests",
   "characters",
   "light_cones",
   "relic_sets",
@@ -237,22 +238,16 @@ export async function checkGameData(repositoryRoot = root) {
     )
   );
   const achievementIds = await checkAchievementData(repositoryRoot, manifest);
-  const achievementReference = JSON.parse(
-    await readFile(
-      path.join(repositoryRoot, "public/good/hsr_achievement_ids.json"),
-      "utf8"
-    )
-  );
-  assert.equal(achievementReference.formatVersion, 1);
-  assert.equal(achievementReference.sourceRevision, manifest.source_revision);
-  assert.equal(
-    new Set(achievementReference.achievementIds).size,
-    achievementReference.achievementIds.length
-  );
-  assert.deepEqual(
-    new Set(achievementReference.achievementIds),
-    achievementIds
-  );
+  const questIds = new Set();
+  for (const quest of documents.quests.released) {
+    assert.ok(Number.isInteger(quest.id) && quest.id > 0, "Invalid Quest ID");
+    assert.ok(!questIds.has(quest.id), "Duplicate Quest ID");
+    assert.ok(
+      !achievementIds.has(quest.id),
+      "Achievement leaked into Quest archive"
+    );
+    questIds.add(quest.id);
+  }
   assert.equal(Object.hasOwn(capture.snapshot, "achievementIds"), false);
   validateCurrentReference(documents, capture, manifest, {
     separateAchievements: true,

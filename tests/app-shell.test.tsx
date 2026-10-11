@@ -43,6 +43,19 @@ describe("GGArtifact family shell", () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.home);
     await user.click(screen.getByRole("button", { name: "Account" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Sign in" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Feedback" })).toHaveAttribute(
+      "href",
+      "/account/feedback"
+    );
+    expect(
+      screen.getByRole("menuitem", { name: "Support development" })
+    ).toHaveAttribute("href", "/account/support");
+    expect(
+      screen.queryByRole("menuitem", { name: /cloud|upload|backup/i })
+    ).toBeNull();
     await user.click(
       screen.getByRole("menuitem", { name: "Download GGScanner" })
     );
@@ -73,6 +86,9 @@ describe("GGArtifact family shell", () => {
     ).toHaveAttribute("href", "/good/mapping_achievements.json");
 
     await user.click(screen.getByRole("button", { name: "Account" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Feedback" })
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("menuitem", { name: "Import account" }));
     const dialog = screen.getByRole("dialog", { name: "Import account data" });
     expect(
