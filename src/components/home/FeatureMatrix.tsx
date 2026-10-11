@@ -27,6 +27,18 @@ const INDEX_COPY: Partial<
     title: "home.index.triage.title",
     description: "home.index.triage.description",
   },
+  [APP_PATHS.teamDamage]: {
+    title: "home.index.teamDamage.title",
+    description: "home.index.teamDamage.description",
+  },
+  [APP_PATHS.teamInvestment]: {
+    title: "home.index.teamInvestment.title",
+    description: "home.index.teamInvestment.description",
+  },
+  [APP_PATHS.teamChoice]: {
+    title: "home.index.teamChoice.title",
+    description: "home.index.teamChoice.description",
+  },
   [APP_PATHS.builds]: {
     title: "home.index.builds.title",
     description: "home.index.builds.description",
@@ -34,10 +46,6 @@ const INDEX_COPY: Partial<
   [APP_PATHS.filters]: {
     title: "home.index.filters.title",
     description: "home.index.filters.description",
-  },
-  [APP_PATHS.teamDamage]: {
-    title: "home.index.teamDamage.title",
-    description: "home.index.teamDamage.description",
   },
   [APP_PATHS.tierCharacters]: {
     title: "home.index.tierCharacters.title",
@@ -83,7 +91,7 @@ export function FeatureMatrix() {
           {t("home.tools.title")}
         </h2>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {NAVIGATION_SECTIONS.map((group) => (
           <div
             key={group.path}

@@ -1,8 +1,5 @@
 import { useMemo } from "react";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
+import { TierCatalogState } from "@/components/tier-list/TierCatalogState";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
@@ -56,20 +53,22 @@ export default function LightConeTierListView() {
     [data, locale]
   );
 
+  if (loading || error || !data) {
+    return (
+      <TierCatalogState
+        titleKey="route.tierLightCones.title"
+        loading={loading}
+        error={error}
+      />
+    );
+  }
+
   return (
-    <>
-      {loading ? (
-        <CatalogLoading />
-      ) : error || !data ? (
-        <CatalogLoadError error={error} />
-      ) : (
-        <TierTable
-          items={items}
-          groups={groups}
-          assignments={assignments}
-          onChange={setPriorityState}
-        />
-      )}
-    </>
+    <TierTable
+      items={items}
+      groups={groups}
+      assignments={assignments}
+      onChange={setPriorityState}
+    />
   );
 }

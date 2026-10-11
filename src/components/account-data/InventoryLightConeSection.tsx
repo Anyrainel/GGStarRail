@@ -4,45 +4,83 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
-import { InventoryToolbar } from "@/components/account/InventoryToolbar";
+import {
+  ChipGroupGap,
+  InventoryChipRow,
+  InventoryFilteredEmpty,
+  InventorySearch,
+  toggled,
+} from "@/components/account-data/InventorySection";
+import { AssetImage } from "@/components/shared/AssetImage";
+import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { ItemIcon } from "@/components/shared/ItemIcon";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
 import type { LightCone } from "@/domain/account/schemas";
 import { useLightConeReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import type { MessageKey } from "@/i18n/messages.en";
 import { localizedName, localizedSearchText } from "@/lib/catalogPresentation";
+import type { LightConeDefinition } from "@/providers/reference/types";
 
-type LightConeStatus =
-  | "all"
-  | "locked"
-  | "unlocked"
-  | "unknown-lock"
-  | "equipped"
-  | "unequipped";
+type EquipmentGroup = "equipped" | "unequipped";
+type LevelGroup = "max" | "other";
+type LockStatus = "locked" | "unlocked" | "unknown-lock";
+
+const LIGHT_CONE_RARITIES = [5, 4, 3] as const;
+const LOCK_STATUSES: readonly { value: LockStatus; labelKey: MessageKey }[] = [
+  { value: "locked", labelKey: "filter.locked" },
+  { value: "unlocked", labelKey: "filter.unlocked" },
+  { value: "unknown-lock", labelKey: "filter.unknownLock" },
+];
+const DEFAULT_LIGHT_CONE_LEVEL = 80;
 
 interface InventoryLightConeSectionProps {
   lightCones: readonly LightCone[];
+  iconSize: ItemIconSize;
+}
+
+interface LightConeTile {
+  lightCone: LightCone;
+  count: number;
 }
 
 export function InventoryLightConeSection({
   lightCones,
+  iconSize,
 }: InventoryLightConeSectionProps) {
   const { locale, t } = useI18n();
   const { data, error, loading } = useLightConeReferences();
   const [query, setQuery] = useState("");
-  const [pathId, setPathId] = useState("all");
-  const [status, setStatus] = useState<LightConeStatus>("all");
+  const [equipment, setEquipment] = useState<Set<EquipmentGroup>>(
+    () => new Set(["unequipped"])
+  );
+  const [levels, setLevels] = useState<Set<LevelGroup>>(() => new Set(["max"]));
+  const [rarities, setRarities] = useState<Set<number>>(
+    () => new Set(LIGHT_CONE_RARITIES)
+  );
+  const [paths, setPaths] = useState<Set<string>>(() => new Set());
+  const [lockStatus, setLockStatus] = useState<Set<LockStatus>>(
+    () => new Set()
+  );
 
-  const visibleLightCones = useMemo(() => {
+  const tiles = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase();
-    return lightCones
-      .filter((lightCone) => pathId === "all" || lightCone.pathId === pathId)
-      .filter((lightCone) => matchesStatus(lightCone, status))
+    const visible = lightCones
+      .filter((lightCone) =>
+        equipment.has(
+          lightCone.equippedCharacterKey ? "equipped" : "unequipped"
+        )
+      )
       .filter((lightCone) => {
-        if (!normalizedQuery) return true;
         const definition = data?.lightCones.byId.get(lightCone.definitionId);
+        if (!levels.has(levelGroup(lightCone, definition))) return false;
+        if (definition && !rarities.has(definition.rarity)) return false;
+        if (paths.size > 0 && !paths.has(lightCone.pathId)) return false;
+        if (lockStatus.size > 0 && !lockStatus.has(lockOf(lightCone)))
+          return false;
+        if (!normalizedQuery) return true;
         return localizedSearchText(
           definition?.name,
           lightCone.definitionId
@@ -63,132 +101,236 @@ export function InventoryLightConeSection({
           locale
         );
       });
-  }, [data, lightCones, locale, pathId, query, status]);
+    return groupLightCones(visible);
+  }, [
+    data,
+    equipment,
+    levels,
+    lightCones,
+    locale,
+    lockStatus,
+    paths,
+    query,
+    rarities,
+  ]);
 
-  const pathOptions = useMemo(
-    () => [
-      { value: "all", label: t("filter.allPaths") },
-      ...Array.from(new Set(lightCones.map((lightCone) => lightCone.pathId)))
-        .map((id) => ({
-          value: id,
-          label: localizedName(
-            data?.properties.pathById.get(id)?.name,
-            locale,
-            id
-          ),
-        }))
-        .sort((left, right) => left.label.localeCompare(right.label, locale)),
-    ],
-    [data, lightCones, locale, t]
+  const pathIds = useMemo(
+    () =>
+      (data?.properties.paths ?? [])
+        .map((path) => path.id)
+        .filter((id) =>
+          lightCones.some((lightCone) => lightCone.pathId === id)
+        ),
+    [data, lightCones]
   );
 
   if (lightCones.length === 0) {
-    return <EmptyState messageKey="empty.lightCones" icon={WandSparkles} />;
+    return (
+      <EmptyState
+        variant="inline"
+        messageKey="empty.lightCones"
+        icon={WandSparkles}
+      />
+    );
   }
   if (loading) return <CatalogLoading />;
   if (error || !data) return <CatalogLoadError error={error} />;
 
+  const pathName = (id: string) =>
+    localizedName(data.properties.pathById.get(id)?.name, locale, id);
+  const clearAll = () => {
+    setQuery("");
+    setEquipment(new Set(["equipped", "unequipped"]));
+    setLevels(new Set(["max", "other"]));
+    setRarities(new Set(LIGHT_CONE_RARITIES));
+    setPaths(new Set());
+    setLockStatus(new Set());
+  };
+
   return (
-    <div className="space-y-3">
-      <InventoryToolbar
-        query={query}
-        searchLabel={t("common.search")}
-        searchPlaceholder={t("search.lightCones")}
-        countLabel={
-          visibleLightCones.length === 1
-            ? t("common.oneRecord")
-            : t("common.count", { count: visibleLightCones.length })
-        }
-        onQueryChange={setQuery}
-        filters={[
-          {
-            id: "inventory-light-cone-path",
-            label: t("filter.path"),
-            value: pathId,
-            options: pathOptions,
-            onChange: setPathId,
-          },
-          {
-            id: "inventory-light-cone-status",
-            label: t("filter.status"),
-            value: status,
-            options: [
-              { value: "all", label: t("filter.allStatuses") },
-              { value: "locked", label: t("filter.locked") },
-              { value: "unlocked", label: t("filter.unlocked") },
-              { value: "unknown-lock", label: t("filter.unknownLock") },
-              { value: "equipped", label: t("filter.equipped") },
-              { value: "unequipped", label: t("filter.unequipped") },
-            ],
-            onChange: (value) => setStatus(value as LightConeStatus),
-          },
-        ]}
-      />
-      {visibleLightCones.length === 0 ? (
-        <EmptyState messageKey="empty.filtered" icon={WandSparkles} />
+    <>
+      <InventoryChipRow>
+        <CategoryChip
+          label={t("filter.unequipped")}
+          active={equipment.has("unequipped")}
+          onClick={() =>
+            setEquipment((values) => toggled(values, "unequipped"))
+          }
+        />
+        <CategoryChip
+          label={t("filter.equipped")}
+          active={equipment.has("equipped")}
+          onClick={() => setEquipment((values) => toggled(values, "equipped"))}
+        />
+        <ChipGroupGap />
+        <CategoryChip
+          label={t("inventory.level.max")}
+          active={levels.has("max")}
+          onClick={() => setLevels((values) => toggled(values, "max"))}
+        />
+        <CategoryChip
+          label={t("inventory.level.other")}
+          active={levels.has("other")}
+          onClick={() => setLevels((values) => toggled(values, "other"))}
+        />
+        <ChipGroupGap />
+        {LIGHT_CONE_RARITIES.map((rarity) => (
+          <CategoryChip
+            key={rarity}
+            label={t("inventory.rarity", { value: rarity })}
+            active={rarities.has(rarity)}
+            onClick={() => setRarities((values) => toggled(values, rarity))}
+          />
+        ))}
+        <InventorySearch
+          value={query}
+          onValueChange={setQuery}
+          placeholder={t("search.lightCones")}
+        />
+      </InventoryChipRow>
+      <InventoryChipRow className="gap-1">
+        <FilterChipGroup
+          className="contents"
+          options={pathIds}
+          selectedValues={paths}
+          onSelectedValuesChange={setPaths}
+          getKey={(id) => id}
+          getTitle={pathName}
+          getIcon={(id) => (
+            <AssetImage
+              kind="path"
+              id={id}
+              sourcePath={data.properties.pathById.get(id)?.icon_path}
+              alt=""
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 object-contain"
+            />
+          )}
+          getLabel={(id) => (
+            <span className="hidden sm:inline">{pathName(id)}</span>
+          )}
+        />
+        <ChipGroupGap />
+        <FilterChipGroup
+          className="contents"
+          label={t("filter.status")}
+          collapsible
+          singleSelect
+          options={LOCK_STATUSES}
+          selectedValues={
+            new Set(
+              LOCK_STATUSES.filter((status) => lockStatus.has(status.value))
+            )
+          }
+          onSelectedValuesChange={(next) =>
+            setLockStatus(new Set([...next].map((status) => status.value)))
+          }
+          getKey={(status) => status.value}
+          getLabel={(status) => t(status.labelKey)}
+        />
+      </InventoryChipRow>
+      {tiles.length === 0 ? (
+        <InventoryFilteredEmpty icon={WandSparkles} onClear={clearAll} />
       ) : (
         <section
-          className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3"
+          className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-3 px-2"
           aria-label={t("inventory.lightConesList")}
         >
-          {visibleLightCones.map((lightCone) => {
+          {tiles.map(({ lightCone, count }) => {
             const definition = data.lightCones.byId.get(lightCone.definitionId);
             const name = localizedName(
               definition?.name,
               locale,
               lightCone.definitionId
             );
-            const path = data.properties.pathById.get(lightCone.pathId);
+            const label = [
+              name,
+              t("field.level", { value: lightCone.level }),
+              t("field.superimposition", {
+                value: lightCone.superimposition,
+              }),
+              lightCone.equippedCharacterKey ? t("field.equipped") : null,
+              count > 1 ? t("inventory.copies", { count }) : null,
+            ]
+              .filter(Boolean)
+              .join(", ");
             return (
-              <Card key={lightCone.key} className="overflow-hidden">
-                <CardContent className="flex items-center gap-3 p-3">
-                  <ItemIcon
-                    kind="light-cone"
-                    id={definition?.id ?? lightCone.definitionId}
-                    sourcePath={definition?.icon_path ?? ""}
-                    alt={`${name}, ${t("field.level", { value: lightCone.level })}, ${t("field.superimposition", { value: lightCone.superimposition })}`}
-                    rarity={definition?.rarity ?? null}
-                    badge={lightCone.superimposition}
-                    level={`Lv. ${lightCone.level}`}
-                    locked={lightCone.locked}
-                    size="md"
-                  />
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <p className="line-clamp-2 text-sm font-semibold leading-5">
-                      {name}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {localizedName(path?.name, locale, lightCone.pathId)}
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {lightCone.equippedCharacterKey && (
-                        <Badge variant="outline">{t("field.equipped")}</Badge>
-                      )}
-                    </div>
+              <CatalogHoverCard
+                key={lightCone.key}
+                kind="light-cone"
+                id={definition?.id ?? lightCone.definitionId}
+                disabled={!definition}
+              >
+                <div className="group flex min-w-0 flex-col items-center">
+                  <div className="relative transition-transform duration-200 group-hover:scale-105">
+                    <ItemIcon
+                      kind="light-cone"
+                      id={definition?.id ?? lightCone.definitionId}
+                      sourcePath={definition?.icon_path ?? ""}
+                      alt={label}
+                      rarity={definition?.rarity ?? null}
+                      badge={lightCone.superimposition}
+                      level={`Lv. ${lightCone.level}`}
+                      locked={lightCone.locked}
+                      size={iconSize}
+                      tabIndex={0}
+                      className="outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                    {count > 1 && (
+                      <div
+                        className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+                        aria-hidden="true"
+                      >
+                        <span className="rounded-full bg-background/80 px-2 py-0.5 text-lg font-bold text-foreground shadow-sm backdrop-blur-[2px]">
+                          x{count}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
+                  <span
+                    className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
+                    aria-hidden="true"
+                  >
+                    {name}
+                  </span>
+                </div>
+              </CatalogHoverCard>
             );
           })}
         </section>
       )}
-    </div>
+    </>
   );
 }
 
-function matchesStatus(lightCone: LightCone, status: LightConeStatus): boolean {
-  switch (status) {
-    case "locked":
-      return lightCone.locked === true;
-    case "unlocked":
-      return lightCone.locked === false;
-    case "unknown-lock":
-      return lightCone.locked === null;
-    case "equipped":
-      return lightCone.equippedCharacterKey !== undefined;
-    case "unequipped":
-      return lightCone.equippedCharacterKey === undefined;
-    case "all":
-      return true;
+function lockOf(lightCone: LightCone): LockStatus {
+  if (lightCone.locked === null) return "unknown-lock";
+  return lightCone.locked ? "locked" : "unlocked";
+}
+
+function levelGroup(
+  lightCone: LightCone,
+  definition: LightConeDefinition | undefined
+): LevelGroup {
+  const maxLevel =
+    definition?.stat_scaling.at(-1)?.max_level ?? DEFAULT_LIGHT_CONE_LEVEL;
+  return lightCone.level >= maxLevel ? "max" : "other";
+}
+
+/** Identical copies (same cone, level, rank, lock and equip state) share a tile. */
+function groupLightCones(lightCones: readonly LightCone[]): LightConeTile[] {
+  const tiles = new Map<string, LightConeTile>();
+  for (const lightCone of lightCones) {
+    const key = [
+      lightCone.definitionId,
+      lightCone.level,
+      lightCone.superimposition,
+      String(lightCone.locked),
+      lightCone.equippedCharacterKey ? "equipped" : "spare",
+    ].join("|");
+    const tile = tiles.get(key);
+    if (tile) tile.count += 1;
+    else tiles.set(key, { lightCone, count: 1 });
   }
+  return [...tiles.values()];
 }

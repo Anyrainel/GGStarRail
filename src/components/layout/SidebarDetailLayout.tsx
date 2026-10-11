@@ -33,7 +33,7 @@ export function SidebarDetailLayout({
   backLabel,
   sidebarLabel,
   detailLabel,
-  sidebarWidth = "w-1/3 max-w-[18rem]",
+  sidebarWidth = "w-1/3 max-w-[14rem]",
   className,
   sidebarClassName,
   banner,
@@ -66,13 +66,13 @@ export function SidebarDetailLayout({
               {backLabel}
             </Button>
           </div>
-          {mobileDetailHeader && (
-            <div className="shrink-0 pb-2">{mobileDetailHeader}</div>
-          )}
           <section
             aria-label={detailLabel}
             className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain pt-px pb-4"
           >
+            {mobileDetailHeader && (
+              <div className="pb-1">{mobileDetailHeader}</div>
+            )}
             {children}
           </section>
         </div>
@@ -82,16 +82,14 @@ export function SidebarDetailLayout({
     return (
       <div
         className={cn(
-          "container flex h-full min-h-0 min-w-0 flex-col overflow-hidden px-2",
+          "container flex h-full min-h-0 min-w-0 flex-col overflow-y-auto overscroll-contain px-2",
           className
         )}
         data-sidebar-detail-layout="mobile-browse"
       >
         {banner}
         {header && <div className="shrink-0 pt-px pb-2">{header}</div>}
-        <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4">
-          {mobileGrid ?? sidebar}
-        </div>
+        <div className="relative shrink-0 pb-4">{mobileGrid ?? sidebar}</div>
       </div>
     );
   }
@@ -106,7 +104,7 @@ export function SidebarDetailLayout({
       data-sidebar-detail-layout="desktop"
     >
       {banner}
-      {header && <div className="shrink-0 pt-px pb-2">{header}</div>}
+      {header && <div className="shrink-0 pt-px pb-2 2xl:pb-4">{header}</div>}
       <div className="flex min-h-0 min-w-0 flex-1 gap-2 pb-2 lg:gap-3 lg:pb-3">
         <aside
           aria-label={sidebarLabel}

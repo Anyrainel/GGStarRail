@@ -5,6 +5,7 @@ import {
   characterCatalogPresentation,
   localizedName,
 } from "@/lib/catalogPresentation";
+import { cn } from "@/lib/utils";
 import { characterAffiliationIds } from "@/providers/reference/characterAffiliations";
 import type {
   CharacterDefinition,
@@ -56,9 +57,10 @@ export function CharacterBadgeGroup({
   const affiliation =
     AFFILIATION_KEYS[characterAffiliationIds[character.id] ?? ""];
   const badgeClass =
-    "min-h-6 max-w-full gap-1 rounded-full border-2 border-current px-1.5 py-0 text-xs font-medium shadow-none md:min-h-7 md:px-2 md:py-0.5 md:text-sm";
+    "min-h-6 max-w-full gap-1 rounded-full border-2 border-current px-1.5 py-0 text-xs font-medium shadow-none md:min-h-7 md:px-2.5 md:py-0.5 md:text-sm";
+  const iconClass = "h-3.5 w-3.5 shrink-0 object-contain md:h-5 md:w-5";
   return (
-    <div className="flex flex-wrap items-center gap-1 md:gap-2">
+    <div className="flex min-w-0 flex-wrap items-center gap-1 md:gap-2">
       {combatType && (
         <Badge variant="outline" className={badgeClass}>
           <AssetImage
@@ -67,12 +69,15 @@ export function CharacterBadgeGroup({
             sourcePath={combatType.icon_path}
             alt=""
             aria-hidden="true"
-            className="h-3.5 w-3.5 object-contain md:h-4 md:w-4"
+            className={iconClass}
           />
           {presentation.combatTypeName}
         </Badge>
       )}
-      <Badge variant="outline" className={badgeClass}>
+      <Badge
+        variant="outline"
+        className={cn(badgeClass, "hidden md:inline-flex")}
+      >
         <RarityStars rarity={character.rarity} />
       </Badge>
       {path && (
@@ -83,14 +88,17 @@ export function CharacterBadgeGroup({
             sourcePath={path.icon_path}
             alt=""
             aria-hidden="true"
-            className="h-3.5 w-3.5 object-contain md:h-4 md:w-4"
+            className={iconClass}
           />
           {localizedName(path.name, locale, path.id)}
         </Badge>
       )}
       {affiliation && (
-        <Badge variant="outline" className={badgeClass}>
-          {t(affiliation)}
+        <Badge
+          variant="outline"
+          className={cn(badgeClass, "hidden md:inline-flex")}
+        >
+          <span className="truncate">{t(affiliation)}</span>
         </Badge>
       )}
     </div>

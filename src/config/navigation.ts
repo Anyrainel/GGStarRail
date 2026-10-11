@@ -3,14 +3,16 @@ import {
   Archive,
   Boxes,
   Coins,
+  Crosshair,
   Crown,
   DatabaseZap,
   Filter,
   Gem,
   Library,
   Lightbulb,
+  Medal,
   SlidersHorizontal,
-  Swords,
+  TrendingUp,
   Trophy,
   UserRound,
   UsersRound,
@@ -25,9 +27,11 @@ export const APP_PATHS = {
   inventory: "/account-data/inventory",
   resources: "/account-data/resources",
   triage: "/account-data/triage",
+  teamDamage: "/team-damage/optimizer",
+  teamInvestment: "/team-damage/investment",
+  teamChoice: "/team-damage/choice",
   builds: "/builds/configure",
   filters: "/builds/filters",
-  teamDamage: "/builds/team-damage",
   tierCharacters: "/tier-list/characters",
   tierLightCones: "/tier-list/light-cones",
   tierRelics: "/tier-list/relics",
@@ -50,7 +54,12 @@ export interface NavigationSection {
   path: string;
   labelKey: MessageKey;
   items: readonly NavigationItem[];
+  /** Tab links carry the current query string (e.g. Team DMG's `?team=`). */
+  keepSearch?: boolean;
 }
+
+/** Team DMG tabs share `?team=`, so moving between them keeps the open team. */
+export const TEAM_DAMAGE_SECTION_PATH = "/team-damage";
 
 export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
   {
@@ -72,6 +81,28 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
     ],
   },
   {
+    path: TEAM_DAMAGE_SECTION_PATH,
+    labelKey: "nav.teamDamageSection",
+    keepSearch: true,
+    items: [
+      {
+        path: APP_PATHS.teamDamage,
+        labelKey: "nav.teamDamage",
+        icon: Crosshair,
+      },
+      {
+        path: APP_PATHS.teamInvestment,
+        labelKey: "nav.teamInvestment",
+        icon: TrendingUp,
+      },
+      {
+        path: APP_PATHS.teamChoice,
+        labelKey: "nav.teamChoice",
+        icon: Medal,
+      },
+    ],
+  },
+  {
     path: "/builds",
     labelKey: "nav.planning",
     items: [
@@ -81,11 +112,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         icon: SlidersHorizontal,
       },
       { path: APP_PATHS.filters, labelKey: "nav.filters", icon: Filter },
-      {
-        path: APP_PATHS.teamDamage,
-        labelKey: "nav.teamDamage",
-        icon: Swords,
-      },
     ],
   },
   {

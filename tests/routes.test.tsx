@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import App from "@/App";
 import { ROUTE_REGISTRY } from "@/app/routeRegistry";
-import { APP_PATHS } from "@/config/navigation";
+import { APP_PATHS, NAVIGATION_SECTIONS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { messagesEn } from "@/i18n/messages.en";
@@ -13,6 +13,16 @@ describe("HSR route foundation", () => {
     const paths = ROUTE_REGISTRY.map((route) => route.path);
     expect(paths).toEqual(Object.values(APP_PATHS));
     expect(new Set(paths).size).toBe(paths.length);
+  });
+
+  it("lists the Team DMG tabs in navigation order", () => {
+    const section = NAVIGATION_SECTIONS.map((entry) => entry.path);
+    expect(section.indexOf("/team-damage")).toBe(1);
+    expect(
+      ROUTE_REGISTRY.filter((route) =>
+        route.path.startsWith("/team-damage")
+      ).map((route) => route.id)
+    ).toEqual(["team-damage", "team-investment", "team-choice"]);
   });
 
   it.each(ROUTE_REGISTRY)("renders $path", async (route) => {
@@ -25,19 +35,22 @@ describe("HSR route foundation", () => {
         </I18nProvider>
       </ThemeProvider>
     );
-    expect(
-      await screen.findByRole("heading", {
-        level: 1,
-        name:
-          route.path === APP_PATHS.home
-            ? messagesEn["home.brand"]
-            : messagesEn[route.titleKey],
-      })
-    ).toBeInTheDocument();
+    // Catalog pages keep their h1 while loading, then render the loaded page.
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", {
+          level: 1,
+          name:
+            route.path === APP_PATHS.home
+              ? messagesEn["home.brand"]
+              : messagesEn[route.titleKey],
+        })
+      ).toBeInTheDocument()
+    );
     if (route.path === APP_PATHS.home) {
       const cardArt =
         document.querySelectorAll<HTMLElement>(".home-card-image");
-      expect(cardArt).toHaveLength(4);
+      expect(cardArt).toHaveLength(5);
       for (const art of cardArt) {
         expect(art.style.backgroundImage).toContain("/assets/ggstarrail/home/");
       }
@@ -49,7 +62,7 @@ describe("HSR route foundation", () => {
     render(
       <ThemeProvider>
         <I18nProvider>
-          <MemoryRouter initialEntries={["/team-damage"]}>
+          <MemoryRouter initialEntries={["/no-such-page"]}>
             <App />
           </MemoryRouter>
         </I18nProvider>

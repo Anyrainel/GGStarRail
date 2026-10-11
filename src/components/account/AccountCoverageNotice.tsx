@@ -1,20 +1,17 @@
-import { Database, TriangleAlert } from "lucide-react";
+import { TriangleAlert } from "lucide-react";
+import { useId } from "react";
+import { SourceAgeBadge } from "@/components/shared/SourceAgeBadge";
 import { Badge } from "@/components/ui/badge";
 import type { AccountSnapshot, ImportCoverage } from "@/domain/account/schemas";
 import { useI18n } from "@/i18n/I18nContext";
-
-function isPartial(account: AccountSnapshot): boolean {
-  return Object.values(account.source.coverage).some(
-    (coverage) => coverage !== "complete"
-  );
-}
 
 export function AccountCoverageNotice({
   account,
 }: {
   account: AccountSnapshot | null;
 }) {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
+  const titleId = useId();
   if (!account) return null;
 
   const coverageLabel = (coverage: ImportCoverage) => {
@@ -43,55 +40,67 @@ export function AccountCoverageNotice({
     }
   };
 
-  const partial = isPartial(account);
-  const Icon = partial ? TriangleAlert : Database;
+  const { coverage } = account.source;
+  const partial = [
+    {
+      key: "characters",
+      value: coverage.characters,
+      text: t("imports.review.coverageCharacters", {
+        coverage: coverageLabel(coverage.characters),
+      }),
+    },
+    {
+      key: "lightCones",
+      value: coverage.lightCones,
+      text: t("imports.review.coverageLightCones", {
+        coverage: coverageLabel(coverage.lightCones),
+      }),
+    },
+    {
+      key: "relics",
+      value: coverage.relics,
+      text: t("imports.review.coverageRelics", {
+        coverage: coverageLabel(coverage.relics),
+      }),
+    },
+  ].filter((entry) => entry.value !== "complete");
+
+  if (!partial.length) {
+    return (
+      <SourceAgeBadge
+        variant="banner"
+        role="region"
+        aria-label={t("account.coverage.title")}
+        importedAt={account.source.importedAt}
+        sourceLabel={providerLabel()}
+      />
+    );
+  }
 
   return (
     <section
-      className="rounded-xl border border-primary/30 bg-primary/10 p-4"
-      aria-labelledby="account-coverage-title"
+      aria-labelledby={titleId}
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-card/10 px-3 py-2 text-sm"
     >
-      <div className="flex items-start gap-3">
-        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
-        <div className="min-w-0 space-y-2">
-          <div>
-            <h2 id="account-coverage-title" className="text-sm font-semibold">
-              {t("account.coverage.title")}
-            </h2>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">
-              {partial
-                ? t("account.coverage.partialBody")
-                : t("account.coverage.completeBody")}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{providerLabel()}</Badge>
-            <Badge variant="outline">
-              {t("imports.review.coverageCharacters", {
-                coverage: coverageLabel(account.source.coverage.characters),
-              })}
-            </Badge>
-            <Badge variant="outline">
-              {t("imports.review.coverageLightCones", {
-                coverage: coverageLabel(account.source.coverage.lightCones),
-              })}
-            </Badge>
-            <Badge variant="outline">
-              {t("imports.review.coverageRelics", {
-                coverage: coverageLabel(account.source.coverage.relics),
-              })}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {t("field.importedAt", {
-              value: new Intl.DateTimeFormat(locale, {
-                dateStyle: "medium",
-                timeStyle: "short",
-              }).format(new Date(account.source.importedAt)),
-            })}
-          </p>
-        </div>
+      <div className="flex min-w-0 items-center gap-2">
+        <TriangleAlert
+          className="h-4 w-4 shrink-0 text-[hsl(var(--quality-gold))]"
+          aria-hidden="true"
+        />
+        <h2 id={titleId} className="font-semibold">
+          {t("account.coverage.title")}
+        </h2>
       </div>
+      <div className="flex flex-wrap gap-1.5">
+        {partial.map((entry) => (
+          <Badge key={entry.key} variant="outline" className="font-medium">
+            {entry.text}
+          </Badge>
+        ))}
+      </div>
+      <p className="basis-full text-xs leading-5 text-muted-foreground">
+        {t("account.coverage.partialBody")}
+      </p>
     </section>
   );
 }

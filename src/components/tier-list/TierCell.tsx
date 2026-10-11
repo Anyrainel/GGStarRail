@@ -1,5 +1,6 @@
 import { useDroppable } from "@dnd-kit/core";
 import { rectSortingStrategy, SortableContext } from "@dnd-kit/sortable";
+import type { ItemIconSize } from "@/components/shared/ItemIcon";
 import type { PriorityTier } from "@/domain/tier-list/types";
 import { tierColor } from "@/lib/gameColors";
 import { cn } from "@/lib/utils";
@@ -10,36 +11,44 @@ interface TierCellProps<Group extends string> {
   group: Group;
   tier: PriorityTier;
   items: readonly TierItemData<Group>[];
+  iconSize: ItemIconSize;
   onSelect: (itemId: string) => void;
-  compact?: boolean;
+  /** grid: a tier-tinted cell beside a label column; card: a phone card body. */
+  variant?: "grid" | "card";
   dense?: boolean;
+  hoverDisabled?: boolean;
 }
 
 export function TierCell<Group extends string>({
   group,
   tier,
   items,
+  iconSize,
   onSelect,
-  compact = false,
+  variant = "grid",
   dense = false,
+  hoverDisabled = false,
 }: TierCellProps<Group>) {
   const droppable = useDroppable({
     id: `priority-cell:${group}:${tier}`,
     data: { kind: "cell", group, tier },
   });
+  const card = variant === "card";
 
   return (
     <div
       ref={droppable.setNodeRef}
       data-priority-tier={tier}
       data-priority-group={group}
-      style={{ backgroundColor: tierColor(tier, "background") }}
+      style={
+        card ? undefined : { backgroundColor: tierColor(tier, "background") }
+      }
       className={cn(
-        "flex min-h-[5rem] flex-wrap content-start items-end justify-center gap-2 border-gray-600 bg-clip-padding p-2 transition-colors",
+        "flex min-w-0 flex-wrap gap-2 p-2 transition-colors",
+        card
+          ? "min-h-[4rem] justify-start rounded-b-md border border-t-0 border-border bg-card/50"
+          : "min-h-[5rem] content-start items-end justify-center border-b border-r border-gray-600 bg-clip-padding",
         dense && "px-1",
-        compact
-          ? "min-h-[4rem] rounded-b-md border border-t-0"
-          : "border-b border-r",
         droppable.isOver && "bg-primary/10 ring-2 ring-inset ring-primary/55"
       )}
     >
@@ -53,6 +62,9 @@ export function TierCell<Group extends string>({
             item={item}
             group={group}
             tier={tier}
+            size={iconSize}
+            dense={dense}
+            hoverDisabled={hoverDisabled}
             onSelect={onSelect}
           />
         ))}

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
+import { useRowExpansion } from "@/components/archive/CollapsibleBody";
 import { RelicSetCard } from "@/components/archive/RelicSetCard";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { filterArchiveItems } from "@/lib/archiveFilters";
@@ -31,6 +33,7 @@ export function RelicSetCatalog() {
   const { t } = useI18n();
   const resource = useCatalogResource(loadRelicArchiveData);
   const [query, setQuery] = useState("");
+  const rows = useRowExpansion();
   const [kinds, setKinds] = useState<Set<RelicSetDefinition["kind"]>>(
     () => new Set()
   );
@@ -73,52 +76,69 @@ export function RelicSetCatalog() {
     return groups;
   }, [resource.data]);
 
-  if (resource.loading) return <CatalogLoading />;
-  if (resource.error) return <CatalogFailure error={resource.error} />;
-  if (!resource.data) return null;
-  return (
-    <ScrollLayout
-      header={
-        <ArchiveToolbar
-          searchQuery={query}
-          onSearchChange={setQuery}
-          searchLabel={t("common.search")}
-          searchPlaceholder={t("archive.search.relicSets")}
-        >
-          <FilterChipGroup
-            selectedValues={kinds}
-            onSelectedValuesChange={setKinds}
-            options={["cavern_relic", "planar_ornament"] as const}
-            getKey={(kind) => kind}
-            getLabel={(kind) =>
-              t(
-                kind === "cavern_relic"
-                  ? "archive.kind.cavern"
-                  : "archive.kind.planar"
-              )
-            }
-          />
-        </ArchiveToolbar>
-      }
+  const header = (
+    <ArchiveToolbar
+      searchQuery={query}
+      onSearchChange={setQuery}
+      searchLabel={t("common.search")}
+      searchPlaceholder={t("archive.search.relicSets")}
     >
-      <section
-        aria-label={t("archive.relicSetList")}
-        className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-      >
-        {filtered.length === 0 ? (
-          <div className="col-span-full">
-            <CatalogEmpty />
-          </div>
-        ) : (
-          filtered.map((set) => (
-            <RelicSetCard
-              key={set.id}
-              relicSet={set}
-              pieces={piecesBySet.get(set.id) ?? []}
-            />
-          ))
+      <FilterChipGroup
+        selectedValues={kinds}
+        onSelectedValuesChange={setKinds}
+        options={["cavern_relic", "planar_ornament"] as const}
+        getKey={(kind) => kind}
+        getIcon={(kind) => (
+          <RelicKindIcon
+            kind={kind === "planar_ornament" ? "planar" : "cavern"}
+            className="h-3.5 w-3.5"
+            decorative
+          />
         )}
-      </section>
+        getLabel={(kind) =>
+          t(
+            kind === "cavern_relic"
+              ? "archive.kind.cavern"
+              : "archive.kind.planar"
+          )
+        }
+        className="contents"
+      />
+    </ArchiveToolbar>
+  );
+  return (
+    <ScrollLayout header={header}>
+      {!resource.data ? (
+        resource.error ? (
+          <CatalogFailure error={resource.error} />
+        ) : (
+          <CatalogLoading />
+        )
+      ) : (
+        <section
+          aria-label={t("archive.relicSetList")}
+          className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3"
+        >
+          {filtered.length === 0 ? (
+            <div className="col-span-full">
+              <CatalogEmpty />
+            </div>
+          ) : (
+            filtered.map((set, index) => {
+              const row = rows.rowOf(index);
+              return (
+                <RelicSetCard
+                  key={set.id}
+                  relicSet={set}
+                  pieces={piecesBySet.get(set.id) ?? []}
+                  expanded={rows.isExpanded(row)}
+                  onToggleExpanded={() => rows.toggleRow(row)}
+                />
+              );
+            })
+          )}
+        </section>
+      )}
     </ScrollLayout>
   );
 }

@@ -1,4 +1,6 @@
 import { useId } from "react";
+import { AssetImage } from "@/components/shared/AssetImage";
+import { Switch } from "@/components/shared/Switch";
 import type { OptionDef } from "@/domain/combat/kit/builder";
 import type { MemberOptionGroup } from "@/domain/combat/team/assemble";
 import { useI18n } from "@/i18n/I18nContext";
@@ -12,6 +14,7 @@ import {
 import { formatGameText } from "@/lib/gameText";
 import type { CharacterDefinition } from "@/providers/reference/types";
 import type { TeamMemberPlan } from "@/stores/teamSchemas";
+import { CompactNumberInput, CompactSelect } from "./team/Controls";
 
 type OptionValues = TeamMemberPlan["options"];
 
@@ -25,20 +28,25 @@ interface MemberOptionsProps {
 
 type OptionValue = boolean | number | string;
 
+interface SourceArt {
+  kind: "character" | "light-cone" | "relic-set";
+  id: string;
+  sourcePath: string | undefined;
+}
+
 function OptionControl({
-  label,
+  labelId,
   option,
   value,
   allyName,
   onChange,
 }: {
-  label: string;
+  labelId: string;
   option: OptionDef;
   value: OptionValue | null;
   allyName: (characterId: string) => string;
   onChange: (value: OptionValue) => void;
 }) {
-  const id = useId();
   if (option.condition === "ally") {
     const choices = option.choices ?? [];
     const selected =
@@ -46,75 +54,102 @@ function OptionControl({
         ? value
         : (option.defaultValue as string | null);
     return (
-      <div className="flex items-center gap-2 px-1 py-0.5">
-        <label htmlFor={id} className="min-w-0 flex-1 truncate" title={label}>
-          {label}
-        </label>
-        <select
-          id={id}
-          value={selected ?? ""}
-          disabled={choices.length === 0}
-          className="h-7 max-w-[55%] rounded-md border border-border bg-background/70 px-1"
-          onChange={(event) => onChange(event.target.value)}
-        >
-          {choices.map((characterId) => (
-            <option key={characterId} value={characterId}>
-              {allyName(characterId)}
-            </option>
-          ))}
-        </select>
-      </div>
+      <CompactSelect
+        value={selected ?? ""}
+        disabled={choices.length === 0}
+        options={choices.map((characterId) => ({
+          value: characterId,
+          label: allyName(characterId),
+        }))}
+        display={choices.length === 0 ? "—" : undefined}
+        onValueChange={onChange}
+        className="ml-auto h-6 max-w-[55%] text-xs xl:h-7 xl:text-sm"
+        labelledBy={labelId}
+      />
     );
   }
-  if (typeof option.defaultValue === "boolean") {
+  if (typeof option.defaultValue === "boolean")
     return (
-      <label
-        htmlFor={id}
-        className="flex cursor-pointer items-center gap-2 rounded px-1 py-0.5 hover:bg-accent/50"
-      >
-        <input
-          id={id}
-          type="checkbox"
-          className="h-4 w-4 shrink-0 accent-primary"
-          checked={value === true}
-          onChange={(event) => onChange(event.target.checked)}
-        />
-        <span className="min-w-0 truncate" title={label}>
-          {label}
-        </span>
-      </label>
+      <Switch
+        checked={value === true}
+        onCheckedChange={onChange}
+        aria-labelledby={labelId}
+        className="ml-auto"
+      />
     );
-  }
   return (
-    <div className="flex items-center gap-2 px-1 py-0.5">
-      <label htmlFor={id} className="min-w-0 flex-1 truncate" title={label}>
+    <CompactNumberInput
+      value={
+        typeof value === "number"
+          ? value
+          : typeof option.defaultValue === "number"
+            ? option.defaultValue
+            : 0
+      }
+      min={0}
+      max={option.max}
+      onCommit={(next) => {
+        if (next !== null) onChange(next);
+      }}
+      labelledBy={labelId}
+      className="ml-auto h-6 xl:h-7"
+    />
+  );
+}
+
+function OptionRow({
+  label,
+  art,
+  option,
+  value,
+  allyName,
+  onChange,
+}: {
+  label: string;
+  art: SourceArt;
+  option: OptionDef;
+  value: OptionValue | null;
+  allyName: (characterId: string) => string;
+  onChange: (value: OptionValue) => void;
+}) {
+  const labelId = useId();
+  return (
+    <div
+      className="flex min-w-0 flex-wrap items-center gap-0.5 rounded-md border border-border p-0.5 md:gap-1 md:p-1"
+      data-member-option={option.id}
+    >
+      <AssetImage
+        kind={art.kind}
+        id={art.id}
+        sourcePath={art.sourcePath}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className="h-5 w-5 shrink-0 rounded-full border border-border bg-muted object-cover object-top xl:h-7 xl:w-7"
+      />
+      <span
+        id={labelId}
+        title={label}
+        className="min-w-0 flex-1 truncate text-xs font-bold md:text-sm lg:text-xs xl:text-sm"
+      >
         {label}
-      </label>
-      <input
-        id={id}
-        type="number"
-        min={0}
-        max={option.max}
-        step={1}
-        value={
-          typeof value === "number"
-            ? value
-            : typeof option.defaultValue === "number"
-              ? option.defaultValue
-              : 0
-        }
-        className="h-7 w-14 rounded-md border border-border bg-background/70 px-2 text-right tabular-nums"
-        onChange={(event) => {
-          const next = Number(event.target.value);
-          if (Number.isFinite(next))
-            onChange(Math.min(option.max ?? next, Math.max(0, next)));
-        }}
+      </span>
+      <OptionControl
+        labelId={labelId}
+        option={option}
+        value={value}
+        allyName={allyName}
+        onChange={onChange}
       />
     </div>
   );
 }
 
-/** Kit conditions the battle cannot observe (HP, kills, stacks), per source. */
+/**
+ * Kit conditions the battle cannot observe (HP, kills, stacks): one row per
+ * option with its source art, label and control. Renders nothing without
+ * options.
+ */
 export function MemberOptions({
   character,
   references,
@@ -129,12 +164,6 @@ export function MemberOptions({
       ? characterCatalogName(ally, locale, t("terms.trailblazer"))
       : characterId;
   };
-
-  function groupKey(group: MemberOptionGroup): string {
-    return group.entity === "character" || group.entity === "lightCone"
-      ? group.entity
-      : group.entity;
-  }
 
   function sourceName(group: MemberOptionGroup, option: OptionDef): string {
     if (group.entity === "lightCone") {
@@ -152,51 +181,70 @@ export function MemberOptions({
     return name ? `${origin} · ${name}` : origin;
   }
 
-  const labels = groups.flatMap((group) =>
+  function sourceArt(group: MemberOptionGroup): SourceArt {
+    if (group.entity === "character")
+      return {
+        kind: "character",
+        id: character.id,
+        sourcePath: character.icon_path,
+      };
+    if (group.entity === "lightCone")
+      return {
+        kind: "light-cone",
+        id: group.entityId,
+        sourcePath: references.lightCones.byId.get(group.entityId)?.icon_path,
+      };
+    return {
+      kind: "relic-set",
+      id: group.entityId,
+      sourcePath: references.relicSets.byId.get(group.entityId)?.icon_path,
+    };
+  }
+
+  const entries = groups.flatMap((group) =>
     group.options.map((option) => {
       const condition = optionConditionLabel(option, t);
       const source = sourceName(group, option);
-      return condition ? `${source} · ${condition}` : source;
+      return {
+        group,
+        option,
+        base: condition ? `${source} · ${condition}` : source,
+      };
     })
   );
-  const duplicates = new Set(
-    labels.filter((label, index) => labels.indexOf(label) !== index)
-  );
-  let position = 0;
+  if (!entries.length) return null;
+  const counts = new Map<string, number>();
+  for (const entry of entries)
+    counts.set(entry.base, (counts.get(entry.base) ?? 0) + 1);
+  const seen = new Map<string, number>();
 
   return (
     <fieldset
-      className="space-y-0.5 text-xs"
       aria-label={t("combat.member.options")}
+      className="m-0 flex min-w-0 flex-col gap-1 border-0 p-0"
     >
-      <legend className="mb-1 font-medium text-muted-foreground">
-        {t("combat.member.options")}
-      </legend>
-      {groups.map((group) => {
-        const key = groupKey(group);
-        return group.options.map((option) => {
-          const base = labels[position] ?? option.id;
-          position += 1;
-          const ordinal = duplicates.has(base)
-            ? labels.slice(0, position).filter((label) => label === base).length
-            : 0;
-          const label = ordinal > 0 ? `${base} (${ordinal})` : base;
-          return (
-            <OptionControl
-              key={`${key}:${option.id}`}
-              label={label}
-              option={option}
-              allyName={allyName}
-              value={values[key]?.[option.id] ?? option.defaultValue}
-              onChange={(value) =>
-                onChange({
-                  ...values,
-                  [key]: { ...values[key], [option.id]: value },
-                })
-              }
-            />
-          );
-        });
+      {entries.map(({ group, option, base }) => {
+        const key = group.entity;
+        const ordinal = (seen.get(base) ?? 0) + 1;
+        seen.set(base, ordinal);
+        const label =
+          (counts.get(base) ?? 0) > 1 ? `${base} (${ordinal})` : base;
+        return (
+          <OptionRow
+            key={`${key}:${option.id}`}
+            label={label}
+            art={sourceArt(group)}
+            option={option}
+            allyName={allyName}
+            value={values[key]?.[option.id] ?? option.defaultValue}
+            onChange={(value) =>
+              onChange({
+                ...values,
+                [key]: { ...values[key], [option.id]: value },
+              })
+            }
+          />
+        );
       })}
     </fieldset>
   );

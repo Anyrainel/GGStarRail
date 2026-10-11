@@ -1,4 +1,6 @@
+import { Plus } from "lucide-react";
 import { useMemo } from "react";
+import type { ItemIconSize } from "@/components/shared/ItemIcon";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
@@ -12,15 +14,25 @@ import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 const EMPTY_CHOICES: string[] = [];
 
+/** Visible Light Cone choices per width: phone 1, tablet 3, desktop 5. */
+function lightConeCap(mobile: boolean, desktop: boolean): number {
+  if (mobile) return 1;
+  return desktop ? 5 : 3;
+}
+
 export function CharacterLightCones({
   character,
   references,
+  iconSize = "lg",
 }: {
   character: CharacterDefinition;
   references: BuildReferences;
+  /** The card's icon size: lg, or md on very narrow screens. */
+  iconSize?: ItemIconSize;
 }) {
   const { locale, t } = useI18n();
-  const narrow = useMediaQuery("(max-width: 767px)");
+  const mobile = useMediaQuery("(max-width: 767px)");
+  const desktop = useMediaQuery("(min-width: 1024px)");
   const ids = useWorkspaceStore(
     (state) => state.characterLightConeIds[character.id] ?? EMPTY_CHOICES
   );
@@ -39,18 +51,28 @@ export function CharacterLightCones({
     () => [rarityPickerFilter(items, t("filter.rarity"))],
     [items, t]
   );
+  const cap = lightConeCap(mobile, desktop);
+  const visible = ids.slice(0, cap);
+  const remaining = items.filter((item) => !ids.includes(item.id));
+  // An empty slot stands in until the first choice; later additions use a
+  // compact plus while the width still has room.
+  const showPlaceholder = ids.length < 1;
+  const showCompactAdd =
+    !mobile && ids.length > 0 && ids.length < cap && ids.length < 5;
+  const addToEnd = (id: string) => setChoices(character.id, [...ids, id]);
+
   return (
     <fieldset
       aria-label={t("build.lightCones")}
-      className="flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto py-1"
+      className="flex shrink-0 items-center gap-2"
       data-character-light-cones
     >
-      {ids.map((id, index) => (
+      {visible.map((id, index) => (
         <ItemPicker
           key={id}
           kind="light-cone"
           label={t("build.lightConeSlot", { index: index + 1 })}
-          triggerSize={narrow ? "sm" : "md"}
+          triggerSize={iconSize}
           value={id}
           items={items.filter(
             (item) => item.id === id || !ids.includes(item.id)
@@ -70,16 +92,30 @@ export function CharacterLightCones({
           }
         />
       ))}
-      {ids.length < 5 && (
+      {showPlaceholder && (
         <ItemPicker
           kind="light-cone"
           label={t("build.addLightCone")}
-          triggerSize={narrow ? "sm" : "md"}
-          compact={ids.length > 0}
+          triggerSize={iconSize}
           value={null}
-          items={items.filter((item) => !ids.includes(item.id))}
+          items={remaining}
           filters={filters}
-          onChange={(id) => setChoices(character.id, [...ids, id])}
+          onChange={addToEnd}
+        />
+      )}
+      {showCompactAdd && (
+        <ItemPicker
+          kind="light-cone"
+          label={t("build.addLightCone")}
+          value={null}
+          items={remaining}
+          filters={filters}
+          onChange={addToEnd}
+          renderTrigger={() => (
+            <span className="flex h-7 w-7 items-center justify-center rounded-md p-1 text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-accent-foreground">
+              <Plus className="h-4 w-4" aria-hidden="true" />
+            </span>
+          )}
         />
       )}
     </fieldset>

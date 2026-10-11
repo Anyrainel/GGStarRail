@@ -1,5 +1,11 @@
 import { readFileSync } from "node:fs";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ScannerManagerConnection } from "@/components/account-data/ScannerManagerConnection";
 import { I18nProvider } from "@/i18n/I18nContext";
@@ -150,6 +156,44 @@ describe("scanner manager connection", () => {
       /Start the Star Rail manager|星铁管理器/
     );
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the connection state and keeps a host's close action beside Apply", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(response(idle)))
+    );
+    const onRunningChange = vi.fn();
+    render(
+      <I18nProvider>
+        <ScannerManagerConnection
+          envelope={null}
+          onRunningChange={onRunningChange}
+          closeAction={<button type="button">Close dialog</button>}
+        />
+      </I18nProvider>
+    );
+    expect(
+      screen.getByText(/^GGScanner · (connection off|尚未连接)$/)
+    ).toBeVisible();
+    expect(screen.getByLabelText(/^(Port|端口)$/)).toHaveValue(8765);
+    const footer = screen.getByRole("button", {
+      name: "Close dialog",
+    }).parentElement;
+    if (!footer) throw new Error("Footer missing");
+    expect(
+      within(footer).getByRole("button", {
+        name: /^(Apply to game|应用到游戏)$/,
+      })
+    ).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: /^(Connect|连接)$/ }));
+    expect(
+      await screen.findByText(/^GGScanner · (connected|已连接)$/)
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: /^(Disconnect|断开连接)$/ })
+    ).toBeEnabled();
+    expect(onRunningChange).toHaveBeenLastCalledWith(false);
   });
 
   it("reconnects to a completed task and prominently shows manual review and skipped reasons", async () => {

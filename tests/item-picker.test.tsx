@@ -118,4 +118,59 @@ describe("shared catalog picker", () => {
     expect(screen.getByText("Ice")).toBeVisible();
     expect(screen.getByText("Preservation")).toBeVisible();
   });
+
+  it("supports custom triggers, header content, multi-highlight and staying open", async () => {
+    const items = [
+      { id: "a", name: "Alpha", searchText: "", iconPath: "", rarity: 5 },
+      { id: "b", name: "Beta", searchText: "", iconPath: "", rarity: 4 },
+    ];
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    const { container } = render(
+      <I18nProvider>
+        <ItemPicker
+          kind="relic-set"
+          items={items}
+          value={null}
+          selectedIds={["a", "b"]}
+          label="Sets"
+          triggerLabel="Sets: Alpha and Beta"
+          onChange={onChange}
+          closeOnSelect={false}
+          contentHeader={<p>Header row</p>}
+          renderTrigger={({ open }) => (
+            <span data-testid="custom-trigger">{open ? "open" : "closed"}</span>
+          )}
+        />
+        <ItemPicker
+          kind="light-cone"
+          items={items}
+          value={null}
+          label="Empty"
+          triggerSize="sm"
+          onChange={vi.fn()}
+        />
+      </I18nProvider>
+    );
+    expect(container.querySelector("[data-item-picker-empty]")).toHaveStyle({
+      width: "48px",
+    });
+    const trigger = screen.getByRole("button", {
+      name: "Sets: Alpha and Beta",
+    });
+    expect(trigger).not.toHaveClass("border");
+    await user.click(trigger);
+    expect(screen.getByTestId("custom-trigger")).toHaveTextContent("open");
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Header row")).toBeVisible();
+    expect(
+      within(dialog).getByRole("button", { name: "Alpha" })
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(dialog).getByRole("button", { name: "Beta" })
+    ).toHaveAttribute("aria-pressed", "true");
+    await user.click(within(dialog).getByRole("button", { name: "Beta" }));
+    expect(onChange).toHaveBeenCalledWith("b");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
 });

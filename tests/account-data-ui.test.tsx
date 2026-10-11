@@ -40,7 +40,8 @@ describe("Account Data source and lock-state presentation", () => {
     expect(coverage).toHaveTextContent(
       "does not represent a complete inventory"
     );
-    expect(coverage).toHaveTextContent("Characters: Complete");
+    // Only the partial sources are called out; complete ones stay quiet.
+    expect(coverage).not.toHaveTextContent("Characters: Complete");
     expect(coverage).toHaveTextContent("Light Cones: Equipped only");
     expect(coverage).toHaveTextContent("Relics: Profile showcase only");
   });
@@ -55,27 +56,41 @@ describe("Account Data source and lock-state presentation", () => {
     const user = userEvent.setup();
 
     renderPage(<InventoryView />);
-    const lightConeSection = screen
-      .getByRole("heading", { name: "Light Cones" })
-      .closest("section");
-    if (!lightConeSection) throw new Error("Light Cone section missing");
-    const status = await within(lightConeSection).findByRole("combobox", {
-      name: "Status",
+    const lightConeSection = screen.getByRole("region", {
+      name: "Light Cones",
     });
+    await user.click(
+      await within(lightConeSection).findByRole("button", { name: "Equipped" })
+    );
+    await user.click(
+      within(lightConeSection).getByRole("button", { name: "Status" })
+    );
 
-    await user.selectOptions(status, "unknown-lock");
+    await user.click(
+      within(lightConeSection).getByRole("button", {
+        name: "Lock state unknown",
+      })
+    );
     await waitFor(() => {
       expect(
-        lightConeSection.querySelectorAll("[data-item-lock='unknown']")
+        lightConeSection.querySelectorAll("[data-item-icon-kind='light-cone']")
       ).toHaveLength(1);
     });
+    expect(
+      lightConeSection.querySelectorAll("[data-item-lock='unknown']")
+    ).toHaveLength(1);
 
-    await user.selectOptions(status, "unlocked");
+    await user.click(
+      within(lightConeSection).getByRole("button", { name: "Unlocked" })
+    );
     await waitFor(() => {
       expect(
-        lightConeSection.querySelectorAll("[data-item-lock='unknown']")
-      ).toHaveLength(0);
+        lightConeSection.querySelectorAll("[data-item-icon-kind='light-cone']")
+      ).toHaveLength(account.lightCones.length - 1);
     });
+    expect(
+      lightConeSection.querySelectorAll("[data-item-lock='unknown']")
+    ).toHaveLength(0);
   });
 
   it("exposes unknown Relic lock state as its own filter and icon marker", async () => {
@@ -92,22 +107,31 @@ describe("Account Data source and lock-state presentation", () => {
     const user = userEvent.setup();
 
     renderPage(<InventoryView />);
-    const relicSection = screen
-      .getByRole("heading", { name: "Relics and Planar Ornaments" })
-      .closest("section");
-    if (!relicSection) throw new Error("Relic section missing");
-    const status = await within(relicSection).findByRole("combobox", {
-      name: "Status",
+    const relicSection = screen.getByRole("region", {
+      name: "Relics",
     });
-    await user.selectOptions(status, "unknown-lock");
+    for (const name of ["Equipped", "Enhanced", "+0"]) {
+      await user.click(
+        await within(relicSection).findByRole("button", { name })
+      );
+    }
+    await user.click(
+      within(relicSection).getByRole("button", { name: "Status" })
+    );
+    await user.click(
+      within(relicSection).getByRole("button", { name: "Lock state unknown" })
+    );
 
     await waitFor(() => {
-      expect(
-        relicSection.querySelectorAll("[data-item-lock='unknown']")
-      ).toHaveLength(1);
+      expect(relicSection.querySelectorAll("[data-relic-key]")).toHaveLength(1);
     });
     expect(
-      within(status).getByRole("option", { name: "Lock state unknown" })
-    ).toBeInTheDocument();
+      relicSection.querySelectorAll("[data-item-lock='unknown']")
+    ).toHaveLength(1);
+    expect(
+      within(relicSection).getByRole("img", {
+        name: /, Lock state unknown/,
+      })
+    ).toHaveAttribute("data-relic-key", cavernRelic.key);
   });
 });

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { APP_PATHS } from "@/config/navigation";
@@ -13,6 +14,7 @@ import { useI18n } from "@/i18n/I18nContext";
 import { buildDisplayName } from "@/lib/buildPresentation";
 import type { BuildReferences } from "@/lib/buildReferences";
 import { characterCatalogPresentation } from "@/lib/catalogPresentation";
+import type { RelicKind } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
 import type { CharacterDefinition } from "@/providers/reference/types";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
@@ -104,8 +106,8 @@ function CharacterBuildCardComponent({
             </Link>
           </CatalogHoverCard>
 
-          <div className="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-2 md:gap-4">
-            <div className="min-w-[9rem] flex-1">
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-2 md:gap-4">
+            <div className="min-w-0 flex-1">
               <CharacterInfo
                 character={character}
                 properties={references.properties}
@@ -114,82 +116,139 @@ function CharacterBuildCardComponent({
             <CharacterLightCones
               character={character}
               references={references}
+              iconSize={iconSize}
             />
           </div>
         </div>
       </CardHeader>
 
       <CardContent className={cn("pb-3", isVeryNarrow ? "px-2" : "px-3")}>
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-          {(["cavern", "planar"] as const).map((category) => {
-            const categoryBuilds = builds.filter(
-              (build) => build.category === category
-            );
-            return (
-              <section
+        {builds.length === 0 ? (
+          <div className="flex flex-wrap justify-center gap-2 py-2">
+            {CATEGORIES.map((category) => (
+              <AddBuildButton
                 key={category}
-                className="min-w-0 space-y-2"
-                aria-label={t(
-                  category === "cavern"
-                    ? "build.cavernCards"
-                    : "build.planarCards"
-                )}
-              >
-                <div className="flex items-center justify-between gap-2 px-1">
-                  <h3 className="text-sm font-semibold">
-                    {t(
-                      category === "cavern"
-                        ? "build.cavernCards"
-                        : "build.planarCards"
-                    )}
-                  </h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1 text-xs"
-                    onClick={() => onAddBuild(category)}
-                  >
-                    <Plus className="h-3 w-3" aria-hidden />
-                    {t(
-                      category === "cavern"
-                        ? "build.addCavern"
-                        : "build.addPlanar"
-                    )}
-                  </Button>
-                </div>
-                {categoryBuilds.map((build, index) => {
-                  const profile = profiles.get(build.scoreProfileId);
-                  if (!profile) return null;
-                  return (
-                    <BuildCard
-                      key={build.id}
-                      build={build}
-                      profile={profile}
-                      references={references}
-                      onBuildChange={onBuildChange}
-                      onProfileChange={onProfileChange}
-                      onDelete={() => onDeleteBuild(build)}
-                      onDuplicate={() =>
-                        duplicateBuild(
-                          build.id,
-                          t("build.copyName", {
-                            name: buildDisplayName(build, references, locale),
-                          }).slice(0, 80)
-                        )
-                      }
-                      onMove={(direction) => moveBuild(build.id, direction)}
-                      canMoveUp={index > 0}
-                      canMoveDown={index < categoryBuilds.length - 1}
+                category={category}
+                narrow={isVeryNarrow}
+                onClick={() => onAddBuild(category)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-2 2xl:grid-cols-2">
+            {CATEGORIES.map((category) => {
+              const categoryBuilds = builds.filter(
+                (build) => build.category === category
+              );
+              return (
+                <section
+                  key={category}
+                  className="flex min-w-0 flex-col gap-2"
+                  aria-label={t(CATEGORY_LABEL[category])}
+                  data-build-column={category}
+                >
+                  {categoryBuilds.length > 0 && (
+                    <h3 className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
+                      <RelicKindIcon
+                        kind={category}
+                        className="h-3.5 w-3.5"
+                        decorative
+                      />
+                      {t(CATEGORY_LABEL[category])}
+                    </h3>
+                  )}
+                  {categoryBuilds.map((build, index) => {
+                    const profile = profiles.get(build.scoreProfileId);
+                    if (!profile) return null;
+                    return (
+                      <BuildCard
+                        key={build.id}
+                        build={build}
+                        profile={profile}
+                        references={references}
+                        onBuildChange={onBuildChange}
+                        onProfileChange={onProfileChange}
+                        onDelete={() => onDeleteBuild(build)}
+                        onDuplicate={() =>
+                          duplicateBuild(
+                            build.id,
+                            t("build.copyName", {
+                              name: buildDisplayName(build, references, locale),
+                            }).slice(0, 80)
+                          )
+                        }
+                        onMove={(direction) => moveBuild(build.id, direction)}
+                        canMoveUp={index > 0}
+                        canMoveDown={index < categoryBuilds.length - 1}
+                      />
+                    );
+                  })}
+                  <div className="mt-auto flex">
+                    <AddBuildButton
+                      category={category}
+                      narrow={isVeryNarrow}
+                      fullWidth
+                      onClick={() => onAddBuild(category)}
                     />
-                  );
-                })}
-              </section>
-            );
-          })}
-        </div>
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
+  );
+}
+
+const CATEGORIES = ["cavern", "planar"] as const satisfies readonly RelicKind[];
+
+const CATEGORY_LABEL = {
+  cavern: "build.cavernCards",
+  planar: "build.planarCards",
+} as const;
+
+const ADD_LABEL = {
+  cavern: "build.addCavern",
+  planar: "build.addPlanar",
+} as const;
+
+/** GT's outline add action: a centred button, or a full-width bar under a column. */
+function AddBuildButton({
+  category,
+  narrow,
+  fullWidth = false,
+  onClick,
+}: {
+  category: RelicKind;
+  narrow: boolean;
+  fullWidth?: boolean;
+  onClick: () => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className={cn(
+        "gap-2",
+        narrow ? "h-7 text-xs" : "h-9 text-sm",
+        fullWidth && "flex-1"
+      )}
+      onClick={onClick}
+    >
+      {fullWidth ? (
+        <Plus className={narrow ? "h-3 w-3" : "h-4 w-4"} aria-hidden="true" />
+      ) : (
+        <RelicKindIcon
+          kind={category}
+          className={narrow ? "h-3 w-3" : "h-4 w-4"}
+          decorative
+        />
+      )}
+      {t(ADD_LABEL[category])}
+    </Button>
   );
 }
 

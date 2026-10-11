@@ -1,7 +1,10 @@
 # Team damage: product design
 
-Team Damage (`/builds/team-damage`) answers four questions for a team the
-user plays:
+Team DMG is a top-level section with three tabs: DMG Optimizer
+(`/team-damage/optimizer`), Investment (`/team-damage/investment`), and Light
+Cone & Relic Choice (`/team-damage/choice`). `/team-damage`, unknown tabs, and
+the old `/builds/team-damage` redirect to the DMG Optimizer and keep the query
+string. It answers four questions for a team the user plays:
 
 1. How much damage does this team deal, and from where?
 2. What should each member wear from the Relics I own?
@@ -51,6 +54,25 @@ than user settings:
 - **Stat weights.** Weights are derived from the damage function at the
   current build, not entered.
 
+## Where it lives
+
+Every tab opens on the same team grid (search, Combat Type and Path chips,
+owned-only and sort toggles, New team at either end). A card's footer opens
+that tab's detail by setting `?team=<id>`; Back removes it, and the links at
+the bottom of a detail open the same team on the other tabs. The open team
+lives only in the URL; the store's `activeTeamId` follows it.
+
+| Tab | Detail |
+|---|---|
+| DMG Optimizer | Team Roster, Battle Setup, the simulated damage, Optimize Relics, Ideal Relics |
+| Investment | Team Roster, Battle Setup, Eidolons and Superimpositions |
+| Light Cone & Relic Choice | Team Roster, Battle Setup, Compare Light Cones, Compare Relic sets |
+
+Battle Setup (preset, cycles, enemy level) is the only place the scenario is
+edited. Team Roster tiles hold every member input from the table above.
+Analysis jobs run on their own worker so the automatic simulation never waits
+behind them, and finished results are kept in memory for the session only.
+
 ## Modes
 
 | Mode | Input | Output |
@@ -63,8 +85,13 @@ than user settings:
 | Eidolons and Superimpositions | one member | the order of copies that adds the most team damage per copy |
 
 Optimization always scores the whole team's damage, so a support's Relics
-are judged by what the team gains. Teammates keep their own gear while one
-member is optimized.
+are judged by what the team gains. Optimize runs the members in turn: each
+search wears the loadouts already chosen for the members before it, cannot
+take their Relics, and leaves later members in their own gear. A member that
+wears its own Relics keeps them unless the search finds a loadout that beats
+them, so the combined team never falls below the current one through those
+members. Ideal Relics use each slot's main stats from the member's builds
+unless the main-stat filter sets that slot to one stat or to any.
 
 ## Scenarios
 

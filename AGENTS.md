@@ -67,14 +67,17 @@ labels, and `src/App.tsx` for the actual route components.
 | Inventory | `/account-data/inventory` | `src/pages/account-data/InventoryView.tsx` |
 | Resources | `/account-data/resources` | `src/pages/account-data/ResourceView.tsx` |
 | Relic Triage | `/account-data/triage` | `src/pages/account-data/TriageView.tsx` |
+| DMG Optimizer | `/team-damage/optimizer` | `src/pages/damage/TeamDamagePage.tsx` |
+| Investment | `/team-damage/investment` | `src/pages/damage/TeamDamagePage.tsx` |
+| Light Cone & Relic Choice | `/team-damage/choice` | `src/pages/damage/TeamDamagePage.tsx` |
 | Character Builds | `/builds/configure` | `src/pages/builds/CharacterBuildView.tsx` |
 | Relic Filters | `/builds/filters` | `src/pages/builds/RelicFiltersView.tsx` |
-| Team Damage | `/builds/team-damage` | `src/pages/damage/TeamDamageView.tsx` |
 | Character Priority | `/tier-list/characters` | `src/pages/tier-list/CharacterTierListView.tsx` |
 | Light Cone Priority | `/tier-list/light-cones` | `src/pages/tier-list/LightConeTierListView.tsx` |
 | Relic Priority | `/tier-list/relics` | `src/pages/tier-list/RelicTierListView.tsx` |
-| Archives | `/archive/characters`, `/archive/light-cones`, `/archive/relic-sets`, `/archive/achievements` | `src/pages/archive/ArchivePage.tsx` |
-| Data Sources | `/data-sources` | `src/pages/DataSourcesPage.tsx` |
+| Archives | `/archive/characters`, `/archive/light-cones`, `/archive/relic-sets`, `/archive/achievements`, `/archive/currency-war` | `src/pages/archive/ArchivePage.tsx` |
+| Scanner download | `/download-scanner` | `src/pages/ScannerDownloadPage.tsx` |
+| Not found | `*` | `src/pages/NotFoundPage.tsx` |
 
 ## UI And Localization
 

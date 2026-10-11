@@ -354,6 +354,58 @@ describe("Currency War archive", () => {
     expect(screen.getByText("15%")).toBeInTheDocument();
     expect(screen.getByText("Increase 20% and 35%.")).toBeInTheDocument();
   });
+  it("shows a dash for a placeholder whose parameter is missing from the export", () => {
+    render(
+      <I18nProvider>
+        <CurrencyWarText
+          text={localized(
+            "Gain #1[i]% ATK and #3[f1]% SPD.",
+            "攻击力提高#1[i]%，速度提高#3[f1]%。"
+          )}
+          parameters={[0.2]}
+        />
+      </I18nProvider>
+    );
+    expect(screen.getByText("Gain 20% ATK and — SPD.")).toBeInTheDocument();
+  });
+  it("clips long grid cards one row at a time and keeps short ones open", async () => {
+    const tall = vi
+      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.parentElement?.className.includes("overflow-hidden")
+          ? 400
+          : 0;
+      });
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      matches: query === "(min-width: 1024px)",
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+    const user = userEvent.setup();
+    renderArchive("/archive/currency-war?tab=environments", {
+      ...CATALOG,
+      environments: [0, 1, 2].map((index) => ({
+        ...CATALOG.environments[0]!,
+        id: `env-${index}`,
+        name: localized(`Environment ${index}`, `环境${index}`),
+      })),
+    });
+    const toggles = () =>
+      screen.getAllByRole("button", { name: /^Show (more|less)$/ });
+    expect(toggles()).toHaveLength(3);
+    // Two columns from 1024 px: the first toggle opens the first row only.
+    await user.click(toggles()[0]!);
+    expect(
+      toggles().map((toggle) => toggle.getAttribute("aria-expanded"))
+    ).toEqual(["true", "true", "false"]);
+    expect(toggles()[0]).toHaveAccessibleName("Show less");
+    tall.mockRestore();
+  });
   it("searches both languages, clears conflicting filters for recipes, and keeps selection across locale changes", async () => {
     const user = userEvent.setup();
     renderArchive();

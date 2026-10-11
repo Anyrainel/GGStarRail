@@ -1,4 +1,4 @@
-import { Award, Database, Filter, Library } from "lucide-react";
+import { Award, Database, Filter, Library, Swords } from "lucide-react";
 import { FeatureCard } from "@/components/home/FeatureCard";
 import { FeatureMatrix } from "@/components/home/FeatureMatrix";
 import { WelcomeGuideManual } from "@/components/home/WelcomeGuideManual";
@@ -11,72 +11,86 @@ export default function HomePage() {
   const { locale, t } = useI18n();
   return (
     <ScrollLayout bodyClassName="mx-auto flex min-h-full flex-col gap-6 overflow-x-hidden px-8 pb-4">
-      <section className="space-y-3 pb-2 pt-5 text-center sm:pt-7">
-        <div className="mx-auto flex w-full flex-col items-center">
-          <h1 className="flex aspect-[14/5] w-full max-w-[30rem] items-center justify-center">
-            {locale === "zh-CN" ? (
-              <span className="font-serif text-4xl font-bold tracking-wide text-primary drop-shadow-md md:text-6xl">
-                {t("home.brand")}
-              </span>
-            ) : (
-              <>
-                <span className="sr-only">{t("home.brand")}</span>
-                <img
-                  src={getAssetUrl("assets/ggstarrail/wordmark.svg")}
-                  alt=""
-                  width="560"
-                  height="200"
-                  className="h-auto w-full drop-shadow-[0_2px_1px_#243747]"
-                />
-              </>
-            )}
-          </h1>
-          <p className="mx-auto max-w-2xl text-base font-light leading-relaxed text-foreground/80 sm:text-xl">
-            {t("home.heroDescription")}
-          </p>
-        </div>
+      <section className="space-y-1 pb-0 pt-6 text-center">
+        <h1 className="flex h-16 items-center justify-center md:h-24">
+          {locale === "zh-CN" ? (
+            <span className="font-serif text-4xl font-bold tracking-wide text-primary drop-shadow-md md:text-6xl">
+              {t("home.brand")}
+            </span>
+          ) : (
+            <>
+              <span className="sr-only">{t("home.brand")}</span>
+              <img
+                src={getAssetUrl("assets/ggstarrail/wordmark.svg")}
+                alt=""
+                width="560"
+                height="200"
+                className="mx-auto h-full w-auto drop-shadow-[0_2px_1px_#243747]"
+              />
+            </>
+          )}
+        </h1>
+        <p className="mx-auto max-w-2xl text-xl font-light text-foreground/80">
+          {t("home.heroDescription")}
+        </p>
         <div className="pt-2">
           <WelcomeGuideManual />
         </div>
       </section>
-      <section className="grid w-full grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+      <div className="relative flex flex-col gap-8">
         <FeatureCard
+          featured
           icon={<Database className="size-6" />}
-          title={t("nav.accountData")}
+          eyebrow={t("nav.accountData")}
+          headline={t("home.headline.accountData")}
           link={APP_PATHS.characters}
-          bgImage="assets/ggstarrail/home/firefly.webp"
-          bgPosition="55% center"
-          bgScale={1.3}
-          bgOffsetX="20%"
+          bgImage="assets/ggstarrail/home/third-anniversary.webp"
+          bgPosition="70% 30%"
           ctaText={t("home.openAccount")}
         />
-        <FeatureCard
-          icon={<Filter className="size-6" />}
-          title={t("nav.planning")}
-          link={APP_PATHS.builds}
-          bgImage="assets/ggstarrail/home/ruan-mei.webp"
-          bgPosition="80% center"
-          ctaText={t("home.openBuilds")}
-        />
-        <FeatureCard
-          icon={<Award className="size-6" />}
-          title={t("nav.tierList")}
-          link={APP_PATHS.tierCharacters}
-          bgImage="assets/ggstarrail/home/hysilens.webp"
-          bgPosition="45% center"
-          ctaText={t("home.openTiers")}
-        />
-        <FeatureCard
-          icon={<Library className="size-6" />}
-          title={t("nav.archive")}
-          link={APP_PATHS.archiveCharacters}
-          bgImage="assets/ggstarrail/home/evernight.webp"
-          bgPosition="55% center"
-          bgScale={1.1}
-          bgOffsetX="20%"
-          ctaText={t("home.openArchive")}
-        />
-      </section>
+        <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2">
+          <FeatureCard
+            icon={<Swords className="size-6" />}
+            eyebrow={t("nav.teamDamageSection")}
+            headline={t("home.headline.teamDamage")}
+            link={APP_PATHS.teamDamage}
+            bgImage="assets/ggstarrail/home/firefly.webp"
+            bgPosition="55% center"
+            bgScale={1.3}
+            bgOffsetX="20%"
+            ctaText={t("home.openTeamDamage")}
+          />
+          <FeatureCard
+            icon={<Filter className="size-6" />}
+            eyebrow={t("nav.planning")}
+            headline={t("home.headline.builds")}
+            link={APP_PATHS.builds}
+            bgImage="assets/ggstarrail/home/ruan-mei.webp"
+            bgPosition="80% center"
+            ctaText={t("home.openBuilds")}
+          />
+          <FeatureCard
+            icon={<Award className="size-6" />}
+            eyebrow={t("nav.tierList")}
+            headline={t("home.headline.tierList")}
+            link={APP_PATHS.tierCharacters}
+            bgImage="assets/ggstarrail/home/hysilens.webp"
+            bgPosition="45% center"
+            ctaText={t("home.openTiers")}
+          />
+          <FeatureCard
+            icon={<Library className="size-6" />}
+            eyebrow={t("nav.archive")}
+            headline={t("home.headline.archive")}
+            link={APP_PATHS.archiveCharacters}
+            bgImage="assets/ggstarrail/home/evernight.webp"
+            bgPosition="55% center"
+            bgScale={1.1}
+            bgOffsetX="20%"
+            ctaText={t("home.openArchive")}
+          />
+        </div>
+      </div>
       <FeatureMatrix />
       <footer className="mt-auto space-y-1 border-t border-border/20 pb-2 pt-6 text-center text-xs leading-relaxed text-muted-foreground">
         <p>

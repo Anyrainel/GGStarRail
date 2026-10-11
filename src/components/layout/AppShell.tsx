@@ -1,13 +1,13 @@
 import {
   Check,
   ChevronDown,
+  CircleUserRound,
   Download,
   ExternalLink,
   Languages,
   Menu,
   MoreVertical,
   Palette,
-  UserRound,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
@@ -71,7 +71,7 @@ function SiteSwitcher() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-10 w-36 gap-2 rounded-md px-2 hover:bg-accent/50 focus-visible:ring-2 data-[state=open]:bg-accent/50 sm:w-auto sm:min-w-56"
+            className="h-10 w-auto gap-2 rounded-md px-2 hover:bg-accent/50 focus-visible:ring-2 data-[state=open]:bg-accent/50 min-[360px]:w-36 sm:w-auto sm:min-w-56"
             aria-label={t("site.switcher.label")}
           >
             <span className="hidden text-lg font-semibold sm:inline">
@@ -126,36 +126,44 @@ function SiteSwitcher() {
   );
 }
 
-function AccountMenu() {
+function AccountMenu({ onImport }: { onImport: () => void }) {
   const { t } = useI18n();
-  const [importOpen, setImportOpen] = useState(false);
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label={t("nav.account")}>
-            <UserRound className="size-5" aria-hidden />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setImportOpen(true)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("nav.account")}
+          className="h-9 w-9 rounded-full p-0 2xl:mr-4"
+        >
+          <CircleUserRound className="size-5" aria-hidden />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={onImport}>
+          <Download className="size-4" aria-hidden />
+          {t("imports.open")}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={APP_PATHS.scannerDownload}>
             <Download className="size-4" aria-hidden />
-            {t("imports.open")}
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to={APP_PATHS.scannerDownload}>
-              <Download className="size-4" aria-hidden />
-              {t("scanner.menu")}
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <AccountImportDialog open={importOpen} onOpenChange={setImportOpen} />
-    </>
+            {t("scanner.menu")}
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function ThemeAndLocaleMenu({ actions }: { actions: ReactNode }) {
+function ThemeAndLocaleMenu({
+  actions,
+  phoneActions,
+}: {
+  actions: ReactNode;
+  /** Items that live in the header from `sm` up (each hides itself there). */
+  phoneActions?: ReactNode;
+}) {
   const { t } = useI18n();
 
   return (
@@ -166,8 +174,11 @@ function ThemeAndLocaleMenu({ actions }: { actions: ReactNode }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        {phoneActions}
         {actions}
-        {actions && <DropdownMenuSeparator />}
+        {(actions || phoneActions) && (
+          <DropdownMenuSeparator className={cn(!actions && "sm:hidden")} />
+        )}
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <Languages className="h-4 w-4" aria-hidden="true" />
@@ -201,7 +212,7 @@ function DesktopNavigation() {
   const activeSection = navigationSection(pathname);
   return (
     <nav
-      className="hidden items-center gap-1 xl:flex"
+      className="hidden items-center gap-2 xl:flex"
       aria-label={t("nav.primaryLabel")}
     >
       {NAVIGATION_SECTIONS.map((section) => {
@@ -212,7 +223,7 @@ function DesktopNavigation() {
             variant={active ? "secondary" : "ghost"}
             asChild
             className={cn(
-              "h-9 px-3",
+              "h-9 gap-1 px-3 pb-2.5 pt-1.5",
               active && "bg-primary/10 text-primary hover:bg-primary/20"
             )}
           >
@@ -231,8 +242,9 @@ function DesktopNavigation() {
 
 function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { t } = useI18n();
+  const activeSection = navigationSection(pathname);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -243,58 +255,67 @@ function MobileMenu() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="flex flex-col"
+        className="flex w-[280px] flex-col"
         closeLabel={t("common.close")}
       >
-        <SheetTitle className="flex items-center gap-2 pr-8">
-          <img src={getAssetUrl("logo-hsr.svg")} className="h-7 w-7" alt="" />
+        <SheetTitle className="flex items-center gap-2 pr-8 text-left">
+          <img src={getAssetUrl("logo-hsr.svg")} className="h-6 w-6" alt="" />
           {t("app.name")}
-          <span className="text-sm font-normal text-primary">
-            {t("site.starRail.short")}
-          </span>
         </SheetTitle>
-        <SheetDescription>{t("app.tagline")}</SheetDescription>
+        <SheetDescription className="sr-only">
+          {t("app.tagline")}
+        </SheetDescription>
         <nav
-          className="mt-5 min-h-0 flex-1 space-y-4 overflow-y-auto"
+          className="mt-4 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto"
           aria-label={t("nav.primaryLabel")}
         >
-          {NAVIGATION_SECTIONS.map((section) => (
-            <section key={section.path}>
-              <h2
-                className={cn(
-                  "mb-1 px-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground",
-                  navigationSection(pathname)?.path === section.path &&
-                    "text-primary"
-                )}
-              >
-                {t(section.labelKey)}
-              </h2>
-              <div className="space-y-1 border-l border-border pl-2">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Button
-                      key={item.path}
-                      variant={pathname === item.path ? "secondary" : "ghost"}
-                      asChild
-                      className="h-9 w-full justify-start"
-                      onClick={() => setOpen(false)}
-                    >
-                      <Link
-                        to={item.path}
-                        aria-current={
-                          pathname === item.path ? "page" : undefined
-                        }
+          {NAVIGATION_SECTIONS.map((section) => {
+            const sectionActive = activeSection?.path === section.path;
+            return (
+              <div key={section.path} className="space-y-0.5">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className={cn(
+                    "h-9 w-full justify-start gap-2 pb-2.5 pt-1.5 text-sm font-semibold",
+                    sectionActive && "text-primary"
+                  )}
+                  onClick={() => setOpen(false)}
+                >
+                  <Link to={section.items[0]?.path ?? section.path}>
+                    {t(section.labelKey)}
+                  </Link>
+                </Button>
+                <div className="ml-2 border-l border-border pl-2">
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const active = pathname === item.path;
+                    return (
+                      <Button
+                        key={item.path}
+                        variant={active ? "secondary" : "ghost"}
+                        asChild
+                        className="h-8 w-full justify-start gap-2 pb-2 pt-1 text-sm font-normal"
+                        onClick={() => setOpen(false)}
                       >
-                        <Icon className="h-4 w-4" aria-hidden="true" />
-                        {t(item.labelKey)}
-                      </Link>
-                    </Button>
-                  );
-                })}
+                        <Link
+                          to={
+                            section.keepSearch && sectionActive
+                              ? { pathname: item.path, search }
+                              : item.path
+                          }
+                          aria-current={active ? "page" : undefined}
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                          {t(item.labelKey)}
+                        </Link>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
-            </section>
-          ))}
+            );
+          })}
         </nav>
       </SheetContent>
     </Sheet>
@@ -302,7 +323,7 @@ function MobileMenu() {
 }
 
 function SectionTabs() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { t } = useI18n();
   const section = navigationSection(pathname);
   if (!section) return null;
@@ -330,13 +351,19 @@ function SectionTabs() {
                 variant={active ? "default" : "ghost"}
                 asChild
                 className={cn(
-                  "h-9 gap-2 px-3 text-sm",
+                  "h-9 gap-2 px-4 pb-2.5 pt-1.5 text-sm",
                   active &&
                     "bg-primary/60 text-primary-foreground hover:bg-primary/70"
                 )}
               >
-                <NavLink to={item.path}>
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                <NavLink
+                  to={
+                    section.keepSearch
+                      ? { pathname: item.path, search }
+                      : item.path
+                  }
+                >
+                  <Icon className="h-5 w-5" aria-hidden="true" />
                   {t(item.labelKey)}
                 </NavLink>
               </Button>
@@ -351,12 +378,16 @@ function SectionTabs() {
 export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
   const { pathname } = useLocation();
+  const [importOpen, setImportOpen] = useState(false);
   const [registeredActions, setActions] =
     useState<RegisteredPageActions | null>(null);
   const actions =
     registeredActions?.pathname === pathname ? registeredActions : null;
   const showAccountImport =
     navigationSection(pathname)?.path === "/account-data";
+  const hasPageActions = Boolean(
+    showAccountImport || actions?.primary || actions?.overflow
+  );
 
   return (
     <PageActionContext.Provider value={setActions}>
@@ -375,8 +406,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               {showAccountImport && (
                 <AccountImportAction
                   variant="outline"
-                  compactOnMobile
-                  className="bg-background/70"
+                  className="hidden bg-background/70 sm:inline-flex"
                 />
               )}
               <div className="hidden items-center gap-2 sm:flex">
@@ -392,12 +422,29 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </div>
                 </>
               ) : (
-                <ThemeAndLocaleMenu actions={actions?.overflow} />
+                <ThemeAndLocaleMenu
+                  actions={actions?.overflow}
+                  phoneActions={
+                    showAccountImport ? (
+                      <DropdownMenuItem
+                        className="sm:hidden"
+                        onSelect={() => setImportOpen(true)}
+                      >
+                        <Download className="h-4 w-4" aria-hidden />
+                        {t("imports.open")}
+                      </DropdownMenuItem>
+                    ) : undefined
+                  }
+                />
               )}
-              <AccountMenu />
+              {hasPageActions && (
+                <div className="h-6 w-px bg-border" aria-hidden="true" />
+              )}
+              <AccountMenu onImport={() => setImportOpen(true)} />
             </div>
           </div>
         </header>
+        <AccountImportDialog open={importOpen} onOpenChange={setImportOpen} />
         <SectionTabs />
         <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden pt-2 2xl:pt-4">
           <div

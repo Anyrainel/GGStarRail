@@ -11,6 +11,7 @@ import {
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { type ReactNode, useMemo, useRef, useState } from "react";
+import type { WideFilterGroup } from "@/components/layout/WideLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
@@ -36,15 +37,20 @@ import type {
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import { localizedName } from "@/lib/catalogPresentation";
+import { cn } from "@/lib/utils";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { TierItemPreview } from "./TierItem";
 import { TierLayout } from "./TierLayout";
 import { TierToolbar } from "./TierToolbar";
+import { useTierLayout } from "./tierLayoutMode";
 import type { TierGroupConfig, TierItemData } from "./tierTableTypes";
 
 interface TierTableProps<Group extends string> {
+  /** Display chips placed before Show Paths in the first filter group. */
   extraFilters?: ReactNode;
+  /** Adds a chip per group that limits the grid to the chosen groups. */
+  filterableGroups?: boolean;
   items: readonly TierItemData<Group>[];
   groups: readonly TierGroupConfig<Group>[];
   assignments: PriorityAssignments;
@@ -68,6 +74,7 @@ function cellKey(group: string, tier: PriorityTier): string {
 
 export function TierTable<Group extends string>({
   extraFilters,
+  filterableGroups = false,
   items,
   groups,
   assignments,
@@ -102,9 +109,27 @@ export function TierTable<Group extends string>({
       )
   );
   const [paths, setPaths] = useState<Set<string>>(() => new Set());
+  const [shownGroups, setShownGroups] = useState<Set<Group>>(() => new Set());
   const [ownedOnly, setOwnedOnly] = useState(false);
   const [showPaths, setShowPaths] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
+  const visibleGroups = useMemo(
+    () =>
+      filterableGroups && shownGroups.size
+        ? groups.filter((group) => shownGroups.has(group.id))
+        : groups,
+    [filterableGroups, groups, shownGroups]
+  );
+  const { iconSize, dense } = useTierLayout(visibleGroups.length);
+  const rarityOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          items.flatMap((item) => (item.rarity === null ? [] : [item.rarity]))
+        ),
+      ].sort((a, b) => b - a),
+    [items]
+  );
   const document = useMemo<TierDocument>(
     () => ({
       kind: "ggstarrail.tier-list",
@@ -348,6 +373,126 @@ export function TierTable<Group extends string>({
     : null;
   const activeItem = activeItemId ? itemsById.get(activeItemId) : undefined;
 
+  const pathOptions =
+    category === "character" && references
+      ? references.properties.paths
+          .map((path) => path.id)
+          .filter((id) =>
+            items.some(
+              (item) => references.characters.byId.get(item.id)?.path_id === id
+            )
+          )
+      : [];
+  const pathName = (id: string) =>
+    localizedName(references?.properties.pathById.get(id)?.name, locale, id);
+  const filterGroups: WideFilterGroup[] = [];
+  if (category === "character") {
+    filterGroups.push({
+      key: "display",
+      fullWidth: true,
+      content: (
+        <div className="flex flex-wrap items-center gap-1">
+          {extraFilters}
+          <FilterChip
+            active={showPaths}
+            onClick={() => setShowPaths(!showPaths)}
+          >
+            {t("tier.controls.showPaths")}
+          </FilterChip>
+        </div>
+      ),
+    });
+  }
+  if (filterableGroups) {
+    filterGroups.push({
+      key: "groups",
+      fullWidth: true,
+      content: (
+        <FilterChipGroup
+          options={groups.map((group) => group.id)}
+          selectedValues={shownGroups}
+          onSelectedValuesChange={setShownGroups}
+          getKey={(id) => id}
+          getLabel={(id) => groups.find((group) => group.id === id)?.name}
+          getIcon={(id) => groups.find((group) => group.id === id)?.filterIcon}
+        />
+      ),
+    });
+  }
+  if (rarityOptions.length > 1) {
+    filterGroups.push({
+      key: "rarity",
+      fullWidth: true,
+      content: (
+        <FilterChipGroup
+          options={rarityOptions}
+          selectedValues={rarities}
+          onSelectedValuesChange={setRarities}
+          getKey={String}
+          getLabel={(rarity) => `${rarity}★`}
+          getColor={(rarity) =>
+            rarity === 5
+              ? "rarity-5"
+              : rarity === 4
+                ? "rarity-4"
+                : rarity === 3
+                  ? "rarity-3"
+                  : undefined
+          }
+          emptyMeansAll={false}
+        />
+      ),
+    });
+  }
+  filterGroups.push({
+    key: "owned",
+    fullWidth: true,
+    content: (
+      <FilterChip
+        active={ownedOnly && !!account}
+        title={account ? undefined : t("tier.controls.ownedOnlyUnavailable")}
+        className={cn(!account && "cursor-not-allowed")}
+        onClick={() => {
+          if (account) setOwnedOnly(!ownedOnly);
+        }}
+      >
+        {t("tier.controls.ownedOnly")}
+      </FilterChip>
+    ),
+  });
+  if (pathOptions.length) {
+    filterGroups.push({
+      key: "paths",
+      fullWidth: true,
+      content: (
+        <FilterChipGroup
+          className="[&>button]:px-2"
+          options={pathOptions}
+          selectedValues={paths}
+          onSelectedValuesChange={setPaths}
+          getKey={(id) => id}
+          getTitle={pathName}
+          getLabel={(id) => <span className="md:sr-only">{pathName(id)}</span>}
+          getIcon={(id, active) => (
+            <AssetImage
+              kind="path"
+              id={id}
+              sourcePath={
+                references?.properties.pathById.get(id)?.icon_path ?? ""
+              }
+              alt=""
+              loading="eager"
+              className={cn(
+                "h-4 w-4 object-contain transition-opacity",
+                !active && "opacity-50"
+              )}
+            />
+          )}
+        />
+      ),
+    });
+  }
+
   return (
     <>
       <TierToolbar
@@ -362,82 +507,7 @@ export function TierTable<Group extends string>({
         }}
         onPresentationChange={setPresentation}
         tableRef={tableRef}
-        filters={
-          <>
-            {extraFilters}
-            {category === "character" && (
-              <FilterChip
-                active={showPaths}
-                onClick={() => setShowPaths(!showPaths)}
-              >
-                {t("tier.controls.showPaths")}
-              </FilterChip>
-            )}
-            <FilterChipGroup
-              options={[
-                ...new Set(
-                  items.flatMap((item) =>
-                    item.rarity === null ? [] : [item.rarity]
-                  )
-                ),
-              ].sort((a, b) => b - a)}
-              selectedValues={rarities}
-              onSelectedValuesChange={setRarities}
-              getKey={String}
-              getLabel={(rarity) => `${rarity}★`}
-              getColor={(rarity) =>
-                rarity === 5
-                  ? "rarity-5"
-                  : rarity === 4
-                    ? "rarity-4"
-                    : rarity === 3
-                      ? "rarity-3"
-                      : undefined
-              }
-              emptyMeansAll={false}
-            />
-            <FilterChip
-              active={ownedOnly && !!account}
-              disabled={!account}
-              onClick={() => setOwnedOnly(!ownedOnly)}
-            >
-              {t("tier.controls.ownedOnly")}
-            </FilterChip>
-            {category === "character" && references && (
-              <FilterChipGroup
-                options={references.properties.paths
-                  .map((path) => path.id)
-                  .filter((id) =>
-                    items.some(
-                      (item) =>
-                        references.characters.byId.get(item.id)?.path_id === id
-                    )
-                  )}
-                selectedValues={paths}
-                onSelectedValuesChange={setPaths}
-                getKey={(id) => id}
-                getLabel={(id) =>
-                  localizedName(
-                    references.properties.pathById.get(id)?.name,
-                    locale,
-                    id
-                  )
-                }
-                getIcon={(id) => (
-                  <AssetImage
-                    kind="path"
-                    id={id}
-                    sourcePath={
-                      references.properties.pathById.get(id)?.icon_path ?? ""
-                    }
-                    alt=""
-                    className="h-4 w-4 object-contain"
-                  />
-                )}
-              />
-            )}
-          </>
-        }
+        filters={filterGroups}
       >
         <p className="sr-only" aria-live="polite">
           {announcement}
@@ -455,15 +525,22 @@ export function TierTable<Group extends string>({
           <div ref={tableRef}>
             <TierLayout
               presentation={presentation}
-              groups={groups}
+              groups={visibleGroups}
               itemsByCell={itemsByCell}
               groupsLabel={t("tier.priority.groups")}
               poolLabel={t("tier.priority.pool")}
               onSelect={setSelectedItemId}
+              hoverDisabled={selectedItem !== null}
             />
           </div>
           <DragOverlay>
-            {activeItem ? <TierItemPreview item={activeItem} /> : null}
+            {activeItem ? (
+              <TierItemPreview
+                item={activeItem}
+                size={iconSize}
+                dense={dense}
+              />
+            ) : null}
           </DragOverlay>
         </DndContext>
       </TierToolbar>

@@ -23,6 +23,8 @@ interface RelicScoreCardProps {
   selected?: boolean;
   children?: ReactNode;
   className?: string;
+  /** `nested`: a flat surface for use inside another card. */
+  variant?: "card" | "nested";
 }
 
 export function RelicScoreCard({
@@ -33,6 +35,7 @@ export function RelicScoreCard({
   selected,
   children,
   className,
+  variant = "card",
 }: RelicScoreCardProps) {
   const { t } = useI18n();
   const piece = references.relicPieces.byId.get(relic.definitionId);
@@ -48,10 +51,14 @@ export function RelicScoreCard({
   return (
     <article
       className={cn(
-        "min-w-0 rounded-xl border border-border bg-gradient-card p-3 shadow-lg",
+        "min-w-0 border border-border",
+        variant === "nested"
+          ? "rounded-lg bg-muted/20 p-2 shadow-none md:p-3"
+          : "rounded-xl bg-gradient-card p-3 shadow-lg",
         selected && "border-primary/45",
         className
       )}
+      data-relic-score-card={variant}
     >
       <div className="flex min-w-0 items-start gap-3">
         <CatalogHoverCard
@@ -102,7 +109,12 @@ export function RelicScoreCard({
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-baseline justify-between gap-3 border-t border-border pt-2 text-xs">
+      <div
+        className={cn(
+          "flex items-baseline justify-between gap-3 border-t border-border pt-2 text-xs",
+          variant === "nested" ? "mt-2" : "mt-3"
+        )}
+      >
         <span className="min-w-0 truncate text-muted-foreground">
           {localizedName(
             mainProperty?.relic_name ?? mainProperty?.name,
@@ -114,7 +126,9 @@ export function RelicScoreCard({
           {formatAccountStatValue(relic.mainStat.value, mainProperty, locale)}
         </span>
       </div>
-      {children && <div className="mt-3">{children}</div>}
+      {children && (
+        <div className={variant === "nested" ? "mt-2" : "mt-3"}>{children}</div>
+      )}
     </article>
   );
 }

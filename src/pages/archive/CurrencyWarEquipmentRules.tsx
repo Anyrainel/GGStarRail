@@ -77,7 +77,7 @@ export function CurrencyWarEquipmentRules({
     "inline-flex rounded-md border border-border bg-card px-2 py-1 text-xs font-medium hover:border-primary/60";
   return (
     <section
-      className="space-y-2 rounded-xl border border-border bg-secondary/35 p-3 text-sm"
+      className="space-y-2 rounded-lg border border-border bg-card/30 p-3 text-sm"
       aria-label={t("archive.currencyWar.equipmentRules")}
     >
       {unique && <p>{t("archive.currencyWar.uniqueEquipment")}</p>}

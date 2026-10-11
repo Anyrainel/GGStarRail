@@ -75,15 +75,6 @@ async function prepareBuildWorkspace() {
   });
 }
 
-function metricValue(label: string): number {
-  const labelNode = screen.getByText(label);
-  const value = labelNode.nextElementSibling?.textContent;
-  if (value === undefined || value === null) {
-    throw new Error(`Metric value missing for ${label}`);
-  }
-  return Number(value);
-}
-
 afterEach(() => {
   act(() => useWorkspaceStore.getState().clearWorkspace());
 });
@@ -107,7 +98,7 @@ describe("Build route interactions", () => {
       character.id
     );
     await user.click(
-      screen.getAllByRole("button", { name: "Add Cavern build" })[0]
+      screen.getAllByRole("button", { name: "Add Cavern Relic build" })[0]
     );
     expect(screen.queryByRole("dialog", { name: "Add Build" })).toBeNull();
     expect(useWorkspaceStore.getState().builds).toHaveLength(1);
@@ -117,7 +108,7 @@ describe("Build route interactions", () => {
       category: "cavern",
     });
     await user.click(
-      screen.getAllByRole("button", { name: "Add Planar build" })[0]
+      screen.getAllByRole("button", { name: "Add Planar Ornament build" })[0]
     );
     expect(useWorkspaceStore.getState().builds[1]).toMatchObject({
       category: "planar",
@@ -135,10 +126,13 @@ describe("Build route interactions", () => {
       await screen.findByRole("textbox", { name: "Build name" })
     ).toHaveValue("Route test build");
     expect(
-      screen.getByRole("button", { name: /^Cavern 4-piece set:/ })
+      screen.getByRole("checkbox", { name: /Owned Characters only/ })
+    ).toBeChecked();
+    expect(
+      screen.getByRole("button", { name: /^Cavern Relic set: .* 4-piece$/ })
     ).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: /^Planar 2-piece set:/ })
+      screen.queryByRole("button", { name: /^Planar Ornament set:/ })
     ).toBeNull();
     expect(document.querySelectorAll("[data-build-slot]")).toHaveLength(2);
     expect(screen.queryByText("Fixed main stat")).not.toBeInTheDocument();
@@ -205,22 +199,49 @@ describe("Build route interactions", () => {
     expect(screen.getByRole("slider", { name: "HP%" })).toBeVisible();
   });
 
-  it("switches a derived slot filter and opens the full recommendation view", async () => {
+  it("switches a slot column and lists the account candidates for it", async () => {
     await prepareBuildWorkspace();
     const user = userEvent.setup();
     renderRoute(APP_PATHS.filters);
 
-    expect(await screen.findByText("Cavern Relics")).toBeVisible();
-    expect(screen.getByText("Planar Ornaments")).toBeVisible();
+    expect(
+      await screen.findByRole("combobox", { name: "Cavern Relics" })
+    ).toBeVisible();
+    expect(
+      screen.getByRole("combobox", { name: "Planar Ornaments" })
+    ).toBeVisible();
     expect(screen.getByText("Recommended loadout")).toBeVisible();
+    expect(screen.queryByText(/Stats weighted at 60%/)).toBeNull();
+    expect(screen.queryByText("Up to 18 results.")).toBeNull();
+    expect(
+      within(document.querySelector("header")!).queryByRole("button", {
+        name: "Import",
+      })
+    ).toBeNull();
 
-    const bodyRule = screen.getByRole("button", {
-      name: /^Body .*matches/,
+    const cavernCard = document.querySelector(
+      '[data-filter-set-card="cavern"]'
+    ) as HTMLElement;
+    const slots = [...cavernCard.querySelectorAll("[data-filter-slot]")].map(
+      (slot) => slot.getAttribute("data-filter-slot")
+    );
+    expect(slots).toEqual(["head", "hands", "body", "feet"]);
+    const fixedMains = within(cavernCard).getAllByTitle("Fixed");
+    expect(fixedMains.map((cell) => cell.textContent)).toEqual(["HP", "ATK"]);
+    expect(within(cavernCard).getAllByText(/at least \d/).length).toBe(4);
+    expect(
+      document.querySelectorAll("[data-filter-loadout] [data-relic-slot]")
+    ).toHaveLength(6);
+
+    const bodyRule = within(cavernCard).getByRole("button", {
+      name: /^Body, \d+ match(es)?$/,
     });
     await user.click(bodyRule);
     expect(bodyRule).toHaveAttribute("aria-pressed", "true");
-    expect(within(bodyRule).getByText("Desired substats")).toBeVisible();
-    expect(within(bodyRule).getByText("Must-have substats")).toBeVisible();
+    const candidates = document.querySelector(
+      "[data-filter-candidates]"
+    ) as HTMLElement;
+    expect(within(candidates).getAllByText("Body")[0]).toBeVisible();
 
     const matchesOnly = screen.getByRole("checkbox", {
       name: /Show matches only/,
@@ -228,87 +249,115 @@ describe("Build route interactions", () => {
     await user.click(matchesOnly);
     expect(matchesOnly).not.toBeChecked();
     expect(
-      screen.getAllByText(/Matches|Does not match/).length
+      within(candidates).getAllByText(/Matches|Does not match/).length
     ).toBeGreaterThan(0);
-    expect(screen.getAllByText("Wrong slot").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/HP%|ATK%|DEF%/).length).toBeGreaterThan(0);
+    expect(
+      within(candidates).getAllByText("Wrong slot").length
+    ).toBeGreaterThan(0);
+    expect(within(candidates).queryByText("Slot matched")).toBeNull();
+    expect(
+      candidates.querySelectorAll('[data-relic-score-card="nested"]').length
+    ).toBeGreaterThan(0);
   });
 
-  it("updates triage thresholds and filters the explained decisions", async () => {
+  it("selects a Character with builds from the Relic Filters sidebar", async () => {
     await prepareBuildWorkspace();
-    const user = userEvent.setup();
-    renderRoute(APP_PATHS.triage);
-
-    const keepThreshold = await screen.findByRole("spinbutton", {
-      name: "Keep at or above",
-    });
-    fireEvent.change(keepThreshold, { target: { value: "95" } });
-    await waitFor(() => {
-      expect(useWorkspaceStore.getState().triageRules.keepScoreAtLeast).toBe(
-        95
-      );
-    });
-
-    const salvageFilter = screen.getByRole("button", {
-      name: "Filter triage decisions: Salvage review",
-    });
-    await user.click(salvageFilter);
-    expect(salvageFilter).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByText("Triage results")).toBeVisible();
-  });
-
-  it("previews per-reason manager actionability without applying an unconnected task", async () => {
-    await prepareBuildWorkspace();
-    const user = userEvent.setup();
-    renderRoute(APP_PATHS.triage);
-    const apply = await screen.findByRole("button", { name: "Apply to game" });
-    expect(apply).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: "Prepare preview" }));
-    await waitFor(() => expect(metricValue("Instructions")).toBeGreaterThan(0));
-    const instructionCount = metricValue("Instructions");
-    expect(metricValue("Preview only")).toBe(instructionCount);
-    expect(metricValue("Actionable")).toBe(0);
-    expect(metricValue("Unknown prior state")).toBe(instructionCount);
-    expect(metricValue("Equipped pieces")).toBeGreaterThan(0);
-    expect(metricValue("Ambiguous matchers")).toBe(0);
-    expect(apply).toBeDisabled();
-    expect(screen.getByText(/reason counts may overlap/i)).toBeVisible();
-    expect(screen.getByRole("button", { name: "Connect" })).toBeEnabled();
-  });
-
-  it("shows locked discard candidates as blocked with protection disabled", async () => {
-    await prepareBuildWorkspace();
+    const references = await loadBuildReferences();
     const state = useWorkspaceStore.getState();
-    const account = state.account;
-    if (!account) throw new Error("Prepared account missing");
-    const candidate = account.relics.find(
-      (relic) => !relic.equippedCharacterKey && relic.discarded !== true
+    const second = references.characters.values.find(
+      (character) => character.id !== state.builds[0]!.characterDefinitionId
+    )!;
+    const profile = createCharacterScoreProfile(
+      second,
+      references.progression,
+      "Second score",
+      "score:second"
     );
-    if (!candidate) throw new Error("Unequipped demo Relic missing");
-    state.replaceAccount({
-      ...account,
-      relics: account.relics.map((relic) =>
-        relic.key === candidate.key
-          ? { ...relic, setId: "manager-locked-guard", locked: true }
-          : relic
-      ),
-      source: { ...account.source, provider: "scanner-export" },
-    });
-    state.setTriageRules({ ...state.triageRules, protectLocked: false });
+    const planar = createCharacterBuild(
+      second,
+      {
+        category: "planar",
+        planarSetId: references.relicSets.values.find(
+          (set) => set.kind === "planar_ornament"
+        )!.id,
+      },
+      references.properties,
+      references.progression,
+      profile.id,
+      "Second planar",
+      "build:second-planar"
+    );
+    act(() =>
+      useWorkspaceStore.getState().replaceBuildWorkspace({
+        builds: [...state.builds, planar],
+        scoreProfiles: [...state.scoreProfiles, profile],
+        triageRules: state.triageRules,
+      })
+    );
     const user = userEvent.setup();
-    renderRoute(APP_PATHS.triage);
+    renderRoute(APP_PATHS.filters);
+    const list = await screen.findByRole("group", { name: "Character" });
+    const rows = within(list).getAllByRole("button");
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveAttribute("aria-pressed", "true");
+    await user.click(rows[1]!);
+    expect(rows[1]).toHaveAttribute("aria-pressed", "true");
     expect(
-      await screen.findByRole("checkbox", { name: /^Protect locked Relics/ })
-    ).not.toBeChecked();
-    await user.click(screen.getByRole("button", { name: "Prepare preview" }));
-    await waitFor(() => expect(metricValue("Locked before discard")).toBe(1));
-    expect(metricValue("Preview only")).toBeGreaterThanOrEqual(1);
-    expect(metricValue("Blocked locked discards")).toBe(1);
+      document.querySelector('[data-filter-set-card="cavern"]')
+    ).toBeNull();
     expect(
-      screen.getByText(/Locked pieces are never marked for discard/i)
-    ).toBeVisible();
+      document.querySelector('[data-filter-set-card="planar"]')
+    ).not.toBeNull();
     expect(
-      screen.getByRole("button", { name: "Apply to game" })
+      screen.getByRole("combobox", { name: "Cavern Relics" })
     ).toBeDisabled();
+  });
+
+  it("opens Character Builds on a deep-linked Character", async () => {
+    await prepareBuildWorkspace();
+    const references = await loadBuildReferences();
+    const owned = new Set(
+      useWorkspaceStore
+        .getState()
+        .account?.characters.map(({ definitionId }) => definitionId)
+    );
+    const names = references.characters.values.map(
+      (character) => character.name.en.value
+    );
+    // A Character whose name is not part of any other name, so the search is exact.
+    const unowned = references.characters.values.find(
+      (character) =>
+        !owned.has(character.id) &&
+        !character.id.startsWith("8") &&
+        names.filter((name) => name.includes(character.name.en.value))
+          .length === 1
+    )!;
+    renderRoute(`${APP_PATHS.builds}?character=${unowned.id}`);
+    await waitFor(() =>
+      expect(
+        document.querySelectorAll("[data-character-build-card]")
+      ).toHaveLength(1)
+    );
+    expect(
+      document.querySelector("[data-character-build-card]")
+    ).toHaveAttribute("data-character-build-card", unowned.id);
+    expect(
+      screen.getByRole("checkbox", { name: /Owned Characters only/ })
+    ).not.toBeChecked();
+  });
+
+  it("offers Clear all when the catalog filters match nothing", async () => {
+    const user = userEvent.setup();
+    renderRoute(APP_PATHS.builds);
+    await user.type(
+      await screen.findByRole("searchbox", { name: "Search" }),
+      "no character has this name"
+    );
+    expect(await screen.findByText("No matching Characters")).toBeVisible();
+    const list = document.querySelector(
+      "[data-character-build-list]"
+    ) as HTMLElement;
+    await user.click(within(list).getByRole("button", { name: "Clear all" }));
+    expect((await screen.findAllByRole("article")).length).toBeGreaterThan(0);
   });
 });

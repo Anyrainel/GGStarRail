@@ -1,9 +1,6 @@
 import { useMemo } from "react";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
 import { FilterChip } from "@/components/shared/FilterChip";
+import { TierCatalogState } from "@/components/tier-list/TierCatalogState";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
@@ -67,36 +64,38 @@ export default function CharacterTierListView() {
     [data, locale, t, appearance]
   );
 
+  if (loading || error || !data) {
+    return (
+      <TierCatalogState
+        titleKey="route.tierCharacters.title"
+        loading={loading}
+        error={error}
+      />
+    );
+  }
+
   return (
-    <>
-      {loading ? (
-        <CatalogLoading />
-      ) : error || !data ? (
-        <CatalogLoadError error={error} />
-      ) : (
-        <TierTable
-          extraFilters={
-            <fieldset
-              aria-label={t("tier.trailblazerAppearance")}
-              className="flex items-center gap-1"
+    <TierTable
+      extraFilters={
+        <fieldset
+          aria-label={t("tier.trailblazerAppearance")}
+          className="flex items-center gap-1"
+        >
+          {(["caelus", "stelle"] as const).map((value) => (
+            <FilterChip
+              key={value}
+              active={appearance === value}
+              onClick={() => setAppearance(value)}
             >
-              {(["caelus", "stelle"] as const).map((value) => (
-                <FilterChip
-                  key={value}
-                  active={appearance === value}
-                  onClick={() => setAppearance(value)}
-                >
-                  {value === "caelus" ? t("terms.caelus") : t("terms.stelle")}
-                </FilterChip>
-              ))}
-            </fieldset>
-          }
-          items={items}
-          groups={groups}
-          assignments={assignments}
-          onChange={setPriorityState}
-        />
-      )}
-    </>
+              {value === "caelus" ? t("terms.caelus") : t("terms.stelle")}
+            </FilterChip>
+          ))}
+        </fieldset>
+      }
+      items={items}
+      groups={groups}
+      assignments={assignments}
+      onChange={setPriorityState}
+    />
   );
 }

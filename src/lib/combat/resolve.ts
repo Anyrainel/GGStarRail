@@ -51,7 +51,7 @@ export interface ResolvedTeam {
   readonly scenario: ScenarioInput;
 }
 
-function buildsFor(
+export function buildsFor(
   builds: readonly BuildConfiguration[],
   characterId: string
 ): BuildConfiguration[] {
@@ -61,7 +61,7 @@ function buildsFor(
   );
 }
 
-function setPlanFrom(builds: readonly BuildConfiguration[]): {
+export function setPlanFrom(builds: readonly BuildConfiguration[]): {
   plan: SetPlan;
   mainStats: Partial<Record<ConfigurableSlot, readonly string[]>>;
 } | null {
@@ -91,7 +91,9 @@ function setPlanFrom(builds: readonly BuildConfiguration[]): {
   };
 }
 
-function overridePlan(plan: NonNullable<TeamMemberPlan["setPlan"]>): SetPlan {
+export function overridePlan(
+  plan: NonNullable<TeamMemberPlan["setPlan"]>
+): SetPlan {
   const [first, second] = plan.cavern;
   return {
     cavern: first
@@ -101,6 +103,96 @@ function overridePlan(plan: NonNullable<TeamMemberPlan["setPlan"]>): SetPlan {
       : null,
     planar: plan.planar,
   };
+}
+
+type LightCone = MemberInput["lightCone"];
+
+/**
+ * The member's Light Cone: the override, else the account's equipped one,
+ * else the preferred Light Cone in the user's builds, else the in-game
+ * recommendation.
+ */
+export function resolveLightCone(
+  plan: TeamMemberPlan,
+  equipped: LightCone,
+  sources: Pick<BuildSources, "characterLightConeIds" | "presetLightConeIds">
+): { lightCone: LightCone; origin: ValueOrigin } {
+  if (plan.lightCone !== undefined)
+    return {
+      lightCone: plan.lightCone
+        ? {
+            id: plan.lightCone.id,
+            level: 80,
+            superimposition: plan.lightCone.superimposition,
+          }
+        : null,
+      origin: "override",
+    };
+  if (equipped) return { lightCone: equipped, origin: "account" };
+  const canonical = canonicalCharacterId(plan.characterId);
+  const preferred = sources.characterLightConeIds[canonical]?.[0];
+  if (preferred)
+    return {
+      lightCone: { id: preferred, level: 80, superimposition: 1 },
+      origin: "workspace",
+    };
+  const recommended = sources.presetLightConeIds[canonical]?.[0];
+  if (recommended)
+    return {
+      lightCone: { id: recommended, level: 80, superimposition: 1 },
+      origin: "recommended",
+    };
+  return { lightCone: null, origin: "default" };
+}
+
+/**
+ * The ideal-Relic set plan: the override, else the user's Character builds,
+ * else the in-game recommendation. Main stats come from the same builds.
+ */
+export function resolveSetPlan(
+  plan: TeamMemberPlan,
+  sources: Pick<BuildSources, "builds" | "presetBuilds">
+): {
+  setPlan: SetPlan;
+  origin: ValueOrigin;
+  mainStats: ResolvedMember["mainStats"];
+} {
+  const workspace = setPlanFrom(buildsFor(sources.builds, plan.characterId));
+  const recommended = setPlanFrom(
+    buildsFor(sources.presetBuilds, plan.characterId)
+  );
+  if (plan.setPlan)
+    return {
+      setPlan: overridePlan(plan.setPlan),
+      origin: "override",
+      mainStats: workspace?.mainStats ?? recommended?.mainStats ?? {},
+    };
+  if (workspace)
+    return {
+      setPlan: workspace.plan,
+      origin: "workspace",
+      mainStats: workspace.mainStats,
+    };
+  if (recommended)
+    return {
+      setPlan: recommended.plan,
+      origin: "recommended",
+      mainStats: recommended.mainStats,
+    };
+  return {
+    setPlan: { cavern: null, planar: null },
+    origin: "default",
+    mainStats: {},
+  };
+}
+
+/** Equipped Relics when the Character is owned and wears any, else ideal. */
+export function resolveRelicSource(
+  plan: TeamMemberPlan,
+  owned: boolean,
+  wearsRelics: boolean
+): "equipped" | "ideal" {
+  return plan.relics ?? (owned && wearsRelics ? "equipped" : "ideal");
 }
 
 /**
@@ -128,55 +220,21 @@ export function resolveTeam(
             lightCone: null,
             relics: EMPTY_LOADOUT,
           };
-    const canonical = canonicalCharacterId(plan.characterId);
-
-    let lightCone = base.lightCone;
-    let lightConeOrigin: ValueOrigin = lightCone ? "account" : "default";
-    if (plan.lightCone !== undefined) {
-      lightCone = plan.lightCone
-        ? {
-            id: plan.lightCone.id,
-            level: 80,
-            superimposition: plan.lightCone.superimposition,
-          }
-        : null;
-      lightConeOrigin = "override";
-    } else if (!lightCone) {
-      const preferred = sources.characterLightConeIds[canonical]?.[0];
-      const recommended = sources.presetLightConeIds[canonical]?.[0];
-      if (preferred) {
-        lightCone = { id: preferred, level: 80, superimposition: 1 };
-        lightConeOrigin = "workspace";
-      } else if (recommended) {
-        lightCone = { id: recommended, level: 80, superimposition: 1 };
-        lightConeOrigin = "recommended";
-      }
-    }
-
-    const hasEquippedRelics = Object.keys(base.relics.sets).length > 0;
-    const relicSource =
-      plan.relics ?? (owned && hasEquippedRelics ? "equipped" : "ideal");
-
-    const workspace = setPlanFrom(buildsFor(sources.builds, plan.characterId));
-    const recommended = setPlanFrom(
-      buildsFor(sources.presetBuilds, plan.characterId)
+    const { lightCone, origin: lightConeOrigin } = resolveLightCone(
+      plan,
+      base.lightCone,
+      sources
     );
-    let setPlan: SetPlan = { cavern: null, planar: null };
-    let setPlanOrigin: ValueOrigin = "default";
-    let mainStats: ResolvedMember["mainStats"] = {};
-    if (plan.setPlan) {
-      setPlan = overridePlan(plan.setPlan);
-      setPlanOrigin = "override";
-      mainStats = workspace?.mainStats ?? recommended?.mainStats ?? {};
-    } else if (workspace) {
-      setPlan = workspace.plan;
-      setPlanOrigin = "workspace";
-      mainStats = workspace.mainStats;
-    } else if (recommended) {
-      setPlan = recommended.plan;
-      setPlanOrigin = "recommended";
-      mainStats = recommended.mainStats;
-    }
+    const relicSource = resolveRelicSource(
+      plan,
+      owned !== undefined,
+      Object.keys(base.relics.sets).length > 0
+    );
+    const {
+      setPlan,
+      origin: setPlanOrigin,
+      mainStats,
+    } = resolveSetPlan(plan, sources);
 
     const relics: RelicLoadout =
       relicSource === "equipped" ? base.relics : EMPTY_LOADOUT;

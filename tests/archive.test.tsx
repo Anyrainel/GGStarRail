@@ -131,10 +131,21 @@ describe("Character archive", () => {
     expect(
       within(mode).queryByRole("button", { name: "Off-Field" })
     ).not.toBeInTheDocument();
-    expect(detail.querySelectorAll("details details")).toHaveLength(0);
-    expect([...detail.querySelectorAll("details")].at(-1)).toBe(mode);
-    for (const section of detail.querySelectorAll("details"))
-      expect(section).toHaveAttribute("open");
+    // Kit sections are flat headed sections, Currency War last; cards collapse
+    // individually and start open.
+    const sections = [
+      ...detail.querySelectorAll<HTMLElement>(
+        "section[data-testid^='character-']"
+      ),
+    ].filter((section) => section.dataset.testid !== "character-base-stats");
+    expect(detail.querySelectorAll("details")).toHaveLength(0);
+    expect(sections.at(-1)).toBe(mode);
+    const cardToggles = detail.querySelectorAll(
+      "article > h4 > button[aria-expanded]"
+    );
+    expect(cardToggles.length).toBeGreaterThan(5);
+    for (const toggle of cardToggles)
+      expect(toggle).toHaveAttribute("aria-expanded", "true");
     expect(detail).not.toHaveTextContent(
       /AvatarSkillConfig|AvatarServantSkillConfig|BPSkill|Item-name provenance|Progression|Character EXP|Enhanced ID|TextMap\/|reference producer/
     );
@@ -198,17 +209,14 @@ describe("Character archive", () => {
     renderArchive(`${APP_PATHS.archiveCharacters}?id=1001`);
     const region = await catalogRegion();
     const detail = screen.getByTestId("character-detail");
-    const descriptions = within(detail).getByRole("group", {
+    const skills = within(detail).getByTestId("character-base-skills");
+    const descriptions = within(skills).getByRole("tablist", {
       name: "Description",
     });
     expect(
-      within(descriptions).getByRole("button", { name: "Full" })
-    ).toHaveAttribute("aria-pressed", "true");
-    await user.click(
-      within(descriptions).getByRole("button", { name: "Brief" })
-    );
-    const skills = within(detail).getByTestId("character-base-skills");
-    expect(skills).toHaveAttribute("open");
+      within(descriptions).getByRole("tab", { name: "Full" })
+    ).toHaveAttribute("aria-selected", "true");
+    await user.click(within(descriptions).getByRole("tab", { name: "Brief" }));
     const table = within(skills).getAllByRole("table", {
       name: "Skill values",
     })[0];
@@ -232,18 +240,28 @@ describe("Character archive", () => {
     expect(firstEidolon).not.toHaveTextContent(/Unlock|Parameters|11001/);
     await user.click(characterRow(region, "1402"));
     const aglaea = screen.getByTestId("character-detail");
-    expect(
-      within(aglaea).getByRole("button", { name: "Brief" })
-    ).toHaveAttribute("aria-pressed", "true");
+    expect(within(aglaea).getByRole("tab", { name: "Brief" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
     const servant = within(aglaea).getByTestId("character-servants");
     expect(servant).toHaveTextContent("Garmentmaker");
     expect(servant).toHaveTextContent("Thorned Snare");
     expect(servant).not.toHaveTextContent(/11402|AvatarServantSkillConfig/);
     expect(servant.querySelector("details")).toBeNull();
     await user.click(characterRow(region, "1004"));
-    expect(screen.getByTestId("character-enhancements")).toHaveAttribute(
-      "open"
-    );
+    const enhancements = screen.getByTestId("character-enhancements");
+    expect(
+      within(enhancements).getByRole("heading", {
+        name: "Character enhancements",
+        level: 3,
+      })
+    ).toBeInTheDocument();
+    const firstSkill = within(enhancements).getAllByRole("button", {
+      expanded: true,
+    })[0];
+    await user.click(firstSkill);
+    expect(firstSkill).toHaveAttribute("aria-expanded", "false");
   }, 15_000);
 
   it("opens inline character details on narrow screens and returns to the roster", async () => {
@@ -261,6 +279,9 @@ describe("Character archive", () => {
     renderArchive();
     const region = await catalogRegion();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // Phones open on the portrait grid without picking a Character.
+    expect(region.querySelector('[aria-pressed="true"]')).toBeNull();
+    expect(region).not.toHaveTextContent(/characters|★/);
     const row = characterRow(region, "1001");
     await user.click(row);
     expect(await screen.findByTestId("character-detail")).toHaveTextContent(

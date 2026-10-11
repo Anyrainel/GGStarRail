@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   LightweightSelect,
   LightweightSelectContent,
@@ -40,7 +40,7 @@ export function characterExtendedSearchText(
 function RankCards({ ranks }: { ranks: readonly CharacterRank[] }) {
   const { locale, t } = useI18n();
   return (
-    <div className="grid gap-3 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
       {ranks.map((rank) => (
         <CharacterEffectCard
           key={rank.id}
@@ -84,34 +84,33 @@ function TraceStatsTable({
   const { locale, t } = useI18n();
   if (!values.length) return null;
   return (
-    <table
-      className="w-full max-w-md text-sm"
-      aria-label={t("archive.traceStats")}
-    >
-      <tbody>
-        {values.map((value) => {
-          const property = propertyTables.propertyById.get(value.property_id);
-          if (!property)
-            throw new Error(`Missing trace property ${value.property_id}`);
-          return (
-            <tr
-              key={value.property_id}
-              className="border-b border-border last:border-0"
-            >
-              <th className="px-2 py-2 text-left font-normal">
-                {getLocalizedValue(
-                  property.relic_name ?? property.name,
-                  locale
-                )}
-              </th>
-              <td className="px-2 py-2 text-right font-medium tabular-nums">
-                {formatCatalogValue(value.value, property.value_kind)}
-              </td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+    <div className="max-w-md rounded-lg border border-border bg-card/50 px-1">
+      <table className="w-full text-sm" aria-label={t("archive.traceStats")}>
+        <tbody>
+          {values.map((value) => {
+            const property = propertyTables.propertyById.get(value.property_id);
+            if (!property)
+              throw new Error(`Missing trace property ${value.property_id}`);
+            return (
+              <tr
+                key={value.property_id}
+                className="border-b border-border last:border-0"
+              >
+                <th className="px-2 py-2 text-left font-normal">
+                  {getLocalizedValue(
+                    property.relic_name ?? property.name,
+                    locale
+                  )}
+                </th>
+                <td className="px-2 py-2 text-right font-medium tabular-nums">
+                  {formatCatalogValue(value.value, property.value_kind)}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -124,7 +123,7 @@ function TraceCards({
 }) {
   const { locale } = useI18n();
   return (
-    <div className="grid gap-3 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
       {visibleTraces(traces).map((trace) => {
         const level = trace.levels.at(-1);
         const values =
@@ -194,7 +193,7 @@ function EnhancementDetails({
   return (
     <CharacterSection
       testId="character-enhancements"
-      title={t("archive.seasonalEnhancements", { value: variants.length })}
+      title={t("archive.section.enhancements")}
     >
       {variants.length > 1 && (
         <LightweightSelect
@@ -225,12 +224,12 @@ function EnhancementDetails({
       )}
       <div
         data-testid={`enhancement-variant-${variant.enhanced_id}`}
-        className="space-y-4"
+        className="space-y-2"
       >
         {variant.summaries.map((summary) => (
           <CurrencyWarText key={summary.en.value} text={summary} />
         ))}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-2">
           {variant.skills
             .filter((skill) => !skill.hide_in_ui)
             .map((skill) => (
@@ -243,8 +242,8 @@ function EnhancementDetails({
         </div>
         {variant.ranks.length > 0 && (
           <section className="space-y-2">
-            <h4 className="font-semibold">
-              {t("archive.eidolons", { value: variant.ranks.length })}
+            <h4 className="px-1 text-sm font-semibold text-muted-foreground">
+              {t("archive.section.eidolons")}
             </h4>
             <RankCards ranks={variant.ranks} />
           </section>
@@ -252,10 +251,8 @@ function EnhancementDetails({
         {(visibleTraces(variant.traces).length > 0 ||
           variant.trace_stats.length > 0) && (
           <section className="space-y-2">
-            <h4 className="font-semibold">
-              {t("archive.traceTree", {
-                nodes: visibleTraces(variant.traces).length,
-              })}
+            <h4 className="px-1 text-sm font-semibold text-muted-foreground">
+              {t("archive.section.traces")}
             </h4>
             <TraceCards
               traces={variant.traces}
@@ -276,10 +273,13 @@ export function CharacterExtendedDetails({
   character,
   propertyTables,
   descriptionMode,
+  skillsAction,
 }: {
   character: CharacterDefinition;
   propertyTables: PropertyCatalog;
   descriptionMode: CharacterDescriptionMode;
+  /** The description-mode control, shown in the Skills heading row. */
+  skillsAction?: ReactNode;
 }) {
   const { locale, t } = useI18n();
   const skills = character.skills.filter((skill) => !skill.hide_in_ui);
@@ -289,7 +289,8 @@ export function CharacterExtendedDetails({
       {skills.length > 0 && (
         <CharacterSection
           testId="character-base-skills"
-          title={t("archive.baseSkills", { skills: skills.length })}
+          title={t("archive.section.skills")}
+          action={skillsAction}
         >
           {skills.map((skill) => (
             <CharacterSkillCard
@@ -303,15 +304,15 @@ export function CharacterExtendedDetails({
       {character.servants.length > 0 && (
         <CharacterSection
           testId="character-servants"
-          title={t("archive.servants", { servants: character.servants.length })}
+          title={t("archive.section.servants")}
         >
           {character.servants.map((servant) => (
             <section
               key={servant.id}
               data-servant-id={servant.id}
-              className="space-y-3"
+              className="space-y-2"
             >
-              <h4 className="text-sm font-semibold text-primary">
+              <h4 className="px-1 text-sm font-semibold text-primary">
                 {formatGameText(
                   getLocalizedValue(servant.name, locale),
                   [],
@@ -334,7 +335,7 @@ export function CharacterExtendedDetails({
       {(traces.length > 0 || character.trace_stats.length > 0) && (
         <CharacterSection
           testId="character-traces"
-          title={t("archive.traceTree", { nodes: traces.length })}
+          title={t("archive.section.traces")}
         >
           <TraceCards traces={traces} propertyTables={propertyTables} />
           <TraceStatsTable
@@ -346,7 +347,7 @@ export function CharacterExtendedDetails({
       {character.ranks.length > 0 && (
         <CharacterSection
           testId="character-eidolons"
-          title={t("archive.eidolons", { value: character.ranks.length })}
+          title={t("archive.section.eidolons")}
         >
           <RankCards ranks={character.ranks} />
         </CharacterSection>

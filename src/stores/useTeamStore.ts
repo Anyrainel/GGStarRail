@@ -13,9 +13,14 @@ import {
 } from "./teamSchemas";
 
 interface TeamActions {
-  createTeam: () => string;
+  /** Adds an empty team at the start or end of the list (default end). */
+  createTeam: (position?: "start" | "end") => string;
   duplicateTeam: (teamId: string) => void;
   removeTeam: (teamId: string) => void;
+  /** Moves a team to a list index (clamped to the list). */
+  moveTeam: (teamId: string, toIndex: number) => void;
+  /** Deletes every team. */
+  clearTeams: () => void;
   setActiveTeam: (teamId: string) => void;
   renameTeam: (teamId: string, name: string) => void;
   updateTeam: (
@@ -23,6 +28,8 @@ interface TeamActions {
     patch: Partial<Pick<TeamPlan, "scenario" | "cycles" | "enemyLevel">>
   ) => void;
   setMember: (teamId: string, slot: number, characterId: string | null) => void;
+  /** Removes a member and moves later members up, keeping filled slots first. */
+  removeMember: (teamId: string, slot: number) => void;
   updateMember: (
     teamId: string,
     slot: number,
@@ -52,10 +59,13 @@ export const useTeamStore = create<TeamState>()(
   persist(
     (set, get) => ({
       ...structuredClone(DEFAULT_TEAM_STORE),
-      createTeam: () => {
+      createTeam: (position = "end") => {
         const team = emptyTeam(newId());
         set((state) => ({
-          teams: [...state.teams, team],
+          teams:
+            position === "start"
+              ? [team, ...state.teams]
+              : [...state.teams, team],
           activeTeamId: team.id,
         }));
         return team.id;
@@ -80,6 +90,22 @@ export const useTeamStore = create<TeamState>()(
                 : state.activeTeamId,
           };
         }),
+      moveTeam: (teamId, toIndex) =>
+        set((state) => {
+          const from = state.teams.findIndex((team) => team.id === teamId);
+          if (from < 0) return {};
+          const target = Math.max(
+            0,
+            Math.min(state.teams.length - 1, Math.trunc(toIndex))
+          );
+          if (target === from) return {};
+          const teams = [...state.teams];
+          const [moved] = teams.splice(from, 1);
+          if (!moved) return {};
+          teams.splice(target, 0, moved);
+          return { teams };
+        }),
+      clearTeams: () => set({ teams: [], activeTeamId: null }),
       setActiveTeam: (teamId) => set({ activeTeamId: teamId }),
       renameTeam: (teamId, name) =>
         set((state) =>
@@ -99,6 +125,15 @@ export const useTeamStore = create<TeamState>()(
             members[slot] = characterId
               ? TeamMemberPlanSchema.parse({ characterId })
               : null;
+            return { ...team, members };
+          })
+        ),
+      removeMember: (teamId, slot) =>
+        set((state) =>
+          mapTeam(state, teamId, (team) => {
+            if (!team.members[slot]) return team;
+            const members = team.members.filter((_, index) => index !== slot);
+            members.push(null);
             return { ...team, members };
           })
         ),

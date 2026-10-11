@@ -2,6 +2,7 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
+import { TierCatalogState } from "@/components/tier-list/TierCatalogState";
 import { STORAGE_KEYS } from "@/config/identity";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n/I18nContext";
@@ -44,10 +45,10 @@ describe("HSR Tier List views", () => {
     const { container } = renderView(<CharacterTierListView />);
 
     expect(
-      await screen.findByRole("heading", { name: "Character Priority" })
+      await screen.findByText(`0 ranked · ${total} in Pool`, {}, catalogTimeout)
     ).toBeVisible();
     expect(
-      await screen.findByText(`0 ranked · ${total} in Pool`, {}, catalogTimeout)
+      screen.getByRole("heading", { name: "Character Priority" })
     ).toBeVisible();
     await waitFor(
       () => expect(priorityItems(container).length).toBeGreaterThan(0),
@@ -159,6 +160,41 @@ describe("HSR Tier List views", () => {
     const planarItems = container.querySelectorAll("[data-priority-item-id]");
     expect(planarItems.length).toBeGreaterThan(0);
     expect(planarItems.length).toBeLessThan(62);
+
+    // The kind chips narrow the grid to one group and keep every rank.
+    const [cavernChip] = screen.getAllByRole("button", {
+      name: "Cavern Relic",
+    });
+    if (!cavernChip) throw new Error("Cavern Relic filter missing");
+    await user.click(cavernChip);
+    expect(screen.getAllByRole("tab")).toHaveLength(1);
+    expect(screen.getByRole("tab", { name: "Cavern Relic" })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(useRelicPriorityStore.getState().assignments[itemId]?.tier).toBe(
+      "A"
+    );
+    await user.click(cavernChip);
+    expect(screen.getAllByRole("tab")).toHaveLength(2);
+    expect(screen.queryByRole("button", { name: "5★" })).toBeNull();
+  });
+
+  it.each([
+    ["loading", true, "status"],
+    ["unavailable", false, "alert"],
+  ] as const)("keeps the page frame and title while the catalog is %s", (_state, loading, role) => {
+    renderView(
+      <TierCatalogState
+        titleKey="route.tierLightCones.title"
+        loading={loading}
+        error={loading ? null : new Error("offline")}
+      />
+    );
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Light Cone Priority" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole(role).closest(".container")).not.toBeNull();
   });
 
   it("renders the priority controls and Relic categories in zh-CN", async () => {
@@ -166,9 +202,9 @@ describe("HSR Tier List views", () => {
     renderView(<RelicTierListView />);
 
     expect(
-      await screen.findByRole("heading", { name: "遗器优先级" }, catalogTimeout)
+      await screen.findByRole("tab", { name: "隧洞遗器" }, catalogTimeout)
     ).toBeVisible();
-    expect(screen.getByRole("tab", { name: "隧洞遗器" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "遗器优先级" })).toBeVisible();
     expect(screen.getByRole("tab", { name: "位面饰品" })).toBeVisible();
   });
 });

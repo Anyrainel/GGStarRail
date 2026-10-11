@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { isBetaEntity } from "@/data/gameDataLoader";
+import { useI18n } from "@/i18n/I18nContext";
 
 export function BetaBadge({
   member,
@@ -8,7 +8,13 @@ export function BetaBadge({
   member: string;
   id: string | number;
 }) {
+  const { t } = useI18n();
   return isBetaEntity(member, id) ? (
-    <Badge variant="outline">BETA</Badge>
+    <span
+      className="inline-flex shrink-0 items-center rounded border border-border px-1 py-0.5 text-[9px] font-semibold uppercase leading-none text-muted-foreground"
+      data-beta-badge
+    >
+      {t("beta.badge")}
+    </span>
   ) : null;
 }

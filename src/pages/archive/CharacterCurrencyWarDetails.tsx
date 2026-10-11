@@ -1,7 +1,7 @@
+import { Library, PawPrint, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   LightweightSelect,
   LightweightSelectContent,
@@ -17,6 +17,7 @@ import {
   currencyWarSkillLevelCaps,
   currencyWarTextGroups,
 } from "@/lib/currencyWarPresentation";
+import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
   loadLightCones,
@@ -221,21 +222,26 @@ export function CharacterCurrencyWarDetails({
       <CurrencyWarText text={role.remark} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <fieldset
-          className="flex rounded-lg border border-border bg-secondary/40 p-1"
+          className="m-0 inline-flex h-8 items-center rounded-lg border-0 bg-muted p-1"
           aria-label={t("archive.currencyWar.position")}
         >
           {availablePositions.map((value) => (
-            <Button
+            <button
               key={value}
-              size="sm"
-              variant={position === value ? "default" : "ghost"}
+              type="button"
               aria-pressed={position === value}
               onClick={() => setPosition(value)}
+              className={cn(
+                "inline-flex h-full items-center rounded-md px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                position === value
+                  ? "bg-background text-foreground shadow"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
               {value === "Front"
                 ? t("archive.currencyWar.frontRow")
                 : t("archive.currencyWar.backRow")}
-            </Button>
+            </button>
           ))}
         </fieldset>
         <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -275,6 +281,7 @@ export function CharacterCurrencyWarDetails({
               title={t("archive.servants", {
                 servants: servants.length,
               })}
+              icon={PawPrint}
             >
               {servants.map(renderSkill)}
             </CurrencyWarSection>
@@ -282,8 +289,11 @@ export function CharacterCurrencyWarDetails({
         </div>
       )}
       {role.ranks.length > 0 && (
-        <CurrencyWarSection title={t("archive.currencyWar.eidolons")}>
-          <div className="grid gap-3 xl:grid-cols-2">
+        <CurrencyWarSection
+          title={t("archive.currencyWar.eidolons")}
+          icon={Sparkles}
+        >
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
             {role.ranks.map((rank) => (
               <CharacterEffectCard
                 key={rank.id}
@@ -306,8 +316,11 @@ export function CharacterCurrencyWarDetails({
         </CurrencyWarSection>
       )}
       {role.special_effects.length > 0 && (
-        <CurrencyWarSection title={t("archive.currencyWar.adaptations")}>
-          <div className="grid gap-3 xl:grid-cols-2">
+        <CurrencyWarSection
+          title={t("archive.currencyWar.adaptations")}
+          icon={Zap}
+        >
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
             {role.special_effects.map((effect) => (
               <CharacterEffectCard
                 key={effect.id}
@@ -327,8 +340,11 @@ export function CharacterCurrencyWarDetails({
         </CurrencyWarSection>
       )}
       {role.light_cone_adaptations.length > 0 && (
-        <CurrencyWarSection title={t("archive.currencyWar.lightCones")}>
-          <div className="grid gap-3 xl:grid-cols-2">
+        <CurrencyWarSection
+          title={t("archive.currencyWar.lightCones")}
+          icon={Library}
+        >
+          <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
             {[...lightConeGroups.entries()].map(([key, adaptations]) => {
               const adaptation = adaptations[0];
               const lightCone = references.data?.lightCones.byId.get(

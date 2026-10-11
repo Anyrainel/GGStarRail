@@ -162,33 +162,45 @@ describe("independent Cavern and Planar builds", () => {
       </I18nProvider>
     );
     const user = userEvent.setup();
-    const getCavernRule = () =>
-      screen.getByRole("button", { name: /^Head .*matches/ });
-    const getPlanarRule = () =>
-      screen.getByRole("button", { name: /^Planar Sphere .*matches/ });
+    const setCard = (kind: "cavern" | "planar") => {
+      const card = document.querySelector(`[data-filter-set-card="${kind}"]`);
+      if (!(card instanceof HTMLElement))
+        throw new Error(`${kind} card missing`);
+      return card;
+    };
+    const setName = (id: string) =>
+      references.relicSets.byId.get(id)!.name.en.value;
     await screen.findByRole("combobox", { name: "Cavern Relics" });
-    expect(getCavernRule()).toHaveTextContent(
-      references.relicSets.byId.get(
-        cavern.cavern.mode === "four-piece" ? cavern.cavern.setId : ""
-      )!.name.en.value
-    );
-    const originalCavernRule = getCavernRule().textContent;
+    expect(
+      screen.getByRole("region", {
+        name: setName(
+          cavern.cavern.mode === "four-piece" ? cavern.cavern.setId : ""
+        ),
+      })
+    ).toBe(setCard("cavern"));
+    expect(
+      setCard("cavern").querySelectorAll("[data-filter-slot]")
+    ).toHaveLength(4);
+    expect(
+      setCard("planar").querySelectorAll("[data-filter-slot]")
+    ).toHaveLength(2);
+    const originalCavernRule = setCard("cavern").textContent;
     await user.selectOptions(
       screen.getByRole("combobox", { name: "Planar Ornaments" }),
       secondPlanar.id
     );
-    expect(getCavernRule().textContent).toBe(originalCavernRule);
-    expect(getPlanarRule()).toHaveTextContent(
-      references.relicSets.byId.get(secondPlanar.planarSetId)!.name.en.value
+    expect(setCard("cavern").textContent).toBe(originalCavernRule);
+    expect(setCard("planar")).toHaveAccessibleName(
+      setName(secondPlanar.planarSetId)
     );
-    const changedPlanarRule = getPlanarRule().textContent;
+    const changedPlanarRule = setCard("planar").textContent;
     await user.selectOptions(
       screen.getByRole("combobox", { name: "Cavern Relics" }),
       secondCavern.id
     );
-    expect(getPlanarRule().textContent).toBe(changedPlanarRule);
-    expect(getCavernRule()).toHaveTextContent(
-      references.relicSets.byId.get(secondCavern.cavern.setId)!.name.en.value
+    expect(setCard("planar").textContent).toBe(changedPlanarRule);
+    expect(setCard("cavern")).toHaveAccessibleName(
+      setName(secondCavern.cavern.setId)
     );
     expect(
       deriveBuildFilters(secondPlanar, planarProfile).every(
@@ -228,11 +240,11 @@ describe("independent Cavern and Planar builds", () => {
       view.container.querySelector('[data-build-slot="planarSphere"]')
     ).not.toBeNull();
     expect(
-      screen.queryByRole("button", { name: /Cavern 4-piece set:/ })
+      screen.queryByRole("button", { name: /^Cavern Relic set:/ })
     ).toBeNull();
     const user = userEvent.setup();
     await user.click(
-      screen.getByRole("button", { name: /Planar 2-piece set:/ })
+      screen.getByRole("button", { name: /^Planar Ornament set: .* 2-piece$/ })
     );
     const replacement = references.relicSets.values.find(
       (set) => set.kind === "planar_ornament" && set.id !== planar.planarSetId

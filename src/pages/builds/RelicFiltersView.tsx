@@ -1,49 +1,54 @@
-import { Filter, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Filter, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { AccountImportAction } from "@/components/account/AccountImportAction";
 import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
-import { SelectField, ToggleField } from "@/components/builds/BuildControls";
-import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
+import { FilterSetCard } from "@/components/builds/filters/FilterSetCard";
+import {
+  type LoadoutRecommendation,
+  MatchSummary,
+  RecommendedLoadoutCard,
+} from "@/components/builds/filters/RelicFilterResults";
+import {
+  type FilterCharacterOption,
+  RelicFilterSidebar,
+} from "@/components/builds/filters/RelicFilterSidebar";
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { APP_PATHS } from "@/config/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BUILD_SLOT_ORDER,
   recommendBuildLoadout,
 } from "@/domain/build/evaluation";
 import {
-  type BuildFilterMatch,
   deriveBuildFilters,
   evaluateBuildFilter,
 } from "@/domain/build/filters";
 import { scoreRelic } from "@/domain/build/scoring";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import { buildDisplayName } from "@/lib/buildPresentation";
 import { createRelicScoringContext } from "@/lib/buildReferences";
+import { catalogPickerItems } from "@/lib/catalogPickerItems";
 import {
+  characterCatalogPresentation,
   localizedName,
-  localizedPropertyName,
+  localizedSearchText,
 } from "@/lib/catalogPresentation";
-import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+
+const CANDIDATE_LIMIT = 18;
 
 export default function RelicFiltersView() {
   const { locale, t } = useI18n();
@@ -51,15 +56,17 @@ export default function RelicFiltersView() {
   const builds = useWorkspaceStore((state) => state.builds);
   const profiles = useWorkspaceStore((state) => state.scoreProfiles);
   const { data, error, loading } = useBuildReferences();
+  const compact = useMediaQuery("(max-width: 767px)");
   const [selectedCharacterId, setSelectedCharacterId] = useState("");
   const [selectedCavernId, setSelectedCavernId] = useState("");
   const [selectedPlanarId, setSelectedPlanarId] = useState("");
   const [selectedFilterId, setSelectedFilterId] = useState("");
   const [matchesOnly, setMatchesOnly] = useState(true);
 
-  const characterIds = [
-    ...new Set(builds.map((build) => build.characterDefinitionId)),
-  ];
+  const characterIds = useMemo(
+    () => [...new Set(builds.map((build) => build.characterDefinitionId))],
+    [builds]
+  );
   const characterId = characterIds.includes(selectedCharacterId)
     ? selectedCharacterId
     : characterIds[0];
@@ -89,6 +96,51 @@ export default function RelicFiltersView() {
     () => (data ? createRelicScoringContext(data) : null),
     [data]
   );
+  const setsById = useMemo(
+    () =>
+      new Map(
+        (data
+          ? catalogPickerItems(
+              "relic-set",
+              data,
+              locale,
+              t("terms.trailblazer")
+            )
+          : []
+        ).map((item) => [item.id, item])
+      ),
+    [data, locale, t]
+  );
+  const characterOptions = useMemo<FilterCharacterOption[]>(() => {
+    if (!data) return [];
+    const counts = new Map<string, number>();
+    for (const build of builds)
+      counts.set(
+        build.characterDefinitionId,
+        (counts.get(build.characterDefinitionId) ?? 0) + 1
+      );
+    return characterIds.flatMap((id) => {
+      const character = data.characters.byId.get(id);
+      if (!character) return [];
+      const name = characterCatalogPresentation(
+        character,
+        data.properties,
+        locale,
+        t("terms.trailblazer")
+      ).name;
+      return [
+        {
+          id,
+          name,
+          searchText:
+            `${name} ${localizedSearchText(character.name, id)}`.toLocaleLowerCase(),
+          iconPath: character.icon_path,
+          rarity: character.rarity,
+          buildCount: counts.get(id) ?? 0,
+        },
+      ];
+    });
+  }, [builds, characterIds, data, locale, t]);
   const filters = useMemo(
     () =>
       selectedBuilds.flatMap(({ build, profile }) =>
@@ -128,15 +180,16 @@ export default function RelicFiltersView() {
           left.relic.key.localeCompare(right.relic.key)
       );
   }, [account, build, matchesOnly, profile, scoringContext, selectedFilter]);
-  const allMatchCounts = useMemo(() => {
-    if (!account || !scoringContext) return new Map();
+  const matchCounts = useMemo(() => {
+    if (!account || !scoringContext) return null;
     return new Map(
-      filters.map((filter) => [
-        filter.id,
-        account.relics.filter((relic) => {
-          const input = selectedBuilds.find(
-            ({ build }) => build.id === filter.buildId
-          )!;
+      filters.map((filter) => {
+        const input = selectedBuilds.find(
+          ({ build }) => build.id === filter.buildId
+        );
+        if (!input) return [filter.id, 0] as const;
+        const count = account.relics.filter((relic) => {
+          if (relic.slot !== filter.slot) return false;
           const score = scoreRelic(
             relic,
             input.profile,
@@ -144,11 +197,12 @@ export default function RelicFiltersView() {
             input.build
           );
           return evaluateBuildFilter(relic, filter, score.total).matches;
-        }).length,
-      ])
+        }).length;
+        return [filter.id, count] as const;
+      })
     );
   }, [account, selectedBuilds, filters, scoringContext]);
-  const recommendation = useMemo(() => {
+  const recommendation = useMemo<LoadoutRecommendation | null>(() => {
     if (!account || selectedBuilds.length === 0 || !scoringContext) return null;
     const parts = selectedBuilds.map(({ build, profile }) =>
       recommendBuildLoadout(account, build, profile, scoringContext)
@@ -156,7 +210,7 @@ export default function RelicFiltersView() {
     const selected = Object.assign(
       {},
       ...parts.map((part) => part.selected)
-    ) as (typeof parts)[number]["selected"];
+    ) as LoadoutRecommendation["selected"];
     const missingSlots = BUILD_SLOT_ORDER.filter((slot) => !selected[slot]);
     const scores = Object.values(selected).map(({ score }) => score.total);
     return {
@@ -169,351 +223,180 @@ export default function RelicFiltersView() {
     };
   }, [account, selectedBuilds, scoringContext]);
 
+  const header = <PageHeader titleKey="route.filters.title" visuallyHidden />;
+  if (loading || error || !data || !scoringContext) {
+    return (
+      <PageLayout>
+        {header}
+        <ScrollLayout>
+          {loading ? <CatalogLoading /> : <CatalogLoadError error={error} />}
+        </ScrollLayout>
+      </PageLayout>
+    );
+  }
+  if (builds.length === 0 || !characterId) {
+    return (
+      <PageLayout>
+        {header}
+        <ScrollLayout>
+          <WorkspaceStartState
+            messageKey="filters.needsBuild"
+            icon={Filter}
+            requires="builds"
+          />
+        </ScrollLayout>
+      </PageLayout>
+    );
+  }
+
+  const character = data.characters.byId.get(characterId);
+  const characterName = character
+    ? characterCatalogPresentation(
+        character,
+        data.properties,
+        locale,
+        t("terms.trailblazer")
+      ).name
+    : characterId;
+  const buildOptions = (
+    entries: typeof cavernBuilds,
+    selected: (typeof cavernBuilds)[number] | undefined
+  ) => ({
+    value: selected?.id ?? "none",
+    options: entries.length
+      ? entries.map((entry) => ({
+          value: entry.id,
+          label: buildDisplayName(entry, data, locale),
+        }))
+      : [{ value: "none", label: t("filters.noCategoryBuild") }],
+  });
+  const cavernSelect = buildOptions(cavernBuilds, cavern);
+  const planarSelect = buildOptions(planarBuilds, planar);
+  const selectedSlotName = selectedFilter
+    ? localizedName(
+        data.properties.relicSlotById.get(
+          CATALOG_RELIC_SLOT[selectedFilter.slot]
+        )?.name,
+        locale,
+        selectedFilter.slot
+      )
+    : null;
+
   return (
-    <ScrollLayout bodyClassName="space-y-4">
-      <PageHeader titleKey="route.filters.title" visuallyHidden />
-      <BuildWorkspaceActions references={data} />
-      <SourceCoverageNotice account={account} />
-      {loading ? (
-        <CatalogLoading />
-      ) : error || !data || !scoringContext ? (
-        <CatalogLoadError error={error} />
-      ) : builds.length === 0 ? (
-        <EmptyState messageKey="filters.needsBuild" icon={Filter}>
-          <Button asChild size="sm">
-            <Link to={APP_PATHS.builds}>
-              <SlidersHorizontal className="h-4 w-4" aria-hidden />
-              {t("filters.openBuilds")}
-            </Link>
-          </Button>
-        </EmptyState>
-      ) : !build || !profile ? (
-        <EmptyState messageKey="filters.missingProfile" icon={Filter} />
-      ) : (
-        <>
-          <Card className="overflow-hidden">
-            <CardContent className="grid gap-3 p-3 md:grid-cols-3">
-              <SelectField
-                label={t("filters.character")}
-                value={characterId ?? ""}
-                options={characterIds.map((id) => ({
-                  value: id,
-                  label: localizedName(
-                    data.characters.byId.get(id)?.name,
-                    locale,
-                    id
-                  ),
-                }))}
-                onChange={(id) => {
-                  setSelectedCharacterId(id);
-                  setSelectedCavernId("");
-                  setSelectedPlanarId("");
-                  setSelectedFilterId("");
-                }}
-              />
-              <SelectField
-                label={t("build.cavernCards")}
-                value={cavern?.id ?? "none"}
-                options={
-                  cavernBuilds.length
-                    ? cavernBuilds.map((build) => ({
-                        value: build.id,
-                        label: buildDisplayName(build, data, locale),
-                      }))
-                    : [{ value: "none", label: t("filters.noCategoryBuild") }]
-                }
-                onChange={(id) => {
-                  setSelectedCavernId(id);
-                  setSelectedFilterId("");
-                }}
-              />
-              <SelectField
-                label={t("build.planarCards")}
-                value={planar?.id ?? "none"}
-                options={
-                  planarBuilds.length
-                    ? planarBuilds.map((build) => ({
-                        value: build.id,
-                        label: buildDisplayName(build, data, locale),
-                      }))
-                    : [{ value: "none", label: t("filters.noCategoryBuild") }]
-                }
-                onChange={(id) => {
-                  setSelectedPlanarId(id);
-                  setSelectedFilterId("");
-                }}
-              />
-            </CardContent>
-          </Card>
+    <PageLayout>
+      {header}
+      <SidebarLayout
+        sidebar={
+          <RelicFilterSidebar
+            characters={characterOptions}
+            selectedCharacterId={characterId}
+            onSelectCharacter={(id) => {
+              setSelectedCharacterId(id);
+              setSelectedCavernId("");
+              setSelectedPlanarId("");
+              setSelectedFilterId("");
+            }}
+            cavernOptions={cavernSelect.options}
+            cavernValue={cavernSelect.value}
+            onCavernChange={(id) => {
+              setSelectedCavernId(id);
+              setSelectedFilterId("");
+            }}
+            hasCavern={cavernBuilds.length > 0}
+            planarOptions={planarSelect.options}
+            planarValue={planarSelect.value}
+            onPlanarChange={(id) => {
+              setSelectedPlanarId(id);
+              setSelectedFilterId("");
+            }}
+            hasPlanar={planarBuilds.length > 0}
+            matchesOnly={matchesOnly}
+            onMatchesOnlyChange={setMatchesOnly}
+            matchesOnlyDisabled={!account}
+          />
+        }
+      >
+        <div className="min-w-0 space-y-2 lg:space-y-3">
+          <SourceCoverageNotice account={account} />
+          {!build || !profile || !character ? (
+            <EmptyState messageKey="filters.missingProfile" icon={Filter} />
+          ) : (
+            <>
+              {selectedBuilds.map(({ build: entry }) => (
+                <FilterSetCard
+                  key={entry.id}
+                  kind={entry.category}
+                  build={entry}
+                  filters={filters.filter(
+                    (filter) => filter.buildId === entry.id
+                  )}
+                  character={character}
+                  characterName={characterName}
+                  references={data}
+                  setsById={setsById}
+                  matchCounts={matchCounts}
+                  selectedFilterId={selectedFilter?.id ?? null}
+                  onSelectFilter={setSelectedFilterId}
+                  compact={compact}
+                />
+              ))}
 
-          <Card className="overflow-hidden">
-            <CardHeader className="border-b border-border bg-gradient-select p-4">
-              <CardTitle className="text-sm">
-                {t("filters.rulesTitle")}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {t("filters.rulesHelp")}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-              {filters.map((filter) => {
-                const slot = data.properties.relicSlotById.get(
-                  CATALOG_RELIC_SLOT[filter.slot]
-                );
-                const active = selectedFilter?.id === filter.id;
-                return (
-                  <button
-                    key={filter.id}
-                    type="button"
-                    aria-pressed={active}
-                    className={cn(
-                      "min-w-0 rounded-lg border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      active
-                        ? "border-primary/50 bg-primary/10"
-                        : "border-border bg-background/40 hover:bg-accent/50"
-                    )}
-                    onClick={() => setSelectedFilterId(filter.id)}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold">
-                        {localizedName(slot?.name, locale, filter.slot)}
-                      </span>
-                      <Badge variant={active ? "secondary" : "outline"}>
-                        {t("filters.matchCount", {
-                          count: allMatchCounts.get(filter.id) ?? 0,
-                        })}
-                      </Badge>
-                    </div>
-                    <FilterSummary filter={filter} data={data} />
-                  </button>
-                );
-              })}
-            </CardContent>
-          </Card>
+              {recommendation && (
+                <RecommendedLoadoutCard
+                  recommendation={recommendation}
+                  references={data}
+                />
+              )}
 
-          {recommendation && (
-            <Card className="overflow-hidden">
-              <CardHeader className="border-b border-border bg-gradient-select p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <CardTitle className="text-sm">
-                      {t("filters.recommendationTitle")}
-                    </CardTitle>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge
-                      variant={
-                        recommendation.complete ? "secondary" : "outline"
-                      }
-                    >
-                      {recommendation.complete
-                        ? t("filters.loadoutComplete")
-                        : t("filters.loadoutMissing", {
-                            count: recommendation.missingSlots.length,
-                          })}
-                    </Badge>
-                    <Badge className="tabular-nums">
-                      {t("scoring.average", {
-                        value: recommendation.averageScore?.toFixed(1) ?? "—",
-                      })}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-                {BUILD_SLOT_ORDER.map((slotId) => {
-                  const selected = recommendation.selected[slotId];
-                  if (selected) {
-                    return (
-                      <RelicScoreCard
-                        key={slotId}
-                        relic={selected.relic}
-                        score={selected.score}
-                        references={data}
-                        locale={locale}
-                        selected
-                      />
-                    );
-                  }
-                  const slot = data.properties.relicSlotById.get(
-                    CATALOG_RELIC_SLOT[slotId]
-                  );
-                  return (
-                    <div
-                      key={slotId}
-                      className="flex min-h-28 items-center justify-center rounded-xl border border-dashed border-border bg-background/30 p-4 text-center text-sm text-muted-foreground"
-                    >
-                      {t("filters.noCandidate", {
-                        slot: localizedName(slot?.name, locale, slotId),
-                      })}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          )}
-
-          {!account ? (
-            <WorkspaceStartState
-              messageKey="filters.needsAccount"
-              icon={Sparkles}
-            />
-          ) : selectedFilter ? (
-            <Card className="overflow-hidden">
-              <CardHeader className="border-b border-border bg-gradient-select p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <CardTitle className="text-sm">
+              <Card className="bg-gradient-card" data-filter-candidates>
+                <CardHeader className="p-3 md:px-6 md:pb-3 md:pt-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CardTitle className="text-base leading-tight md:text-xl">
                       {t("filters.inventoryTitle")}
                     </CardTitle>
-                    <CardDescription className="text-xs">
-                      {t("filters.inventoryHelp")}
-                    </CardDescription>
+                    {selectedSlotName && account && (
+                      <Badge variant="outline">{selectedSlotName}</Badge>
+                    )}
                   </div>
-                  <ToggleField
-                    label={t("filters.matchesOnly")}
-                    checked={matchesOnly}
-                    onChange={setMatchesOnly}
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-                {evaluatedRelics.slice(0, 18).map(({ relic, score, match }) => (
-                  <RelicScoreCard
-                    key={relic.key}
-                    relic={relic}
-                    score={score}
-                    references={data}
-                    locale={locale}
-                    selected={match.matches}
-                  >
-                    <MatchReasons match={match} />
-                  </RelicScoreCard>
-                ))}
-                {evaluatedRelics.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    {t("filters.noMatches")}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ) : null}
-        </>
-      )}
-    </ScrollLayout>
-  );
-}
-
-function FilterSummary({
-  filter,
-  data,
-}: {
-  filter: ReturnType<typeof deriveBuildFilters>[number];
-  data: NonNullable<ReturnType<typeof useBuildReferences>["data"]>;
-}) {
-  const { locale, t } = useI18n();
-  const propertyName = (propertyId: string) =>
-    localizedPropertyName(propertyId, data.properties, locale);
-  return (
-    <dl className="mt-3 space-y-2 text-xs">
-      <div>
-        <dt className="text-muted-foreground">{t("filters.sets")}</dt>
-        <dd className="mt-0.5 line-clamp-2">
-          {filter.setIds
-            .map((setId) =>
-              localizedName(data.relicSets.byId.get(setId)?.name, locale, setId)
-            )
-            .join(" + ")}
-        </dd>
-      </div>
-      <div>
-        <dt className="text-muted-foreground">{t("filters.mainStats")}</dt>
-        <dd className="mt-0.5 line-clamp-2">
-          {filter.mainStatIds.map(propertyName).join(" / ")}
-        </dd>
-      </div>
-      <div>
-        <dt className="text-muted-foreground">{t("filters.weightedStats")}</dt>
-        <dd className="mt-0.5 line-clamp-2">
-          {filter.weightedStatIds.length > 0
-            ? filter.weightedStatIds.map(propertyName).join(" · ")
-            : t("filters.noneRequired")}
-        </dd>
-      </div>
-      <div>
-        <dt className="text-muted-foreground">{t("filters.mustHaveStats")}</dt>
-        <dd className="mt-0.5 line-clamp-2">
-          {filter.mustHaveStatIds.length > 0
-            ? filter.mustHaveStatIds.map(propertyName).join(" · ")
-            : t("filters.noneRequired")}
-        </dd>
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <dt className="text-muted-foreground">{t("filters.desiredStats")}</dt>
-        <dd className="font-medium tabular-nums">
-          {t("filters.minimumStats", {
-            count: filter.minimumDesiredStats,
-          })}
-        </dd>
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <dt className="text-muted-foreground">{t("filters.minimumScore")}</dt>
-        <dd className="font-medium tabular-nums">{filter.minimumScore}</dd>
-      </div>
-    </dl>
-  );
-}
-
-function MatchReasons({ match }: { match: BuildFilterMatch }) {
-  const { t } = useI18n();
-  const passedLabel = (reason: BuildFilterMatch["reasons"][number]) => {
-    switch (reason) {
-      case "slot":
-        return t("filters.reason.slot");
-      case "set":
-        return t("filters.reason.set");
-      case "main-stat":
-        return t("filters.reason.mainStat");
-      case "weighted-substats":
-        return t("filters.reason.substats");
-      case "minimum-score":
-        return t("filters.reason.score");
-    }
-  };
-  const failedLabel = (reason: BuildFilterMatch["reasons"][number]) => {
-    switch (reason) {
-      case "slot":
-        return t("filters.reason.slotMissing");
-      case "set":
-        return t("filters.reason.setMissing");
-      case "main-stat":
-        return t("filters.reason.mainStatMissing");
-      case "weighted-substats":
-        return t("filters.reason.substatsMissing");
-      case "minimum-score":
-        return t("filters.reason.scoreMissing");
-    }
-  };
-  const criteria = [
-    "slot",
-    "set",
-    "main-stat",
-    "weighted-substats",
-    "minimum-score",
-  ] as const satisfies BuildFilterMatch["reasons"];
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      <Badge variant={match.matches ? "secondary" : "outline"}>
-        {match.matches ? t("filters.matches") : t("filters.doesNotMatch")}
-      </Badge>
-      {criteria.map((reason) => {
-        const passed = match.reasons.includes(reason);
-        return (
-          <Badge key={reason} variant={passed ? "secondary" : "outline"}>
-            {passed ? passedLabel(reason) : failedLabel(reason)}
-          </Badge>
-        );
-      })}
-    </div>
+                </CardHeader>
+                <CardContent className="p-3 pt-0 md:px-6 md:pb-4">
+                  {!account ? (
+                    <EmptyState
+                      variant="inline"
+                      messageKey="filters.needsAccount"
+                      icon={Sparkles}
+                    >
+                      <AccountImportAction size="sm" className="mt-1" />
+                    </EmptyState>
+                  ) : evaluatedRelics.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">
+                      {t("filters.noMatches")}
+                    </p>
+                  ) : (
+                    <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                      {evaluatedRelics
+                        .slice(0, CANDIDATE_LIMIT)
+                        .map(({ relic, score, match }) => (
+                          <RelicScoreCard
+                            key={relic.key}
+                            variant="nested"
+                            relic={relic}
+                            score={score}
+                            references={data}
+                            locale={locale}
+                            selected={match.matches}
+                          >
+                            <MatchSummary match={match} />
+                          </RelicScoreCard>
+                        ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+      </SidebarLayout>
+    </PageLayout>
   );
 }

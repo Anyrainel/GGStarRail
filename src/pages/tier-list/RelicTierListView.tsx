@@ -1,9 +1,6 @@
-import { Gem, Orbit } from "lucide-react";
 import { useMemo } from "react";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
+import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
+import { TierCatalogState } from "@/components/tier-list/TierCatalogState";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
   TierGroupConfig,
@@ -35,12 +32,26 @@ export default function RelicTierListView() {
       {
         id: "cavern_relic",
         name: t("archive.kind.cavern"),
-        icon: <Gem className="h-5 w-5 text-primary" aria-hidden="true" />,
+        icon: (
+          <RelicKindIcon
+            kind="cavern"
+            decorative
+            className="h-5 w-5 text-primary"
+          />
+        ),
+        filterIcon: <RelicKindIcon kind="cavern" decorative />,
       },
       {
         id: "planar_ornament",
         name: t("archive.kind.planar"),
-        icon: <Orbit className="h-5 w-5 text-primary" aria-hidden="true" />,
+        icon: (
+          <RelicKindIcon
+            kind="planar"
+            decorative
+            className="h-5 w-5 text-primary"
+          />
+        ),
+        filterIcon: <RelicKindIcon kind="planar" decorative />,
       },
     ],
     [t]
@@ -59,21 +70,25 @@ export default function RelicTierListView() {
       }))
       .sort((left, right) => left.name.localeCompare(right.name, locale));
   }, [data, locale]);
+
+  if (loading || error || !data) {
+    return (
+      <TierCatalogState
+        titleKey="route.tierRelics.title"
+        loading={loading}
+        error={error}
+      />
+    );
+  }
+
   return (
-    <>
-      {loading ? (
-        <CatalogLoading />
-      ) : error || !data ? (
-        <CatalogLoadError error={error} />
-      ) : (
-        <TierTable
-          items={items}
-          groups={groups}
-          assignments={assignments}
-          groupAssignments={groupAssignments}
-          onChange={setPriorityState}
-        />
-      )}
-    </>
+    <TierTable
+      filterableGroups
+      items={items}
+      groups={groups}
+      assignments={assignments}
+      groupAssignments={groupAssignments}
+      onChange={setPriorityState}
+    />
   );
 }

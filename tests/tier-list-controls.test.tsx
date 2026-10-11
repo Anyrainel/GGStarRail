@@ -38,6 +38,9 @@ describe("tier list controls", () => {
       { timeout: 15000 }
     );
     await user.click(customize);
+    expect(screen.getByLabelText("Title").closest("label")).not.toHaveClass(
+      "flex-col"
+    );
     await user.type(screen.getByLabelText("Title"), "Favorites");
     await user.click(
       within(screen.getByRole("dialog")).getByRole("button", { name: "Close" })
@@ -60,7 +63,12 @@ describe("tier list controls", () => {
     await user.click(screen.getByRole("button", { name: "New tier list" }));
     expect(useCharacterPriorityStore.getState().assignments).toEqual({});
     await user.click(screen.getByRole("button", { name: "Manage lists" }));
-    await user.click(screen.getByRole("button", { name: "Favorites" }));
+    const lists = within(screen.getByRole("dialog"));
+    expect(lists.getAllByText("Active")).toHaveLength(1);
+    expect(
+      lists.getAllByRole("button", { name: "New tier list" })[0]
+    ).toHaveAttribute("aria-current", "true");
+    await user.click(lists.getByRole("button", { name: "Favorites" }));
     expect(useCharacterPriorityStore.getState().assignments[id]?.tier).toBe(
       "S"
     );
@@ -72,6 +80,92 @@ describe("tier list controls", () => {
     expect(useCharacterPriorityStore.getState().assignments[id]?.tier).toBe(
       "S"
     );
+  });
+
+  it("renames saved and active lists from Manage lists", async () => {
+    const user = userEvent.setup();
+    view();
+    await user.click(
+      await screen.findByRole(
+        "button",
+        { name: "Manage lists" },
+        { timeout: 15000 }
+      )
+    );
+    await user.click(screen.getByRole("button", { name: "New tier list" }));
+    await user.click(screen.getByRole("button", { name: "Manage lists" }));
+    const lists = within(screen.getByRole("dialog"));
+    const renameAction = (index: number) => {
+      const action = lists.getAllByRole("button", { name: "Rename list" })[
+        index
+      ];
+      if (!action) throw new Error("Missing rename action");
+      return action;
+    };
+
+    await user.click(renameAction(1));
+    await user.clear(lists.getByLabelText("List name"));
+    await user.type(lists.getByLabelText("List name"), "Speed{Escape}");
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(lists.queryByLabelText("List name")).toBeNull();
+
+    await user.click(renameAction(1));
+    await user.clear(lists.getByLabelText("List name"));
+    expect(lists.getByRole("button", { name: "Save name" })).toBeDisabled();
+    await user.type(lists.getByLabelText("List name"), "Speed team{Enter}");
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        hidden: true,
+        name: "Speed team",
+      })
+    ).toBeInTheDocument();
+
+    await user.click(renameAction(0));
+    await user.clear(lists.getByLabelText("List name"));
+    await user.type(lists.getByLabelText("List name"), "Main ranking");
+    await user.click(lists.getByRole("button", { name: "Save name" }));
+    expect(
+      Object.values(useTierLibraryStore.getState().documents).map(
+        (entry) => entry.presentation.title
+      )
+    ).toEqual(["Main ranking", "Speed team"]);
+  });
+
+  it("groups the toolbar filters with icon-only Paths and an explained Owned only", async () => {
+    const user = userEvent.setup();
+    const rendered = view();
+    await screen.findByRole(
+      "button",
+      { name: "Customize" },
+      { timeout: 15000 }
+    );
+    const header = rendered.container.querySelector("header");
+    if (!header) throw new Error("Missing toolbar");
+    const bar = within(header);
+    const [erudition] = await bar.findAllByRole("button", {
+      name: "Erudition",
+    });
+    expect(erudition).toHaveAttribute("title", "Erudition");
+    expect(within(erudition as HTMLElement).getByText("Erudition")).toHaveClass(
+      "md:sr-only"
+    );
+    expect(header.querySelectorAll('[aria-hidden="true"].w-px')).toHaveLength(
+      3
+    );
+    const [hunt] = bar.getAllByRole("button", { name: "The Hunt" });
+    expect(hunt?.querySelector("img")).not.toHaveClass("opacity-50");
+    await user.click(erudition as HTMLElement);
+    expect(erudition?.querySelector("img")).not.toHaveClass("opacity-50");
+    expect(hunt?.querySelector("img")).toHaveClass("opacity-50");
+    const owned = bar.getByRole("button", { name: "Owned only" });
+    expect(owned).toBeEnabled();
+    expect(owned).toHaveAttribute("title", "Account import required.");
+    await user.click(owned);
+    expect(owned).toHaveAttribute("aria-pressed", "false");
+    expect(
+      bar.getByRole("button", { name: "Customize" }).querySelector("svg")
+    ).toHaveClass("lucide-settings");
   });
 
   it("filters without removing saved rankings, and opens details from keyboard focus", async () => {

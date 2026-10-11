@@ -1,6 +1,5 @@
-import { ChevronDown } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { ChevronRight } from "lucide-react";
+import { type ReactNode, useId, useState } from "react";
 import {
   LightweightSelect,
   LightweightSelectContent,
@@ -160,22 +159,76 @@ export function CharacterSection({
   title,
   children,
   testId,
+  action,
+  columns = false,
 }: {
   title: string;
   children: ReactNode;
   testId?: string;
+  /** A control aligned to the end of the heading row. */
+  action?: ReactNode;
+  /** Two card columns from `xl`. */
+  columns?: boolean;
+}) {
+  const headingId = useId();
+  return (
+    <section
+      className="space-y-2"
+      data-testid={testId}
+      aria-labelledby={headingId}
+    >
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-2 px-1">
+        <h3
+          id={headingId}
+          className="text-base font-semibold text-muted-foreground"
+        >
+          {title}
+        </h3>
+        {action}
+      </div>
+      <div
+        className={
+          columns
+            ? "grid grid-cols-1 gap-2 xl:grid-cols-2"
+            : "flex flex-col gap-2"
+        }
+      >
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/** A collapsible card header: the title fills the row and the chevron turns when open. */
+function CardToggle({
+  expanded,
+  onToggle,
+  children,
+}: {
+  expanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
 }) {
   return (
-    <details open className="group/section space-y-3" data-testid={testId}>
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-border pb-2 text-base font-semibold [&::-webkit-details-marker]:hidden">
-        {title}
-        <ChevronDown
-          className="h-4 w-4 shrink-0 transition-transform group-open/section:rotate-180"
+    <h4>
+      <button
+        type="button"
+        aria-expanded={expanded}
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 p-3 text-left text-sm font-semibold transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      >
+        <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
+          {children}
+        </span>
+        <ChevronRight
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+            expanded && "rotate-90"
+          )}
           aria-hidden="true"
         />
-      </summary>
-      <div className="space-y-3">{children}</div>
-    </details>
+      </button>
+    </h4>
   );
 }
 
@@ -192,6 +245,7 @@ export function CharacterEffectCard({
   rankId?: string;
   traceId?: string;
 }) {
+  const [expanded, setExpanded] = useState(true);
   return (
     <article
       className={cn(
@@ -201,10 +255,17 @@ export function CharacterEffectCard({
       data-rank-id={rankId}
       data-trace-id={traceId}
     >
-      <h4 className="border-b border-border px-3 py-2.5 text-sm font-semibold">
-        {title}
-      </h4>
-      <div className="space-y-2 p-3 text-sm leading-relaxed">{children}</div>
+      <CardToggle
+        expanded={expanded}
+        onToggle={() => setExpanded((value) => !value)}
+      >
+        <span className="min-w-0">{title}</span>
+      </CardToggle>
+      {expanded && (
+        <div className="space-y-2 border-t border-border px-3 py-2.5 text-sm leading-relaxed">
+          {children}
+        </div>
+      )}
     </article>
   );
 }
@@ -226,6 +287,7 @@ export function CharacterSkillCard({
   const [defaults] = useState(() => defaultSkillComparisonLevels(skill));
   const [leftLevel, setLeftLevel] = useState(defaults[0]);
   const [rightLevel, setRightLevel] = useState(defaults[1]);
+  const [expanded, setExpanded] = useState(true);
   const left =
     skill.levels.find((entry) => entry.level === leftLevel) ?? skill.levels[0];
   const right =
@@ -278,139 +340,147 @@ export function CharacterSkillCard({
       data-skill-id={skill.id}
       className="overflow-hidden rounded-lg border border-border bg-card/50"
     >
-      <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
-        <h4 className="text-sm font-semibold">
+      <CardToggle
+        expanded={expanded}
+        onToggle={() => setExpanded((value) => !value)}
+      >
+        <span className="min-w-0">
           {formatGameText(
             getLocalizedValue(skill.name, locale),
             [],
             t("terms.trailblazer")
           )}
-        </h4>
+        </span>
         {chips.map((chip) => (
-          <Badge
+          <span
             key={chip}
-            variant="secondary"
-            className="px-1.5 py-0 text-[10px] font-medium"
+            className="inline-flex items-center rounded-full bg-secondary px-1.5 text-[10px] font-medium leading-4 text-secondary-foreground"
           >
             {chip}
-          </Badge>
+          </span>
         ))}
-      </div>
-      <div
-        className={cn(
-          "grid gap-4 border-t border-border p-3",
-          showTable && "xl:grid-cols-[minmax(0,1fr)_auto]"
-        )}
-      >
-        <div className="space-y-3 text-sm leading-relaxed">
-          <p className="whitespace-pre-line break-words">
-            <NumberedDescription text={text} numbers={descriptionNumbers} />
-          </p>
-          {skill.condition_description && (
-            <p className="whitespace-pre-line text-muted-foreground">
-              {comparisonVariants?.every(
-                (variant) => variant.condition_parameters
-              )
-                ? formatGameTextVariants(
-                    getLocalizedValue(skill.condition_description, locale),
-                    comparisonVariants.map((variant) => ({
-                      parameters: variant.condition_parameters!,
-                    })),
-                    t("terms.trailblazer")
-                  )
-                : formatGameText(
-                    getLocalizedValue(skill.condition_description, locale),
-                    skill.condition_parameters,
-                    t("terms.trailblazer")
-                  )}
+      </CardToggle>
+      {expanded && (
+        <div
+          className={cn(
+            "grid gap-4 border-t border-border p-3",
+            showTable && "xl:grid-cols-[minmax(0,1fr)_auto]"
+          )}
+        >
+          <div className="space-y-3 text-sm leading-relaxed">
+            <p className="whitespace-pre-line break-words">
+              <NumberedDescription text={text} numbers={descriptionNumbers} />
             </p>
+            {skill.condition_description && (
+              <p className="whitespace-pre-line text-muted-foreground">
+                {comparisonVariants?.every(
+                  (variant) => variant.condition_parameters
+                )
+                  ? formatGameTextVariants(
+                      getLocalizedValue(skill.condition_description, locale),
+                      comparisonVariants.map((variant) => ({
+                        parameters: variant.condition_parameters!,
+                      })),
+                      t("terms.trailblazer")
+                    )
+                  : formatGameText(
+                      getLocalizedValue(skill.condition_description, locale),
+                      skill.condition_parameters,
+                      t("terms.trailblazer")
+                    )}
+              </p>
+            )}
+          </div>
+          {showTable && (
+            <div className="min-w-0 overflow-x-auto rounded-md border border-border">
+              <table
+                className="w-full border-collapse text-xs"
+                aria-label={t("archive.skillValues")}
+              >
+                {comparisonVariants && comparisonVariants.length > 1 && (
+                  <caption className="border-b border-border px-2 py-1.5 text-xs text-muted-foreground">
+                    {comparisonVariants
+                      .map((variant) => variant.label)
+                      .join(" / ")}
+                  </caption>
+                )}
+                <thead className="bg-secondary/50">
+                  <tr>
+                    <th className="px-2 py-2 text-left font-medium">
+                      <span className="sr-only">
+                        {t("archive.skillValues")}
+                      </span>
+                    </th>
+                    {(skill.levels.length > 1
+                      ? [
+                          { value: left?.level, set: setLeftLevel },
+                          { value: right?.level, set: setRightLevel },
+                        ]
+                      : [{ value: left?.level, set: setLeftLevel }]
+                    ).map((control, index) => (
+                      <th
+                        key={index === 0 ? "left" : "right"}
+                        className="w-20 px-1 py-1 font-medium"
+                      >
+                        {skill.levels.length > 1 ? (
+                          <LightweightSelect
+                            value={String(control.value)}
+                            onValueChange={(value) =>
+                              control.set(Number(value))
+                            }
+                            disabled={skill.levels.length < 2}
+                          >
+                            <LightweightSelectTrigger
+                              aria-label={t("archive.compareLevel", {
+                                column: index + 1,
+                              })}
+                              className="h-7 min-w-[4.5rem] bg-gradient-select text-xs font-medium"
+                            >
+                              <LightweightSelectValue />
+                            </LightweightSelectTrigger>
+                            <LightweightSelectContent collisionPadding={8}>
+                              {skill.levels.map((level) => (
+                                <LightweightSelectItem
+                                  key={level.level}
+                                  value={String(level.level)}
+                                >
+                                  {t("archive.level", { value: level.level })}
+                                </LightweightSelectItem>
+                              ))}
+                            </LightweightSelectContent>
+                          </LightweightSelect>
+                        ) : (
+                          <span>{t("archive.skillValues")}</span>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr
+                      key={`${row.source}-${row.token}`}
+                      className="border-t border-border"
+                    >
+                      <th className="px-2 py-2 text-left font-normal leading-relaxed">
+                        <ValueMarker number={row.number} />
+                      </th>
+                      <td className="px-2 py-2 text-center font-medium tabular-nums">
+                        {cellValue(row, left)}
+                      </td>
+                      {skill.levels.length > 1 && (
+                        <td className="px-2 py-2 text-center font-medium tabular-nums">
+                          {cellValue(row, right)}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
-        {showTable && (
-          <div className="min-w-0 overflow-x-auto rounded-md border border-border">
-            <table
-              className="w-full border-collapse text-xs"
-              aria-label={t("archive.skillValues")}
-            >
-              {comparisonVariants && comparisonVariants.length > 1 && (
-                <caption className="border-b border-border px-2 py-1.5 text-xs text-muted-foreground">
-                  {comparisonVariants
-                    .map((variant) => variant.label)
-                    .join(" / ")}
-                </caption>
-              )}
-              <thead className="bg-secondary/50">
-                <tr>
-                  <th className="px-2 py-2 text-left font-medium">
-                    <span className="sr-only">{t("archive.skillValues")}</span>
-                  </th>
-                  {(skill.levels.length > 1
-                    ? [
-                        { value: left?.level, set: setLeftLevel },
-                        { value: right?.level, set: setRightLevel },
-                      ]
-                    : [{ value: left?.level, set: setLeftLevel }]
-                  ).map((control, index) => (
-                    <th
-                      key={index === 0 ? "left" : "right"}
-                      className="w-20 px-1 py-1 font-medium"
-                    >
-                      {skill.levels.length > 1 ? (
-                        <LightweightSelect
-                          value={String(control.value)}
-                          onValueChange={(value) => control.set(Number(value))}
-                          disabled={skill.levels.length < 2}
-                        >
-                          <LightweightSelectTrigger
-                            aria-label={t("archive.compareLevel", {
-                              column: index + 1,
-                            })}
-                            className="h-7 min-w-[4.5rem] bg-gradient-select text-xs font-medium"
-                          >
-                            <LightweightSelectValue />
-                          </LightweightSelectTrigger>
-                          <LightweightSelectContent collisionPadding={8}>
-                            {skill.levels.map((level) => (
-                              <LightweightSelectItem
-                                key={level.level}
-                                value={String(level.level)}
-                              >
-                                {t("archive.level", { value: level.level })}
-                              </LightweightSelectItem>
-                            ))}
-                          </LightweightSelectContent>
-                        </LightweightSelect>
-                      ) : (
-                        <span>{t("archive.skillValues")}</span>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr
-                    key={`${row.source}-${row.token}`}
-                    className="border-t border-border"
-                  >
-                    <th className="px-2 py-2 text-left font-normal leading-relaxed">
-                      <ValueMarker number={row.number} />
-                    </th>
-                    <td className="px-2 py-2 text-center font-medium tabular-nums">
-                      {cellValue(row, left)}
-                    </td>
-                    {skill.levels.length > 1 && (
-                      <td className="px-2 py-2 text-center font-medium tabular-nums">
-                        {cellValue(row, right)}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      )}
     </article>
   );
 }

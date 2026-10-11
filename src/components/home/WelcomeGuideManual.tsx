@@ -6,6 +6,7 @@ import {
   Database,
   Filter,
   Library,
+  Swords,
   Trophy,
 } from "lucide-react";
 import { useState } from "react";
@@ -38,6 +39,17 @@ export function WelcomeGuideManual() {
       links: [
         { to: APP_PATHS.characters, label: t("home.openAccount") },
         { to: APP_PATHS.inventory, label: t("nav.inventory") },
+      ],
+    },
+    {
+      title: t("nav.teamDamageSection"),
+      icon: Swords,
+      body: t("guide.teamDamage.body"),
+      hint: t("guide.teamDamage.hint"),
+      links: [
+        { to: APP_PATHS.teamDamage, label: t("nav.teamDamage") },
+        { to: APP_PATHS.teamInvestment, label: t("nav.teamInvestment") },
+        { to: APP_PATHS.teamChoice, label: t("nav.teamChoice") },
       ],
     },
     {
@@ -84,7 +96,7 @@ export function WelcomeGuideManual() {
       }}
     >
       <ResponsiveDialogTrigger asChild>
-        <Button className="h-11 gap-2.5 bg-black px-6 text-lg text-foreground hover:bg-black/80">
+        <Button className="h-10 gap-2.5 bg-black px-6 text-lg text-foreground hover:bg-black/80">
           <Compass className="size-5" aria-hidden="true" />
           <span className="guide-text-shimmer">{t("guide.open")}</span>
         </Button>

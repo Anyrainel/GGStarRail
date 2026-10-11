@@ -68,21 +68,26 @@ function readFileText(file: File): Promise<string> {
   });
 }
 
+export type AccountImportMethod = "json" | "uid" | "hoyolab";
+
 interface AccountImportPanelProps {
   uidImporter?: typeof importFromUidShowcase;
   hoYoLabImporter?: typeof importFromHoYoLab;
+  /** The method section opened first; JSON file import by default. */
+  initialMethod?: AccountImportMethod;
 }
 
 export function AccountImportPanel({
   uidImporter = importFromUidShowcase,
   hoYoLabImporter = importFromHoYoLab,
+  initialMethod = "json",
 }: AccountImportPanelProps = {}) {
   const { t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
   const applyAccountImport = useWorkspaceStore(
     (state) => state.applyAccountImport
   );
-  const [method, setMethod] = useState("json");
+  const [method, setMethod] = useState<string>(initialMethod);
   const [draft, setDraft] = useState<AccountImportDraft | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);

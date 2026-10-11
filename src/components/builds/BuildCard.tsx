@@ -3,6 +3,7 @@ import {
   ArrowUp,
   Copy,
   MoreVertical,
+  Plus,
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
@@ -13,7 +14,11 @@ import {
   ToggleField,
 } from "@/components/builds/BuildControls";
 import { StatSelect } from "@/components/builds/StatSelect";
-import { ItemPicker } from "@/components/shared/ItemPicker";
+import type { PickerItem } from "@/components/shared/ItemPicker";
+import {
+  CavernPlanPicker,
+  PlanarSetPicker,
+} from "@/components/shared/relic/CavernPlanPicker";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,6 +27,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  LightweightSelect,
+  LightweightSelectContent,
+  LightweightSelectItem,
+  LightweightSelectTrigger,
+} from "@/components/ui/lightweight-select";
 import {
   Popover,
   PopoverContent,
@@ -46,6 +57,7 @@ import {
   localizedName,
   localizedPropertyName,
 } from "@/lib/catalogPresentation";
+import { shortStatKey } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
 import type { RelicSlotId } from "@/providers/reference/types";
 
@@ -59,48 +71,46 @@ const BUILD_SLOTS = [
   RelicSlotId,
 ][];
 
-const COMPACT_PROPERTY_KEYS: Readonly<Record<string, MessageKey>> = {
-  MaxHP: "stat.short.hp",
-  HPDelta: "stat.short.hp",
-  HPAddedRatio: "stat.short.hpPercent",
-  Attack: "stat.short.atk",
-  AttackDelta: "stat.short.atk",
-  AttackAddedRatio: "stat.short.atkPercent",
-  Defence: "stat.short.def",
-  DefenceDelta: "stat.short.def",
-  DefenceAddedRatio: "stat.short.defPercent",
-  Speed: "stat.short.spd",
-  SpeedDelta: "stat.short.spd",
-  CriticalChance: "stat.short.critRate",
-  CriticalChanceBase: "stat.short.critRate",
-  CriticalDamage: "stat.short.critDamage",
-  CriticalDamageBase: "stat.short.critDamage",
-  BreakDamageAddedRatio: "stat.short.breakEffect",
-  BreakDamageAddedRatioBase: "stat.short.breakEffect",
-  HealRatio: "stat.short.healing",
-  HealRatioBase: "stat.short.healing",
-  SPRatio: "stat.short.energyRegen",
-  SPRatioBase: "stat.short.energyRegen",
-  StatusProbability: "stat.short.effectHit",
-  StatusProbabilityBase: "stat.short.effectHit",
-  StatusResistance: "stat.short.effectRes",
-  StatusResistanceBase: "stat.short.effectRes",
-  PhysicalAddedRatio: "stat.short.physicalDamage",
-  FireAddedRatio: "stat.short.fireDamage",
-  IceAddedRatio: "stat.short.iceDamage",
-  ThunderAddedRatio: "stat.short.lightningDamage",
-  WindAddedRatio: "stat.short.windDamage",
-  QuantumAddedRatio: "stat.short.quantumDamage",
-  ImaginaryAddedRatio: "stat.short.imaginaryDamage",
-};
-
+/** The compact stat label used on chips, or the full name when none exists. */
 function compactPropertyName(
   propertyId: string,
   fallback: string,
   translate: (key: MessageKey) => string
 ): string {
-  const key = COMPACT_PROPERTY_KEYS[propertyId];
+  const key = shortStatKey(propertyId);
   return key ? translate(key) : fallback;
+}
+
+/** A 4-piece plan is one set ID; a 2+2 plan is two. */
+function cavernPlanValue(build: BuildConfiguration): readonly string[] {
+  if (build.category !== "cavern") return [];
+  return build.cavern.mode === "four-piece"
+    ? [build.cavern.setId]
+    : build.cavern.setIds;
+}
+
+/** Set names under the plan icon; a 2+2 plan shows one clamped line per set. */
+function SetPlanNames({ sets }: { sets: readonly PickerItem[] }) {
+  if (sets.length === 0) return null;
+  return (
+    <span
+      className="flex w-16 flex-col items-center text-center text-[0.65rem] font-medium leading-tight text-foreground md:text-xs"
+      aria-hidden="true"
+      data-set-plan-names
+    >
+      {sets.map((set) => (
+        <span
+          key={set.id}
+          className={cn(
+            "w-full break-words",
+            sets.length > 1 ? "line-clamp-1" : "line-clamp-2"
+          )}
+        >
+          {set.name}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 interface BuildCardProps {
@@ -217,7 +227,7 @@ export function BuildCard({
   canMoveDown,
 }: BuildCardProps) {
   const { locale, t } = useI18n();
-  const useCompactSetIcons = useMediaQuery("(max-width: 767px)");
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const displayName = buildDisplayName(build, references, locale);
   const [nameDraft, setNameDraft] = useState(displayName);
   const [scoringOpen, setScoringOpen] = useState(false);
@@ -244,12 +254,13 @@ export function BuildCard({
     () => setItems.filter((item) => item.tags?.includes("planar_ornament")),
     [setItems]
   );
-  const fourPieceSetId =
-    build.category === "planar"
-      ? ""
-      : build.cavern.mode === "four-piece"
-        ? build.cavern.setId
-        : build.cavern.setIds[0];
+  const cavernPlan = cavernPlanValue(build);
+  const planSets =
+    build.category === "cavern"
+      ? cavernPlan.flatMap(
+          (id) => cavernSets.find((set) => set.id === id) ?? []
+        )
+      : planarSets.filter((set) => set.id === build.planarSetId);
   const weightedProperties = Object.entries(profile.statWeights)
     .map(([propertyId, weight]) => {
       const name = localizedPropertyName(
@@ -271,6 +282,19 @@ export function BuildCard({
         (left.property?.display_order ?? 999) -
           (right.property?.display_order ?? 999)
     );
+  const visibleWeights = weightedProperties
+    .filter(({ weight }) => weight > 0)
+    .slice(0, 5);
+  // Anything without a chip can be added: unweighted stats and low weights
+  // beyond the five shown.
+  const unweightedProperties = weightedProperties
+    .filter((entry) => !visibleWeights.includes(entry))
+    .sort(
+      (left, right) =>
+        (left.property?.display_order ?? 999) -
+        (right.property?.display_order ?? 999)
+    );
+  const setTriggerSize = isMobile ? "sm" : "lg";
 
   function setMainStats(
     slot: "body" | "feet" | "planarSphere" | "linkRope",
@@ -290,6 +314,26 @@ export function BuildCard({
         preferredMainStats: { ...build.preferredMainStats, [slot]: values },
       });
     }
+  }
+
+  function setCavernPlan(next: readonly string[]) {
+    if (build.category !== "cavern") return;
+    const [first, second] = next;
+    if (!first) return;
+    onBuildChange({
+      ...build,
+      cavern:
+        second && second !== first
+          ? { mode: "two-plus-two", setIds: [first, second] }
+          : { mode: "four-piece", setId: first },
+    });
+  }
+
+  function setWeight(propertyId: string, weight: number) {
+    onProfileChange({
+      ...profile,
+      statWeights: { ...profile.statWeights, [propertyId]: weight },
+    });
   }
 
   function updateThreshold(
@@ -321,13 +365,13 @@ export function BuildCard({
         data-build-category={build.category}
       >
         <div className="px-2 pt-2 md:px-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <label className="min-w-0 flex-1 px-1 md:px-2">
+          <div className="flex min-w-0 items-center gap-1 md:gap-2">
+            <label className="min-w-0 flex-1">
               <span className="sr-only">{t("build.name")}</span>
               <input
                 value={nameDraft}
                 aria-label={t("build.name")}
-                className="h-8 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:px-3 md:text-base 2xl:px-2 2xl:text-sm 3xl:px-3 3xl:text-base"
+                className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
                 onChange={(event) => setNameDraft(event.target.value)}
                 onBlur={() => {
                   const nextName = nameDraft.trim();
@@ -396,120 +440,37 @@ export function BuildCard({
         </div>
 
         <div className="px-2 py-1.5 md:py-2">
-          <div className="border-t border-border pt-1.5">
-            <div className="flex min-w-0 items-start justify-center gap-2 md:gap-3 2xl:gap-2 3xl:gap-3">
+          <div className="border-t border-border pt-1">
+            <div className="flex min-w-0 items-center justify-center gap-2 md:gap-3">
               <section
                 aria-label={t("build.setPlanTitle")}
-                className="flex w-[6.5rem] shrink-0 flex-wrap justify-center gap-1 max-[360px]:w-[3.125rem] md:w-[8.5rem]"
+                className="flex w-16 shrink-0 flex-col items-center gap-1 md:pl-1"
+                data-build-set-plan
               >
-                {build.category === "cavern" && (
-                  <ItemPicker
-                    kind="relic-set"
-                    showName
-                    label={
-                      build.cavern.mode === "four-piece"
-                        ? t("build.cavernFourPiece")
-                        : t("build.cavernFirstTwoPiece")
-                    }
-                    badge={build.cavern.mode === "four-piece" ? 4 : 2}
-                    triggerSize={useCompactSetIcons ? "sm" : "lg"}
-                    value={fourPieceSetId}
-                    items={
-                      build.cavern.mode === "two-plus-two"
-                        ? cavernSets.filter(
-                            (set) =>
-                              set.id !==
-                              (build.cavern.mode === "two-plus-two" &&
-                                build.cavern.setIds[1])
-                          )
-                        : cavernSets
-                    }
-                    onChange={(setId) =>
-                      onBuildChange({
-                        ...build,
-                        cavern:
-                          build.cavern.mode === "four-piece"
-                            ? { mode: "four-piece", setId }
-                            : {
-                                mode: "two-plus-two",
-                                setIds: [setId, build.cavern.setIds[1]],
-                              },
-                      })
-                    }
+                {build.category === "cavern" ? (
+                  <CavernPlanPicker
+                    value={cavernPlan}
+                    items={cavernSets}
+                    label={t("build.cavernSet")}
+                    triggerSize={setTriggerSize}
+                    onChange={setCavernPlan}
                   />
-                )}
-                {build.category === "cavern" &&
-                  build.cavern.mode === "two-plus-two" && (
-                    <ItemPicker
-                      kind="relic-set"
-                      showName
-                      label={t("build.cavernSecondTwoPiece")}
-                      badge={2}
-                      triggerSize={useCompactSetIcons ? "sm" : "lg"}
-                      value={build.cavern.setIds[1]}
-                      items={cavernSets.filter(
-                        (set) => set.id !== fourPieceSetId
-                      )}
-                      onChange={(setId) =>
-                        onBuildChange({
-                          ...build,
-                          cavern: {
-                            mode: "two-plus-two",
-                            setIds: [fourPieceSetId, setId],
-                          },
-                        })
-                      }
-                    />
-                  )}
-                {build.category === "planar" && (
-                  <ItemPicker
-                    kind="relic-set"
-                    showName
-                    label={t("build.planarTwoPiece")}
-                    badge={2}
-                    triggerSize={useCompactSetIcons ? "sm" : "lg"}
+                ) : (
+                  <PlanarSetPicker
                     value={build.planarSetId}
                     items={planarSets}
+                    label={t("build.planarSet")}
+                    triggerSize={setTriggerSize}
                     onChange={(planarSetId) =>
                       onBuildChange({ ...build, planarSetId })
                     }
                   />
                 )}
-                {build.category === "cavern" && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 text-xs"
-                    aria-label={t("build.cavernMode")}
-                    onClick={() => {
-                      if (build.cavern.mode === "two-plus-two") {
-                        onBuildChange({
-                          ...build,
-                          cavern: { mode: "four-piece", setId: fourPieceSetId },
-                        });
-                      } else {
-                        const second = cavernSets.find(
-                          (set) => set.id !== fourPieceSetId
-                        );
-                        if (second)
-                          onBuildChange({
-                            ...build,
-                            cavern: {
-                              mode: "two-plus-two",
-                              setIds: [fourPieceSetId, second.id],
-                            },
-                          });
-                      }
-                    }}
-                  >
-                    {build.cavern.mode === "four-piece" ? "4" : "2+2"}
-                  </Button>
-                )}
+                <SetPlanNames sets={planSets} />
               </section>
 
-              <section className="min-w-0 flex-1 space-y-1">
-                <div className="grid grid-cols-2 gap-1 md:gap-1.5">
+              <section className="min-w-0 flex-1 space-y-0.5 md:space-y-1">
+                <div className="grid grid-cols-2 gap-1">
                   {BUILD_SLOTS.filter(
                     ([slot]) => slot in build.preferredMainStats
                   ).map(([slot, catalogSlot]) => {
@@ -523,7 +484,11 @@ export function BuildCard({
                       slot
                     );
                     return (
-                      <div key={slot} data-build-slot={slot}>
+                      <div
+                        key={slot}
+                        className="min-w-0"
+                        data-build-slot={slot}
+                      >
                         <StatSelect
                           label={slotName}
                           values={buildMainStats(build, slot)}
@@ -545,7 +510,7 @@ export function BuildCard({
                           })}
                           maxLength={validProperties.length}
                           minimumLength={1}
-                          compact={useCompactSetIcons}
+                          compact={isMobile}
                           addLabel={t("build.addMainStat", { slot: slotName })}
                           deselectLabel={t("build.deselectMainStat")}
                           onValuesChange={(values) =>
@@ -557,31 +522,61 @@ export function BuildCard({
                   })}
                 </div>
 
-                <div className="flex min-h-7 min-w-0 flex-wrap items-center gap-1">
-                  <span className="shrink-0 text-[0.62rem] font-medium text-muted-foreground md:text-xs">
-                    {t("scoring.weightsTitle")}
-                  </span>
-                  {weightedProperties
-                    .filter(({ weight }) => weight > 0)
-                    .slice(0, 5)
-                    .map(({ propertyId, weight, name, compactName }) => (
-                      <WeightToken
-                        key={propertyId}
-                        label={t("scoring.weightsTitle")}
-                        propertyName={compactName}
-                        accessibleName={name}
-                        weight={weight}
-                        onChange={(nextWeight) =>
-                          onProfileChange({
-                            ...profile,
-                            statWeights: {
-                              ...profile.statWeights,
-                              [propertyId]: nextWeight,
-                            },
-                          })
-                        }
-                      />
-                    ))}
+                <div className="min-w-0 space-y-0.5" data-build-substats>
+                  <div className="flex min-w-0 items-center gap-1">
+                    <span
+                      className={cn(
+                        "truncate font-medium text-muted-foreground select-none",
+                        isMobile ? "text-[10px]" : "text-xs"
+                      )}
+                    >
+                      {t("build.substats")}
+                    </span>
+                    {unweightedProperties.length > 0 && (
+                      <LightweightSelect
+                        value=""
+                        onValueChange={(propertyId) => {
+                          if (propertyId) setWeight(propertyId, 1);
+                        }}
+                      >
+                        <LightweightSelectTrigger
+                          aria-label={t("build.addSubstat")}
+                          className="h-5 w-5 justify-center border-0 bg-primary/5 p-0 text-primary/70 shadow-none transition-transform hover:scale-[1.2] hover:bg-primary/10 hover:text-primary [&>svg]:hidden"
+                        >
+                          <span className="flex items-center justify-center">
+                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                          </span>
+                        </LightweightSelectTrigger>
+                        <LightweightSelectContent collisionPadding={8}>
+                          {unweightedProperties.map(({ propertyId, name }) => (
+                            <LightweightSelectItem
+                              key={propertyId}
+                              value={propertyId}
+                              className="text-sm"
+                            >
+                              {name}
+                            </LightweightSelectItem>
+                          ))}
+                        </LightweightSelectContent>
+                      </LightweightSelect>
+                    )}
+                  </div>
+                  <div className="flex min-h-8 min-w-0 flex-wrap items-center gap-1">
+                    {visibleWeights.map(
+                      ({ propertyId, weight, name, compactName }) => (
+                        <WeightToken
+                          key={propertyId}
+                          label={t("scoring.weightsTitle")}
+                          propertyName={compactName}
+                          accessibleName={name}
+                          weight={weight}
+                          onChange={(nextWeight) =>
+                            setWeight(propertyId, nextWeight)
+                          }
+                        />
+                      )
+                    )}
+                  </div>
                 </div>
               </section>
             </div>

@@ -14,6 +14,7 @@ import {
   type CharacterFilterOption,
   CharacterFilterPanel,
   characterFilterCount,
+  clearCharacterFilters,
   defaultCharacterFilters,
 } from "@/components/account-data/CharacterFilterPanel";
 import { PageLayout } from "@/components/layout/PageLayout";
@@ -46,6 +47,8 @@ export default function CharacterView() {
   const [filters, setFilters] = useState(defaultCharacterFilters);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const isVeryNarrow = useMediaQuery("(max-width: 560px)");
+  // Below 680px the 4 + 2 row's columns are too narrow for full-size stats.
+  const isNarrowRow = useMediaQuery("(max-width: 679px)");
   const isTwoColumnCompact = useMediaQuery(
     "(min-width: 1536px) and (max-width: 2047px)"
   );
@@ -53,9 +56,9 @@ export default function CharacterView() {
     () => ({
       isMobile,
       isVeryNarrow,
-      isRelicCompact: isVeryNarrow || isTwoColumnCompact,
+      isRelicCompact: isVeryNarrow || isNarrowRow || isTwoColumnCompact,
     }),
-    [isMobile, isTwoColumnCompact, isVeryNarrow]
+    [isMobile, isNarrowRow, isTwoColumnCompact, isVeryNarrow]
   );
 
   const characters = account?.characters ?? [];
@@ -223,13 +226,26 @@ export default function CharacterView() {
       ) : (
         <SidebarLayout
           sidebar={renderFilterPanel()}
-          triggerLabel={t("characterLoadout.filters")}
           activeFilterCount={activeFilterCount}
         >
-          <div className="min-w-0 space-y-4">
+          <div className="min-w-0 space-y-3">
             <AccountCoverageNotice account={account} />
             {visibleCharacters.length === 0 ? (
-              <EmptyState messageKey="empty.filtered" icon={UsersRound} />
+              <EmptyState
+                variant="inline"
+                messageKey="empty.filtered"
+                icon={UsersRound}
+              >
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    className="rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => setFilters(clearCharacterFilters)}
+                  >
+                    {t("filter.clearAll")}
+                  </button>
+                )}
+              </EmptyState>
             ) : (
               <section
                 className="grid min-w-0 items-stretch gap-3 2xl:grid-cols-[repeat(2,minmax(32rem,1fr))]"

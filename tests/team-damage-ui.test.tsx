@@ -1,78 +1,427 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import App from "@/App";
 import { APP_PATHS } from "@/config/navigation";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { DEFAULT_TEAM_STORE, emptyTeam } from "@/stores/teamSchemas";
+import {
+  DEFAULT_TEAM_STORE,
+  emptyTeam,
+  type TeamPlan,
+} from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
+import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
+import { createDemoAccount } from "./fixtures/demoAccount";
 
-function renderPage() {
+function LocationProbe() {
+  const location = useLocation();
+  return (
+    <output data-testid="location">{`${location.pathname}${location.search}`}</output>
+  );
+}
+
+function renderPage(path: string = APP_PATHS.teamDamage) {
   return render(
     <ThemeProvider>
       <I18nProvider>
-        <MemoryRouter initialEntries={[APP_PATHS.teamDamage]}>
+        <MemoryRouter initialEntries={[path]}>
           <App />
+          <LocationProbe />
         </MemoryRouter>
       </I18nProvider>
     </ThemeProvider>
   );
 }
 
+function seedTeam(id: string, characterIds: readonly string[]): TeamPlan {
+  const team = emptyTeam(id);
+  characterIds.forEach((characterId, slot) => {
+    team.members[slot] = { characterId, options: {}, skill: "kit" };
+  });
+  return team;
+}
+
+function seed(...teams: TeamPlan[]) {
+  useTeamStore.setState({ teams, activeTeamId: teams[0]?.id ?? null });
+}
+
+const teamIds = () => useTeamStore.getState().teams.map((team) => team.id);
+
+async function grid() {
+  return screen.findByRole("region", { name: "Teams" }, { timeout: 15_000 });
+}
+
 afterEach(() => {
   useTeamStore.setState(structuredClone(DEFAULT_TEAM_STORE));
+  act(() => useWorkspaceStore.getState().clearWorkspace());
 });
 
-describe("Team Damage page", () => {
-  it("creates a team from the empty state", async () => {
+async function seedAccount() {
+  const account = await createDemoAccount(new Date("2026-09-02T00:00:00Z"));
+  act(() => useWorkspaceStore.getState().replaceAccount(account));
+}
+
+/**
+ * Owned only, switched on, with no search text (grid filters live for the
+ * whole session, so earlier tests may have left some).
+ */
+async function ownedOnlyOn(user: ReturnType<typeof userEvent.setup>) {
+  await user.clear(screen.getByRole("searchbox", { name: "Search teams" }));
+  const chip = screen.getByRole("button", { name: "Owned only" });
+  if (chip.getAttribute("aria-pressed") !== "true") await user.click(chip);
+  expect(chip).toHaveAttribute("aria-pressed", "true");
+  return chip;
+}
+
+describe("Team DMG empty state", () => {
+  it("shows a ghost card whose first pick creates the team", async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(await screen.findByRole("button", { name: "New team" }));
-    expect(useTeamStore.getState().teams).toHaveLength(1);
+    const main = screen.getByRole("main");
     expect(
-      screen.getAllByRole("button", { name: "Add Character" })
-    ).toHaveLength(4);
+      await within(main).findByRole(
+        "heading",
+        { level: 2, name: "Team DMG" },
+        { timeout: 15_000 }
+      )
+    ).toBeInTheDocument();
+    expect(within(main).queryByRole("searchbox")).toBeNull();
+    expect(useTeamStore.getState().teams).toHaveLength(0);
+
+    const ghost = within(main).getByRole("article", { name: "Team 1" });
+    const slots = within(ghost).getAllByRole("button", {
+      name: "Add Character",
+    });
+    expect(slots).toHaveLength(4);
+    expect(
+      within(ghost).getByRole("button", { name: "DMG Optimizer" })
+    ).toBeDisabled();
+    await user.click(slots[2] as HTMLElement);
+    await user.click(await screen.findByRole("button", { name: "Seele" }));
+
+    const [team] = useTeamStore.getState().teams;
+    expect(team?.members.map((member) => member?.characterId ?? null)).toEqual([
+      "1102",
+      null,
+      null,
+      null,
+    ]);
+    expect(await grid()).toBeInTheDocument();
   });
 
-  it("simulates a saved team and runs the investment tool", async () => {
+  it("creates a team from the call to action and shows the grid", async () => {
     const user = userEvent.setup();
-    const team = emptyTeam("team:ui-test");
-    team.members[0] = { characterId: "1102", options: {}, skill: "kit" };
-    team.members[1] = { characterId: "1309", options: {}, skill: "kit" };
-    team.cycles = 2;
-    useTeamStore.setState({ teams: [team], activeTeamId: team.id });
-    renderPage();
-
-    const perCycle = await screen.findByText(
-      (_, element) =>
-        element?.hasAttribute("data-damage-per-cycle") === true &&
-        element.textContent !== "—",
-      undefined,
-      { timeout: 20_000 }
+    renderPage(APP_PATHS.teamChoice);
+    const main = screen.getByRole("main");
+    await user.click(
+      await within(main).findByRole(
+        "button",
+        { name: "New team" },
+        { timeout: 15_000 }
+      )
     );
-    expect(Number(perCycle.textContent?.replace(/\D/g, ""))).toBeGreaterThan(0);
-
-    const seele = screen.getByRole("article", { name: "Slot 1" });
-    expect(within(seele).getAllByText("Recommended").length).toBeGreaterThan(0);
+    expect(useTeamStore.getState().teams).toHaveLength(1);
+    const cards = within(await grid()).getAllByRole("article");
+    expect(cards).toHaveLength(1);
     expect(
-      within(seele).getByRole("button", { name: "Ideal" })
-    ).toHaveAttribute("aria-pressed", "true");
+      within(cards[0] as HTMLElement).getByRole("button", {
+        name: "Light Cone & Relic Choice",
+      })
+    ).toBeDisabled();
     expect(
-      within(seele).getByRole("group", { name: "Conditions" })
+      within(main).getByRole("searchbox", { name: "Search teams" })
     ).toBeInTheDocument();
+  });
+});
 
-    const breakdown = screen.getByRole("region", { name: "By ability" });
-    expect(within(breakdown).getAllByRole("row").length).toBeGreaterThan(1);
+describe("Team DMG grid", () => {
+  it("adds teams at either end without stacking empty teams", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102"]), seedTeam("team:b", ["1309"]));
+    renderPage();
+    await grid();
+    await user.click(
+      screen.getByRole("button", { name: "New team at the top" })
+    );
+    const [top] = teamIds();
+    expect(teamIds()).toEqual([top, "team:a", "team:b"]);
+    await user.click(
+      screen.getByRole("button", { name: "New team at the top" })
+    );
+    expect(teamIds()).toHaveLength(3);
+    await user.click(
+      screen.getByRole("button", { name: "New team at the bottom" })
+    );
+    expect(teamIds()).toHaveLength(4);
+    expect(teamIds().slice(1, 3)).toEqual(["team:a", "team:b"]);
+  });
+
+  it("renames, moves, duplicates and deletes from a card", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102"]), seedTeam("team:b", ["1309"]));
+    renderPage();
+    const teams = await grid();
+
+    const first = within(teams).getByRole("article", { name: "Team 1" });
+    const name = within(first).getByRole("textbox", { name: "Team name" });
+    await user.type(name, "Hypercarry{Enter}");
+    expect(useTeamStore.getState().teams[0]?.name).toBe("Hypercarry");
+
+    const renamed = within(teams).getByRole("article", { name: "Hypercarry" });
+    await user.click(
+      within(renamed).getByRole("button", { name: "Team actions" })
+    );
+    expect(screen.getByRole("menuitem", { name: "Move up" })).toHaveAttribute(
+      "data-disabled"
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Move down" }));
+    expect(teamIds()).toEqual(["team:b", "team:a"]);
 
     await user.click(
-      screen.getByRole("tab", { name: "Eidolons & Superimpositions" })
+      within(
+        within(teams).getByRole("article", { name: "Hypercarry" })
+      ).getByRole("button", { name: "Team actions" })
     );
-    await user.click(screen.getByRole("button", { name: "Run" }));
-    await waitFor(
-      () => expect(screen.getAllByText("Current").length).toBeGreaterThan(0),
-      { timeout: 60_000 }
+    await user.click(screen.getByRole("menuitem", { name: "Duplicate team" }));
+    expect(teamIds()).toHaveLength(3);
+
+    await user.click(
+      within(within(teams).getByRole("article", { name: "Team 1" })).getByRole(
+        "button",
+        { name: "Team actions" }
+      )
     );
-  }, 90_000);
+    await user.click(screen.getByRole("menuitem", { name: "Delete team" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Delete team",
+      })
+    );
+    expect(teamIds()).not.toContain("team:b");
+    expect(teamIds()).toHaveLength(2);
+  });
+
+  it("filters cards by search text and keeps them in the DOM", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102"]), seedTeam("team:b", ["1309"]));
+    renderPage();
+    const teams = await grid();
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search teams" }),
+      "Robin"
+    );
+    const cards = within(teams).getAllByRole("article", { hidden: true });
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveAttribute("hidden");
+    expect(cards[1]).not.toHaveAttribute("hidden");
+  });
+});
+
+describe("Team DMG Owned only", () => {
+  it("turns off when a pick adds an unowned Character to a team", async () => {
+    const user = userEvent.setup();
+    await seedAccount();
+    // Dan Heng is owned; Seele is not.
+    seed(seedTeam("team:owned", ["1002"]), seedTeam("team:mixed", ["1102"]));
+    renderPage();
+    const teams = await grid();
+    const chip = await ownedOnlyOn(user);
+    const cards = within(teams).getAllByRole("article", { hidden: true });
+    expect(cards[0]).not.toHaveAttribute("hidden");
+    expect(cards[1]).toHaveAttribute("hidden");
+
+    await user.click(
+      within(cards[0] as HTMLElement).getAllByRole("button", {
+        name: "Add Character",
+      })[0] as HTMLElement
+    );
+    await user.click(await screen.findByRole("button", { name: "Seele" }));
+    expect(
+      useTeamStore.getState().teams[0]?.members.map((m) => m?.characterId)
+    ).toEqual(["1002", "1102", undefined, undefined]);
+    expect(chip).toHaveAttribute("aria-pressed", "false");
+    expect(cards[0]).not.toHaveAttribute("hidden");
+    expect(cards[1]).not.toHaveAttribute("hidden");
+  });
+
+  it("offers a reset when the filters hide every team", async () => {
+    const user = userEvent.setup();
+    await seedAccount();
+    seed(seedTeam("team:unowned", ["1102"]));
+    renderPage();
+    const teams = await grid();
+    const chip = await ownedOnlyOn(user);
+    expect(
+      within(teams).getByRole("article", { hidden: true })
+    ).toHaveAttribute("hidden");
+    expect(
+      screen.getByText("No teams match these filters.")
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Reset filters" }));
+    expect(chip).toHaveAttribute("aria-pressed", "false");
+    expect(within(teams).getByRole("article")).not.toHaveAttribute("hidden");
+    expect(screen.queryByText("No teams match these filters.")).toBeNull();
+  });
+});
+
+describe("Team DMG detail", () => {
+  it("opens a team from its card, keeps it across tabs and returns to the grid", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102", "1309"]));
+    renderPage();
+    const card = within(await grid()).getByRole("article", { name: "Team 1" });
+    await user.click(
+      within(card).getByRole("button", { name: "DMG Optimizer" })
+    );
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Team 1" })
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      `${APP_PATHS.teamDamage}?team=team%3Aa`
+    );
+
+    await user.click(screen.getByRole("link", { name: "Go to Investment" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        `${APP_PATHS.teamInvestment}?team=team%3Aa`
+      )
+    );
+    // The section tabs keep the open team too.
+    const tabs = within(screen.getByTestId("section-tabs")).getByRole(
+      "navigation",
+      { name: "Team DMG" }
+    );
+    await user.click(
+      within(tabs).getByRole("link", { name: "Light Cone & Relic Choice" })
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        `${APP_PATHS.teamChoice}?team=team%3Aa`
+      )
+    );
+    await user.click(within(tabs).getByRole("link", { name: "Investment" }));
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        `${APP_PATHS.teamInvestment}?team=team%3Aa`
+      )
+    );
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Team 1" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Go to Light Cone & Relic Choice" })
+    ).toHaveAttribute("href", `${APP_PATHS.teamChoice}?team=team%3Aa`);
+
+    await user.click(screen.getByRole("button", { name: "Back to teams" }));
+    expect(await grid()).toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent(
+      new RegExp(`^${APP_PATHS.teamInvestment}$`)
+    );
+  });
+
+  it("drops an unknown team from the URL", async () => {
+    seed(seedTeam("team:a", ["1102"]));
+    renderPage(`${APP_PATHS.teamChoice}?team=team%3Amissing`);
+    expect(await grid()).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).toHaveTextContent(
+        new RegExp(`^${APP_PATHS.teamChoice}$`)
+      )
+    );
+  });
+
+  it("edits members from the roster and shows their conditions", async () => {
+    const user = userEvent.setup();
+    const team = seedTeam("team:ui-test", ["1102", "1309"]);
+    team.cycles = 2;
+    seed(team);
+    renderPage(`${APP_PATHS.teamDamage}?team=team%3Aui-test`);
+
+    const roster = await screen.findByRole(
+      "region",
+      { name: "Team Roster" },
+      { timeout: 15_000 }
+    );
+    const seele = within(roster).getByRole("article", { name: "Seele" });
+    expect(
+      within(seele).getByRole("combobox", { name: "Relics" })
+    ).toHaveTextContent("Ideal");
+
+    await user.click(within(seele).getByRole("combobox", { name: "Eidolon" }));
+    await user.click(await screen.findByRole("option", { name: "E2" }));
+    expect(useTeamStore.getState().teams[0]?.members[0]?.eidolon).toBe(2);
+
+    await user.click(
+      within(seele).getByRole("combobox", { name: "Skill use" })
+    );
+    await user.click(
+      await screen.findByRole("option", { name: "Prefer Skill" })
+    );
+    expect(useTeamStore.getState().teams[0]?.members[0]?.skill).toBe("prefer");
+
+    expect(
+      await within(seele).findByRole(
+        "group",
+        { name: "Conditions" },
+        { timeout: 30_000 }
+      )
+    ).toBeInTheDocument();
+
+    // Only the first empty slot is a picker; Battle Setup edits the team.
+    expect(
+      within(roster).getAllByRole("button", { name: "Add Character" })
+    ).toHaveLength(1);
+    const setup = screen.getByRole("region", { name: "Battle Setup" });
+    await user.click(within(setup).getByRole("radio", { name: /Single boss/ }));
+    expect(useTeamStore.getState().teams[0]?.scenario).toBe("singleBoss");
+
+    await user.click(
+      within(seele).getByRole("button", { name: /Character actions/ })
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: "Use account Eidolon" })
+    );
+    expect(
+      useTeamStore.getState().teams[0]?.members[0]?.eidolon
+    ).toBeUndefined();
+    await user.click(
+      within(seele).getByRole("button", { name: /Character actions/ })
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: "Remove from team" })
+    );
+    expect(
+      useTeamStore
+        .getState()
+        .teams[0]?.members.map((member) => member?.characterId ?? null)
+    ).toEqual(["1309", null, null, null]);
+  }, 60_000);
+
+  it("duplicates and deletes the open team from the app bar", async () => {
+    const user = userEvent.setup();
+    seed(seedTeam("team:a", ["1102"]));
+    renderPage(`${APP_PATHS.teamDamage}?team=team%3Aa`);
+    await screen.findByRole("heading", { level: 2, name: "Team 1" });
+    const [appbar] = screen.getAllByRole("banner");
+    if (!appbar) throw new Error("Missing app bar");
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    await user.click(screen.getByRole("menuitem", { name: "Duplicate team" }));
+    expect(teamIds()).toHaveLength(2);
+    await waitFor(() =>
+      expect(screen.getByTestId("location")).not.toHaveTextContent("team%3Aa")
+    );
+
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    await user.click(screen.getByRole("menuitem", { name: "Delete team" }));
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Delete team",
+      })
+    );
+    expect(teamIds()).toEqual(["team:a"]);
+    expect(await grid()).toBeInTheDocument();
+  });
 });

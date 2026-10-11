@@ -191,7 +191,11 @@ describe("Relic archive cards", () => {
       { name: "Passerby of Wandering Cloud" },
       catalogWait
     );
-    expect(card.querySelectorAll("img")).toHaveLength(5);
+    // Slot-ordered piece art only: four Cavern pieces, no set-level tile.
+    expect(card.querySelectorAll("img")).toHaveLength(4);
+    expect(
+      within(card).getByRole("img", { name: "Cavern Relics" })
+    ).toBeInTheDocument();
     expect(within(card).getByText("2-Piece")).toBeInTheDocument();
     expect(within(card).getByText("4-Piece")).toBeInTheDocument();
     expect(card).toHaveTextContent(/Outgoing Healing.*10%/);
@@ -209,7 +213,10 @@ describe("Relic archive cards", () => {
     const planar = screen.getByRole("article", {
       name: "Space Sealing Station",
     });
-    expect(planar.querySelectorAll("img")).toHaveLength(3);
+    expect(planar.querySelectorAll("img")).toHaveLength(2);
+    expect(
+      within(planar).getByRole("img", { name: "Planar Ornaments" })
+    ).toBeInTheDocument();
     expect(within(planar).getByText("2-Piece")).toBeInTheDocument();
     expect(within(planar).queryByText("4-Piece")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Planar/ }));

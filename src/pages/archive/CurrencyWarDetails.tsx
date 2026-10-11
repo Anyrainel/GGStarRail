@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatStarValues } from "@/lib/currencyWarPresentation";
@@ -25,6 +26,9 @@ export function currencyWarSearchText(value: unknown): string {
   }
   return Object.values(record).map(currencyWarSearchText).join(" ");
 }
+
+/** Source placeholders whose parameter is missing from the export. */
+const UNRESOLVED_PARAMETER = /#\d+\[[^\]]+\]%?/g;
 
 export function CurrencyWarText({
   text,
@@ -54,13 +58,14 @@ export function CurrencyWarText({
         className
       )}
     >
-      {parameterVariants
+      {(parameterVariants
         ? formatGameTextVariants(
             template,
             parameterVariants,
             t("terms.trailblazer")
           )
-        : formatGameText(template, parameters, t("terms.trailblazer"))}
+        : formatGameText(template, parameters, t("terms.trailblazer"))
+      ).replace(UNRESOLVED_PARAMETER, "—")}
     </p>
   );
 }
@@ -82,37 +87,67 @@ export function CurrencyWarStarProperties({
   ];
   if (!definitions.length) return null;
   return (
-    <dl className="grid gap-2 sm:grid-cols-2">
+    <CurrencyWarPropertyList columns>
       {definitions.map((value) => {
         const property = properties.propertyById.get(value.property_id);
         return (
-          <div
+          <CurrencyWarPropertyRow
             key={value.property_id}
-            className="flex items-center justify-between gap-3 rounded-lg bg-secondary/60 px-3 py-2 text-sm"
-          >
-            <dt>
-              {formatGameText(
-                getLocalizedValue(
-                  value.name ?? property?.relic_name ?? property?.name,
-                  locale
-                ) ?? t("archive.sourceValueMissing")
-              )}
-            </dt>
-            <dd className="font-semibold tabular-nums">
-              {formatStarValues(
-                stars.map(
-                  (star) =>
-                    star.properties.find(
-                      (entry) => entry.property_id === value.property_id
-                    )?.value
-                ),
-                value.value_kind ?? property?.value_kind ?? "unknown"
-              )}
-            </dd>
-          </div>
+            label={formatGameText(
+              getLocalizedValue(
+                value.name ?? property?.relic_name ?? property?.name,
+                locale
+              ) ?? t("archive.sourceValueMissing")
+            )}
+            value={formatStarValues(
+              stars.map(
+                (star) =>
+                  star.properties.find(
+                    (entry) => entry.property_id === value.property_id
+                  )?.value
+              ),
+              value.value_kind ?? property?.value_kind ?? "unknown"
+            )}
+          />
         );
       })}
+    </CurrencyWarPropertyList>
+  );
+}
+
+/** One bordered list of label and value rows. */
+export function CurrencyWarPropertyList({
+  columns = false,
+  children,
+}: {
+  /** Two columns from `sm`, for wide detail panels. */
+  columns?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <dl
+      className={cn(
+        "grid grid-cols-1 gap-y-0.5 rounded-lg border border-border bg-card/30 p-3",
+        columns && "sm:grid-cols-2 sm:gap-x-6"
+      )}
+    >
+      {children}
     </dl>
+  );
+}
+
+export function CurrencyWarPropertyRow({
+  label,
+  value,
+}: {
+  label: ReactNode;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-center justify-between gap-2 py-0.5">
+      <dt className="truncate text-sm text-muted-foreground">{label}</dt>
+      <dd className="shrink-0 font-mono text-sm font-medium">{value}</dd>
+    </div>
   );
 }
 
@@ -126,45 +161,44 @@ export function CurrencyWarProperties({
   const { locale, t } = useI18n();
   if (!values.length) return null;
   return (
-    <dl className="grid gap-2 sm:grid-cols-2">
+    <CurrencyWarPropertyList>
       {values.map((value) => {
         const property = properties.propertyById.get(value.property_id);
         return (
-          <div
+          <CurrencyWarPropertyRow
             key={value.property_id}
-            className="flex items-center justify-between gap-3 rounded-lg bg-secondary/60 px-3 py-2 text-sm"
-          >
-            <dt>
-              {formatGameText(
-                getLocalizedValue(
-                  value.name ?? property?.relic_name ?? property?.name,
-                  locale
-                ) ?? t("archive.sourceValueMissing")
-              )}
-            </dt>
-            <dd className="font-semibold tabular-nums">
-              {formatCatalogValue(
-                value.value,
-                value.value_kind ?? property?.value_kind ?? "unknown"
-              )}
-            </dd>
-          </div>
+            label={formatGameText(
+              getLocalizedValue(
+                value.name ?? property?.relic_name ?? property?.name,
+                locale
+              ) ?? t("archive.sourceValueMissing")
+            )}
+            value={formatCatalogValue(
+              value.value,
+              value.value_kind ?? property?.value_kind ?? "unknown"
+            )}
+          />
         );
       })}
-    </dl>
+    </CurrencyWarPropertyList>
   );
 }
 
 export function CurrencyWarSection({
   title,
+  icon: Icon,
   children,
 }: {
   title: string;
+  icon?: LucideIcon;
   children: ReactNode;
 }) {
   return (
-    <section className="space-y-3">
-      <h3 className="text-sm font-semibold">{title}</h3>
+    <section className="space-y-2">
+      <h3 className="flex items-center gap-2 px-1 text-base font-semibold text-muted-foreground">
+        {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
+        {title}
+      </h3>
       {children}
     </section>
   );
@@ -179,20 +213,20 @@ export function CurrencyWarBondTiers({
 }) {
   const { t } = useI18n();
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {tiers.map((tier) => (
         <section
           key={tier.required_count}
-          className="space-y-3 rounded-xl border border-border bg-background/40 p-3"
+          className="space-y-2 rounded-lg border border-border bg-card/30 p-3"
         >
-          <h3 className="flex items-center gap-2 text-sm font-semibold">
-            <span className="flex h-8 min-w-8 items-center justify-center rounded-lg bg-primary/15 px-1 text-primary">
+          <h4 className="flex items-center gap-2 text-sm font-semibold">
+            <span className="flex h-7 min-w-7 items-center justify-center rounded-md bg-primary/15 px-1 text-primary">
               {tier.required_count}
             </span>
             {t("archive.currencyWar.requiredCharacters", {
               value: tier.required_count,
             })}
-          </h3>
+          </h4>
           <CurrencyWarText
             text={tier.description}
             parameters={tier.parameters}

@@ -1,10 +1,16 @@
 import type { BuildConfiguration } from "@/domain/build/schemas";
+import { DEFAULT_BATTLE_OPTIONS } from "@/domain/combat/battle/battle";
 import type { ActionRecord } from "@/domain/combat/battle/log";
+import type { CombatUnit } from "@/domain/combat/battle/units";
 import type { DamageReport } from "@/domain/combat/evaluate/report";
 import type { KitRegistry } from "@/domain/combat/kit/registry";
 import type { CombatReferenceData } from "@/domain/combat/model/data";
 import type { CritMode } from "@/domain/combat/model/formulas";
-import { finalStat, readStat } from "@/domain/combat/model/stats";
+import {
+  type CombatType,
+  finalStat,
+  readStat,
+} from "@/domain/combat/model/stats";
 import type { UnitKind } from "@/domain/combat/model/tags";
 import {
   compareLightCones,
@@ -14,19 +20,25 @@ import {
   investmentPath,
 } from "@/domain/combat/optimize/analysis";
 import {
+  type ConfigurableSlot,
   generateIdealRelics,
   type StatConstraints,
   type SubstatBudget,
 } from "@/domain/combat/optimize/idealRelics";
 import { TeamObjective } from "@/domain/combat/optimize/objective";
 import { searchRelics } from "@/domain/combat/optimize/relicSearch";
-import type {
-  RelicPiece,
-  RelicTables,
-  SetPlan,
+import {
+  loadoutOf,
+  type RelicPiece,
+  type RelicTables,
+  type SetPlan,
+  type SixPieces,
 } from "@/domain/combat/optimize/relics";
 import { simulateTeam } from "@/domain/combat/simulate";
-import type { MemberOptionGroup } from "@/domain/combat/team/assemble";
+import {
+  assembleTeam,
+  type MemberOptionGroup,
+} from "@/domain/combat/team/assemble";
 import type { TeamInput } from "@/domain/combat/team/input";
 import {
   loadProgression,
@@ -83,11 +95,23 @@ export type WorkspaceSources = Pick<
   "account" | "characterLightConeIds" | "builds"
 >;
 
+/** Main stats allowed per variable slot (Body, Feet, Planar Sphere, Link Rope). */
+export type MainStatChoices = Partial<
+  Record<ConfigurableSlot, readonly string[]>
+>;
+
 export interface TeamRequest {
   readonly team: TeamPlan;
   readonly sources: WorkspaceSources;
   readonly critMode?: CritMode;
   readonly budget?: SubstatBudget;
+  /**
+   * Account Relics to wear instead of the member's resolved Relics, by team
+   * slot and Relic slot (e.g. every member's optimized loadout at once).
+   */
+  readonly relicOverrides?: Readonly<
+    Record<number, Readonly<Record<string, string>>>
+  >;
 }
 
 export interface MemberPanelSummary {
@@ -98,9 +122,58 @@ export interface MemberPanelSummary {
   readonly critRate: number;
   readonly critDmg: number;
   readonly breakEffect: number;
+  readonly outgoingHealing: number;
   readonly energyRegen: number;
   readonly effectHitRate: number;
+  readonly effectRes: number;
+  /** The member's own Combat Type, which {@link combatTypeDmg} boosts. */
+  readonly combatType: CombatType;
+  /**
+   * DMG Boost of the member's own Combat Type as the in-game panel shows it:
+   * Planar Sphere main stat, Traces, set bonuses and other permanent bonuses
+   * limited to that Combat Type.
+   */
+  readonly combatTypeDmg: number;
   readonly elation: number;
+}
+
+/** Whether a permanent modifier only narrows its bonus to `combatType`. */
+function boostsCombatType(
+  modifier: CombatUnit["conditional"][number],
+  combatType: CombatType
+): boolean {
+  const { def } = modifier;
+  if (def.stat !== "dmgBoost" || def.scaling || !def.filter) return false;
+  const { combatTypes, ...rest } = def.filter;
+  return (
+    (combatTypes?.includes(combatType) ?? false) &&
+    Object.values(rest).every((value) => value === undefined)
+  );
+}
+
+function panelSummary(unit: CombatUnit): MemberPanelSummary {
+  const panel = unit.panel;
+  const combatType = unit.combatType;
+  let combatTypeDmg = unit.relicElemental[combatType] ?? 0;
+  for (const modifier of unit.conditional)
+    if (boostsCombatType(modifier, combatType))
+      combatTypeDmg += (modifier.def.value ?? 0) * modifier.scale;
+  return {
+    hp: finalStat(panel, "hp"),
+    atk: finalStat(panel, "atk"),
+    def: finalStat(panel, "def"),
+    spd: finalStat(panel, "spd"),
+    critRate: readStat(panel, "critRate"),
+    critDmg: readStat(panel, "critDmg"),
+    breakEffect: readStat(panel, "breakEffect"),
+    outgoingHealing: readStat(panel, "outgoingHealing"),
+    energyRegen: readStat(panel, "energyRegen"),
+    effectHitRate: readStat(panel, "effectHitRate"),
+    effectRes: readStat(panel, "effectRes"),
+    combatType,
+    combatTypeDmg,
+    elation: readStat(panel, "elation"),
+  };
 }
 
 export interface MemberOutcome {
@@ -119,6 +192,8 @@ export interface MemberOutcome {
     readonly rolls: Readonly<Record<string, number>>;
   } | null;
   readonly panel: MemberPanelSummary;
+  /** False when a kit resource (e.g. Slashed Dream) pays for the Ultimate. */
+  readonly ultimateEnergy: boolean;
   readonly optionGroups: readonly MemberOptionGroup[];
   readonly implemented: {
     readonly character: boolean;
@@ -137,6 +212,8 @@ export interface SimulateResponse {
   readonly members: readonly MemberOutcome[];
   readonly report: DamageReport;
   readonly actions: readonly TimelineAction[];
+  /** Skill Points before the first action. */
+  readonly startingSkillPoints: number;
   readonly warnings: readonly string[];
 }
 
@@ -172,9 +249,33 @@ export function prepareTeam(
     members: resolved.map((member) => member.input),
     scenario: resolvedTeam.scenario,
   };
+  const overridden = new Set<number>();
+  const overrides = request.relicOverrides ?? {};
+  const account = request.sources.account;
+  if (account) {
+    const relics = new Map(account.relics.map((relic) => [relic.key, relic]));
+    resolved.forEach((member, index) => {
+      const keys = overrides[member.slot];
+      if (!keys) return;
+      const pieces: Partial<Record<RelicPiece["slot"], RelicPiece>> = {};
+      for (const key of Object.values(keys)) {
+        const relic = relics.get(key);
+        if (relic) pieces[relic.slot] = relicPiece(relic, catalog.properties);
+      }
+      if (!Object.keys(pieces).length) return;
+      overridden.add(member.slot);
+      const loadout = loadoutOf(pieces as SixPieces);
+      input = {
+        ...input,
+        members: input.members.map((entry, position) =>
+          position === index ? { ...entry, relics: loadout } : entry
+        ),
+      };
+    });
+  }
   const ideals: PreparedTeam["ideals"] = new Map();
   resolved.forEach((member, index) => {
-    if (member.relicSource !== "ideal") return;
+    if (member.relicSource !== "ideal" || overridden.has(member.slot)) return;
     if (!catalog.data.characters.has(member.input.characterId)) return;
     const objective = new TeamObjective(
       input,
@@ -219,6 +320,7 @@ export function simulateJob(
         byCycle: [],
       },
       actions: [],
+      startingSkillPoints: DEFAULT_BATTLE_OPTIONS.startingSkillPoints,
       warnings: [],
     };
   }
@@ -230,7 +332,7 @@ export function simulateJob(
     (assembled, index) => {
       const resolved = prepared.resolved[index];
       if (!resolved) throw new Error(`Missing resolved member ${index}`);
-      const panel = assembled.unit.panel;
+      const ultimate = assembled.unit.behaviour?.abilities.get("ultimate");
       return {
         slot: resolved.slot,
         characterId: resolved.input.characterId,
@@ -243,18 +345,8 @@ export function simulateJob(
         setPlan: resolved.setPlan,
         setPlanOrigin: resolved.setPlanOrigin,
         ideal: prepared.ideals.get(resolved.slot) ?? null,
-        panel: {
-          hp: finalStat(panel, "hp"),
-          atk: finalStat(panel, "atk"),
-          def: finalStat(panel, "def"),
-          spd: finalStat(panel, "spd"),
-          critRate: readStat(panel, "critRate"),
-          critDmg: readStat(panel, "critDmg"),
-          breakEffect: readStat(panel, "breakEffect"),
-          energyRegen: readStat(panel, "energyRegen"),
-          effectHitRate: readStat(panel, "effectHitRate"),
-          elation: readStat(panel, "elation"),
-        },
+        panel: panelSummary(assembled.unit),
+        ultimateEnergy: !ultimate?.resource,
         optionGroups: assembled.optionGroups,
         implemented: assembled.implemented,
       };
@@ -283,6 +375,7 @@ export function simulateJob(
         unitKind: unit?.kind ?? "summon",
       };
     }),
+    startingSkillPoints: result.team.battle.options.startingSkillPoints,
     warnings: [...result.log.warnings],
   };
 }
@@ -293,6 +386,11 @@ function memberIndex(prepared: PreparedTeam, slot: number): number {
   return index;
 }
 
+/**
+ * One member's Relic search. Teammates wear their resolved Relics or, with
+ * `relicOverrides`, loadouts already optimized for them; Relics in those
+ * loadouts are not candidates.
+ */
 export interface OptimizeRequest extends TeamRequest {
   readonly slot: number;
   readonly constraints?: StatConstraints;
@@ -343,6 +441,10 @@ export function optimizeJob(
             .flatMap((character) => character.relicKeys) ?? []
       )
   );
+  // Relics an already optimized teammate wears (its override) are taken.
+  for (const [slot, keys] of Object.entries(request.relicOverrides ?? {}))
+    if (Number(slot) !== request.slot)
+      for (const key of Object.values(keys)) teamKeys.add(key);
   const pieces: RelicPiece[] = (account?.relics ?? [])
     .filter((relic) => relic.rarity === 5 && relic.level >= 12)
     .filter((relic) => !teamKeys.has(relic.key))
@@ -381,6 +483,11 @@ export function optimizeJob(
 export interface IdealRequest extends TeamRequest {
   readonly slot: number;
   readonly constraints?: StatConstraints;
+  /**
+   * Allowed main stats per variable slot, replacing the builds' choice for
+   * that slot only; an empty list allows every main stat.
+   */
+  readonly mainStats?: MainStatChoices;
 }
 
 export interface IdealResponse {
@@ -390,6 +497,8 @@ export interface IdealResponse {
   readonly rolls: Readonly<Record<string, number>>;
   readonly weights: Readonly<Record<string, number>>;
   readonly speed: number;
+  /** The member's battle-start panel with the ideal Relics. */
+  readonly panel: MemberPanelSummary;
   readonly plan: SetPlan;
   readonly feasible: boolean;
 }
@@ -417,16 +526,24 @@ export function idealJob(
   const ideal = generateIdealRelics(objective, catalog.tables, {
     plan: member.setPlan,
     budget: request.budget ?? "realistic",
-    mainStats: member.mainStats,
+    mainStats: { ...member.mainStats, ...request.mainStats },
     constraints: request.constraints,
   });
+  const idealPanel = objective.memberPanel(ideal.loadout);
+  const assembled = assembleTeam(
+    objective.withLoadout(ideal.loadout),
+    catalog.data,
+    catalog.kits
+  ).members[index];
+  if (!assembled) throw new Error(`No assembled member in slot ${index}`);
   return {
     damage: ideal.damage,
     currentDamage,
     mainStats: ideal.mainStats,
     rolls: ideal.rolls,
     weights: deriveStatWeights(objective, catalog.tables, ideal.loadout),
-    speed: objective.memberPanel(ideal.loadout).speed,
+    speed: idealPanel.speed,
+    panel: panelSummary(assembled.unit),
     plan: member.setPlan,
     feasible: ideal.feasible,
   };
@@ -435,6 +552,8 @@ export function idealJob(
 export interface CompareRequest extends TeamRequest {
   readonly slot: number;
   readonly kind: "lightCones" | "setPlans";
+  /** Minimum SPD / Energy Regeneration Rate each candidate's Relics keep. */
+  readonly constraints?: StatConstraints;
 }
 
 export interface CompareEntry {
@@ -442,6 +561,18 @@ export interface CompareEntry {
   readonly plan?: SetPlan;
   readonly damage: number;
   readonly relative: number;
+  /** The candidate's ideal Relics: main stats and substat rolls. */
+  readonly ideal?: {
+    readonly mainStats: Readonly<Record<string, string>>;
+    readonly rolls: Readonly<Record<string, number>>;
+  };
+}
+
+function idealSummary(ideal: {
+  readonly mainStats: Readonly<Record<string, string>>;
+  readonly rolls: Readonly<Record<string, number>>;
+}): NonNullable<CompareEntry["ideal"]> {
+  return { mainStats: { ...ideal.mainStats }, rolls: { ...ideal.rolls } };
 }
 
 export function compareJob(
@@ -461,6 +592,7 @@ export function compareJob(
     plan: member.setPlan,
     budget: request.budget ?? "realistic",
     mainStats: member.mainStats,
+    constraints: request.constraints,
     finalists: 1,
   } as const;
   if (request.kind === "lightCones") {
@@ -481,17 +613,26 @@ export function compareJob(
       lightCone: entry.candidate,
       damage: entry.damage,
       relative: entry.relative,
+      ideal: idealSummary(entry.ideal),
     }));
   }
-  const plans = candidatePlans(catalog, prepared.input, index, member);
+  const plans = candidatePlans(
+    catalog,
+    prepared.input,
+    index,
+    member,
+    request.constraints
+  );
   return compareSetPlans(prepared.input, index, plans, context, {
     budget: relics.budget,
     mainStats: relics.mainStats,
+    constraints: relics.constraints,
     finalists: 1,
   }).map((entry) => ({
     plan: entry.candidate,
     damage: entry.damage,
     relative: entry.relative,
+    ideal: idealSummary(entry.ideal),
   }));
 }
 
@@ -503,7 +644,8 @@ function candidatePlans(
   catalog: CombatCatalog,
   input: TeamInput,
   index: number,
-  member: ResolvedMember
+  member: ResolvedMember,
+  constraints: StatConstraints | undefined
 ): SetPlan[] {
   const objective = new TeamObjective(input, index, catalog.data, catalog.kits);
   const sets = [...catalog.data.relicSets.values()];
@@ -511,6 +653,7 @@ function candidatePlans(
     const ideal = generateIdealRelics(objective, catalog.tables, {
       plan,
       mainStats: member.mainStats,
+      constraints,
       finalists: 1,
     });
     return ideal.damage;
@@ -544,6 +687,11 @@ function candidatePlans(
 
 export interface InvestmentRequest extends TeamRequest {
   readonly slot: number;
+  /** Highest Eidolon and Superimposition to consider (default E6 / S5). */
+  readonly limits?: {
+    readonly maxEidolon?: number;
+    readonly maxSuperimposition?: number;
+  };
 }
 
 export interface InvestmentResponse {
@@ -557,10 +705,15 @@ export function investmentJob(
 ): InvestmentResponse {
   const prepared = prepareTeam(catalog, request);
   const index = memberIndex(prepared, request.slot);
-  return investmentPath(prepared.input, index, {
-    data: catalog.data,
-    kits: catalog.kits,
-    tables: catalog.tables,
-    objective: { critMode: request.critMode },
-  });
+  return investmentPath(
+    prepared.input,
+    index,
+    {
+      data: catalog.data,
+      kits: catalog.kits,
+      tables: catalog.tables,
+      objective: { critMode: request.critMode },
+    },
+    request.limits ?? {}
+  );
 }

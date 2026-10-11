@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { runCombatJob } from "@/lib/combat/client";
+import type { CritMode } from "@/domain/combat/model/formulas";
+import { isCombatJobCancelled, runCombatJob } from "@/lib/combat/client";
 import type { SimulateResponse, WorkspaceSources } from "@/lib/combat/jobs";
 import type { TeamPlan } from "@/stores/teamSchemas";
 
@@ -10,6 +11,13 @@ export interface TeamSimulationState {
   readonly teamId: string | null;
   readonly running: boolean;
   readonly failed: boolean;
+}
+
+export interface TeamSimulationOptions {
+  /** Expected (default), always-crit, or never-crit damage. */
+  readonly critMode?: CritMode;
+  /** Debounce before a changed team is simulated, in ms. */
+  readonly delay?: number;
 }
 
 const IDLE: TeamSimulationState = {
@@ -23,8 +31,9 @@ const IDLE: TeamSimulationState = {
 export function useTeamSimulation(
   team: TeamPlan | null,
   sources: WorkspaceSources,
-  delay = 250
+  options: TeamSimulationOptions = {}
 ): TeamSimulationState {
+  const { critMode, delay = 250 } = options;
   const [state, setState] = useState<TeamSimulationState>(IDLE);
   const latest = useRef(0);
 
@@ -44,19 +53,26 @@ export function useTeamSimulation(
       failed: false,
     }));
     const timer = window.setTimeout(() => {
-      runCombatJob({ kind: "simulate", request: { team, sources } }).then(
+      runCombatJob({
+        kind: "simulate",
+        request: { team, sources, critMode },
+      }).then(
         (result) => {
           if (latest.current !== request) return;
           setState({ result, teamId: team.id, running: false, failed: false });
         },
-        () => {
+        (error: unknown) => {
           if (latest.current !== request) return;
+          if (isCombatJobCancelled(error)) {
+            setState((current) => ({ ...current, running: false }));
+            return;
+          }
           setState((current) => ({ ...current, running: false, failed: true }));
         }
       );
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [team, sources, delay]);
+  }, [team, sources, critMode, delay]);
 
   return state;
 }

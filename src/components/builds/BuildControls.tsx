@@ -1,5 +1,6 @@
 import { Check } from "lucide-react";
 import { type ReactNode, useEffect, useId, useState } from "react";
+import { Checkbox } from "@/components/shared/Checkbox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -187,15 +188,20 @@ export function ToggleField({
   onChange,
   disabled,
 }: ToggleFieldProps) {
+  const id = useId();
   return (
-    <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-background/50 p-3 transition-colors hover:bg-accent/50 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
-      <input
-        type="checkbox"
-        className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-      />
+    <label
+      htmlFor={id}
+      className="flex cursor-pointer items-start gap-2 rounded-md p-2 transition-colors hover:bg-muted/30 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50"
+    >
+      <span className="mt-0.5 inline-flex">
+        <Checkbox
+          id={id}
+          checked={checked}
+          disabled={disabled}
+          onCheckedChange={onChange}
+        />
+      </span>
       <span className="min-w-0 space-y-0.5">
         <span className="block text-sm font-medium">{label}</span>
         {description && (
@@ -227,7 +233,7 @@ export function ChoiceChip({
       aria-pressed={selected}
       disabled={disabled}
       className={cn(
-        "inline-flex min-h-8 items-center gap-1.5 rounded-md border px-2.5 py-1 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-primary/50 bg-primary/15 text-primary"
           : "border-border bg-background/50 text-foreground hover:bg-accent"
