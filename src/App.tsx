@@ -78,6 +78,7 @@ export default function App() {
       >
         <Routes>
           <Route path={APP_PATHS.feedback} element={<FeedbackPage />} />
+          <Route path="/account/feedback" element={<FeedbackPage />} />
           <Route path={APP_PATHS.support} element={<SupportPage />} />
           <Route path="/callback" element={<AuthCallbackPage />} />
           <Route

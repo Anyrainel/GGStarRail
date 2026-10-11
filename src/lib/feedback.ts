@@ -44,6 +44,7 @@ export async function submitFeedback(
       },
       body: JSON.stringify({
         game: "HSR",
+        public: true,
         rating: input.rating,
         suggestion: input.suggestion.trim() || undefined,
         bugReport: input.bugReport.trim() || undefined,

@@ -11,6 +11,7 @@ import {
   Library,
   Lightbulb,
   Medal,
+  MessageSquare,
   SlidersHorizontal,
   TrendingUp,
   Trophy,
@@ -23,7 +24,7 @@ import type { MessageKey } from "@/i18n/messages.en";
 export const APP_PATHS = {
   home: "/",
   scannerDownload: "/download-scanner",
-  feedback: "/account/feedback",
+  feedback: "/feedback",
   support: "/account/support",
   characters: "/account-data/characters",
   inventory: "/account-data/inventory",
@@ -64,6 +65,17 @@ export interface NavigationSection {
 export const TEAM_DAMAGE_SECTION_PATH = "/team-damage";
 
 export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
+  {
+    path: "/feedback",
+    labelKey: "account.feedback",
+    items: [
+      {
+        path: APP_PATHS.feedback,
+        labelKey: "account.feedback",
+        icon: MessageSquare,
+      },
+    ],
+  },
   {
     path: "/account-data",
     labelKey: "nav.accountData",

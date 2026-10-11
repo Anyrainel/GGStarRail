@@ -48,7 +48,7 @@ describe("GGArtifact family shell", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("menuitem", { name: "Feedback" })).toHaveAttribute(
       "href",
-      "/account/feedback"
+      "/feedback"
     );
     expect(
       screen.getByRole("menuitem", { name: "Support development" })

@@ -18,6 +18,10 @@ const auth = vi.hoisted(() => ({
   getFeedbackToken: vi.fn(async () => "synthetic-token"),
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => auth }));
+vi.mock("@/lib/community", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/community")>()),
+  fetchPosts: vi.fn(async () => ({ items: [], nextCursor: null })),
+}));
 
 function renderPage(page: React.ReactNode) {
   return render(
@@ -58,6 +62,7 @@ describe("shared feedback client", () => {
         },
         body: JSON.stringify({
           game: "HSR",
+          public: true,
           rating: 5,
           suggestion: "HSR feedback",
           contactMethod: "QQ 123",
@@ -112,6 +117,7 @@ describe("Star Rail feedback and support pages", () => {
   it("gates feedback behind sign-in within the Star Rail site", async () => {
     auth.isAuthenticated = false;
     renderPage(<FeedbackPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(
       screen.getByRole("dialog", { name: "Sign in to send feedback" })
     ).toBeInTheDocument();
@@ -126,6 +132,7 @@ describe("Star Rail feedback and support pages", () => {
     );
     vi.stubGlobal("fetch", fetchImpl);
     renderPage(<FeedbackPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(
       screen.getByText(/Game site: Honkai: Star Rail/)
     ).toBeInTheDocument();
@@ -160,6 +167,7 @@ describe("Star Rail feedback and support pages", () => {
       )
     );
     renderPage(<FeedbackPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     fillFeedback();
     fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(
@@ -183,6 +191,7 @@ describe("Star Rail feedback and support pages", () => {
       )
     );
     renderPage(<FeedbackPage />);
+    fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     fillFeedback();
     fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(

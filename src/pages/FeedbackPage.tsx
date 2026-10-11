@@ -1,7 +1,8 @@
 import { Star } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { PageLayout } from "@/components/layout/PageLayout";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { PublicPosts } from "@/components/shared/PublicPosts";
 import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
@@ -70,7 +71,8 @@ function readDraft(): FeedbackDraft {
 export default function FeedbackPage() {
   const { t } = useI18n();
   const auth = useAuth();
-  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [revision, setRevision] = useState(0);
   const [draft, setDraft] = useState(readDraft);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<
@@ -146,6 +148,7 @@ export default function FeedbackPage() {
       saveCooldown(result.nextAllowedAt);
       setDraft(EMPTY_DRAFT);
       setSuccess(true);
+      setRevision((value) => value + 1);
     } catch (failure) {
       if (failure instanceof FeedbackError && failure.kind === "rate-limited") {
         saveCooldown(failure.retryAt ?? Date.now() + 5 * 60 * 1000);
@@ -163,10 +166,27 @@ export default function FeedbackPage() {
   const needsLogin = !auth.isAuthenticated || error === "signed-out";
   return (
     <PageLayout>
+      <ScrollLayout
+        header={
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-xl font-semibold">{t("account.feedback")}</h1>
+            <Button
+              onClick={() => {
+                setSuccess(false);
+                setOpen(true);
+              }}
+            >
+              {t("feedback.submit")}
+            </Button>
+          </div>
+        }
+      >
+        <PublicPosts revision={revision} />
+      </ScrollLayout>
       <ResponsiveDialog
-        open
+        open={open}
         onOpenChange={(open) => {
-          if (!open && !busy) navigate("/");
+          if (!busy) setOpen(open);
         }}
       >
         <ResponsiveDialogContent
@@ -187,14 +207,16 @@ export default function FeedbackPage() {
               {t(
                 needsLogin
                   ? "feedback.signInDescription"
-                  : "feedback.description"
+                  : "community.feedbackNotice"
               )}
             </ResponsiveDialogDescription>
           </ResponsiveDialogHeader>
           {success ? (
             <div className="mt-5 space-y-4">
               <p role="status">{t("feedback.success")}</p>
-              <Button onClick={() => navigate("/")}>{t("common.close")}</Button>
+              <Button onClick={() => setOpen(false)}>
+                {t("common.close")}
+              </Button>
             </div>
           ) : needsLogin ? (
             <div className="mt-5 space-y-4">
@@ -208,7 +230,7 @@ export default function FeedbackPage() {
                 </p>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => navigate("/")}>
+                <Button variant="outline" onClick={() => setOpen(false)}>
                   {t("common.cancel")}
                 </Button>
                 <Button disabled={auth.isLoading} onClick={() => void signIn()}>
@@ -331,7 +353,7 @@ export default function FeedbackPage() {
                   type="button"
                   variant="outline"
                   disabled={busy}
-                  onClick={() => navigate("/")}
+                  onClick={() => setOpen(false)}
                 >
                   {t("common.cancel")}
                 </Button>

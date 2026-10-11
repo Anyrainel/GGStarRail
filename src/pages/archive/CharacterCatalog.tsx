@@ -5,6 +5,7 @@ import {
   ArchiveToolbar,
 } from "@/components/archive/ArchiveToolbar";
 import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
+import { CharacterComments } from "@/components/archive/CharacterComments";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
@@ -505,6 +506,7 @@ function CharacterDetail({
               descriptionMode={descriptionMode}
             />
           )}
+          <CharacterComments key={character.id} characterId={character.id} />
         </CardContent>
       </Card>
     </aside>

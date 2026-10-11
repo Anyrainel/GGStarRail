@@ -1,6 +1,20 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "home.index.feedback.description": "玩家反馈与建议",
+  "community.loading": "正在加载…",
+  "community.failed": "加载失败。",
+  "community.retry": "重试",
+  "community.empty": "暂无留言。",
+  "community.pagination": "留言分页",
+  "community.previous": "上一页",
+  "community.next": "下一页",
+  "community.comments": "角色讨论",
+  "community.post": "发表评论",
+  "community.postFailed": "评论提交失败，请重试。",
+  "community.rateLimited": "请稍等一分钟再发表评论。",
+  "community.commentNotice": "评论会公开展示，请勿填写个人隐私信息。",
+  "community.feedbackNotice": "反馈内容会公开展示，联系方式仅站长可见。",
   "support.title": "支持 GGArtifact",
   "support.description": "感谢你支持项目的持续开发与维护。",
   "feedback.description": "感谢您的宝贵时间。",

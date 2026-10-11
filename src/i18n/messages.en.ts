@@ -1,4 +1,20 @@
 export const messagesEn = {
+  "home.index.feedback.description": "Player feedback and suggestions",
+  "community.loading": "Loading posts…",
+  "community.failed": "Couldn't load posts.",
+  "community.retry": "Retry",
+  "community.empty": "No posts yet.",
+  "community.pagination": "Post pages",
+  "community.previous": "Previous",
+  "community.next": "Next",
+  "community.comments": "Comments",
+  "community.post": "Post comment",
+  "community.postFailed": "Couldn't post your comment. Please try again.",
+  "community.rateLimited": "Please wait a minute before posting again.",
+  "community.commentNotice":
+    "Comments are public. Don't include personal information.",
+  "community.feedbackNotice":
+    "Feedback is public. Your contact method stays private.",
   "support.title": "Support GGArtifact",
   "support.description":
     "Thank you for supporting continued development and maintenance.",
