@@ -72,6 +72,13 @@ published as `/good/mapping_achievements.json`. Inventory scanning and manager
 operations do not download it. The old achievement-ID endpoint is removed;
 website and companion releases must be published together.
 
+The objective archive excludes DailyQuest, BattlePassQuest and periodic
+CycleQuest targets. CycleQuest is a registration table, not proof of recurrence:
+`IsNonPeriodic: true` explicitly marks one-time targets. Full capture records
+remain intact; filtering only affects the archive, including completion totals.
+Achievement membership always uses AchievementData, never the numeric `40xxxxx`
+range, which contains ordinary targets too.
+
 The data producer writes `src/data/game/` and `public/good/hsr_scanner_data.json`
 into its selected website checkout and retains identical local exports. The website
 does not locate or invoke the producer. `data:website:check` rejects revision or

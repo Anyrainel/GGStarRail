@@ -2823,6 +2823,10 @@
     "Quest": {
       "additionalProperties": false,
       "properties": {
+        "is_periodic": {
+          "title": "Is Periodic",
+          "type": "boolean"
+        },
         "id": {
           "exclusiveMinimum": 0,
           "maximum": 4294967295,
@@ -2941,6 +2945,7 @@
         }
       },
       "required": [
+        "is_periodic",
         "id",
         "quest_type",
         "category",

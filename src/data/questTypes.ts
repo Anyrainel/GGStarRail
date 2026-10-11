@@ -9,6 +9,7 @@ export type QuestCategory =
   | "other";
 
 export interface QuestDefinition {
+  is_periodic: boolean;
   id: number;
   quest_type: number;
   category: QuestCategory;

@@ -31,7 +31,7 @@ const CATEGORY_LABELS: Record<QuestCategory, MessageKey> = {
   progression: "archive.quest.progression",
   other: "archive.quest.other",
 };
-const CATEGORIES = Object.keys(CATEGORY_LABELS) as QuestCategory[];
+const CATEGORIES = ["activity", "progression", "other"] as const;
 type StatusFilter =
   | "all"
   | "finished"
@@ -68,6 +68,7 @@ export function QuestArchiveContent({
       )
       .map((record) => ({
         id: record.id,
+        is_periodic: false,
         category: "other",
         name: null,
         quest_type: 0,
@@ -82,7 +83,7 @@ export function QuestArchiveContent({
         schedule_id: null,
         chain_ids: [],
       }));
-    return [...quests, ...unknown];
+    return [...quests.filter((quest) => !quest.is_periodic), ...unknown];
   }, [quests, snapshot, achievementIds]);
   const title = (quest: QuestDefinition) =>
     quest.name

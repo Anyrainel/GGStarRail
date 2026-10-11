@@ -20,14 +20,15 @@ it("preserves unknown objectives, separates deleted records and searches across 
   });
   const catalog = await loadQuestArchive();
   const quests = catalog.quests.filter((quest) =>
-    [1001711, 2100003].includes(quest.id)
+    [1001711, 1001712, 2100003].includes(quest.id)
   );
   const account = makeAccountSnapshot();
   account.questProgress = {
     importedAt: account.source.importedAt,
     records: [
       { id: 1001711, status: 3, progress: 1, counters: [] },
-      { id: 2100003, status: 4, progress: 0, counters: [] },
+      { id: 1001712, status: 4, progress: 0, counters: [] },
+      { id: 2100003, status: 3, progress: 1, counters: [] },
       { id: 4999999, status: 1, progress: 7, counters: [2] },
     ],
   };
@@ -45,9 +46,10 @@ it("preserves unknown objectives, separates deleted records and searches across 
     screen.getByRole("heading", { name: "Objective #4999999" })
   ).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Removed" }));
-  expect(screen.getByText("#2100003")).toBeVisible();
+  expect(screen.getByText("#1001712")).toBeVisible();
+  expect(screen.queryByText("#2100003")).not.toBeInTheDocument();
   expect(screen.queryByText("#4999999")).not.toBeInTheDocument();
   await user.type(screen.getByRole("searchbox"), "4999999");
   expect(screen.getByText("#4999999")).toBeVisible();
-  expect(screen.queryByText("#2100003")).not.toBeInTheDocument();
+  expect(screen.queryByText("#1001712")).not.toBeInTheDocument();
 });
