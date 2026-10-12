@@ -6,9 +6,9 @@ import { ownedCharacter } from "./accountTeam";
 import type { WorkspaceSources } from "./jobs";
 import {
   type ResolvedMember,
-  resolveLightCone,
   resolveRelicSource,
   resolveSetPlan,
+  resolveTeamLightCones,
   type ValueOrigin,
 } from "./resolve";
 
@@ -107,29 +107,14 @@ export function previewTeam(
 ): TeamPreview {
   const previews = new Map<number, MemberPreview>();
   const context = { ...sources, ...presets };
+  const lightCones = resolveTeamLightCones(team, context);
   team.members.forEach((plan, slot) => {
     if (!plan) return;
     const owned = ownedCharacter(sources.account, plan.characterId);
     const equippedRelics = owned
       ? wornRelics(sources.account, owned.relicKeys)
       : [];
-    const accountLightCone =
-      owned?.lightConeKey && sources.account
-        ? sources.account.lightCones.find(
-            (entry) => entry.key === owned.lightConeKey
-          )
-        : undefined;
-    const { lightCone, origin: lightConeOrigin } = resolveLightCone(
-      plan,
-      accountLightCone
-        ? {
-            id: accountLightCone.definitionId,
-            level: accountLightCone.level,
-            superimposition: accountLightCone.superimposition,
-          }
-        : null,
-      context
-    );
+    const { lightCone, origin: lightConeOrigin } = lightCones[slot];
     const {
       setPlan,
       origin: setPlanOrigin,

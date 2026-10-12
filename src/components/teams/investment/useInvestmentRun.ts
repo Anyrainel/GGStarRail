@@ -5,6 +5,7 @@ import type { SubstatBudget } from "@/domain/combat/optimize/idealRelics";
 import type { TeamPlan } from "@/domain/team/schemas";
 import {
   cancelCombatJobs,
+  createCombatJobScope,
   isCombatJobCancelled,
   runCombatJob,
 } from "@/services/combat/client";
@@ -77,6 +78,7 @@ export function useInvestmentRun(
   );
   const runId = useRef(0);
   const runningRef = useRef(false);
+  const scope = useRef(createCombatJobScope());
   const latest = useRef({ team, sources, members, options, key });
   latest.current = { team, sources, members, options, key };
 
@@ -84,7 +86,7 @@ export function useInvestmentRun(
     if (!runningRef.current) return;
     runId.current += 1;
     runningRef.current = false;
-    cancelCombatJobs("analysis");
+    cancelCombatJobs("analysis", scope.current);
     setRunning(false);
     setStatus(
       (current) =>
@@ -114,20 +116,24 @@ export function useInvestmentRun(
         if (runId.current !== id) return;
         setStatus((current) => new Map(current).set(member.slot, "running"));
         try {
-          const response = await runCombatJob({
-            kind: "investment",
-            request: {
-              team,
-              sources,
-              slot: member.slot,
-              critMode: options.critMode,
-              budget: options.budget,
-              limits: {
-                maxEidolon: member.limits.eidolon,
-                maxSuperimposition: member.limits.superimposition,
+          const response = await runCombatJob(
+            {
+              kind: "investment",
+              request: {
+                team,
+                sources,
+                slot: member.slot,
+                critMode: options.critMode,
+                budget: options.budget,
+                limits: {
+                  maxEidolon: member.limits.eidolon,
+                  maxSuperimposition: member.limits.superimposition,
+                },
               },
             },
-          });
+            "analysis",
+            scope.current
+          );
           if (runId.current !== id) return;
           const { limits: _limits, ...rest } = member;
           paths.push({ ...rest, start: response.start, steps: response.steps });
@@ -152,6 +158,7 @@ export function useInvestmentRun(
       const result = { paths, failed };
       if (paths.length) writeCachedResult(key, result);
       runningRef.current = false;
+      cancelCombatJobs("analysis", scope.current);
       setRunning(false);
     })();
   }, []);
@@ -162,7 +169,7 @@ export function useInvestmentRun(
       if (runningRef.current) {
         runId.current += 1;
         runningRef.current = false;
-        cancelCombatJobs("analysis");
+        cancelCombatJobs("analysis", scope.current);
       }
     },
     []

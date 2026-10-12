@@ -204,11 +204,13 @@ export function BattleTimelineCard({
   result,
   running,
   failed,
+  collapsible = true,
 }: {
   result: SimulateResponse | null;
   running: boolean;
   /** The latest simulation failed (the roster still has members). */
   failed: boolean;
+  collapsible?: boolean;
 }) {
   const { locale, t } = useI18n();
   const rails = result ? timelineRails(result) : [];
@@ -220,7 +222,7 @@ export function BattleTimelineCard({
     <TeamSectionCard
       icon={ListOrdered}
       title={t("teamOptimizer.timeline.title")}
-      collapsible
+      collapsible={collapsible}
       defaultOpen={false}
       bodyClassName="max-h-[65vh] overflow-y-auto p-0 2xl:p-0"
       data-section="battle-timeline"

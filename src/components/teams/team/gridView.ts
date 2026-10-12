@@ -1,6 +1,5 @@
 import type { AccountSnapshot } from "@/domain/game-account/schemas";
 import { ownedCharacter } from "@/services/combat/accountTeam";
-import { TEAM_DMG_TAB_ORDER, type TeamDmgTab } from "./types";
 
 export type GridSortMode = "none" | "tier" | "release";
 
@@ -13,12 +12,12 @@ export interface GridViewState {
   sort: GridSortMode;
 }
 
-/** Per-tab grid filters for this session (memory only, never persisted). */
-const viewStates = new Map<TeamDmgTab, GridViewState>();
+/** Workspace grid filters for this session (memory only, never persisted). */
+let savedView: GridViewState | undefined;
 
-export function gridViewState(tab: TeamDmgTab): GridViewState {
+export function gridViewState(): GridViewState {
   return (
-    viewStates.get(tab) ?? {
+    savedView ?? {
       query: "",
       combatTypes: new Set(),
       paths: new Set(),
@@ -28,8 +27,8 @@ export function gridViewState(tab: TeamDmgTab): GridViewState {
   );
 }
 
-export function saveGridViewState(tab: TeamDmgTab, state: GridViewState) {
-  viewStates.set(tab, state);
+export function saveGridViewState(state: GridViewState) {
+  savedView = state;
 }
 
 export function ownedOnlyActive(
@@ -40,8 +39,8 @@ export function ownedOnlyActive(
 }
 
 /**
- * Turns Owned only off in every Team DMG grid when a pick adds an unowned
- * Character, so the team just edited stays visible in whichever tab the user
+ * Turns Owned only off in the team grid when a pick adds an unowned
+ * Character, so the team just edited stays visible in the workspace the user
  * opens next. Returns whether anything changed.
  */
 export function releaseOwnedOnly(
@@ -49,12 +48,8 @@ export function releaseOwnedOnly(
   characterId: string
 ): boolean {
   if (!account || ownedCharacter(account, characterId)) return false;
-  let changed = false;
-  for (const tab of TEAM_DMG_TAB_ORDER) {
-    const state = gridViewState(tab);
-    if (!ownedOnlyActive(state, account)) continue;
-    viewStates.set(tab, { ...state, ownedOnly: false });
-    changed = true;
-  }
-  return changed;
+  const state = gridViewState();
+  if (!ownedOnlyActive(state, account)) return false;
+  savedView = { ...state, ownedOnly: false };
+  return true;
 }

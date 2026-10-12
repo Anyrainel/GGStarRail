@@ -17,6 +17,7 @@ export interface TeamSimulationState {
 }
 
 export interface TeamSimulationOptions {
+  readonly enabled?: boolean;
   /** Expected (default), always-crit, or never-crit damage. */
   readonly critMode?: CritMode;
   /** Debounce before a changed team is simulated, in ms. */
@@ -36,11 +37,12 @@ export function useTeamSimulation(
   sources: WorkspaceSources,
   options: TeamSimulationOptions = {}
 ): TeamSimulationState {
-  const { critMode, delay = 250 } = options;
+  const { critMode, delay = 250, enabled = true } = options;
   const [state, setState] = useState<TeamSimulationState>(IDLE);
   const latest = useRef(0);
 
   useEffect(() => {
+    if (!enabled) return;
     if (!team || team.members.every((member) => member === null)) {
       latest.current += 1;
       setState(IDLE);
@@ -75,7 +77,7 @@ export function useTeamSimulation(
       );
     }, delay);
     return () => window.clearTimeout(timer);
-  }, [team, sources, critMode, delay]);
+  }, [team, sources, critMode, delay, enabled]);
 
   return state;
 }

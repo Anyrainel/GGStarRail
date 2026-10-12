@@ -18,6 +18,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
 import { cn } from "@/lib/utils";
+import { ownedCharacter } from "@/services/combat/accountTeam";
 import type { MemberOutcome } from "@/services/combat/jobs";
 import { VALUE_ORIGIN_LABEL_KEYS } from "@/services/combat/presentation";
 import type { MemberPreview } from "@/services/combat/teamPreview";
@@ -156,6 +157,7 @@ function MemberTile({
           items={characterItems}
           triggerSize={sizes.character}
           badge={member.eidolon}
+          iconMuted={account !== null && !member.owned}
           onChange={(id) => {
             if (id === plan.characterId) return;
             setMember(team.id, slot, id);
@@ -193,11 +195,17 @@ function MemberTile({
           filters={lightConeChoices.filters}
           triggerSize={sizes.gear}
           badge={lightCone?.superimposition}
+          iconMuted={
+            account !== null &&
+            !!lightCone &&
+            !account.lightCones.some(
+              (copy) => copy.definitionId === lightCone.id
+            )
+          }
           onChange={(id) =>
             update({
               lightCone: {
                 id,
-                superimposition: lightCone?.superimposition ?? 1,
               },
             })
           }
@@ -425,7 +433,7 @@ function EmptySlot({
   if (!interactive)
     return (
       <div
-        className="flex items-center justify-center py-4"
+        className="hidden items-center justify-center py-4 sm:flex"
         data-roster-slot={slot}
         aria-hidden
       >
@@ -471,7 +479,8 @@ export function RosterCard({
   outcomes: readonly MemberOutcome[] | null;
 }) {
   const { t } = useI18n();
-  const { previewOf } = useTeamDmgData();
+  const { previewOf, account, references } = useTeamDmgData();
+  const updateMember = useTeamStore((state) => state.updateMember);
   const preview = previewOf(team);
   const firstEmpty = firstEmptySlot(team);
   return (
@@ -479,6 +488,53 @@ export function RosterCard({
       icon={UsersRound}
       title={t("teamDmg.roster.title")}
       data-section="roster"
+      headerClassName="flex-wrap sm:flex-nowrap"
+      action={
+        <div className="flex w-full flex-wrap justify-end gap-1 sm:w-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto min-h-7 px-2 text-xs"
+            onClick={() =>
+              team.members.forEach((plan, slot) => {
+                if (!plan) return;
+                const owned = ownedCharacter(account, plan.characterId);
+                const cone = preview.get(slot)?.lightCone;
+                updateMember(team.id, slot, {
+                  level: owned?.level ?? 80,
+                  eidolon: owned?.eidolon ?? 0,
+                  ...(cone ? { lightCone: { id: cone.id } } : {}),
+                });
+              })
+            }
+          >
+            {t("teamAnalysis.useAccount")}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-auto min-h-7 px-2 text-xs"
+            onClick={() =>
+              team.members.forEach((plan, slot) => {
+                if (!plan) return;
+                const cone = preview.get(slot)?.lightCone;
+                updateMember(team.id, slot, {
+                  ...(references.characters.byId.get(plan.characterId)
+                    ?.rarity === 5
+                    ? { eidolon: 0 }
+                    : {}),
+                  ...(cone &&
+                  references.lightCones.byId.get(cone.id)?.rarity === 5
+                    ? { lightCone: { id: cone.id, superimposition: 1 } }
+                    : {}),
+                });
+              })
+            }
+          >
+            {t("teamAnalysis.resetFive")}
+          </Button>
+        </div>
+      }
     >
       <TeamCharacterGrid>
         {team.members.map((plan, slot) => {

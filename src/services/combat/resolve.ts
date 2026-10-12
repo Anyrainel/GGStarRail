@@ -123,7 +123,7 @@ export function resolveLightCone(
         ? {
             id: plan.lightCone.id,
             level: 80,
-            superimposition: plan.lightCone.superimposition,
+            superimposition: plan.lightCone.superimposition ?? 1,
           }
         : null,
       origin: "override",
@@ -143,6 +143,83 @@ export function resolveLightCone(
       origin: "recommended",
     };
   return { lightCone: null, origin: "default" };
+}
+
+/** Resolve default ranks slot-wise from distinct physical copies. Explicit
+ * authored S remains hypothetical and is never overwritten by account data. */
+export function resolveTeamLightCones(
+  team: TeamPlan,
+  sources: Pick<
+    BuildSources,
+    "account" | "characterLightConeIds" | "presetLightConeIds"
+  >
+): ReturnType<typeof resolveLightCone>[] {
+  const copies = [
+    ...new Map(
+      (sources.account?.lightCones ?? []).map((copy) => [copy.key, copy])
+    ).values(),
+  ].sort(
+    (a, b) =>
+      b.superimposition - a.superimposition || a.key.localeCompare(b.key)
+  );
+  const resolved = team.members.map((plan) => {
+    if (!plan)
+      return { lightCone: null, origin: "default" } as ReturnType<
+        typeof resolveLightCone
+      >;
+    const owned = ownedCharacter(sources.account, plan.characterId);
+    const equipped = sources.account?.lightCones.find(
+      (copy) => copy.key === owned?.lightConeKey
+    );
+    return resolveLightCone(
+      plan,
+      equipped
+        ? {
+            id: equipped.definitionId,
+            level: equipped.level,
+            superimposition: equipped.superimposition,
+          }
+        : null,
+      sources
+    );
+  });
+  // Reserve matching real copies for authored ranks before assigning defaults.
+  // A hypothetical rank absent from inventory consumes no physical copy.
+  const remaining = [...copies];
+  team.members.forEach((plan, slot) => {
+    const cone = resolved[slot]?.lightCone;
+    if (!cone || plan?.lightCone?.superimposition === undefined) return;
+    const index = remaining.findIndex(
+      (copy) =>
+        copy.definitionId === cone.id &&
+        copy.superimposition === cone.superimposition
+    );
+    if (index >= 0) remaining.splice(index, 1);
+  });
+  return resolved.map((entry, slot) => {
+    if (
+      !entry.lightCone ||
+      team.members[slot]?.lightCone?.superimposition !== undefined
+    )
+      return entry;
+    const index = remaining.findIndex(
+      (copy) => copy.definitionId === entry.lightCone!.id
+    );
+    const copy = index >= 0 ? remaining.splice(index, 1)[0] : undefined;
+    return copy
+      ? {
+          lightCone: {
+            id: copy.definitionId,
+            level: copy.level,
+            superimposition: copy.superimposition,
+          },
+          origin: "account",
+        }
+      : {
+          lightCone: { ...entry.lightCone, superimposition: 1 },
+          origin: entry.origin === "account" ? "default" : entry.origin,
+        };
+  });
 }
 
 /**
@@ -206,6 +283,7 @@ export function resolveTeam(
   properties: PropertyKinds
 ): ResolvedTeam {
   const members: ResolvedMember[] = [];
+  const lightCones = resolveTeamLightCones(team, sources);
   team.members.forEach((plan, slot) => {
     if (!plan) return;
     const owned = ownedCharacter(sources.account, plan.characterId);
@@ -220,11 +298,7 @@ export function resolveTeam(
             lightCone: null,
             relics: EMPTY_LOADOUT,
           };
-    const { lightCone, origin: lightConeOrigin } = resolveLightCone(
-      plan,
-      base.lightCone,
-      sources
-    );
+    const { lightCone, origin: lightConeOrigin } = lightCones[slot];
     const relicSource = resolveRelicSource(
       plan,
       owned !== undefined,

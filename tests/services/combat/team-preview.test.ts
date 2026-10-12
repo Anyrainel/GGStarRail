@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { emptyTeam, type TeamPlan } from "@/domain/team/schemas";
 import { loadPropertyTables } from "@/providers/reference/catalog";
 import type { WorkspaceSources } from "@/services/combat/jobs";
-import { resolveTeam } from "@/services/combat/resolve";
+import { resolveTeam, resolveTeamLightCones } from "@/services/combat/resolve";
 import {
   loadCombatPresets,
   planSets,
@@ -48,6 +48,56 @@ function fixtureTeams(): TeamPlan[] {
 }
 
 describe("team preview", () => {
+  it("assigns distinct strongest copies and reserves only matching authored S", async () => {
+    const account = await createDemoAccount(new Date("2026-09-02T00:00:00Z"));
+    const original = account.lightCones[0]!;
+    account.lightCones = [
+      {
+        ...original,
+        key: "lc:weak",
+        definitionId: "23001",
+        superimposition: 1,
+      },
+      {
+        ...original,
+        key: "lc:strong",
+        definitionId: "23001",
+        superimposition: 5,
+      },
+      {
+        ...original,
+        key: "lc:strong",
+        definitionId: "23001",
+        superimposition: 5,
+      },
+    ];
+    const team = emptyTeam("team:copies");
+    team.members = ["1001", "1002", "1003", "1004"].map((characterId) => ({
+      characterId,
+      lightCone: { id: "23001" },
+      options: {},
+      skill: "kit",
+    }));
+    const sources = {
+      account,
+      characterLightConeIds: {},
+      presetLightConeIds: {},
+    };
+    const ranks = () =>
+      resolveTeamLightCones(team, sources).map(
+        (entry) => entry.lightCone?.superimposition
+      );
+    expect(ranks()).toEqual([5, 1, 1, 1]);
+    team.members[0]!.lightCone = { id: "23001", superimposition: 1 };
+    expect(ranks()).toEqual([1, 5, 1, 1]);
+    team.members[0]!.lightCone = { id: "23001", superimposition: 3 };
+    expect(ranks()).toEqual([3, 5, 1, 1]);
+    expect(
+      resolveTeamLightCones(team, { ...sources, account: null }).map(
+        (entry) => entry.lightCone?.superimposition
+      )
+    ).toEqual([3, 1, 1, 1]);
+  });
   it.each([
     ["without an account", false],
     ["with an account", true],
@@ -114,7 +164,12 @@ describe("team preview", () => {
     expect(owned?.equippedRelics.length).toBeGreaterThan(0);
     expect(owned?.eidolonOrigin).toBe("account");
     expect(owned?.lightConeOrigin).toBe("account");
-    expect(preview.get(2)?.lightConeOrigin).toBe("recommended");
+    expect(preview.get(2)?.lightConeOrigin).toBe("account");
+    expect(preview.get(2)?.lightCone?.superimposition).toBe(
+      account.lightCones.find(
+        (copy) => copy.definitionId === preview.get(2)?.lightCone?.id
+      )?.superimposition
+    );
     expect(preview.get(2)?.eidolonOrigin).toBe("default");
     expect(preview.get(3)?.lightCone?.id).toBe("23002");
     expect(preview.get(3)?.lightConeOrigin).toBe("workspace");

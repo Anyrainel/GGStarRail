@@ -272,11 +272,11 @@ describe("GGArtifact family shell", () => {
       within(dialog).getByRole("link", { name: "Relic Triage" })
     ).toHaveAttribute("href", APP_PATHS.triage);
     expect(
-      within(dialog).getByRole("link", { name: "DMG Optimizer" })
+      within(dialog).getByRole("link", { name: "Analysis" })
     ).toHaveAttribute("href", APP_PATHS.teamDamage);
     expect(
-      within(dialog).getByRole("link", { name: "Light Cone & Relic Choice" })
-    ).toHaveAttribute("href", APP_PATHS.teamChoice);
+      within(dialog).queryByRole("link", { name: "Light Cone & Relic Choice" })
+    ).not.toBeInTheDocument();
   });
 
   it("hides the redundant section tabs at mobile widths", () => {
@@ -299,17 +299,17 @@ describe("GGArtifact family shell", () => {
     ).toBeNull();
   });
 
-  it("groups the three Team DMG tabs in their own section", async () => {
+  it("shows one Analysis site tab for the legacy investment destination", async () => {
     renderApp(APP_PATHS.teamInvestment);
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Investment" })
+      await screen.findByRole("heading", { level: 1, name: "Team Analysis" })
     ).toBeInTheDocument();
     const teamTabs = screen.getByRole("navigation", { name: "Team DMG" });
     expect(
       within(teamTabs)
         .getAllByRole("link")
         .map((link) => link.textContent)
-    ).toEqual(["DMG Optimizer", "Investment", "Light Cone & Relic Choice"]);
+    ).toEqual(["Analysis"]);
     expect(screen.getByRole("link", { name: "Team DMG" })).toHaveClass(
       "text-primary"
     );

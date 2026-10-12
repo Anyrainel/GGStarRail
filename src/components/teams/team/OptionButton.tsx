@@ -56,6 +56,9 @@ export function OptionButton({
   subtitle,
   icon,
   disabled = false,
+  className,
+  titleClassName,
+  contentClassName,
 }: {
   selected: boolean;
   onSelect: () => void;
@@ -65,6 +68,9 @@ export function OptionButton({
   /** Replaces the radio dot. */
   icon?: ReactNode;
   disabled?: boolean;
+  className?: string;
+  titleClassName?: string;
+  contentClassName?: string;
 }) {
   return (
     <div className="flex min-w-0 flex-1">
@@ -80,10 +86,16 @@ export function OptionButton({
           "flex h-full w-full min-w-0 flex-wrap items-baseline rounded-lg border-2 px-2 py-1.5 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-2",
           selected
             ? "border-primary bg-primary/10"
-            : "border-border bg-background/20 hover:bg-accent/30"
+            : "border-border bg-background/20 hover:bg-accent/30",
+          className
         )}
       >
-        <span className="flex min-w-0 max-w-full items-center gap-1.5 sm:gap-2 md:shrink-0">
+        <span
+          className={cn(
+            "flex min-w-0 max-w-full flex-col items-center gap-1 sm:flex-row sm:gap-2 md:shrink-0",
+            contentClassName
+          )}
+        >
           {icon ?? (
             <span
               aria-hidden
@@ -95,7 +107,12 @@ export function OptionButton({
               {selected && <span className="h-2 w-2 rounded-full bg-primary" />}
             </span>
           )}
-          <span className="min-w-0 break-words text-sm font-bold leading-tight sm:truncate sm:leading-normal md:text-base lg:text-lg">
+          <span
+            className={cn(
+              "min-w-0 break-normal text-xs font-bold leading-tight sm:text-sm sm:truncate sm:leading-normal md:text-base lg:text-lg",
+              titleClassName
+            )}
+          >
             {title}
           </span>
         </span>

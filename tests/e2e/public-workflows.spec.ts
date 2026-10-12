@@ -156,13 +156,9 @@ test("scanner v4 file crosses upload, review, apply and persisted hydration boun
   const combatWorker = page.waitForEvent("worker", {
     predicate: (worker) => worker.url().includes("combat.worker"),
   });
-  await page
-    .getByRole("button", { name: "DMG Optimizer", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Analysis", exact: true }).click();
   await combatWorker;
-  await page
-    .getByRole("button", { name: "Battle Timeline", exact: true })
-    .click();
+  await page.getByRole("radio", { name: "Rotation", exact: true }).click();
   await expect(page.locator("[data-timeline-action]").first()).toBeVisible();
   await expect(
     page.getByText("The simulation failed.", { exact: true })

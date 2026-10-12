@@ -31,14 +31,6 @@ const INDEX_COPY: Partial<
     title: "home.index.teamDamage.title",
     description: "home.index.teamDamage.description",
   },
-  [APP_PATHS.teamInvestment]: {
-    title: "home.index.teamInvestment.title",
-    description: "home.index.teamInvestment.description",
-  },
-  [APP_PATHS.teamChoice]: {
-    title: "home.index.teamChoice.title",
-    description: "home.index.teamChoice.description",
-  },
   [APP_PATHS.builds]: {
     title: "home.index.builds.title",
     description: "home.index.builds.description",

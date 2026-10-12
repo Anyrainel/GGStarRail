@@ -46,6 +46,13 @@ function RedirectWithSearch({ to }: { to: string }) {
   return <Navigate to={{ pathname: to, search: location.search }} replace />;
 }
 
+function LegacyTeamAnalysis({ mode }: { mode: string }) {
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  params.set("mode", mode);
+  return <Navigate replace to={`${APP_PATHS.teamDamage}?${params}`} />;
+}
+
 export default function App() {
   const location = useLocation();
   const { t } = useI18n();
@@ -112,21 +119,22 @@ export default function App() {
           <Route path={APP_PATHS.builds} element={<CharacterBuildView />} />
           <Route path={APP_PATHS.filters} element={<RelicFiltersView />} />
           <Route path={APP_PATHS.triage} element={<TriageView />} />
-          <Route
-            path={APP_PATHS.teamDamage}
-            element={<TeamDamagePage tab="optimizer" />}
-          />
+          <Route path={APP_PATHS.teamDamage} element={<TeamDamagePage />} />
           <Route
             path={APP_PATHS.teamInvestment}
-            element={<TeamDamagePage tab="investment" />}
+            element={<LegacyTeamAnalysis mode="investment" />}
           />
           <Route
             path={APP_PATHS.teamChoice}
-            element={<TeamDamagePage tab="choice" />}
+            element={<LegacyTeamAnalysis mode="builds" />}
           />
           <Route
             path="/team-damage"
             element={<RedirectWithSearch to={APP_PATHS.teamDamage} />}
+          />
+          <Route
+            path="/team-damage/optimizer"
+            element={<LegacyTeamAnalysis mode="relics" />}
           />
           <Route
             path="/team-damage/*"

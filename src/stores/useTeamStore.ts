@@ -1,12 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/config/identity";
+import type { AnalysisMode } from "@/domain/team/analysis";
 import {
   emptyTeam,
   type TeamMemberPlan,
   TeamMemberPlanSchema,
   type TeamPlan,
 } from "@/domain/team/schemas";
+import { migrateTeamStore } from "./migration/team";
 import {
   DEFAULT_TEAM_STORE,
   type PersistedTeamStore,
@@ -15,6 +17,13 @@ import {
 } from "./teamSchemas";
 
 interface TeamActions {
+  setAnalysisMode: (teamId: string, mode: AnalysisMode) => void;
+  setInvestmentSettings: (
+    teamId: string,
+    settings: NonNullable<
+      PersistedTeamStore["analysisByTeamId"][string]["investment"]
+    >
+  ) => void;
   /** Adds an empty team at the start or end of the list (default end). */
   createTeam: (position?: "start" | "end") => string;
   duplicateTeam: (teamId: string) => string | null;
@@ -61,6 +70,20 @@ export const useTeamStore = create<TeamState>()(
   persist(
     (set, get) => ({
       ...structuredClone(DEFAULT_TEAM_STORE),
+      setAnalysisMode: (id, mode) =>
+        set((state) => ({
+          analysisByTeamId: {
+            ...state.analysisByTeamId,
+            [id]: { ...state.analysisByTeamId[id], mode },
+          },
+        })),
+      setInvestmentSettings: (id, investment) =>
+        set((state) => ({
+          analysisByTeamId: {
+            ...state.analysisByTeamId,
+            [id]: { ...state.analysisByTeamId[id], investment },
+          },
+        })),
       createTeam: (position = "end") => {
         const team = emptyTeam(newId());
         set((state) => ({
@@ -79,14 +102,23 @@ export const useTeamStore = create<TeamState>()(
         set((state) => ({
           teams: [...state.teams, copy],
           activeTeamId: copy.id,
+          analysisByTeamId: state.analysisByTeamId[teamId]
+            ? {
+                ...state.analysisByTeamId,
+                [copy.id]: structuredClone(state.analysisByTeamId[teamId]),
+              }
+            : state.analysisByTeamId,
         }));
         return copy.id;
       },
       removeTeam: (teamId) =>
         set((state) => {
           const teams = state.teams.filter((team) => team.id !== teamId);
+          const analysisByTeamId = { ...state.analysisByTeamId };
+          delete analysisByTeamId[teamId];
           return {
             teams,
+            analysisByTeamId,
             activeTeamId:
               state.activeTeamId === teamId
                 ? (teams[0]?.id ?? null)
@@ -108,7 +140,8 @@ export const useTeamStore = create<TeamState>()(
           teams.splice(target, 0, moved);
           return { teams };
         }),
-      clearTeams: () => set({ teams: [], activeTeamId: null }),
+      clearTeams: () =>
+        set({ teams: [], activeTeamId: null, analysisByTeamId: {} }),
       setActiveTeam: (teamId) => set({ activeTeamId: teamId }),
       renameTeam: (teamId, name) =>
         set((state) =>
@@ -161,9 +194,9 @@ export const useTeamStore = create<TeamState>()(
         schemaVersion: state.schemaVersion,
         teams: state.teams,
         activeTeamId: state.activeTeamId,
+        analysisByTeamId: state.analysisByTeamId,
       }),
-      // The store is new in this version; other versions start empty.
-      migrate: () => structuredClone(DEFAULT_TEAM_STORE),
+      migrate: migrateTeamStore,
       merge: (persistedState, currentState) => {
         const parsed = PersistedTeamStoreSchema.safeParse(persistedState);
         return parsed.success

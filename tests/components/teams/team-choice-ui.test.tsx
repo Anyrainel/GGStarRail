@@ -37,7 +37,7 @@ const stubbedSetPlans = vi.hoisted(() => ({
 vi.mock("@/services/combat/client", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("@/services/combat/client")>();
-  const runCombatJob: typeof actual.runCombatJob = (job, lane) =>
+  const runCombatJob: typeof actual.runCombatJob = (job, lane, scope) =>
     job.kind === "compare" &&
     "kind" in job.request &&
     job.request.kind === "setPlans" &&
@@ -47,7 +47,7 @@ vi.mock("@/services/combat/client", async (importOriginal) => {
             stubbedSetPlans.slots.push(job.request.slot);
           return stubbedSetPlans.entries as never;
         })
-      : actual.runCombatJob(job, lane);
+      : actual.runCombatJob(job, lane, scope);
   return { ...actual, runCombatJob };
 });
 
@@ -80,7 +80,7 @@ function seedTeam(id: string, characterIds: readonly string[]): TeamPlan {
 async function resultsCard() {
   return screen.findByRole(
     "region",
-    { name: "Choice Results" },
+    { name: "Build comparison" },
     { timeout: 15_000 }
   );
 }
@@ -233,15 +233,13 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     const card = await resultsCard();
 
     const lightCone = within(card).getByRole("radio", { name: "Light Cone" });
-    const relics = within(card).getByRole("radio", { name: "Relics" });
+    const relics = within(card).getByRole("radio", { name: "Relic sets" });
     expect(lightCone).toHaveAttribute("aria-checked", "true");
     expect(card.querySelectorAll("[data-constraint-tile]")).toHaveLength(2);
-    for (const name of ["Seele", "Robin"])
-      expect(
-        within(within(card).getByRole("article", { name })).getByText(
-          "No results yet"
-        )
-      ).toBeInTheDocument();
+    expect(within(card).queryByRole("article")).not.toBeInTheDocument();
+    expect(
+      within(card).getByRole("checkbox", { name: "Owned Light Cones only" })
+    ).not.toBeChecked();
 
     await user.click(relics);
     expect(relics).toHaveAttribute("aria-checked", "true");
@@ -256,11 +254,10 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     seedTeam("team:choice-run", ["1102"]);
     renderChoice("team:choice-run");
     const card = await resultsCard();
-    const seele = within(card).getByRole("article", { name: "Seele" });
-
     await user.click(
       within(card).getByRole("button", { name: "Run Analysis" })
     );
+    const seele = within(card).getByRole("article", { name: "Seele" });
     const rows = await waitFor(
       () => {
         const items = within(seele).getAllByRole("listitem");
@@ -284,7 +281,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     );
     expect(
       within(card).getByRole("radio", { name: /Light Cone/ })
-    ).toHaveTextContent(`${rows.length} candidates`);
+    ).toHaveTextContent("Light Cone");
 
     // The member's current (recommended) Light Cone is ringed.
     const current = seele.querySelectorAll("[data-current]");
@@ -365,7 +362,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     seedTeam("team:choice-relics", ["1102"]);
     renderChoice("team:choice-relics");
     const card = await resultsCard();
-    await user.click(within(card).getByRole("radio", { name: "Relics" }));
+    await user.click(within(card).getByRole("radio", { name: "Relic sets" }));
     await user.click(
       within(card).getByRole("button", { name: "Run Analysis" })
     );
@@ -382,8 +379,8 @@ describe("Team DMG Light Cone & Relic Choice", () => {
       "Hunter of Glacial Forest 4 + Celestial Differentiator"
     );
     expect(
-      within(card).getByRole("radio", { name: /Relics/ })
-    ).toHaveTextContent("2 candidates");
+      within(card).getByRole("radio", { name: /Relic sets/ })
+    ).toHaveTextContent("Relic sets");
 
     // The visible Cavern line keeps the 4-piece count out of the truncation.
     const cavernLine = rows[1]?.querySelector('[aria-hidden="true"].flex');
@@ -437,7 +434,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     seedTeam("team:choice-queue", ["1102", "1309"]);
     renderChoice("team:choice-queue");
     const card = await resultsCard();
-    await user.click(within(card).getByRole("radio", { name: "Relics" }));
+    await user.click(within(card).getByRole("radio", { name: "Relic sets" }));
     await user.click(
       within(card).getByRole("button", { name: "Run Analysis" })
     );
@@ -456,7 +453,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
       robin.querySelector('[data-choice-placeholder="computing"]')
     ).toBeNull();
     // The mode stays on the run's until it ends.
-    for (const name of ["Light Cone", "Relics"])
+    for (const name of ["Light Cone", "Relic sets"])
       expect(within(card).getByRole("radio", { name })).toBeDisabled();
 
     release();
@@ -481,7 +478,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     seedTeam("team:choice-floors", ["1102", "1309"]);
     renderChoice("team:choice-floors");
     const card = await resultsCard();
-    await user.click(within(card).getByRole("radio", { name: "Relics" }));
+    await user.click(within(card).getByRole("radio", { name: "Relic sets" }));
     await user.click(
       within(card).getByRole("button", { name: "Run Analysis" })
     );
@@ -529,7 +526,7 @@ describe("Team DMG Light Cone & Relic Choice", () => {
     seedTeam("team:choice-apply", ["1102", "1309"]);
     renderChoice("team:choice-apply");
     const card = await resultsCard();
-    await user.click(within(card).getByRole("radio", { name: "Relics" }));
+    await user.click(within(card).getByRole("radio", { name: "Relic sets" }));
     await user.click(
       within(card).getByRole("button", { name: "Run Analysis" })
     );
@@ -565,9 +562,8 @@ describe("Team DMG Light Cone & Relic Choice", () => {
   it("shows the empty line without Characters", async () => {
     seedTeam("team:choice-empty", []);
     renderChoice("team:choice-empty");
-    expect(
-      await screen.findByText("No Characters", {}, { timeout: 15_000 })
-    ).toBeInTheDocument();
+    const card = await resultsCard();
+    expect(within(card).getByText("No Characters")).toBeInTheDocument();
   }, 30_000);
 });
 

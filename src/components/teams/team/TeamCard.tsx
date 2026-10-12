@@ -6,6 +6,7 @@ import {
   ArrowDown,
   ArrowUp,
   Copy,
+  Crosshair,
   Gem,
   GripVertical,
   MoreVertical,
@@ -48,7 +49,6 @@ import {
   teamDisplayName,
   teamPlaceholderName,
 } from "./teamNames";
-import { TEAM_DMG_TABS, type TeamDmgTab } from "./types";
 
 export interface TeamCardDrag {
   readonly enabled: boolean;
@@ -64,7 +64,6 @@ interface TeamCardProps {
   team: TeamPlan;
   /** Position in the full list (1-based in the UI). */
   index: number;
-  tab: TeamDmgTab;
   /** Every saved team, for "Team {n}" placeholders. */
   teams: readonly TeamPlan[];
   onOpen: (teamId: string) => void;
@@ -76,8 +75,6 @@ interface TeamCardProps {
   onGhostPick?: (characterId: string) => void;
   hidden?: boolean;
   order?: number;
-  /** All filled members are unowned (with an account): shown faded. */
-  unowned?: boolean;
   /** After a Character is picked into the team. */
   onCharacterPick?: (characterId: string) => void;
   drag?: TeamCardDrag;
@@ -124,12 +121,11 @@ function TeamNameInput({
 /**
  * A team in the grid: name, a 4-column icon grid (Combat Type, Character,
  * Light Cone, Cavern Relic plan, Planar Ornament set) and the button that
- * opens the tab's detail.
+ * opens the analysis workspace.
  */
 export function TeamCard({
   team,
   index,
-  tab,
   teams,
   onOpen,
   onMoveUp,
@@ -138,12 +134,11 @@ export function TeamCard({
   onGhostPick,
   hidden = false,
   order,
-  unowned = false,
   onCharacterPick,
   drag,
 }: TeamCardProps) {
   const { locale, t } = useI18n();
-  const { references, items, lookup, previewOf } = useTeamDmgData();
+  const { references, items, lookup, previewOf, account } = useTeamDmgData();
   const lightConeChoices = useLightConeChoices();
   const setMember = useTeamStore((state) => state.setMember);
   const updateMember = useTeamStore((state) => state.updateMember);
@@ -152,8 +147,6 @@ export function TeamCard({
   const removeTeam = useTeamStore((state) => state.removeTeam);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const preview = previewOf(team);
-  const meta = TEAM_DMG_TABS[tab];
-  const FooterIcon = meta.icon;
   const firstEmpty = firstEmptySlot(team);
   const lastFilled = lastFilledSlot(team);
   const hasMember = lastFilled >= 0;
@@ -196,8 +189,6 @@ export function TeamCard({
         data-team-card={ghost ? "ghost" : team.id}
         className={cn(
           "group mx-auto w-full max-w-[23.5rem] rounded-xl border xl:max-w-[24.5rem] border-border bg-card/40 backdrop-blur-md transition-colors hover:border-primary/40",
-          unowned &&
-            "opacity-50 grayscale transition-[filter,opacity] focus-within:opacity-100 focus-within:grayscale-0 hover:opacity-100 hover:grayscale-0",
           drag?.dragging && "z-20 shadow-2xl"
         )}
       >
@@ -303,6 +294,7 @@ export function TeamCard({
                   items={characterItemsFor(slot)}
                   triggerSize="md"
                   badge={member?.eidolon}
+                  iconMuted={account !== null && member?.owned === false}
                   onChange={(id) => pickCharacter(slot, id)}
                   onClear={
                     !ghost && plan && slot === lastFilled
@@ -329,13 +321,18 @@ export function TeamCard({
                   {...lightConeChoices(character?.path_id)}
                   triggerSize="md"
                   badge={member?.lightCone?.superimposition}
+                  iconMuted={
+                    account !== null &&
+                    !!member?.lightCone &&
+                    !account.lightCones.some(
+                      (copy) => copy.definitionId === member.lightCone?.id
+                    )
+                  }
                   disabled={!character || ghost}
                   onChange={(id) =>
                     updateMember(team.id, slot, {
                       lightCone: {
                         id,
-                        superimposition:
-                          member?.lightCone?.superimposition ?? 1,
                       },
                     })
                   }
@@ -386,8 +383,8 @@ export function TeamCard({
             onClick={() => onOpen(team.id)}
             className="h-8 w-full gap-1.5 text-xs font-semibold xl:h-9 xl:gap-2 xl:text-sm"
           >
-            <FooterIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4" aria-hidden />
-            {t(meta.labelKey)}
+            <Crosshair className="h-3.5 w-3.5 xl:h-4 xl:w-4" aria-hidden />
+            {t("nav.teamDamage")}
           </Button>
         </CardFooter>
 

@@ -15,9 +15,14 @@ describe("HSR route foundation", () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it("lists the Team DMG tabs in navigation order", () => {
+  it("lists one Team DMG analysis tab while retaining public legacy redirect routes", () => {
     const section = NAVIGATION_SECTIONS.map((entry) => entry.path);
     expect(section.indexOf("/team-damage")).toBe(1);
+    expect(
+      NAVIGATION_SECTIONS.find(
+        (entry) => entry.path === "/team-damage"
+      )?.items.map((item) => item.path)
+    ).toEqual([APP_PATHS.teamDamage]);
     expect(
       ROUTE_REGISTRY.filter((route) =>
         route.path.startsWith("/team-damage")
@@ -43,7 +48,10 @@ describe("HSR route foundation", () => {
           name:
             route.path === APP_PATHS.home
               ? messagesEn["home.brand"]
-              : messagesEn[route.titleKey],
+              : route.path === APP_PATHS.teamInvestment ||
+                  route.path === APP_PATHS.teamChoice
+                ? messagesEn["route.teamDamage.title"]
+                : messagesEn[route.titleKey],
         })
       ).toBeInTheDocument()
     );

@@ -14,6 +14,7 @@ interface TeamSectionCardProps {
   defaultOpen?: boolean;
   className?: string;
   bodyClassName?: string;
+  headerClassName?: string;
   children: ReactNode;
   /** Stable hook for tests and captures. */
   "data-section"?: string;
@@ -31,6 +32,7 @@ export function TeamSectionCard({
   defaultOpen = true,
   className,
   bodyClassName,
+  headerClassName,
   children,
   "data-section": section,
 }: TeamSectionCardProps) {
@@ -80,7 +82,7 @@ export function TeamSectionCard({
           {action}
         </div>
       ) : (
-        <div className={stripClass}>
+        <div className={cn(stripClass, headerClassName)}>
           {heading}
           {action}
         </div>

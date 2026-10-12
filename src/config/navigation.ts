@@ -10,9 +10,7 @@ import {
   Gem,
   Library,
   Lightbulb,
-  Medal,
   SlidersHorizontal,
-  TrendingUp,
   Trophy,
   UserRound,
   UsersRound,
@@ -29,7 +27,7 @@ export const APP_PATHS = {
   inventory: "/account-data/inventory",
   resources: "/account-data/resources",
   triage: "/account-data/triage",
-  teamDamage: "/team-damage/optimizer",
+  teamDamage: "/team-damage/analysis",
   teamInvestment: "/team-damage/investment",
   teamChoice: "/team-damage/choice",
   builds: "/builds/configure",
@@ -60,7 +58,7 @@ export interface NavigationSection {
   keepSearch?: boolean;
 }
 
-/** Team DMG tabs share `?team=`, so moving between them keeps the open team. */
+/** Parent navigation section for the shared team analysis workspace. */
 export const TEAM_DAMAGE_SECTION_PATH = "/team-damage";
 
 export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
@@ -91,16 +89,6 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         path: APP_PATHS.teamDamage,
         labelKey: "nav.teamDamage",
         icon: Crosshair,
-      },
-      {
-        path: APP_PATHS.teamInvestment,
-        labelKey: "nav.teamInvestment",
-        icon: TrendingUp,
-      },
-      {
-        path: APP_PATHS.teamChoice,
-        labelKey: "nav.teamChoice",
-        icon: Medal,
       },
     ],
   },

@@ -554,6 +554,7 @@ export interface CompareRequest extends TeamRequest {
   readonly kind: "lightCones" | "setPlans";
   /** Minimum SPD / Energy Regeneration Rate each candidate's Relics keep. */
   readonly constraints?: StatConstraints;
+  readonly ownedLightConesOnly?: boolean;
 }
 
 export interface CompareEntry {
@@ -597,12 +598,46 @@ export function compareJob(
   } as const;
   if (request.kind === "lightCones") {
     const character = catalog.data.characters.get(member.input.characterId);
-    const candidates = [...catalog.data.lightCones.values()]
-      .filter((lightCone) => lightCone.path_id === character?.path_id)
-      .map((lightCone) => ({
-        id: lightCone.id,
-        superimposition: lightCone.rarity >= 5 ? 1 : 5,
-      }));
+    const available = [...(request.sources.account?.lightCones ?? [])].sort(
+      (a, b) =>
+        b.superimposition - a.superimposition || a.key.localeCompare(b.key)
+    );
+    const reserved = new Set<string>();
+    for (const fixed of prepared.resolved) {
+      if (fixed.slot === request.slot || !fixed.input.lightCone) continue;
+      const copy = available.find(
+        (item) =>
+          !reserved.has(item.key) &&
+          item.definitionId === fixed.input.lightCone?.id &&
+          item.superimposition === fixed.input.lightCone?.superimposition
+      );
+      if (copy) reserved.add(copy.key);
+    }
+    const ownedCandidates = new Map<
+      string,
+      { id: string; superimposition: number }
+    >();
+    for (const copy of available) {
+      if (reserved.has(copy.key) || ownedCandidates.has(copy.definitionId))
+        continue;
+      if (
+        catalog.data.lightCones.get(copy.definitionId)?.path_id !==
+        character?.path_id
+      )
+        continue;
+      ownedCandidates.set(copy.definitionId, {
+        id: copy.definitionId,
+        superimposition: copy.superimposition,
+      });
+    }
+    const candidates = request.ownedLightConesOnly
+      ? [...ownedCandidates.values()]
+      : [...catalog.data.lightCones.values()]
+          .filter((lightCone) => lightCone.path_id === character?.path_id)
+          .map((lightCone) => ({
+            id: lightCone.id,
+            superimposition: lightCone.rarity >= 5 ? 1 : 5,
+          }));
     return compareLightCones(
       prepared.input,
       index,

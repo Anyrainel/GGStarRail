@@ -55,7 +55,6 @@ import {
 import { TeamCard, type TeamCardDrag } from "./TeamCard";
 import { useTeamDmgData } from "./TeamDmgData";
 import { teamDisplayName, teamIsEmpty } from "./teamNames";
-import type { TeamDmgTab } from "./types";
 
 const GHOST_TEAM: TeamPlan = emptyTeam("team:ghost");
 
@@ -94,16 +93,10 @@ function SortableTeamCard({
 
 /**
  * Every saved team as a card grid with search, Combat Type and Path chips,
- * owned-only and sort toggles, and New team at either end. Shared by all
- * three Team DMG tabs; a card's footer opens the tab's detail.
+ * owned-only and sort toggles, and New team at either end. A card's footer
+ * opens the shared analysis workspace.
  */
-export function TeamGrid({
-  tab,
-  onOpen,
-}: {
-  tab: TeamDmgTab;
-  onOpen: (teamId: string) => void;
-}) {
+export function TeamGrid({ onOpen }: { onOpen: (teamId: string) => void }) {
   const { locale, t } = useI18n();
   const { references, lookup, account, previewOf } = useTeamDmgData();
   const teams = useTeamStore((state) => state.teams);
@@ -112,7 +105,7 @@ export function TeamGrid({
   const moveTeam = useTeamStore((state) => state.moveTeam);
   const clearTeams = useTeamStore((state) => state.clearTeams);
   const assignments = useCharacterPriorityStore((state) => state.assignments);
-  const [view, setView] = useState<GridViewState>(() => gridViewState(tab));
+  const [view, setView] = useState<GridViewState>(() => gridViewState());
   const [revealed, setRevealed] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -129,14 +122,14 @@ export function TeamGrid({
   function updateView(patch: Partial<GridViewState>) {
     setView((current) => {
       const next = { ...current, ...patch };
-      saveGridViewState(tab, next);
+      saveGridViewState(next);
       return next;
     });
   }
 
   /** Keeps a team visible after the user picks an unowned Character into it. */
   function notePick(characterId: string) {
-    if (releaseOwnedOnly(account, characterId)) setView(gridViewState(tab));
+    if (releaseOwnedOnly(account, characterId)) setView(gridViewState());
   }
 
   function clearFilters() {
@@ -403,7 +396,6 @@ export function TeamGrid({
           <TeamCard
             team={onlyTeam ?? GHOST_TEAM}
             index={0}
-            tab={tab}
             teams={onlyTeam ? teams : [GHOST_TEAM]}
             onOpen={onOpen}
             ghost={!onlyTeam}
@@ -544,13 +536,11 @@ export function TeamGrid({
             data-team-grid
           >
             {teams.map((team, index) => {
-              const facts = teamFacts.get(team.id);
               return (
                 <SortableTeamCard
                   key={team.id}
                   team={team}
                   index={index}
-                  tab={tab}
                   teams={teams}
                   onOpen={onOpen}
                   onMoveUp={
@@ -563,7 +553,6 @@ export function TeamGrid({
                   }
                   hidden={!visibleIds.has(team.id)}
                   order={orderOf.get(team.id)}
-                  unowned={account !== null && (facts?.noneOwned ?? false)}
                   onCharacterPick={notePick}
                   dragEnabled={dragEnabled}
                 />

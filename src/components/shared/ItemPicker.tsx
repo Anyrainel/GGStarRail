@@ -44,6 +44,8 @@ interface ItemPickerProps {
   square?: boolean;
   showName?: boolean;
   badge?: number;
+  /** Ownership hint affects only the item icon, never its clickable control. */
+  iconMuted?: boolean;
   compact?: boolean;
   disabled?: boolean;
   /** Rendered at the top of the picker body, above search and filters. */
@@ -74,6 +76,7 @@ export function ItemPicker({
   square = false,
   showName = false,
   badge,
+  iconMuted = false,
   compact = false,
   disabled = false,
   contentHeader,
@@ -154,6 +157,7 @@ export function ItemPicker({
             rarity={selected.rarity}
             cornerAsset={selected.cornerAsset}
             badge={badge}
+            className={iconMuted ? "grayscale opacity-60" : undefined}
             square={square}
             size={triggerSize}
             alt=""

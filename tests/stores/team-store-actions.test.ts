@@ -81,6 +81,7 @@ describe("team store list actions", () => {
     expect(parsed.teams.map((team) => team.id)).toEqual([a, b]);
     expect(Object.keys(stored.state).sort()).toEqual([
       "activeTeamId",
+      "analysisByTeamId",
       "schemaVersion",
       "teams",
     ]);

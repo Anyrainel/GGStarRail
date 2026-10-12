@@ -1,5 +1,6 @@
 import { Medal } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Checkbox } from "@/components/shared/Checkbox";
 import type { SubstatBudget } from "@/domain/combat/optimize/idealRelics";
 import type { TeamPlan } from "@/domain/team/schemas";
 import { useI18n } from "@/i18n/I18nContext";
@@ -24,7 +25,7 @@ import {
   ChoiceRankingPanel,
   type RankingPlaceholder,
 } from "./ChoiceRankingPanel";
-import { type ChoiceMode, candidateCount, entrySets } from "./choiceModel";
+import { type ChoiceMode, entrySets } from "./choiceModel";
 import { type ChoiceMember, useChoiceRun } from "./useChoiceRun";
 
 const MODE_KEYS = {
@@ -48,6 +49,7 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
   const preview = previewOf(team);
   const [mode, setMode] = useState<ChoiceMode>("lightCones");
   const [budget, setBudget] = useState<SubstatBudget>("realistic");
+  const [ownedOnly, setOwnedOnly] = useState(false);
   const [constraints, setConstraints] = useState<
     Record<string, MemberConstraintInput>
   >({});
@@ -75,8 +77,9 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
         slot: panel.slot,
         characterId: panel.characterId,
         constraints: statConstraints(constraints[panel.characterId]),
+        ownedLightConesOnly: ownedOnly,
       })),
-    [panels, constraints]
+    [panels, constraints, ownedOnly]
   );
 
   const choice = useChoiceRun(team, sources, members, budget);
@@ -121,10 +124,6 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
         (status) => status === "done" || status === "failed"
       ).length
     : 0;
-  const counts = {
-    lightCones: candidateCount(choice.resultFor("lightCones")),
-    setPlans: candidateCount(choice.resultFor("setPlans")),
-  };
 
   return (
     <TeamSectionCard
@@ -141,11 +140,6 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
             onSelect={() => setMode(value)}
             disabled={choice.running}
             title={t(MODE_KEYS[value])}
-            subtitle={
-              counts[value]
-                ? t("teamChoice.candidates", { count: counts[value] })
-                : undefined
-            }
           />
         ))}
       </OptionButtonRow>
@@ -168,6 +162,18 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
               disabled={choice.running}
             />
             <ControlsRow className="mb-1">
+              {mode === "lightCones" && (
+                <ControlField label={t("teamChoice.ownedOnly")}>
+                  {(id) => (
+                    <Checkbox
+                      id={id}
+                      checked={ownedOnly}
+                      disabled={choice.running}
+                      onChange={(event) => setOwnedOnly(event.target.checked)}
+                    />
+                  )}
+                </ControlField>
+              )}
               <ControlField label={t("combat.tools.budget")}>
                 {(id) => (
                   <CompactSelect
@@ -181,6 +187,8 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
                   />
                 )}
               </ControlField>
+            </ControlsRow>
+            <ControlsRow className="mb-1">
               <RunButton
                 label={t("teamChoice.run")}
                 running={choice.running}
@@ -217,22 +225,24 @@ export function ChoiceResultsCard({ team }: { team: TeamPlan }) {
               </ErrorBox>
             )}
 
-            <TeamCharacterGrid gridClassName="gap-2">
-              {panels.map((panel) => (
-                <ChoiceRankingPanel
-                  key={panel.slot}
-                  member={panel}
-                  mode={mode}
-                  entries={result?.rankings[panel.slot] ?? null}
-                  placeholder={placeholderFor(panel.slot)}
-                  onUse={
-                    choice.running
-                      ? undefined
-                      : (entry) => use(panel.slot, entry)
-                  }
-                />
-              ))}
-            </TeamCharacterGrid>
+            {(choice.running || result) && (
+              <TeamCharacterGrid gridClassName="gap-2">
+                {panels.map((panel) => (
+                  <ChoiceRankingPanel
+                    key={panel.slot}
+                    member={panel}
+                    mode={mode}
+                    entries={result?.rankings[panel.slot] ?? null}
+                    placeholder={placeholderFor(panel.slot)}
+                    onUse={
+                      choice.running
+                        ? undefined
+                        : (entry) => use(panel.slot, entry)
+                    }
+                  />
+                ))}
+              </TeamCharacterGrid>
+            )}
           </>
         )}
       </div>

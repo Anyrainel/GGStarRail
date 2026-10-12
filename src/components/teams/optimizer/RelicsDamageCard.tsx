@@ -35,7 +35,7 @@ import {
   type RelicKind,
   type RelicSlotId,
 } from "@/services/catalog/relicPresentation";
-import { runCombatJob } from "@/services/combat/client";
+import { type CombatJobScope, runCombatJob } from "@/services/combat/client";
 import type {
   IdealResponse,
   MainStatChoices,
@@ -567,7 +567,11 @@ export function RelicsDamageCard({
   // Members are optimized in turn: each search sees the loadouts applied to
   // the members before it and cannot take their Relics.
   const runOptimize = useCallback(
-    (slot: number, previous: ReadonlyMap<number, OptimizeResponse>) =>
+    (
+      slot: number,
+      previous: ReadonlyMap<number, OptimizeResponse>,
+      scope: CombatJobScope
+    ) =>
       runCombatJob(
         {
           kind: "optimize",
@@ -580,12 +584,16 @@ export function RelicsDamageCard({
             relicOverrides: relicOverrides(previous, equippedSlots),
           },
         },
-        "analysis"
+        "analysis",
+        scope
       ),
     [team, sources, critMode, constraintBySlot, equippedSlots]
   );
   const combineOptimize = useCallback(
-    async (results: ReadonlyMap<number, OptimizeResponse>) => {
+    async (
+      results: ReadonlyMap<number, OptimizeResponse>,
+      scope: CombatJobScope
+    ) => {
       const overrides = relicOverrides(results, equippedSlots);
       if (!Object.keys(overrides).length) return null;
       return runCombatJob(
@@ -593,13 +601,18 @@ export function RelicsDamageCard({
           kind: "simulate",
           request: { team, sources, critMode, relicOverrides: overrides },
         },
-        "analysis"
+        "analysis",
+        scope
       );
     },
     [team, sources, critMode, equippedSlots]
   );
   const runIdeal = useCallback(
-    (slot: number) =>
+    (
+      slot: number,
+      _previous: ReadonlyMap<number, IdealResponse>,
+      scope: CombatJobScope
+    ) =>
       runCombatJob(
         {
           kind: "ideal",
@@ -613,7 +626,8 @@ export function RelicsDamageCard({
             mainStats: mainStatBySlot[slot],
           },
         },
-        "analysis"
+        "analysis",
+        scope
       ),
     [team, sources, critMode, budget, constraintBySlot, mainStatBySlot]
   );

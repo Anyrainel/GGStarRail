@@ -64,6 +64,8 @@ export function useTeamParam(): TeamParam {
         (current) => {
           const next = new URLSearchParams(current);
           next.set(TEAM_PARAM, id);
+          const savedMode = useTeamStore.getState().analysisByTeamId[id]?.mode;
+          next.set("mode", savedMode ?? "relics");
           return next;
         },
         requested

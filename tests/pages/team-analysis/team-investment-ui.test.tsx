@@ -1,4 +1,4 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
@@ -61,27 +61,20 @@ afterEach(() => {
 });
 
 describe("Team DMG Investment", () => {
-  it("edits the start state as team overrides and bounds the target", async () => {
+  it("keeps starting ranks shared and persists bounded investment ceilings", async () => {
     const user = userEvent.setup();
     seedTeam("team:investment-start", ["1102", "1309"]);
     renderInvestment("team:investment-start");
-    const seele = within(await roster()).getByRole("article", {
-      name: "Seele",
-    });
-
-    // From: the resolved state; editing writes the existing overrides.
+    const shared = await roster();
+    const seele = within(shared).getByRole("article", { name: "Seele" });
+    await choose(user, seele, "Eidolon", "E2");
+    const panel = screen.getByRole("region", { name: "Investment" });
+    expect(within(panel).queryByRole("article")).toBeNull();
     expect(
-      within(seele).getByRole("combobox", { name: "From Eidolon" })
-    ).toHaveTextContent("E0");
-    await choose(user, seele, "From Eidolon", "E2");
-    expect(useTeamStore.getState().teams[0]?.members[0]?.eidolon).toBe(2);
-    expect(
-      within(seele).getByRole("combobox", { name: "To Eidolon" })
-    ).toHaveTextContent("E6");
-
-    // To cannot go below From.
+      within(panel).queryByRole("combobox", { name: "From Eidolon" })
+    ).toBeNull();
     await user.click(
-      within(seele).getByRole("combobox", { name: "To Eidolon" })
+      within(panel).getAllByRole("combobox", { name: "To Eidolon" })[0]!
     );
     expect(await screen.findByRole("option", { name: "E1" })).toHaveAttribute(
       "aria-disabled",
@@ -89,36 +82,13 @@ describe("Team DMG Investment", () => {
     );
     await user.click(await screen.findByRole("option", { name: "E4" }));
     expect(
-      within(seele).getByRole("combobox", { name: "To Eidolon" })
-    ).toHaveTextContent("E4");
-    // Limits are page state, not part of the saved team.
-    expect(useTeamStore.getState().teams[0]?.members[0]).not.toHaveProperty(
-      "limits"
-    );
-
-    // Superimposition selects only exist with a Light Cone.
+      useTeamStore.getState().analysisByTeamId["team:investment-start"]
+        ?.investment?.limits["0:1102"]?.eidolon
+    ).toBe(4);
+    expect(useTeamStore.getState().teams[0]?.members[0]?.eidolon).toBe(2);
+    expect(within(panel).queryByText("No results yet")).toBeNull();
     expect(
-      within(seele).getByRole("combobox", { name: "From Superimposition" })
-    ).toBeInTheDocument();
-    act(() =>
-      useTeamStore.getState().updateMember("team:investment-start", 0, {
-        lightCone: null,
-      })
-    );
-    expect(
-      await within(seele).findByRole("combobox", { name: "From Eidolon" })
-    ).toBeInTheDocument();
-    expect(
-      within(seele).queryByRole("combobox", { name: "From Superimposition" })
-    ).toBeNull();
-    expect(
-      within(seele).queryByRole("combobox", { name: "To Superimposition" })
-    ).toBeNull();
-
-    const chart = screen.getByRole("region", { name: "Chart" });
-    expect(within(chart).getByText("No results yet")).toBeInTheDocument();
-    expect(
-      within(chart).getByRole("button", { name: "Run Analysis" })
+      within(panel).getByRole("button", { name: "Run Analysis" })
     ).toBeEnabled();
   });
 
@@ -126,17 +96,13 @@ describe("Team DMG Investment", () => {
     const user = userEvent.setup();
     seedTeam("team:investment-run", ["1102"]);
     renderInvestment("team:investment-run");
-    const seele = within(await roster()).getByRole("article", {
-      name: "Seele",
-    });
+    await roster();
+    const seele = screen.getByRole("region", { name: "Investment" });
     await choose(user, seele, "To Eidolon", "E1");
-    const fromSuperimposition = within(seele)
-      .getByRole("combobox", { name: "From Superimposition" })
-      .textContent?.trim();
-    if (!fromSuperimposition) throw new Error("Missing Superimposition");
+    const fromSuperimposition = "S1";
     await choose(user, seele, "To Superimposition", fromSuperimposition);
 
-    const chart = screen.getByRole("region", { name: "Chart" });
+    const chart = screen.getByRole("region", { name: "Investment" });
     // Seele has no account Relics, so the ideal-Relic budget applies.
     expect(
       within(chart).getByRole("combobox", { name: "Substats" })
@@ -175,5 +141,16 @@ describe("Team DMG Investment", () => {
     expect(steps[0]).toHaveTextContent("Seele");
     expect(steps[0]).toHaveTextContent("E1");
     expect(within(chart).queryByRole("table")).toBeNull();
+    await user.click(screen.getByRole("radio", { name: "Rotation" }));
+    await user.click(screen.getByRole("radio", { name: "Investment" }));
+    expect(
+      within(chart).getByRole("region", { name: "Combined order" })
+    ).toHaveTextContent("Seele");
+    await user.click(screen.getByRole("button", { name: "Back to teams" }));
+    const grid = await screen.findByRole("region", { name: "Teams" });
+    await user.click(within(grid).getByRole("button", { name: "Analysis" }));
+    expect(
+      screen.getByRole("region", { name: "Combined order" })
+    ).toHaveTextContent("Seele");
   }, 120_000);
 });

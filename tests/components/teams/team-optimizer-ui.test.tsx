@@ -516,11 +516,11 @@ describe("DMG Optimizer detail", () => {
     seedTeam(["1102", "1309"]);
     renderPage();
     await simulated(await relicsCard());
+    expect(
+      screen.queryByRole("region", { name: "Battle Timeline" })
+    ).toBeNull();
+    await user.click(screen.getByRole("radio", { name: "Rotation" }));
     const timeline = screen.getByRole("region", { name: "Battle Timeline" });
-    expect(timeline.querySelector("[data-timeline-rail]")).toBeNull();
-    await user.click(
-      within(timeline).getByRole("button", { name: /Battle Timeline/ })
-    );
     const rails = timeline.querySelectorAll("[data-timeline-rail]");
     expect(rails).toHaveLength(2);
     expect(rails[0]).toHaveTextContent("Cycle 1");

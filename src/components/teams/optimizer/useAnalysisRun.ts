@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MemberJobStatus } from "@/components/teams/team/MemberProgress";
 import {
+  type CombatJobScope,
   cancelCombatJobs,
+  createCombatJobScope,
   isCombatJobCancelled,
 } from "@/services/combat/client";
 import type { SimulateResponse } from "@/services/combat/jobs";
@@ -33,11 +35,13 @@ interface AnalysisRunOptions<T> {
   /** One member's job; `previous` holds the members finished before it. */
   readonly runMember: (
     slot: number,
-    previous: ReadonlyMap<number, T>
+    previous: ReadonlyMap<number, T>,
+    scope: CombatJobScope
   ) => Promise<T>;
   /** Simulates the team with the members' results (Optimize only). */
   readonly combine?: (
-    results: ReadonlyMap<number, T>
+    results: ReadonlyMap<number, T>,
+    scope: CombatJobScope
   ) => Promise<SimulateResponse | null>;
 }
 
@@ -72,11 +76,12 @@ export function useAnalysisRun<T>({
   const [live, setLive] = useState<LiveRun<T> | null>(null);
   const runId = useRef(0);
   const runningRef = useRef(false);
+  const scope = useRef(createCombatJobScope());
 
   useEffect(
     () => () => {
       runId.current += 1;
-      if (runningRef.current) cancelCombatJobs("analysis");
+      if (runningRef.current) cancelCombatJobs("analysis", scope.current);
     },
     []
   );
@@ -98,7 +103,7 @@ export function useAnalysisRun<T>({
       entries.set(slot, { status: "running", result: null });
       publish({ ...state, entries, active: slot }, true);
       try {
-        const result = await runMember(slot, new Map(results));
+        const result = await runMember(slot, new Map(results), scope.current);
         if (runId.current !== id) return;
         results.set(slot, result);
         const done = new Map(state.entries);
@@ -115,7 +120,7 @@ export function useAnalysisRun<T>({
     if (combine && results.size > 0) {
       publish({ ...state, active: "team" }, true);
       try {
-        combined = await combine(results);
+        combined = await combine(results, scope.current);
       } catch (error) {
         if (runId.current !== id || isCombatJobCancelled(error)) return;
       }
@@ -129,13 +134,14 @@ export function useAnalysisRun<T>({
     };
     writeCachedResult(key, finished);
     runningRef.current = false;
+    cancelCombatJobs("analysis", scope.current);
     publish(finished, false);
   }, [key, slots, runMember, combine]);
 
   const stop = useCallback(() => {
     runId.current += 1;
     runningRef.current = false;
-    cancelCombatJobs("analysis");
+    cancelCombatJobs("analysis", scope.current);
     setLive((current) =>
       current ? { ...current, running: false, state: current.state } : current
     );

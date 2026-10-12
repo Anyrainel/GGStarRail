@@ -16,7 +16,7 @@ export const TeamMemberPlanSchema = z
     lightCone: z
       .object({
         id: StableIdSchema,
-        superimposition: z.number().int().min(1).max(5),
+        superimposition: z.number().int().min(1).max(5).optional(),
       })
       .strict()
       .nullable()

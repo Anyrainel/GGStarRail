@@ -9,6 +9,15 @@ import type { CombatJob, CombatJobMessage, CombatJobResult } from "./runJob";
  */
 export type CombatLane = "interactive" | "analysis";
 
+/** A lazy worker owner for one panel's sequential analysis jobs. */
+export interface CombatJobScope {
+  readonly token: symbol;
+}
+
+export function createCombatJobScope(): CombatJobScope {
+  return { token: Symbol("combat-run") };
+}
+
 /** Rejection reason for jobs stopped by {@link cancelCombatJobs}. */
 export class CombatJobCancelled extends Error {
   constructor() {
@@ -37,6 +46,23 @@ const lanes: Record<CombatLane, LaneState> = {
   interactive: { worker: null, pending: new Map() },
   analysis: { worker: null, pending: new Map() },
 };
+const scopedLanes = new WeakMap<
+  CombatJobScope,
+  Record<CombatLane, LaneState>
+>();
+
+function stateFor(lane: CombatLane, scope?: CombatJobScope): LaneState {
+  if (!scope) return lanes[lane];
+  let states = scopedLanes.get(scope);
+  if (!states) {
+    states = {
+      interactive: { worker: null, pending: new Map() },
+      analysis: { worker: null, pending: new Map() },
+    };
+    scopedLanes.set(scope, states);
+  }
+  return states[lane];
+}
 let nextId = 1;
 let inlineCatalog: Promise<CombatCatalog> | null = null;
 
@@ -45,9 +71,12 @@ export function defaultLane(kind: CombatJob["kind"]): CombatLane {
   return kind === "simulate" ? "interactive" : "analysis";
 }
 
-function workerInstance(lane: CombatLane): Worker | null {
+function workerInstance(
+  lane: CombatLane,
+  scope?: CombatJobScope
+): Worker | null {
   if (typeof Worker === "undefined") return null;
-  const state = lanes[lane];
+  const state = stateFor(lane, scope);
   if (!state.worker) {
     const worker = new Worker(new URL("./combat.worker.ts", import.meta.url), {
       type: "module",
@@ -73,9 +102,10 @@ function workerInstance(lane: CombatLane): Worker | null {
  */
 export async function runCombatJob<K extends CombatJob["kind"]>(
   job: Extract<CombatJob, { kind: K }>,
-  lane: CombatLane = defaultLane(job.kind)
+  lane: CombatLane = defaultLane(job.kind),
+  scope?: CombatJobScope
 ): Promise<CombatJobResult<K>> {
-  const target = workerInstance(lane);
+  const target = workerInstance(lane, scope);
   if (!target) {
     const [{ loadCombatCatalog }, { runJob }] = await Promise.all([
       import("./jobs"),
@@ -86,7 +116,7 @@ export async function runCombatJob<K extends CombatJob["kind"]>(
   }
   const id = nextId;
   nextId += 1;
-  const { pending } = lanes[lane];
+  const { pending } = stateFor(lane, scope);
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
     const message: CombatJobMessage = { id, job, beta: betaEnabled() };
@@ -95,12 +125,16 @@ export async function runCombatJob<K extends CombatJob["kind"]>(
 }
 
 /**
- * Stop every job on a lane: its worker is terminated and pending jobs reject
+ * Stop a scope's jobs on a lane, or the default lane when no scope is given.
+ * Its worker is terminated and pending jobs reject
  * with {@link CombatJobCancelled}. The next job starts a fresh worker. Jobs
  * that run inline (tests) cannot be interrupted, so this is a no-op there.
  */
-export function cancelCombatJobs(lane: CombatLane = "analysis"): void {
-  const state = lanes[lane];
+export function cancelCombatJobs(
+  lane: CombatLane = "analysis",
+  scope?: CombatJobScope
+): void {
+  const state = stateFor(lane, scope);
   if (!state.worker) return;
   state.worker.terminate();
   state.worker = null;

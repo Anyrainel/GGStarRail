@@ -7,6 +7,7 @@ import type {
 import type { TeamPlan } from "@/domain/team/schemas";
 import {
   cancelCombatJobs,
+  createCombatJobScope,
   isCombatJobCancelled,
   runCombatJob,
 } from "@/services/combat/client";
@@ -27,6 +28,7 @@ export interface ChoiceMember {
   readonly slot: number;
   readonly characterId: string;
   readonly constraints?: StatConstraints;
+  readonly ownedLightConesOnly?: boolean;
 }
 
 /** The run in progress or the last one started on this page. */
@@ -60,6 +62,7 @@ function memberCacheKey(
     budget,
     slot: member.slot,
     constraints: member.constraints ?? null,
+    ownedLightConesOnly: member.ownedLightConesOnly ?? false,
   });
 }
 
@@ -92,6 +95,7 @@ export function useChoiceRun(
   const [live, setLive] = useState<ChoiceRun | null>(null);
   const runId = useRef(0);
   const runningRef = useRef(false);
+  const scope = useRef(createCombatJobScope());
   const latest = useRef({ team, sources, members, budget });
   latest.current = { team, sources, members, budget };
 
@@ -136,17 +140,22 @@ export function useChoiceRun(
           active: member.slot,
         });
         try {
-          const entries = await runCombatJob({
-            kind: "compare",
-            request: {
-              team,
-              sources,
-              slot: member.slot,
-              kind: mode,
-              budget,
-              constraints: member.constraints,
+          const entries = await runCombatJob(
+            {
+              kind: "compare",
+              request: {
+                team,
+                sources,
+                slot: member.slot,
+                kind: mode,
+                budget,
+                constraints: member.constraints,
+                ownedLightConesOnly: member.ownedLightConesOnly,
+              },
             },
-          });
+            "analysis",
+            scope.current
+          );
           if (runId.current !== id) return;
           const key = keys.get(member.slot);
           if (key) writeCachedResult(key, entries);
@@ -178,6 +187,7 @@ export function useChoiceRun(
       }
       if (runId.current !== id) return;
       runningRef.current = false;
+      cancelCombatJobs("analysis", scope.current);
       publish({ ...state, active: null, running: false });
     })();
   }, []);
@@ -186,7 +196,7 @@ export function useChoiceRun(
     if (!runningRef.current) return;
     runId.current += 1;
     runningRef.current = false;
-    cancelCombatJobs("analysis");
+    cancelCombatJobs("analysis", scope.current);
     setLive((current) =>
       current
         ? {
@@ -210,7 +220,7 @@ export function useChoiceRun(
       if (runningRef.current) {
         runId.current += 1;
         runningRef.current = false;
-        cancelCombatJobs("analysis");
+        cancelCombatJobs("analysis", scope.current);
       }
     },
     []

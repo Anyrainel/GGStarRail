@@ -104,7 +104,7 @@ describe("Team DMG empty state", () => {
     });
     expect(slots).toHaveLength(4);
     expect(
-      within(ghost).getByRole("button", { name: "DMG Optimizer" })
+      within(ghost).getByRole("button", { name: "Analysis" })
     ).toBeDisabled();
     await user.click(slots[2] as HTMLElement);
     await user.click(await screen.findByRole("button", { name: "Seele" }));
@@ -135,7 +135,7 @@ describe("Team DMG empty state", () => {
     expect(cards).toHaveLength(1);
     expect(
       within(cards[0] as HTMLElement).getByRole("button", {
-        name: "Light Cone & Relic Choice",
+        name: "Analysis",
       })
     ).toBeDisabled();
     expect(
@@ -288,58 +288,56 @@ describe("Team DMG Owned only", () => {
 });
 
 describe("Team DMG detail", () => {
-  it("opens a team from its card, keeps it across tabs and returns to the grid", async () => {
+  it("keeps mode settings when switching modes, teams and the grid", async () => {
     const user = userEvent.setup();
-    seed(seedTeam("team:a", ["1102", "1309"]));
+    await seedAccount();
+    seed(seedTeam("team:a", ["1102"]), seedTeam("team:b", ["1309"]));
     renderPage();
-    const card = within(await grid()).getByRole("article", { name: "Team 1" });
+    const open = async (name: string) =>
+      user.click(
+        within(within(await grid()).getByRole("article", { name })).getByRole(
+          "button",
+          { name: "Analysis" }
+        )
+      );
+    await open("Team 1");
+    await user.click(await screen.findByRole("radio", { name: "Investment" }));
+    const limit = await screen.findByRole("combobox", { name: "To Eidolon" });
+    await user.click(limit);
+    await user.click(await screen.findByRole("option", { name: "E2" }));
+    await user.click(screen.getByRole("radio", { name: "Builds" }));
     await user.click(
-      within(card).getByRole("button", { name: "DMG Optimizer" })
+      screen.getByRole("checkbox", { name: "Owned Light Cones only" })
     );
+    await user.click(screen.getByRole("radio", { name: "Investment" }));
     expect(
-      await screen.findByRole("heading", { level: 2, name: "Team 1" })
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("location")).toHaveTextContent(
-      `${APP_PATHS.teamDamage}?team=team%3Aa`
-    );
-
-    await user.click(screen.getByRole("link", { name: "Go to Investment" }));
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        `${APP_PATHS.teamInvestment}?team=team%3Aa`
-      )
-    );
-    // The section tabs keep the open team too.
-    const tabs = within(screen.getByTestId("section-tabs")).getByRole(
-      "navigation",
-      { name: "Team DMG" }
-    );
-    await user.click(
-      within(tabs).getByRole("link", { name: "Light Cone & Relic Choice" })
-    );
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        `${APP_PATHS.teamChoice}?team=team%3Aa`
-      )
-    );
-    await user.click(within(tabs).getByRole("link", { name: "Investment" }));
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        `${APP_PATHS.teamInvestment}?team=team%3Aa`
-      )
-    );
+      screen.getByRole("combobox", { name: "To Eidolon" })
+    ).toHaveTextContent("E2");
+    await user.click(screen.getByRole("radio", { name: "Builds" }));
     expect(
-      await screen.findByRole("heading", { level: 2, name: "Team 1" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Go to Light Cone & Relic Choice" })
-    ).toHaveAttribute("href", `${APP_PATHS.teamChoice}?team=team%3Aa`);
-
+      screen.getByRole("checkbox", { name: "Owned Light Cones only" })
+    ).toBeChecked();
     await user.click(screen.getByRole("button", { name: "Back to teams" }));
-    expect(await grid()).toBeInTheDocument();
-    expect(screen.getByTestId("location")).toHaveTextContent(
-      new RegExp(`^${APP_PATHS.teamInvestment}$`)
+    await open("Team 2");
+    expect(screen.getByRole("radio", { name: "Relics" })).toBeChecked();
+    await user.click(screen.getByRole("button", { name: "Back to teams" }));
+    await open("Team 1");
+    expect(screen.getByRole("radio", { name: "Builds" })).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: "Owned Light Cones only" })
+    ).toBeChecked();
+    await user.click(screen.getByRole("radio", { name: "Investment" }));
+    expect(
+      screen.getByRole("combobox", { name: "To Eidolon" })
+    ).toHaveTextContent("E2");
+    expect(screen.getAllByRole("region", { name: "Team Roster" })).toHaveLength(
+      1
     );
+    expect(
+      useTeamStore.getState().analysisByTeamId["team:a"]?.investment?.limits[
+        "0:1102"
+      ]?.eidolon
+    ).toBe(2);
   });
 
   it("goes back through history to the grid that opened the team", async () => {
@@ -347,10 +345,9 @@ describe("Team DMG detail", () => {
     seed(seedTeam("team:a", ["1102"]));
     renderPage();
     const card = within(await grid()).getByRole("article", { name: "Team 1" });
-    await user.click(
-      within(card).getByRole("button", { name: "DMG Optimizer" })
-    );
+    await user.click(within(card).getByRole("button", { name: "Analysis" }));
     await screen.findByRole("heading", { level: 2, name: "Team 1" });
+    await user.click(screen.getByRole("radio", { name: "Investment" }));
     await user.click(screen.getByRole("button", { name: "Back to teams" }));
     expect(await grid()).toBeInTheDocument();
     // The detail is still the next history entry, not a replaced duplicate.
@@ -359,6 +356,7 @@ describe("Team DMG detail", () => {
       await screen.findByRole("heading", { level: 2, name: "Team 1" })
     ).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("team%3Aa");
+    expect(screen.getByRole("radio", { name: "Investment" })).toBeChecked();
   });
 
   it("lists every Light Cone, the Character's Path first", async () => {
@@ -400,7 +398,7 @@ describe("Team DMG detail", () => {
     expect(await grid()).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByTestId("location")).toHaveTextContent(
-        new RegExp(`^${APP_PATHS.teamChoice}$`)
+        new RegExp(`^${APP_PATHS.teamDamage}\\?mode=builds$`)
       )
     );
   });

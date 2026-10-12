@@ -3,6 +3,7 @@ import { emptyTeam } from "@/domain/team/schemas";
 import {
   CombatJobCancelled,
   cancelCombatJobs,
+  createCombatJobScope,
   isCombatJobCancelled,
   runCombatJob,
 } from "@/services/combat/client";
@@ -20,6 +21,52 @@ function team() {
 const sources = { account: null, characterLightConeIds: {}, builds: [] };
 
 describe("combat jobs", () => {
+  it("compares owned Light Cones at their strongest available S while reserving fixed copies", async () => {
+    const account = await createDemoAccount(new Date("2026-09-02T00:00:00Z"));
+    const copy = account.lightCones.find(
+      (entry) => entry.definitionId === "23001"
+    )!;
+    account.lightCones = [
+      { ...copy, key: "cone4", superimposition: 4 },
+      { ...copy, key: "cone2", superimposition: 2 },
+    ];
+    const plan = emptyTeam("owned-cones");
+    plan.cycles = 1;
+    plan.members[0] = { characterId: "1102", options: {}, skill: "kit" };
+    const compare = () =>
+      runCombatJob({
+        kind: "compare",
+        request: {
+          team: plan,
+          sources: { ...sources, account },
+          slot: 0,
+          kind: "lightCones",
+          ownedLightConesOnly: true,
+        },
+      });
+    const highest = await compare();
+    expect(highest.map((entry) => entry.lightCone)).toEqual([
+      { id: "23001", superimposition: 4 },
+    ]);
+    plan.members[1] = {
+      characterId: "1002",
+      lightCone: { id: "23001", superimposition: 4 },
+      options: {},
+      skill: "kit",
+    };
+    const reserved = await compare();
+    expect(reserved.map((entry) => entry.lightCone)).toEqual([
+      { id: "23001", superimposition: 2 },
+    ]);
+    plan.members[1]!.lightCone = { id: "23001", superimposition: 5 };
+    const hypothetical = await compare();
+    expect(hypothetical.map((entry) => entry.lightCone)).toEqual([
+      { id: "23001", superimposition: 4 },
+    ]);
+    expect(hypothetical[0].ideal?.rolls).toBeDefined();
+    expect(hypothetical[0].damage).toBeGreaterThan(0);
+  }, 30000);
+
   it("simulates a team with recommended gear and ideal Relics", async () => {
     const started = performance.now();
     const result = await runCombatJob({
@@ -257,7 +304,67 @@ describe("combat worker lanes", () => {
     }
   }
 
+  it("stops only the owning analysis scope and releases a finished scope's worker", async () => {
+    FakeWorker.created = [];
+    vi.stubGlobal("Worker", FakeWorker);
+    const first = createCombatJobScope();
+    const second = createCombatJobScope();
+    expect(FakeWorker.created).toHaveLength(0);
+    try {
+      const stopped = runCombatJob(
+        { kind: "ideal", request: { team: team(), sources, slot: 0 } },
+        "analysis",
+        first
+      );
+      const continuing = runCombatJob(
+        { kind: "ideal", request: { team: team(), sources, slot: 0 } },
+        "analysis",
+        second
+      );
+      const [firstWorker, secondWorker] = FakeWorker.created;
+      expect(FakeWorker.created).toHaveLength(2);
+      cancelCombatJobs("analysis", first);
+      await expect(stopped).rejects.toBeInstanceOf(CombatJobCancelled);
+      expect(firstWorker.terminated).toBe(true);
+      expect(secondWorker.terminated).toBe(false);
+      const message = secondWorker.posted[0] as { id: number };
+      secondWorker.onmessage?.(
+        new MessageEvent("message", {
+          data: { id: message.id, result: "completed" },
+        })
+      );
+      await expect(continuing).resolves.toBe("completed");
+      cancelCombatJobs("analysis", second);
+      expect(secondWorker.terminated).toBe(true);
+      const next = runCombatJob(
+        { kind: "ideal", request: { team: team(), sources, slot: 0 } },
+        "analysis",
+        second
+      );
+      expect(FakeWorker.created).toHaveLength(3);
+      const nextWorker = FakeWorker.created[2];
+      const nextMessage = nextWorker.posted[0] as { id: number };
+      // A late reply from the released worker cannot finish the new owner's job.
+      secondWorker.onmessage?.(
+        new MessageEvent("message", {
+          data: { id: message.id, result: "stale" },
+        })
+      );
+      nextWorker.onmessage?.(
+        new MessageEvent("message", {
+          data: { id: nextMessage.id, result: "fresh" },
+        })
+      );
+      await expect(next).resolves.toBe("fresh");
+    } finally {
+      cancelCombatJobs("analysis", first);
+      cancelCombatJobs("analysis", second);
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("cancels analysis jobs without touching the interactive lane", async () => {
+    FakeWorker.created = [];
     vi.stubGlobal("Worker", FakeWorker);
     try {
       const analysis = runCombatJob({

@@ -12,9 +12,7 @@ import type { TeamPlan } from "@/domain/team/schemas";
 import { useI18n } from "@/i18n/I18nContext";
 import { forgetTeamResults } from "@/services/combat/resultCache";
 import { useTeamStore } from "@/stores/useTeamStore";
-import { TeamAspectLinks } from "./TeamAspectLinks";
 import { teamDisplayName, teamPlaceholderName } from "./teamNames";
-import type { TeamDmgTab } from "./types";
 import { useTeamParam } from "./useTeamParam";
 
 function TeamTitle({ team }: { team: TeamPlan }) {
@@ -64,17 +62,14 @@ function TeamTitle({ team }: { team: TeamPlan }) {
 }
 
 /**
- * The shared team detail: back to the grid, the inline-renamable team name,
- * the tab's full-width cards, then links to the same team on the other tabs.
+ * Shared team workspace with a grid switch and an inline-renamable name.
  */
 export function TeamDetailFrame({
   team,
-  tab,
   onBack,
   children,
 }: {
   team: TeamPlan;
-  tab: TeamDmgTab;
   onBack: () => void;
   children: ReactNode;
 }) {
@@ -113,24 +108,23 @@ export function TeamDetailFrame({
       />
       <div
         className="flex w-full flex-col gap-1.5 pb-12 duration-300 animate-in fade-in lg:gap-2"
-        data-team-detail={tab}
+        data-team-detail="analysis"
       >
         <div className="flex items-center gap-2 px-0.5 lg:px-1">
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="-ml-2 h-10 w-10 shrink-0"
+            className="h-9 shrink-0 gap-2 px-2"
             aria-label={t("teamDmg.back")}
             title={t("teamDmg.back")}
             onClick={onBack}
           >
             <ArrowLeft className="h-5 w-5" aria-hidden />
+            {t("teamAnalysis.switchTeam")}
           </Button>
           <TeamTitle team={team} />
         </div>
         {children}
-        <TeamAspectLinks tab={tab} teamId={team.id} />
       </div>
       <ConfirmDialog
         open={confirmDelete}
