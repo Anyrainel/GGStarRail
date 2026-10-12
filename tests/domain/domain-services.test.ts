@@ -13,7 +13,7 @@ import {
   scoreRelic,
 } from "@/domain/build/scoring";
 import { triageRelic } from "@/domain/build/triage";
-import { makeRelic } from "../../fixtures";
+import { makeRelic } from "../fixtures";
 
 const profile: ScoreProfile = {
   id: "score:crit",

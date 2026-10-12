@@ -17,7 +17,7 @@ import {
 interface TeamActions {
   /** Adds an empty team at the start or end of the list (default end). */
   createTeam: (position?: "start" | "end") => string;
-  duplicateTeam: (teamId: string) => void;
+  duplicateTeam: (teamId: string) => string | null;
   removeTeam: (teamId: string) => void;
   /** Moves a team to a list index (clamped to the list). */
   moveTeam: (teamId: string, toIndex: number) => void;
@@ -74,12 +74,13 @@ export const useTeamStore = create<TeamState>()(
       },
       duplicateTeam: (teamId) => {
         const source = get().teams.find((team) => team.id === teamId);
-        if (!source) return;
+        if (!source) return null;
         const copy = { ...structuredClone(source), id: newId() };
         set((state) => ({
           teams: [...state.teams, copy],
           activeTeamId: copy.id,
         }));
+        return copy.id;
       },
       removeTeam: (teamId) =>
         set((state) => {

@@ -93,8 +93,7 @@ export function TeamDetailFrame({
           <>
             <DropdownMenuItem
               onSelect={() => {
-                duplicateTeam(team.id);
-                const copy = useTeamStore.getState().activeTeamId;
+                const copy = duplicateTeam(team.id);
                 if (copy && copy !== team.id) openTeam(copy);
               }}
             >

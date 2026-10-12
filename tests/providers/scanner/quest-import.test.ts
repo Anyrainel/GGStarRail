@@ -11,8 +11,8 @@ import {
 } from "@/services/backup/workspace";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
-import { makeAccountSnapshot } from "../fixtures";
-import hsrScannerV4Fixture from "../fixtures/scanner/hsr-scanner-v4.json";
+import { makeAccountSnapshot } from "../../fixtures";
+import hsrScannerV4Fixture from "../../fixtures/scanner/hsr-scanner-v4.json";
 
 afterEach(() => useWorkspaceStore.getState().clearWorkspace());
 

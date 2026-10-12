@@ -10,7 +10,7 @@ import { I18nProvider } from "@/i18n/I18nContext";
 import { DEFAULT_TEAM_STORE } from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
-import { createDemoAccount } from "../fixtures/demoAccount";
+import { createDemoAccount } from "../../fixtures/demoAccount";
 
 function LocationProbe() {
   const location = useLocation();
@@ -192,7 +192,19 @@ describe("Team DMG grid", () => {
         within(teams).getByRole("article", { name: "Hypercarry" })
       ).getByRole("button", { name: "Team actions" })
     );
-    await user.click(screen.getByRole("menuitem", { name: "Duplicate team" }));
+    // A URL-selection subscriber can run synchronously during duplication.
+    const unsubscribe = useTeamStore.subscribe((state, previous) => {
+      if (state.teams.length > previous.teams.length) {
+        useTeamStore.getState().setActiveTeam("team:a");
+      }
+    });
+    try {
+      await user.click(
+        screen.getByRole("menuitem", { name: "Duplicate team" })
+      );
+    } finally {
+      unsubscribe();
+    }
     expect(teamIds()).toHaveLength(3);
 
     await user.click(

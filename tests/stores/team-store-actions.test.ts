@@ -16,6 +16,23 @@ afterEach(() => {
 });
 
 describe("team store list actions", () => {
+  it("returns the duplicated team identity even if a subscriber restores the URL selection", () => {
+    const source = useTeamStore.getState().createTeam();
+    const unsubscribe = useTeamStore.subscribe((state, previous) => {
+      if (state.teams.length > previous.teams.length) {
+        useTeamStore.getState().setActiveTeam(source);
+      }
+    });
+    try {
+      const copy = useTeamStore.getState().duplicateTeam(source);
+      expect(copy).toBe(ids()[1]);
+      expect(copy).not.toBe(source);
+      expect(useTeamStore.getState().activeTeamId).toBe(source);
+      expect(useTeamStore.getState().duplicateTeam("team:missing")).toBeNull();
+    } finally {
+      unsubscribe();
+    }
+  });
   it("creates teams at the end by default and at the start on request", () => {
     const { createTeam } = useTeamStore.getState();
     const first = createTeam();

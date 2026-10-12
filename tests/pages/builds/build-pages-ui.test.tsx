@@ -19,7 +19,7 @@ import {
 import { I18nProvider } from "@/i18n/I18nContext";
 import { loadBuildReferences } from "@/services/catalog/buildReferences";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
-import { createDemoAccount } from "../fixtures/demoAccount";
+import { createDemoAccount } from "../../fixtures/demoAccount";
 
 function renderRoute(path: string) {
   return render(
