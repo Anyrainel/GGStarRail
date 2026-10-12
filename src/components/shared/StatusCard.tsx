@@ -28,7 +28,7 @@ export function StatusCard({
   return (
     <Card className="relative overflow-hidden">
       <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/70 to-transparent" />
-      <CardHeader className="space-y-4">
+      <CardHeader className="space-y-4 py-6">
         <div className="flex items-center justify-between gap-3">
           <div className="rounded-lg border border-border bg-background/70 p-2 text-primary">
             <Icon className="h-5 w-5" aria-hidden="true" />

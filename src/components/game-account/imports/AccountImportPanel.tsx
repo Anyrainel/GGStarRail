@@ -498,7 +498,7 @@ export function AccountImportPanel({
 
       {draft && (
         <Card className="border-primary/35">
-          <CardHeader>
+          <CardHeader className="py-6">
             <CardTitle>{t("imports.review.title")}</CardTitle>
             <CardDescription>
               {t("imports.review.counts", {
@@ -508,7 +508,7 @@ export function AccountImportPanel({
               })}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pb-6">
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">
                 {t("imports.review.source", {
