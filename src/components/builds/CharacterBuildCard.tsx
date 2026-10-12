@@ -1,4 +1,3 @@
-import { Plus } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
@@ -123,18 +122,7 @@ function CharacterBuildCardComponent({
       </CardHeader>
 
       <CardContent className={cn("pb-3", isVeryNarrow ? "px-2" : "px-3")}>
-        {builds.length === 0 ? (
-          <div className="flex flex-wrap justify-center gap-2 py-2">
-            {CATEGORIES.map((category) => (
-              <AddBuildButton
-                key={category}
-                category={category}
-                narrow={isVeryNarrow}
-                onClick={() => onAddBuild(category)}
-              />
-            ))}
-          </div>
-        ) : (
+        {builds.length > 0 && (
           <div className="grid grid-cols-1 gap-2 2xl:grid-cols-2">
             {CATEGORIES.map((category) => {
               const categoryBuilds = builds.filter(
@@ -183,19 +171,21 @@ function CharacterBuildCardComponent({
                       />
                     );
                   })}
-                  <div className="mt-auto flex">
-                    <AddBuildButton
-                      category={category}
-                      narrow={isVeryNarrow}
-                      fullWidth
-                      onClick={() => onAddBuild(category)}
-                    />
-                  </div>
                 </section>
               );
             })}
           </div>
         )}
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          {CATEGORIES.map((category) => (
+            <AddBuildButton
+              key={category}
+              category={category}
+              narrow={isVeryNarrow}
+              onClick={() => onAddBuild(category)}
+            />
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -213,16 +203,14 @@ const ADD_LABEL = {
   planar: "build.addPlanar",
 } as const;
 
-/** GT's outline add action: a centred button, or a full-width bar under a column. */
+/** Equal-width add actions share one row beneath the build sections. */
 function AddBuildButton({
   category,
   narrow,
-  fullWidth = false,
   onClick,
 }: {
   category: RelicKind;
   narrow: boolean;
-  fullWidth?: boolean;
   onClick: () => void;
 }) {
   const { t } = useI18n();
@@ -232,21 +220,16 @@ function AddBuildButton({
       variant="outline"
       size="sm"
       className={cn(
-        "gap-2",
-        narrow ? "h-7 text-xs" : "h-9 text-sm",
-        fullWidth && "flex-1"
+        "min-w-0 gap-1.5 whitespace-normal px-2",
+        narrow ? "h-auto min-h-7 py-1 text-xs" : "h-9 text-sm"
       )}
       onClick={onClick}
     >
-      {fullWidth ? (
-        <Plus className={narrow ? "h-3 w-3" : "h-4 w-4"} aria-hidden="true" />
-      ) : (
-        <RelicKindIcon
-          kind={category}
-          className={narrow ? "h-3 w-3" : "h-4 w-4"}
-          decorative
-        />
-      )}
+      <RelicKindIcon
+        kind={category}
+        className={narrow ? "h-3 w-3" : "h-4 w-4"}
+        decorative
+      />
       {t(ADD_LABEL[category])}
     </Button>
   );

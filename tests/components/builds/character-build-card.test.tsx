@@ -89,7 +89,7 @@ describe("CharacterBuildCard", () => {
     expect(onAddBuild).toHaveBeenLastCalledWith("planar");
   });
 
-  it("labels only non-empty columns and puts an add bar under each", async () => {
+  it("labels only non-empty columns and keeps both add actions in one row", async () => {
     const references = await loadBuildReferences();
     const character = references.characters.values[0]!;
     const profile = createCharacterScoreProfile(
@@ -144,14 +144,19 @@ describe("CharacterBuildCard", () => {
     ).toBeVisible();
     expect(within(planar).queryByRole("heading")).toBeNull();
     expect(cavern.querySelectorAll("[data-build-card]")).toHaveLength(1);
-    const cavernBar = within(cavern).getByRole("button", {
+    const cavernBar = screen.getByRole("button", {
       name: "Add Cavern Relic build",
     });
-    expect(cavernBar).toHaveClass("flex-1");
-    expect(cavern.lastElementChild).toContainElement(cavernBar);
-    await user.click(
-      within(planar).getByRole("button", { name: "Add Planar Ornament build" })
-    );
+    const planarBar = screen.getByRole("button", {
+      name: "Add Planar Ornament build",
+    });
+    expect(cavernBar.parentElement).toBe(planarBar.parentElement);
+    expect(cavernBar.parentElement).toHaveClass("grid-cols-2");
+    expect(cavern).not.toContainElement(cavernBar);
+    expect(planar).not.toContainElement(planarBar);
+    await user.click(cavernBar);
+    expect(onAddBuild).toHaveBeenLastCalledWith("cavern");
+    await user.click(planarBar);
     expect(onAddBuild).toHaveBeenLastCalledWith("planar");
   });
 
