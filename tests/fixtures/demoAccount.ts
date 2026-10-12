@@ -2,7 +2,7 @@ import {
   type AccountSnapshot,
   AccountSnapshotSchema,
   type RelicSlot,
-} from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
 import {
   HSR_REFERENCE_MANIFEST,
   HSR_REFERENCE_REVISION,

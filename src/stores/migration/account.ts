@@ -3,7 +3,7 @@ import {
   AccountSnapshotSchema,
   AccountSnapshotV3Schema,
   migrateAccountSnapshotV3,
-} from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
 
 // Published account v4 uses catalog trace IDs without Quest snapshots. The
 // unpublished Quest branch also used v4, with legacy trace keys and optional

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import {
   AccountImportAction,
   AccountImportDialog,
-} from "@/components/account/AccountImportAction";
+} from "@/components/game-account/imports/AccountImportAction";
 import { AppShell as LayoutShell } from "@/components/layout/AppShell";
 
 /** Compose feature actions here; the layout only renders slots. */

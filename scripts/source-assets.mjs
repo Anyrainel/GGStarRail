@@ -62,7 +62,10 @@ export async function restoreSourceAssets(lookup) {
   const bytes = await readFile(manifestPath);
   const manifest = JSON.parse(bytes);
   const reference = JSON.parse(
-    await readFile(path.join(root, "src/data/game/manifest.json"), "utf8")
+    await readFile(
+      path.join(root, "src/generated/catalog/manifest.json"),
+      "utf8"
+    )
   );
   if (
     manifest.schema_version !== "1.0.0" ||

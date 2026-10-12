@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { RelicSlot } from "@/domain/account/schemas";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 import {
   CATALOG_RELIC_SLOT,
   DMG_BOOST_STAT_BY_COMBAT_TYPE,

@@ -43,10 +43,16 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
     write("src/components/ui/primitive.ts", 'import "../shared/control.ts";');
     write(
       "src/components/shared/control.ts",
-      'import "../account/Feature.ts";'
+      'import "../game-account/imports/Feature.ts";'
     );
-    write("src/components/layout/shell.ts", 'import "../account/Feature.ts";');
-    write("src/components/account/Feature.ts", 'import "../builds/Other.ts";');
+    write(
+      "src/components/layout/shell.ts",
+      'import "../game-account/imports/Feature.ts";'
+    );
+    write(
+      "src/components/game-account/imports/Feature.ts",
+      'import "../../builds/Other.ts";'
+    );
     write("src/components/builds/Other.ts", "export const value = true;");
     write(
       "src/lib/bad.ts",
@@ -68,6 +74,15 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       'import "../components/shared/control.ts"; import "vitest";'
     );
     write("src/config/bad.ts", 'import "../services/workflow.ts";');
+    write(
+      "src/providers/scanner/formats/bad.ts",
+      'import "../companion/client.ts";'
+    );
+    write(
+      "src/providers/scanner/companion/client.ts",
+      "export const value = true;"
+    );
+    write("src/generated/catalog/bad.ts", 'import "../../domain/model.ts";');
     write("src/hooks/bad.ts", 'import "../app/entry.ts";');
     write("src/app/entry.ts", "export const value = true;");
     write("src/providers/browserWorker.ts", 'import "../../worker/index.ts";');
@@ -115,6 +130,8 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       "persisted-state-cannot-see-hoyolab-auth",
       "browser-cannot-import-worker-or-tooling",
       "no-circular",
+      "scanner-formats-do-not-depend-on-companion",
+      "generated-outputs-have-no-runtime-source-dependencies",
     ])
       assert.ok(violations.includes(rule), `Missing violation: ${rule}`);
   } finally {

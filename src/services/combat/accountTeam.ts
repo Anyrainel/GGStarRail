@@ -1,11 +1,11 @@
+import { canonicalCharacterId } from "@/domain/characterIdentity";
+import { loadoutOf, type RelicPiece } from "@/domain/combat/optimize/relics";
+import type { MemberInput, RelicLoadout } from "@/domain/combat/team/input";
 import type {
   AccountSnapshot,
   Character,
   Relic,
-} from "@/domain/account/schemas";
-import { canonicalCharacterId } from "@/domain/characterIdentity";
-import { loadoutOf, type RelicPiece } from "@/domain/combat/optimize/relics";
-import type { MemberInput, RelicLoadout } from "@/domain/combat/team/input";
+} from "@/domain/game-account/schemas";
 import { accountStatToDecimal, type StatValueKind } from "@/domain/stats";
 
 export interface PropertyKinds {

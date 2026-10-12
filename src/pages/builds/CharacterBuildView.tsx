@@ -1,15 +1,15 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
+import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
 import {
   CharacterFilterPanel,
   type CharacterFilters,
   characterFilterCount,
   clearCharacterFilters,
   defaultCharacterFilters,
-} from "@/components/account-data/CharacterFilterPanel";
-import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
-import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
+} from "@/components/game-account/CharacterFilterPanel";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";

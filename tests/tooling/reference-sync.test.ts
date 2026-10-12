@@ -14,7 +14,7 @@ interface MutableManifest {
   >;
 }
 
-const generatedDirectory = path.resolve("src/generated/hsr-reference");
+const generatedDirectory = path.resolve("src/generated/reference");
 const validatorPath = path.resolve("scripts/sync-hsr-reference.mjs");
 
 function readJson<T>(filePath: string): T {

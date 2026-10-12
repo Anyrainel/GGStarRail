@@ -47,13 +47,13 @@ labels, and `src/app/App.tsx` for the actual route components.
 | Page | Route | Implementation |
 | --- | --- | --- |
 | Home | `/` | `src/pages/HomePage.tsx` |
-| Characters | `/account-data/characters` | `src/pages/account-data/CharacterView.tsx` |
-| Inventory | `/account-data/inventory` | `src/pages/account-data/InventoryView.tsx` |
-| Resources | `/account-data/resources` | `src/pages/account-data/ResourceView.tsx` |
-| Relic Triage | `/account-data/triage` | `src/pages/account-data/TriageView.tsx` |
-| DMG Optimizer | `/team-damage/optimizer` | `src/pages/team-analysis/TeamDamagePage.tsx` |
-| Investment | `/team-damage/investment` | `src/pages/team-analysis/TeamDamagePage.tsx` |
-| Light Cone & Relic Choice | `/team-damage/choice` | `src/pages/team-analysis/TeamDamagePage.tsx` |
+| Characters | `/account-data/characters` | `src/pages/game-account/CharacterView.tsx` |
+| Inventory | `/account-data/inventory` | `src/pages/game-account/InventoryView.tsx` |
+| Resources | `/account-data/resources` | `src/pages/game-account/ResourceView.tsx` |
+| Relic Triage | `/account-data/triage` | `src/pages/game-account/TriageView.tsx` |
+| DMG Optimizer | `/team-damage/optimizer` | `src/pages/teams/TeamDamagePage.tsx` |
+| Investment | `/team-damage/investment` | `src/pages/teams/TeamDamagePage.tsx` |
+| Light Cone & Relic Choice | `/team-damage/choice` | `src/pages/teams/TeamDamagePage.tsx` |
 | Character Builds | `/builds/configure` | `src/pages/builds/CharacterBuildView.tsx` |
 | Relic Filters | `/builds/filters` | `src/pages/builds/RelicFiltersView.tsx` |
 | Character Priority | `/tier-list/characters` | `src/pages/tier-list/CharacterTierListView.tsx` |

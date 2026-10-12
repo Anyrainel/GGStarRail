@@ -1,14 +1,14 @@
 import { z } from "zod";
-import {
-  AccountSnapshotSchema,
-  AchievementCompletionSchema,
-} from "@/domain/account/schemas";
 import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
   TriageRulesSchema,
 } from "@/domain/build/schemas";
+import {
+  AccountSnapshotSchema,
+  AchievementCompletionSchema,
+} from "@/domain/game-account/schemas";
 
 /** Workspace fields whose shape is shared by every supported store version. */
 export const WORKSPACE_USER_FIELDS = {

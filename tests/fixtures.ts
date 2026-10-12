@@ -1,4 +1,4 @@
-import type { AccountSnapshot, Relic } from "@/domain/account/schemas";
+import type { AccountSnapshot, Relic } from "@/domain/game-account/schemas";
 
 export function makeRelic(overrides: Partial<Relic> = {}): Relic {
   return {

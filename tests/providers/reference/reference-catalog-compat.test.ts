@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import websiteManifest from "@/data/game/manifest.json";
+import websiteManifest from "@/generated/catalog/manifest.json";
 
 const mockedModuleIds = [
-  "@/data/game/manifest.json",
+  "@/generated/catalog/manifest.json",
   "@/providers/reference/gameDataLoader",
   "@/providers/reference/assets",
 ] as const;
@@ -13,7 +13,9 @@ afterEach(() => {
 });
 
 function mockMember(schemaVersion: string, collection?: string) {
-  vi.doMock("@/data/game/manifest.json", () => ({ default: websiteManifest }));
+  vi.doMock("@/generated/catalog/manifest.json", () => ({
+    default: websiteManifest,
+  }));
   vi.doMock("@/providers/reference/gameDataLoader", () => ({
     loadGameMember: async (member: string) => ({
       schema_version: schemaVersion,
@@ -33,7 +35,7 @@ describe("current reference producer runtime schema boundary", () => {
     "1.2.0",
     "1.3.0",
   ])("rejects an obsolete %s runtime manifest", async (schemaVersion) => {
-    vi.doMock("@/data/game/manifest.json", () => ({
+    vi.doMock("@/generated/catalog/manifest.json", () => ({
       default: {
         ...websiteManifest,
         reference_manifest: {

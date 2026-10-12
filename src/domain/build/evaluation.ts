@@ -3,8 +3,8 @@ import type {
   Relic,
   RelicCategory,
   RelicSlot,
-} from "@/domain/account/schemas";
-import { relicCategory } from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
+import { relicCategory } from "@/domain/game-account/schemas";
 import {
   type BuildRelicFilter,
   deriveBuildFilters,

@@ -1,5 +1,5 @@
-import { statBonusTraceId } from "@/domain/account/traces";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
+import { statBonusTraceId } from "@/domain/game-account/traces";
 import { isCombatTypeId } from "@/domain/stats";
 import {
   Battle,

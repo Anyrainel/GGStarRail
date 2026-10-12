@@ -4,7 +4,7 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "@/i18n/I18nContext";
-import InventoryView from "@/pages/account-data/InventoryView";
+import InventoryView from "@/pages/game-account/InventoryView";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { createDemoAccount } from "../../fixtures/demoAccount";
 

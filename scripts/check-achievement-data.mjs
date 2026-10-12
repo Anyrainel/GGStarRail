@@ -16,7 +16,9 @@ export async function checkAchievementData(root, manifest) {
       const descriptor = manifest.achievementFiles[channel][part];
       const expected = `achievements${channel === "beta" ? "_beta" : ""}${part === "logic" ? "" : `_${part}`}.json${channel === "beta" ? ".gz" : ""}`;
       assert.equal(descriptor.path, expected);
-      const bytes = await readFile(path.join(root, "src/data/game", expected));
+      const bytes = await readFile(
+        path.join(root, "src/generated/catalog", expected)
+      );
       assert.equal(bytes.length, descriptor.byte_count);
       assert.equal(sha256(bytes), descriptor.sha256);
       parts[part] = JSON.parse(channel === "beta" ? gunzipSync(bytes) : bytes);

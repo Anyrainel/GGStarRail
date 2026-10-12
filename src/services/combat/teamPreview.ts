@@ -1,6 +1,6 @@
-import type { AccountSnapshot, Relic } from "@/domain/account/schemas";
 import type { BuildConfiguration } from "@/domain/build/schemas";
 import type { SetPlan } from "@/domain/combat/optimize/relics";
+import type { AccountSnapshot, Relic } from "@/domain/game-account/schemas";
 import type { TeamPlan } from "@/domain/team/schemas";
 import { ownedCharacter } from "./accountTeam";
 import type { WorkspaceSources } from "./jobs";
@@ -27,16 +27,18 @@ let presetRequest: Promise<CombatPresets> | null = null;
 
 /** The in-game recommendation presets, loaded once per session. */
 export function loadCombatPresets(): Promise<CombatPresets> {
-  presetRequest ??= import("@/presets/builds/in-game.json").then((module) => {
-    const preset = module.default as unknown as {
-      builds: BuildConfiguration[];
-      characterLightConeIds: Record<string, string[]>;
-    };
-    return {
-      presetBuilds: preset.builds,
-      presetLightConeIds: preset.characterLightConeIds,
-    };
-  });
+  presetRequest ??= import("@/config/presets/builds/in-game.json").then(
+    (module) => {
+      const preset = module.default as unknown as {
+        builds: BuildConfiguration[];
+        characterLightConeIds: Record<string, string[]>;
+      };
+      return {
+        presetBuilds: preset.builds,
+        presetLightConeIds: preset.characterLightConeIds,
+      };
+    }
+  );
   return presetRequest;
 }
 

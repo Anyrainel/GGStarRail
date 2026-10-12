@@ -1,4 +1,4 @@
-import type { AccountSnapshot } from "@/domain/account/schemas";
+import type { AccountSnapshot } from "@/domain/game-account/schemas";
 
 export type ImportProviderId =
   | "reference-bundle"

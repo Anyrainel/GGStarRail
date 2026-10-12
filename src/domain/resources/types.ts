@@ -1,10 +1,10 @@
+import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
+import type { RelicScoringContext } from "@/domain/build/scoring";
 import type {
   AccountSnapshot,
   RelicCategory,
   RelicSlot,
-} from "@/domain/account/schemas";
-import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
-import type { RelicScoringContext } from "@/domain/build/scoring";
+} from "@/domain/game-account/schemas";
 import type {
   ResourceActionKind,
   ResourceSettings,

@@ -8,8 +8,8 @@ coverage/
 *.tsbuildinfo
 playwright-report/
 test-results/
-/src/generated/hsr-reference/
-/src/generated/hsr-assets/
+/src/generated/reference/
+/src/generated/assets/
 /public/assets/ggstarrail/webp/
 /public/assets/ggstarrail/cache/
 .DS_Store

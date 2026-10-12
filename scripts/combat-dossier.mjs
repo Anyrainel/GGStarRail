@@ -21,7 +21,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const gameDir = path.join(root, "src/data/game");
+const gameDir = path.join(root, "src/generated/catalog");
 const implDir = path.join(root, "src/domain/combat/impl");
 const trackerDir = path.join(root, "docs/combat/tracker");
 const KIT_DIRS = { C: "characters", L: "lightCones", R: "relicSets" };

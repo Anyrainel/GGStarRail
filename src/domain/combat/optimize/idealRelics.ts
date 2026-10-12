@@ -1,4 +1,4 @@
-import type { RelicSlot } from "@/domain/account/schemas";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 import { FIXED_MAIN_STAT } from "@/domain/stats";
 import type { RelicLoadout } from "../team/input";
 import type { TeamObjective } from "./objective";

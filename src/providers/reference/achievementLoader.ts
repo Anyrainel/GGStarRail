@@ -5,8 +5,8 @@ import { betaEnabled } from "./betaState";
 
 const urls = import.meta.glob<string>(
   [
-    "../../data/game/achievements*.json",
-    "../../data/game/achievements*.json.gz",
+    "../../generated/catalog/achievements*.json",
+    "../../generated/catalog/achievements*.json.gz",
   ],
   {
     eager: true,
@@ -21,7 +21,7 @@ function load<T>(part: "logic" | "en" | "zh", beta: boolean): Promise<T> {
   let promise = pending.get(file);
   if (!promise) {
     promise = (async () => {
-      const url = urls[`../../data/game/${file}`];
+      const url = urls[`../../generated/catalog/${file}`];
       if (!url) throw new Error(`Missing achievement transport ${file}`);
       const response = await fetch(url);
       if (!response.ok)

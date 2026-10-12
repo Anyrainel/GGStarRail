@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import type { RelicSlot } from "@/domain/account/schemas";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
 } from "@/domain/build/configuration";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 import { generateResourceSuggestions } from "@/domain/resources/recommendations";
 import { DEFAULT_RESOURCE_SETTINGS } from "@/domain/resources/schemas";
 import type {

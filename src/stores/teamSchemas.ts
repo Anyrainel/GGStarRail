@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StableIdSchema } from "@/domain/account/schemas";
+import { StableIdSchema } from "@/domain/game-account/schemas";
 import { TeamPlanSchema } from "@/domain/team/schemas";
 
 export const TEAM_STORE_VERSION = 1;

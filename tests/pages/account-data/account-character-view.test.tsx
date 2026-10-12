@@ -3,15 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { APP_PATHS } from "@/config/navigation";
-import { abilityTraceId } from "@/domain/account/traces";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
 } from "@/domain/build/configuration";
 import { eidolonLevelBonuses } from "@/domain/combat/kit/skillLevels";
+import { abilityTraceId } from "@/domain/game-account/traces";
 import { I18nProvider } from "@/i18n/I18nContext";
 import { messagesEn } from "@/i18n/messages.en";
-import CharacterView from "@/pages/account-data/CharacterView";
+import CharacterView from "@/pages/game-account/CharacterView";
 import { loadBuildReferences } from "@/services/catalog/buildReferences";
 import {
   characterCatalogName,

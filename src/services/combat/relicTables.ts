@@ -1,5 +1,5 @@
-import type { RelicSlot } from "@/domain/account/schemas";
 import type { RelicTables, RollQuality } from "@/domain/combat/optimize/relics";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import type {
   ProgressionTables,

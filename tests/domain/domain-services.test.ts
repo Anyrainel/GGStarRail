@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { relicCategory } from "@/domain/account/schemas";
 import { matchesComputedFilter } from "@/domain/build/filters";
 import type {
   BuildConfiguration,
@@ -13,6 +12,7 @@ import {
   scoreRelic,
 } from "@/domain/build/scoring";
 import { triageRelic } from "@/domain/build/triage";
+import { relicCategory } from "@/domain/game-account/schemas";
 import { makeRelic } from "../fixtures";
 
 const profile: ScoreProfile = {

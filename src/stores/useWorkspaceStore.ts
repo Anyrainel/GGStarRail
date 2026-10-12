@@ -2,14 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/config/identity";
 import {
-  type AccountImportMode,
-  applyAccountImport,
-} from "@/domain/account/merge";
-import {
-  type AccountSnapshot,
-  AchievementCompletionSchema,
-} from "@/domain/account/schemas";
-import {
   type CharacterLightConeChoices,
   CharacterLightConeChoicesSchema,
 } from "@/domain/build/lightConeChoices";
@@ -18,6 +10,14 @@ import type {
   ScoreProfile,
   TriageRules,
 } from "@/domain/build/schemas";
+import {
+  type AccountImportMode,
+  applyAccountImport,
+} from "@/domain/game-account/merge";
+import {
+  type AccountSnapshot,
+  AchievementCompletionSchema,
+} from "@/domain/game-account/schemas";
 import { migrateWorkspaceStore } from "./migration/workspace";
 import {
   DEFAULT_WORKSPACE,

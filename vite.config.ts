@@ -37,10 +37,7 @@ export default defineConfig({
         // obsolete images retained by a local incremental conversion.
         const lookup = JSON.parse(
           await readFile(
-            path.resolve(
-              __dirname,
-              "src/generated/hsr-assets/runtime-lookup.json"
-            ),
+            path.resolve(__dirname, "src/generated/assets/runtime-lookup.json"),
             "utf8"
           )
         );
@@ -124,7 +121,7 @@ export default defineConfig({
       // Source snapshots are atomically replaced by the updater. They aren't
       // runtime modules, and watching them can raise EBUSY on Windows.
       ignored: [
-        "**/src/generated/hsr-reference/**",
+        "**/src/generated/reference/**",
         "**/.cache/**",
         "**/public/assets/ggstarrail/cache/**",
       ],

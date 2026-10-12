@@ -4,9 +4,9 @@ import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18nProvider } from "@/i18n/I18nContext";
-import CharacterView from "@/pages/account-data/CharacterView";
-import InventoryView from "@/pages/account-data/InventoryView";
 import CharacterBuildView from "@/pages/builds/CharacterBuildView";
+import CharacterView from "@/pages/game-account/CharacterView";
+import InventoryView from "@/pages/game-account/InventoryView";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 function renderPage(page: ReactElement) {

@@ -10,14 +10,14 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import type { AccountSnapshot } from "@/domain/account/schemas";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
 } from "@/domain/build/configuration";
+import type { AccountSnapshot } from "@/domain/game-account/schemas";
 import { I18nProvider } from "@/i18n/I18nContext";
-import { ResourceView } from "@/pages/account-data/ResourceView";
-import { TriageView } from "@/pages/account-data/TriageView";
+import { ResourceView } from "@/pages/game-account/ResourceView";
+import { TriageView } from "@/pages/game-account/TriageView";
 import { loadBuildReferences } from "@/services/catalog/buildReferences";
 import { useResourceSettingsStore } from "@/stores/useResourceSettingsStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";

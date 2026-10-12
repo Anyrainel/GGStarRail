@@ -176,7 +176,7 @@ export const DEFAULT_REFERENCE_MANIFEST_PATH = path.resolve(
   repositoryRoot,
   "src",
   "generated",
-  "hsr-reference",
+  "reference",
   "manifest.json"
 );
 

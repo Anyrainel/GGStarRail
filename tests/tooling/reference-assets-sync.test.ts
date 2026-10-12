@@ -35,7 +35,7 @@ const generatedManifestPath = path.resolve(
 );
 const generatedAssetDirectory = path.dirname(generatedManifestPath);
 const generatedReferenceManifestPath = path.resolve(
-  "src/generated/hsr-reference/manifest.json"
+  "src/generated/reference/manifest.json"
 );
 
 function readManifest(): AssetManifestFixture {

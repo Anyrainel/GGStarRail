@@ -36,9 +36,13 @@ function installFixtureTransport() {
       // Exercise the production fetch/reconstruction path against the actual
       // published fixture files; every other request remains forbidden.
       const match =
-        /^\/src\/data\/game\/([a-z_]+\.json(?:\.gz)?)(?:\?.*)?$/.exec(url);
+        /^\/src\/generated\/catalog\/([a-z_]+\.json(?:\.gz)?)(?:\?.*)?$/.exec(
+          url
+        );
       if (!match) throw new Error(`Unexpected network access in test: ${url}`);
-      const bytes = await readFile(path.resolve("src/data/game", match[1]));
+      const bytes = await readFile(
+        path.resolve("src/generated/catalog", match[1])
+      );
       return new Response(bytes);
     })
   );

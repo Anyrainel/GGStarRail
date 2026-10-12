@@ -1,7 +1,7 @@
-import manifestJson from "@/data/game/manifest.json";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
+import manifestJson from "@/generated/catalog/manifest.json";
 import { loadAchievementLogic } from "@/providers/reference/achievementLoader";
 import { loadGameMember } from "@/providers/reference/gameDataLoader";
 import { loadCatalogAssetLookup } from "./assets";

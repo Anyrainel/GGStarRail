@@ -14,7 +14,7 @@ import {
 } from "./sync-hsr-reference.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
-const reference = path.join(root, "src/generated/hsr-reference");
+const reference = path.join(root, "src/generated/reference");
 const lockPath = path.join(root, "data-bundle.lock.json");
 const scratch = path.join(root, "test-results");
 await mkdir(scratch, { recursive: true });

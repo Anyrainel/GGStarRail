@@ -6,7 +6,7 @@ import {
   type Relic,
   type RelicSlot,
   TracePointIdSchema,
-} from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
 import { assertNoSensitiveFields } from "@/lib/security/credentials";
 import {
   accountCharacterKey,

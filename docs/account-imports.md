@@ -153,7 +153,7 @@ levels for every source. Ability suffixes are `001` Basic ATK, `002` Skill,
 Skill/Talent, and `420` Elation Skill; their values are base levels without
 Eidolon bonuses. Bonus Abilities use `101`–`103` and Stat Bonuses `201`–`210`,
 holding 1 when unlocked and 0 when the source reports them locked. A missing
-key means the source did not report that node. `src/domain/account/traces.ts`
+key means the source did not report that node. `src/domain/game-account/traces.ts`
 owns this vocabulary.
 
 Account snapshots v1–v3 accepted arbitrary keys, and the interoperable v4

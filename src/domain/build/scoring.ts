@@ -1,5 +1,5 @@
-import type { Relic } from "@/domain/account/schemas";
-import { relicCategory } from "@/domain/account/schemas";
+import type { Relic } from "@/domain/game-account/schemas";
+import { relicCategory } from "@/domain/game-account/schemas";
 import { accountStatToDecimal, FIXED_MAIN_STAT } from "@/domain/stats";
 import type { BuildConfiguration, ScoreProfile } from "./schemas";
 

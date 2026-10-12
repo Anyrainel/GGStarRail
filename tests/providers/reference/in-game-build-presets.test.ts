@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import inGamePreset from "@/presets/builds/in-game.json";
+import inGamePreset from "@/config/presets/builds/in-game.json";
 import type { RelicSlotId } from "@/providers/reference/types";
 import { parseBuildWorkspaceBundle } from "@/services/builds/bundle";
 import { buildDisplayName } from "@/services/builds/presentation";

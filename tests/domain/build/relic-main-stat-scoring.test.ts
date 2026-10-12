@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Relic } from "@/domain/account/schemas";
 import type { ScoreProfile } from "@/domain/build/schemas";
 import { scoreRelic } from "@/domain/build/scoring";
+import type { Relic } from "@/domain/game-account/schemas";
 import {
   generatedRelicMainStatDisplayValues,
   validateRelicMainStatDisplayValue,

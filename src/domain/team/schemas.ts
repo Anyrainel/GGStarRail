@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { StableIdSchema } from "@/domain/account/schemas";
 import { SCENARIO_PRESETS } from "@/domain/combat/team/input";
+import { StableIdSchema } from "@/domain/game-account/schemas";
 
 /**
  * A team member stores only what the user chose. Everything else (level,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AccountSnapshotSchema } from "@/domain/account/schemas";
+import { AccountSnapshotSchema } from "@/domain/game-account/schemas";
 import { assertNoSensitiveFields } from "@/lib/security/credentials";
 import { starRailServerForUid } from "@/providers/accountNormalization";
 import { normalizeEnkaHsrShowcase } from "@/providers/enka/schema";

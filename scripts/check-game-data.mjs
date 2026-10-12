@@ -90,7 +90,7 @@ export function reconstruct(stats, en, zh, revision) {
 }
 
 export async function checkGameData(repositoryRoot = root) {
-  const gameRoot = path.join(repositoryRoot, "src/data/game");
+  const gameRoot = path.join(repositoryRoot, "src/generated/catalog");
   const manifest = JSON.parse(
     await readFile(path.join(gameRoot, "manifest.json"), "utf8")
   );

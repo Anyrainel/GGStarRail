@@ -1,7 +1,7 @@
 import {
   ABILITY_TRACE_SUFFIX,
   type AbilityTraceKind,
-} from "@/domain/account/traces";
+} from "@/domain/game-account/traces";
 import type { CharacterData, KitSkill, KitTrace } from "../model/data";
 
 /** Ability kinds whose level the player raises in the Trace menu. */

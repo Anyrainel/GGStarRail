@@ -9,15 +9,15 @@ import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import HomePage from "@/pages/HomePage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
-const CharacterView = lazy(() => import("@/pages/account-data/CharacterView"));
-const InventoryView = lazy(() => import("@/pages/account-data/InventoryView"));
+const CharacterView = lazy(() => import("@/pages/game-account/CharacterView"));
+const InventoryView = lazy(() => import("@/pages/game-account/InventoryView"));
 const ResourceView = lazy(() =>
-  import("@/pages/account-data/ResourceView").then((module) => ({
+  import("@/pages/game-account/ResourceView").then((module) => ({
     default: module.ResourceView,
   }))
 );
 const TriageView = lazy(() =>
-  import("@/pages/account-data/TriageView").then((module) => ({
+  import("@/pages/game-account/TriageView").then((module) => ({
     default: module.TriageView,
   }))
 );
@@ -29,9 +29,7 @@ const RelicFiltersView = lazy(() => import("@/pages/builds/RelicFiltersView"));
 const CharacterBuildView = lazy(
   () => import("@/pages/builds/CharacterBuildView")
 );
-const TeamDamagePage = lazy(
-  () => import("@/pages/team-analysis/TeamDamagePage")
-);
+const TeamDamagePage = lazy(() => import("@/pages/teams/TeamDamagePage"));
 const CharacterTierListView = lazy(
   () => import("@/pages/tier-list/CharacterTierListView")
 );

@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
-import type { Relic } from "@/domain/account/schemas";
+import type { Relic } from "@/domain/game-account/schemas";
 import { I18nProvider } from "@/i18n/I18nContext";
-import InventoryView from "@/pages/account-data/InventoryView";
+import InventoryView from "@/pages/game-account/InventoryView";
 import {
   loadPropertyTables,
   loadRelicSets,

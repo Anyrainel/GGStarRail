@@ -1,7 +1,10 @@
 import { TriangleAlert } from "lucide-react";
 import { useId } from "react";
 import { Badge } from "@/components/ui/badge";
-import type { AccountSnapshot, ImportCoverage } from "@/domain/account/schemas";
+import type {
+  AccountSnapshot,
+  ImportCoverage,
+} from "@/domain/game-account/schemas";
 import { useI18n } from "@/i18n/I18nContext";
 
 /** Flags partial imports; complete sources need no notice. */

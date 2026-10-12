@@ -3,7 +3,7 @@ import {
   type RelicCategory,
   type RelicSlot,
   relicCategory,
-} from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
 import { buildMainStats } from "./configuration";
 import type {
   BuildConfiguration,

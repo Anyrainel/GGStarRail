@@ -133,7 +133,7 @@ const defaultOutputDirectory = path.resolve(
   repositoryRoot,
   "src",
   "generated",
-  "hsr-reference"
+  "reference"
 );
 
 function fail(message) {

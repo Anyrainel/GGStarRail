@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { RelicCategorySchema, StableIdSchema } from "@/domain/account/schemas";
+import {
+  RelicCategorySchema,
+  StableIdSchema,
+} from "@/domain/game-account/schemas";
 
 export const ScoreProfileSchema = z
   .object({

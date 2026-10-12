@@ -7,7 +7,7 @@ evidence helpers. It does not locate a producer checkout or launch Python.
 ## Update and reproduce
 
 Run the export command in the producer repository and select this checkout as its
-destination. The producer writes `src/data/game/` and
+destination. The producer writes `src/generated/catalog/` and
 `public/good/hsr_scanner_data.json`,
 retaining the same JSON in its own output tree. The shared scanner/capture file
 excludes achievements and Quest definitions; packet capture exports all Quest
@@ -57,7 +57,7 @@ under `src/providers/reference/`.
 
 ## Files and reconstruction
 
-Tracked `src/data/game/manifest.json` has transport `schema_version: "1.0.0"`,
+Tracked `src/generated/catalog/manifest.json` has transport `schema_version: "1.0.0"`,
 `source_revision`, `game_version`, `members`, `reference_manifest`, and
 `release_evidence`. `reference_manifest` contains only `bundle_id`, `game_id`,
 `schema_version`, `locales`, and `counts`, recomputed for released records.

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { StableIdSchema } from "@/domain/account/schemas";
+import { StableIdSchema } from "@/domain/game-account/schemas";
 
 export const CharacterLightConeChoicesSchema = z.record(
   StableIdSchema,

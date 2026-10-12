@@ -1,4 +1,4 @@
-import type { RelicSlot } from "@/domain/account/schemas";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 
 /**
  * HSR property IDs used by Relic affixes, Trace bonuses, Light Cone effects,

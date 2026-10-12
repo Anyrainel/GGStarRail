@@ -73,7 +73,7 @@ export async function loadCombatCatalog(): Promise<CombatCatalog> {
       loadProgression(),
       loadRelicPieces(),
       loadPropertyTables(),
-      import("@/presets/builds/in-game.json"),
+      import("@/config/presets/builds/in-game.json"),
     ]);
   const preset = presets.default as unknown as {
     builds: BuildConfiguration[];

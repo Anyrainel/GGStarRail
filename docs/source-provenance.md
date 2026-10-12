@@ -18,7 +18,7 @@ evidence remains validation-only and never replaces a normalized value.
 
 ## Local generation and sync
 
-`src/generated/hsr-reference/` is ignored local output. A fresh GGStarRail
+`src/generated/reference/` is ignored local output. A fresh GGStarRail
 checkout runs `npm run data:restore` to obtain the checksummed release pinned
 in `data-bundle.lock.json`, followed by `npm run assets:webp`. Maintainers may
 instead receive a verified bundle from the producer. See

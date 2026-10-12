@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { AccountSnapshotSchema, RelicSchema } from "@/domain/account/schemas";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
@@ -14,13 +13,17 @@ import {
   evaluateBuildFilter,
 } from "@/domain/build/filters";
 import { triageRelic } from "@/domain/build/triage";
+import {
+  AccountSnapshotSchema,
+  RelicSchema,
+} from "@/domain/game-account/schemas";
 import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
 import {
   createManagerInstructionEnvelope,
   createManagerInstructionPreview,
   serializeManagerInstructionEnvelope,
   summarizeManagerInstructionActionability,
-} from "@/providers/scanner-manager/instructions";
+} from "@/providers/scanner/companion/instructions";
 import { createBuildWorkspaceBundle } from "@/services/builds/bundle";
 import {
   createRelicScoringContext,

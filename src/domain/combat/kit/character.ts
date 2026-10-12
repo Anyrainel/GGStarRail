@@ -1,5 +1,5 @@
-import { bonusAbilityTraceId } from "@/domain/account/traces";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
+import { bonusAbilityTraceId } from "@/domain/game-account/traces";
 import { isCombatTypeId } from "@/domain/stats";
 import type { CharacterData } from "../model/data";
 import type { AbilityDef, PolicyView, TurnPolicy, UltimatePolicy } from "./api";

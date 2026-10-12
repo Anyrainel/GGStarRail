@@ -7,9 +7,9 @@ import {
 } from "@/components/shared/relic/RelicSlotGrid";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Relic } from "@/domain/account/schemas";
 import type { ScoredRelic } from "@/domain/build/evaluation";
 import type { BuildFilterMatch } from "@/domain/build/filters";
+import type { Relic } from "@/domain/game-account/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";

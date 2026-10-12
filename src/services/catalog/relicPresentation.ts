@@ -3,7 +3,7 @@ import {
   type RelicCategory,
   type RelicSlot,
   relicCategory,
-} from "@/domain/account/schemas";
+} from "@/domain/game-account/schemas";
 import type { MessageKey } from "@/i18n/messages.en";
 
 /** Account-level Relic slot IDs: four Cavern Relics, then two Planar Ornaments. */

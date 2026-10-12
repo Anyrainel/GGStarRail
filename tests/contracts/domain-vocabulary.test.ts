@@ -3,7 +3,7 @@ import {
   abilityTraceId,
   bonusAbilityTraceId,
   statBonusTraceId,
-} from "@/domain/account/traces";
+} from "@/domain/game-account/traces";
 import {
   accountStatToDecimal,
   CATALOG_RELIC_SLOT,

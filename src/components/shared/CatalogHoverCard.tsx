@@ -4,8 +4,8 @@ import {
   CatalogLoadError,
   CatalogLoading,
 } from "@/components/shared/CatalogLoadState";
-import type { Relic } from "@/domain/account/schemas";
 import type { CatalogAssetKind } from "@/domain/assets";
+import type { Relic } from "@/domain/game-account/schemas";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";

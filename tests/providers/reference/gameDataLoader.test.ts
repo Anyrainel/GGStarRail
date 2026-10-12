@@ -72,7 +72,10 @@ describe("published game transport", () => {
 
   it("matches published released counts and keeps enhancements outside default data", async () => {
     const manifest = JSON.parse(
-      await readFile(path.resolve("src/data/game/manifest.json"), "utf8")
+      await readFile(
+        path.resolve("src/generated/catalog/manifest.json"),
+        "utf8"
+      )
     );
     const { loadGameMember } = await import(
       "@/providers/reference/gameDataLoader"

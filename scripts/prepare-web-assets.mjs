@@ -14,7 +14,7 @@ import {
 const root = path.resolve(import.meta.dirname, "..");
 const validated = await validatePublishedAssets();
 const media = path.join(root, "public/assets/ggstarrail/webp");
-const generated = path.join(root, "src/generated/hsr-assets");
+const generated = path.join(root, "src/generated/assets");
 const encoder = JSON.stringify({
   sharp: sharp.versions,
   quality: 85,

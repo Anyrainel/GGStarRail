@@ -1,6 +1,6 @@
 # Runtime game data
 
-`src/data/game/` mirrors GenshinTools' per-entity numeric, English, Chinese and
+`src/generated/catalog/` mirrors GenshinTools' per-entity numeric, English, Chinese and
 beta file boundaries. The data producer generates these files; the application does not
 import its raw bilingual reference members.
 
@@ -81,7 +81,7 @@ remain intact for future analysis.
 Achievement membership always uses AchievementData, never the numeric `40xxxxx`
 range, which contains ordinary targets too.
 
-The data producer writes `src/data/game/` and `public/good/hsr_scanner_data.json`
+The data producer writes `src/generated/catalog/` and `public/good/hsr_scanner_data.json`
 into its selected website checkout and retains identical local exports. The website
 does not locate or invoke the producer. `data:website:check` rejects revision or
 catalog coverage drift.

@@ -23,9 +23,7 @@ it("keeps executable source under an explicit architecture owner", () => {
     "components",
     "pages",
     "content",
-    "data",
     "generated",
-    "presets",
   ]);
   const unowned = readdirSync(path.join(root, "src"), { withFileTypes: true })
     .filter((entry) =>
@@ -47,6 +45,6 @@ it("keeps executable catalog loaders out of generated data folders", () => {
         code.push(path.relative(root, file));
     }
   };
-  walk(path.join(root, "src/data"));
+  walk(path.join(root, "src/generated"));
   expect(code).toEqual([]);
 });

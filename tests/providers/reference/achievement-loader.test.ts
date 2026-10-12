@@ -10,8 +10,8 @@ it("loads logic and only the selected language, reusing logic when language chan
   const english = await loadAchievementDisplay("en");
   expect(english.achievements).toHaveLength(1950);
   expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
-    "/src/data/game/achievements.json",
-    "/src/data/game/achievements_en.json",
+    "/src/generated/catalog/achievements.json",
+    "/src/generated/catalog/achievements_en.json",
   ]);
   const chinese = await loadAchievementDisplay("zh-CN");
   await loadAchievementLogic();
@@ -19,7 +19,9 @@ it("loads logic and only the selected language, reusing logic when language chan
     english.achievements.map((entry) => entry.id)
   );
   expect(fetch).toHaveBeenCalledTimes(3);
-  expect(fetch).toHaveBeenLastCalledWith("/src/data/game/achievements_zh.json");
+  expect(fetch).toHaveBeenLastCalledWith(
+    "/src/generated/catalog/achievements_zh.json"
+  );
 });
 
 it("loads preview logic and the selected preview language only when enabled", async () => {
@@ -31,10 +33,10 @@ it("loads preview logic and the selected preview language only when enabled", as
     1950
   );
   expect(vi.mocked(fetch).mock.calls.map(([url]) => url)).toEqual([
-    "/src/data/game/achievements.json",
-    "/src/data/game/achievements_beta.json.gz",
-    "/src/data/game/achievements_zh.json",
-    "/src/data/game/achievements_beta_zh.json.gz",
+    "/src/generated/catalog/achievements.json",
+    "/src/generated/catalog/achievements_beta.json.gz",
+    "/src/generated/catalog/achievements_zh.json",
+    "/src/generated/catalog/achievements_beta_zh.json.gz",
   ]);
 });
 

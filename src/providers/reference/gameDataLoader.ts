@@ -1,4 +1,4 @@
-import manifest from "../../data/game/manifest.json";
+import manifest from "../../generated/catalog/manifest.json";
 import { betaEnabled } from "./betaState";
 import {
   mergeBetaCharacterAdditions,
@@ -11,7 +11,7 @@ import {
 // every member, language and release channel. Beta URLs never trigger a fetch
 // until the hidden preference is enabled.
 const urls = import.meta.glob<string>(
-  ["../../data/game/*.json", "../../data/game/*.json.gz"],
+  ["../../generated/catalog/*.json", "../../generated/catalog/*.json.gz"],
   {
     eager: true,
     query: "?url",
@@ -40,7 +40,7 @@ export function isBetaEntity(member: string, id: string | number): boolean {
 }
 
 async function fetchJson(path: string): Promise<unknown> {
-  const url = urls[`../../data/game/${path}`];
+  const url = urls[`../../generated/catalog/${path}`];
   if (!url) throw new Error(`Missing game data file: ${path}`);
   const response = await fetch(url);
   if (!response.ok) {

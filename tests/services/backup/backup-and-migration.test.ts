@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
-import { parseScannerExport } from "@/providers/scanner/schema";
+import { parseScannerExport } from "@/providers/scanner/formats/schema";
 import {
   createBackupEnvelope,
   parseBackup,

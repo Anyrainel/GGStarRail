@@ -9,7 +9,7 @@ import {
 } from "./validate-current-reference.mjs";
 import { validateReferenceV2 } from "./validate-reference-v2.mjs";
 
-const game = new URL("../src/data/game/", import.meta.url);
+const game = new URL("../src/generated/catalog/", import.meta.url);
 const manifest = JSON.parse(await readFile(new URL("manifest.json", game)));
 const documents = {};
 for (const [member, channels] of Object.entries(manifest.members)) {

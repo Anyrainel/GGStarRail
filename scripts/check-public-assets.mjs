@@ -7,7 +7,7 @@ const publicDirectory = path.join(root, "public");
 const outputDirectory = path.join(root, "dist");
 const lookup = JSON.parse(
   await readFile(
-    path.join(root, "src/generated/hsr-assets/runtime-lookup.json"),
+    path.join(root, "src/generated/assets/runtime-lookup.json"),
     "utf8"
   )
 );

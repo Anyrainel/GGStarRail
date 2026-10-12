@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import runtimeLookupUrl from "@/generated/hsr-assets/runtime-lookup.json?url";
+import runtimeLookupUrl from "@/generated/assets/runtime-lookup.json?url";
 import { resolveCatalogAsset } from "@/lib/assets/urls";
 import { loadCatalogAssetLookup } from "@/providers/reference/assets";
 
 const runtimeLookupPath = path.resolve(
-  "src/generated/hsr-assets/runtime-lookup.json"
+  "src/generated/assets/runtime-lookup.json"
 );
 
 describe("lazy reference producer asset runtime adapter", () => {

@@ -1,4 +1,3 @@
-import type { AccountSnapshot } from "@/domain/account/schemas";
 import type { BuildConfiguration } from "@/domain/build/schemas";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { ConfigurableSlot } from "@/domain/combat/optimize/idealRelics";
@@ -10,6 +9,7 @@ import {
   SCENARIO_PRESETS,
   type ScenarioInput,
 } from "@/domain/combat/team/input";
+import type { AccountSnapshot } from "@/domain/game-account/schemas";
 import type { TeamMemberPlan, TeamPlan } from "@/domain/team/schemas";
 import {
   accountMember,

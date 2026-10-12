@@ -1,7 +1,5 @@
 import { Filter, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
-import { AccountImportAction } from "@/components/account/AccountImportAction";
-import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { FilterSetCard } from "@/components/builds/filters/FilterSetCard";
 import {
   type LoadoutRecommendation,
@@ -14,6 +12,8 @@ import {
 } from "@/components/builds/filters/RelicFilterSidebar";
 import { RelicScoreCard } from "@/components/builds/RelicScoreCard";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
+import { AccountImportAction } from "@/components/game-account/imports/AccountImportAction";
+import { WorkspaceStartState } from "@/components/game-account/imports/WorkspaceStartState";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";

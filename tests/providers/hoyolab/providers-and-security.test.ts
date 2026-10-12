@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import manifest from "@/generated/hsr-reference/manifest.json";
+import manifest from "@/generated/reference/manifest.json";
 import {
   EphemeralAuthMaterial,
   importFromHoYoLab,
 } from "@/providers/hoyolab/ephemeralAuth";
 import { parseReferenceManifest } from "@/providers/reference/manifest";
-import { parseScannerExport } from "@/providers/scanner/schema";
+import { parseScannerExport } from "@/providers/scanner/formats/schema";
 import { PROVIDER_REGISTRY } from "@/providers/types";
 import { makeAccountSnapshot } from "../../fixtures";
 

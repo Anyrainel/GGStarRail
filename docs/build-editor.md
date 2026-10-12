@@ -37,7 +37,7 @@ backup/build imports are rejected. There are no historical workspace or paired
 build migrations. HoyoData generates native recommendations directly in this format.
 
 HoyoData's full `hoyodata ggstarrail` export writes generated presets to
-`src/presets/builds/in-game.json`. This uses the build bundle contract with optional
+`src/config/presets/builds/in-game.json`. This uses the build bundle contract with optional
 `metadata: { name: { en, "zh-CN" }, author }`; author is `In-Game`.
 Generated card/profile names are absent. Card names derive from Character/set IDs
 in the current UI language; editing a name saves literal user text. Ordinary user

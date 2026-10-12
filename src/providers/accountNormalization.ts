@@ -1,4 +1,4 @@
-import type { RelicSlot } from "@/domain/account/schemas";
+import type { RelicSlot } from "@/domain/game-account/schemas";
 import {
   decimalToAccountStat,
   RELIC_SLOT_BY_CATALOG_SLOT,

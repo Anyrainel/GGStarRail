@@ -1,9 +1,4 @@
 import {
-  type Relic,
-  type RelicSlot,
-  relicCategory,
-} from "@/domain/account/schemas";
-import {
   BUILD_SLOT_ORDER,
   type BuildLoadoutResult,
   recommendBuildLoadout,
@@ -14,6 +9,11 @@ import {
 } from "@/domain/build/filters";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { type RelicScore, scoreRelic } from "@/domain/build/scoring";
+import {
+  type Relic,
+  type RelicSlot,
+  relicCategory,
+} from "@/domain/game-account/schemas";
 import type {
   ResourceRecommendationInput,
   ResourceRelicDefinition,

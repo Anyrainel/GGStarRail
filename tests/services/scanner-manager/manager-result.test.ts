@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ScannerResult } from "@/providers/scanner-manager/client";
+import type { ScannerResult } from "@/providers/scanner/companion/client";
 import {
   type ManagerInstructionEnvelope,
   matcherForRelic,
-} from "@/providers/scanner-manager/instructions";
-import { reconcileManagerResult } from "@/services/scanner-manager/reconcile";
+} from "@/providers/scanner/companion/instructions";
+import { reconcileManagerResult } from "@/services/scanner/reconcile";
 import { createDemoAccount } from "../../fixtures/demoAccount";
 
 describe("verified manager state reconciliation", () => {
