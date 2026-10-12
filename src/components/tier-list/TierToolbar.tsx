@@ -50,7 +50,7 @@ interface TierToolbarProps {
 }
 
 const INPUT_CLASS =
-  "h-9 w-full min-w-0 rounded-md border border-border bg-background px-3 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "h-9 w-full min-w-0 rounded-md border border-border bg-background px-3 text-sm outline-hidden focus-visible:ring-1 focus-visible:ring-ring";
 const ROW_CARD = "rounded-lg border border-border bg-card p-4";
 const ROW_LABEL = "shrink-0 text-sm font-medium text-muted-foreground";
 
@@ -447,7 +447,7 @@ export function TierToolbar({
                         <button
                           type="button"
                           aria-current={active ? "true" : undefined}
-                          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                           onClick={() => {
                             keepCurrent();
                             activate(document.category, id);

@@ -193,7 +193,7 @@ export function ScannerManagerConnection({
             value={port}
             disabled={Boolean(client) || submitting}
             onChange={(event) => setPort(event.target.value)}
-            className="h-9 w-24 rounded-md border border-input bg-background px-2 text-sm tabular-nums outline-none [appearance:textfield] focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="h-9 w-24 rounded-md border border-input bg-background px-2 text-sm tabular-nums outline-hidden [appearance:textfield] focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
         <span className="flex h-9 min-w-0 items-center gap-2 text-sm text-muted-foreground">

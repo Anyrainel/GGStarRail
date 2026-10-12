@@ -63,43 +63,46 @@ function characterOnPath(pathId: string): string {
 }
 
 describe("combat kit registry", () => {
-  it.each([
-    ...KIT_REGISTRY.characterIds,
-  ])("Character %s builds and simulates at E0 and E6", (id) => {
-    for (const eidolon of [0, 6]) {
-      const result = expectHealthy(team(member(id, { eidolon })));
-      const own = result.report.members.find((entry) => entry.slot === 0);
-      expect(
-        result.log.actions.some((action) => action.unitId === "ally:0")
-      ).toBe(true);
-      expect(own === undefined || Number.isFinite(own.damage)).toBe(true);
+  it.each([...KIT_REGISTRY.characterIds])(
+    "Character %s builds and simulates at E0 and E6",
+    (id) => {
+      for (const eidolon of [0, 6]) {
+        const result = expectHealthy(team(member(id, { eidolon })));
+        const own = result.report.members.find((entry) => entry.slot === 0);
+        expect(
+          result.log.actions.some((action) => action.unitId === "ally:0")
+        ).toBe(true);
+        expect(own === undefined || Number.isFinite(own.damage)).toBe(true);
+      }
     }
-  });
+  );
 
-  it.each([
-    ...KIT_REGISTRY.lightConeIds,
-  ])("Light Cone %s applies on a matching Path at S1 and S5", (id) => {
-    const lightCone = data.lightCones.get(id);
-    if (!lightCone) throw new Error(`Light Cone ${id} is not in the catalog`);
-    for (const superimposition of [1, 5]) {
+  it.each([...KIT_REGISTRY.lightConeIds])(
+    "Light Cone %s applies on a matching Path at S1 and S5",
+    (id) => {
+      const lightCone = data.lightCones.get(id);
+      if (!lightCone) throw new Error(`Light Cone ${id} is not in the catalog`);
+      for (const superimposition of [1, 5]) {
+        expectHealthy(
+          team(
+            member(characterOnPath(lightCone.path_id), {
+              lightCone: { id, level: 80, superimposition },
+            })
+          )
+        );
+      }
+    }
+  );
+
+  it.each([...KIT_REGISTRY.relicSetIds])(
+    "Relic set %s applies at every bonus tier",
+    (id) => {
+      const set = data.relicSets.get(id);
+      if (!set) throw new Error(`Relic set ${id} is not in the catalog`);
+      const pieces = set.kind === "planar_ornament" ? 2 : 4;
       expectHealthy(
-        team(
-          member(characterOnPath(lightCone.path_id), {
-            lightCone: { id, level: 80, superimposition },
-          })
-        )
+        team(member("1102", { relics: { stats: {}, sets: { [id]: pieces } } }))
       );
     }
-  });
-
-  it.each([
-    ...KIT_REGISTRY.relicSetIds,
-  ])("Relic set %s applies at every bonus tier", (id) => {
-    const set = data.relicSets.get(id);
-    if (!set) throw new Error(`Relic set ${id} is not in the catalog`);
-    const pieces = set.kind === "planar_ornament" ? 2 : 4;
-    expectHealthy(
-      team(member("1102", { relics: { stats: {}, sets: { [id]: pieces } } }))
-    );
-  });
+  );
 });

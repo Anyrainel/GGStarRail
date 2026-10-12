@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="15 0 560 200">
+  <title>GGStarRail</title>
   <defs>
     <linearGradient id="moon" x1="220" y1="18" x2="308" y2="191" gradientUnits="userSpaceOnUse">
       <stop stop-color="#81aec5"/>

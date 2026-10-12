@@ -72,38 +72,39 @@ function item(
 }
 
 describe("tier category layouts", () => {
-  it.each([
-    390, 560, 999, 1000, 1920,
-  ])("uses category tabs only below 1000px (%ipx)", async (width) => {
-    mockWidth(width);
-    const { container } = renderLayout([
-      { id: "Fire", name: "Fire" },
-      { id: "Quantum", name: "Quantum" },
-    ]);
-    if (width >= 1000) {
-      expect(screen.queryByRole("tablist")).toBeNull();
-      expect(container.querySelectorAll("[data-priority-tier]")).toHaveLength(
-        12
-      );
-    } else {
-      expect(
-        screen.getByRole("tablist", { name: "Priority groups" })
-      ).toBeInTheDocument();
-      await userEvent
-        .setup()
-        .click(screen.getByRole("tab", { name: "Quantum" }));
-      expect(screen.getByRole("tab", { name: "Quantum" })).toHaveAttribute(
-        "aria-selected",
-        "true"
-      );
-      expect(
-        container.querySelectorAll('[data-priority-group="Quantum"]')
-      ).toHaveLength(6);
-      expect(
-        container.querySelector('[data-priority-group="Fire"]')
-      ).toBeNull();
+  it.each([390, 560, 999, 1000, 1920])(
+    "uses category tabs only below 1000px (%ipx)",
+    async (width) => {
+      mockWidth(width);
+      const { container } = renderLayout([
+        { id: "Fire", name: "Fire" },
+        { id: "Quantum", name: "Quantum" },
+      ]);
+      if (width >= 1000) {
+        expect(screen.queryByRole("tablist")).toBeNull();
+        expect(container.querySelectorAll("[data-priority-tier]")).toHaveLength(
+          12
+        );
+      } else {
+        expect(
+          screen.getByRole("tablist", { name: "Priority groups" })
+        ).toBeInTheDocument();
+        await userEvent
+          .setup()
+          .click(screen.getByRole("tab", { name: "Quantum" }));
+        expect(screen.getByRole("tab", { name: "Quantum" })).toHaveAttribute(
+          "aria-selected",
+          "true"
+        );
+        expect(
+          container.querySelectorAll('[data-priority-group="Quantum"]')
+        ).toHaveLength(6);
+        expect(
+          container.querySelector('[data-priority-group="Fire"]')
+        ).toBeNull();
+      }
     }
-  });
+  );
 
   it.each([
     [999, "tablet"],
@@ -122,28 +123,32 @@ describe("tier category layouts", () => {
     );
   });
 
-  it.each([
-    390, 640,
-  ])("names only the active Path tab below 768px (%ipx)", async (width) => {
-    mockWidth(width);
-    renderLayout(
-      PATHS.map((path) => ({
-        ...path,
-        asset: { kind: "path" as const, id: path.id, sourcePath: "" },
-      }))
-    );
-    const hunt = screen.getByRole("tab", { name: "The Hunt" });
-    expect(hunt).toHaveAttribute("title", "The Hunt");
-    expect(hunt.querySelector("span")).toHaveClass("sr-only", "md:not-sr-only");
-    expect(hunt.querySelector("span")).not.toHaveClass("truncate");
-    expect(hunt.querySelector("img")).toHaveAttribute("loading", "eager");
-    expect(hunt.querySelector("img")).toHaveAttribute("decoding", "sync");
-    const active = screen.getByRole("tab", { name: "Elation" });
-    expect(active.querySelector("span")).not.toHaveClass("sr-only");
-    await userEvent.setup().click(hunt);
-    expect(hunt.querySelector("span")).not.toHaveClass("sr-only");
-    expect(active.querySelector("span")).toHaveClass("sr-only");
-  });
+  it.each([390, 640])(
+    "names only the active Path tab below 768px (%ipx)",
+    async (width) => {
+      mockWidth(width);
+      renderLayout(
+        PATHS.map((path) => ({
+          ...path,
+          asset: { kind: "path" as const, id: path.id, sourcePath: "" },
+        }))
+      );
+      const hunt = screen.getByRole("tab", { name: "The Hunt" });
+      expect(hunt).toHaveAttribute("title", "The Hunt");
+      expect(hunt.querySelector("span")).toHaveClass(
+        "sr-only",
+        "md:not-sr-only"
+      );
+      expect(hunt.querySelector("span")).not.toHaveClass("truncate");
+      expect(hunt.querySelector("img")).toHaveAttribute("loading", "eager");
+      expect(hunt.querySelector("img")).toHaveAttribute("decoding", "sync");
+      const active = screen.getByRole("tab", { name: "Elation" });
+      expect(active.querySelector("span")).not.toHaveClass("sr-only");
+      await userEvent.setup().click(hunt);
+      expect(hunt.querySelector("span")).not.toHaveClass("sr-only");
+      expect(active.querySelector("span")).toHaveClass("sr-only");
+    }
+  );
 
   it("moves between group tabs with arrow keys and links the panel", async () => {
     mockWidth(390);
@@ -214,14 +219,17 @@ describe("tier category layouts", () => {
     [1440, "light-cone", 9, "sm"],
     [1536, "light-cone", 9, "md"],
     [1920, "light-cone", 9, "md"],
-  ] as const)("sizes icons at %ipx for %s lists of %i groups", (width, kind, groupCount, size) => {
-    mockWidth(width);
-    const groups = PATHS.slice(0, groupCount);
-    const { container } = renderLayout(groups, [item(kind, groups[0].id)]);
-    const button = container.querySelector("[data-priority-item-id]");
-    expect(button).toHaveAttribute("data-priority-item-size", size);
-    expect(button).toHaveClass(
-      { xs: "w-10", sm: "w-12", md: "w-14", lg: "w-16" }[size]
-    );
-  });
+  ] as const)(
+    "sizes icons at %ipx for %s lists of %i groups",
+    (width, kind, groupCount, size) => {
+      mockWidth(width);
+      const groups = PATHS.slice(0, groupCount);
+      const { container } = renderLayout(groups, [item(kind, groups[0].id)]);
+      const button = container.querySelector("[data-priority-item-id]");
+      expect(button).toHaveAttribute("data-priority-item-size", size);
+      expect(button).toHaveClass(
+        { xs: "w-10", sm: "w-12", md: "w-14", lg: "w-16" }[size]
+      );
+    }
+  );
 });

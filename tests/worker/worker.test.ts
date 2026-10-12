@@ -315,32 +315,33 @@ describe("GGStarRail Worker", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it.each([
-    10034, 10035,
-  ])("surfaces global interactive Geetest retcode %i without solving it", async (retcode) => {
-    const fetchMock = vi.fn<typeof fetch>();
-    fetchMock.mockResolvedValueOnce(
-      jsonUpstream({ retcode, message: credentialMarker, data: null })
-    );
-    vi.stubGlobal("fetch", fetchMock);
+  it.each([10034, 10035])(
+    "surfaces global interactive Geetest retcode %i without solving it",
+    async (retcode) => {
+      const fetchMock = vi.fn<typeof fetch>();
+      fetchMock.mockResolvedValueOnce(
+        jsonUpstream({ retcode, message: credentialMarker, data: null })
+      );
+      vi.stubGlobal("fetch", fetchMock);
 
-    const response = await worker.fetch(
-      proxyRequest("/api/hoyolab/os/avatar/info", {
-        method: "POST",
-        body: authBody(),
-      }),
-      env
-    );
-    const text = await response.text();
+      const response = await worker.fetch(
+        proxyRequest("/api/hoyolab/os/avatar/info", {
+          method: "POST",
+          body: authBody(),
+        }),
+        env
+      );
+      const text = await response.text();
 
-    expect(response.status).toBe(409);
-    expect(JSON.parse(text)).toEqual({
-      error: "HOYOLAB_SECURITY_VERIFICATION_REQUIRED",
-      retcode,
-      challenge: { kind: "geetest", interactive: true },
-    });
-    expect(text).not.toContain(credentialMarker);
-  });
+      expect(response.status).toBe(409);
+      expect(JSON.parse(text)).toEqual({
+        error: "HOYOLAB_SECURITY_VERIFICATION_REQUIRED",
+        retcode,
+        challenge: { kind: "geetest", interactive: true },
+      });
+      expect(text).not.toContain(credentialMarker);
+    }
+  );
 
   it("treats CN retcode 10034 as rejection and 10035 as interactive", async () => {
     const fetchMock = vi.fn<typeof fetch>();

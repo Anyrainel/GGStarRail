@@ -77,7 +77,7 @@ export function RelicPieceIcon({
         size={size}
         alt={`${name}, +${relic.level}`}
         tabIndex={0}
-        className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-md outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
       />
     </CatalogHoverCard>
   );

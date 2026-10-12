@@ -145,7 +145,7 @@ export function CompactNumberInput({
       onBlur={commit}
       onKeyDown={onKeyDown}
       className={cn(
-        "h-6 w-10 rounded-md border border-border bg-background/30 px-1 text-center text-xs font-bold tabular-nums outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 md:h-7 md:w-12 md:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]",
+        "h-6 w-10 rounded-md border border-border bg-background/30 px-1 text-center text-xs font-bold tabular-nums outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:opacity-50 md:h-7 md:w-12 md:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]",
         className
       )}
     />

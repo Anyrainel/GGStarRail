@@ -110,7 +110,7 @@ function TeamNameInput({
           event.currentTarget.blur();
         }
       }}
-      className="h-6 min-w-0 flex-1 rounded-md border-0 bg-transparent px-1.5 text-xs font-semibold outline-none placeholder:text-muted-foreground hover:bg-accent/40 focus-visible:bg-background/40 focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default xl:h-7 xl:px-2 xl:text-sm"
+      className="h-6 min-w-0 flex-1 rounded-md border-0 bg-transparent px-1.5 text-xs font-semibold outline-hidden placeholder:text-muted-foreground hover:bg-accent/40 focus-visible:bg-background/40 focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-default xl:h-7 xl:px-2 xl:text-sm"
     />
   );
 }
@@ -203,7 +203,7 @@ export function TeamCard({
             {...drag.listeners}
             aria-label={t("teamDmg.dragHandle")}
             title={t("teamDmg.dragHandle")}
-            className="flex w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing xl:w-5"
+            className="flex w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing xl:w-5"
           >
             <GripVertical className="h-3.5 w-3.5" aria-hidden />
           </button>

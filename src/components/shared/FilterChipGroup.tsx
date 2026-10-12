@@ -75,7 +75,7 @@ export function FilterChipGroup<T>({
             aria-expanded={expanded}
             disabled={disabled}
             onClick={() => setExpanded((value) => !value)}
-            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-none transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-hidden transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
           >
             {label}
             <ChevronDown

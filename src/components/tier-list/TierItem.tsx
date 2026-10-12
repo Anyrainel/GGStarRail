@@ -63,7 +63,7 @@ export function TierItem<Group extends string>({
         data-priority-item-id={item.id}
         data-priority-item-size={iconSize}
         className={cn(
-          "group/item relative shrink-0 touch-none bg-transparent shadow-sm outline-none",
+          "group/item relative shrink-0 touch-none bg-transparent shadow-xs outline-hidden",
           TIER_ITEM_WIDTH[iconSize],
           itemRadius(item.kind),
           "cursor-grab transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"

@@ -135,7 +135,7 @@ export function StatSheetTile({
                 onClick={() => setOpen(selected ? null : view.id)}
                 data-view-pill={view.id}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-0.5 rounded-full px-1 py-0.5 text-[9px] font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:px-1.5 md:py-1 md:text-[11px] xl:text-xs",
+                  "flex flex-1 items-center justify-center gap-0.5 rounded-full px-1 py-0.5 text-[9px] font-semibold outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring md:px-1.5 md:py-1 md:text-[11px] xl:text-xs",
                   selected
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-foreground hover:bg-accent"
@@ -206,7 +206,7 @@ export function MainStatFilter({
           aria-label={`${name} · ${t("teamOptimizer.mainStatFilter")}`}
           title={t("teamOptimizer.mainStatFilter")}
           className={cn(
-            "flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground outline-none transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] text-muted-foreground outline-hidden transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
             active && "text-primary"
           )}
           data-main-stat-filter={active ? "active" : "default"}

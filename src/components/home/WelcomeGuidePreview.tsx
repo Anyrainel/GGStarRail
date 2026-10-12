@@ -75,7 +75,7 @@ export function WelcomeGuidePreview({
                   aria-pressed={selected === index}
                   onClick={() => setSelected(index)}
                   className={cn(
-                    "flex min-h-20 flex-col items-start gap-2 rounded-lg border p-3 text-left text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "flex min-h-20 flex-col items-start gap-2 rounded-lg border p-3 text-left text-xs font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                     selected === index
                       ? "border-primary bg-primary/10"
                       : "border-border hover:bg-accent"
@@ -169,7 +169,7 @@ export function WelcomeGuidePreview({
                   aria-pressed={selected === index}
                   onClick={() => setSelected(index)}
                   className={cn(
-                    "min-h-11 rounded-lg border px-2 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "min-h-11 rounded-lg border px-2 py-2.5 text-sm font-medium focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                     selected === index
                       ? "border-primary bg-primary/10"
                       : "border-border hover:bg-accent"

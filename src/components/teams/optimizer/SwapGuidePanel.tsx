@@ -59,7 +59,7 @@ function ConflictBadge() {
   const label = t("teamOptimizer.swap.conflict");
   return (
     <span
-      className="flex shrink-0 items-center gap-0.5 rounded bg-destructive/10 px-1 text-[10px] font-semibold leading-4 text-destructive"
+      className="flex shrink-0 items-center gap-0.5 rounded-[4px] bg-destructive/10 px-1 text-[10px] font-semibold leading-4 text-destructive"
       title={label}
       data-swap-conflict
     >
@@ -170,11 +170,11 @@ export function SwapGuidePanel({ guide }: { guide: SwapGuide }) {
         aria-expanded={open}
         aria-controls={bodyId}
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between gap-2 px-2 py-2 outline-none transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-4 md:py-3"
+        className="flex w-full items-center justify-between gap-2 px-2 py-2 outline-hidden transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:px-4 md:py-3"
       >
         <span className="flex items-center gap-1.5 text-xs font-bold md:gap-2 md:text-sm">
           {t("teamOptimizer.swap.title")}
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] font-normal text-muted-foreground md:px-2 md:text-xs">
+          <span className="rounded-[4px] bg-muted px-1.5 py-0.5 font-mono text-[10px] font-normal text-muted-foreground md:px-2 md:text-xs">
             {t("teamOptimizer.swap.changes", { count: guide.changes })}
           </span>
         </span>

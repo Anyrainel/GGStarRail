@@ -178,7 +178,7 @@ export function LightConeCatalog() {
                         return next;
                       })
                     }
-                    className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-accent/30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                   >
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/70 p-2">
                       <AssetImage

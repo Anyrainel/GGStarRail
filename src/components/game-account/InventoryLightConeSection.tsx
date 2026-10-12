@@ -277,14 +277,14 @@ export function InventoryLightConeSection({
                       locked={lightCone.locked}
                       size={iconSize}
                       tabIndex={0}
-                      className="outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                     />
                     {count > 1 && (
                       <div
                         className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
                         aria-hidden="true"
                       >
-                        <span className="rounded-full bg-background/80 px-2 py-0.5 text-lg font-bold text-foreground shadow-sm backdrop-blur-[2px]">
+                        <span className="rounded-full bg-background/80 px-2 py-0.5 text-lg font-bold text-foreground shadow-xs backdrop-blur-[2px]">
                           x{count}
                         </span>
                       </div>

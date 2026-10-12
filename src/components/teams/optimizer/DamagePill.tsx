@@ -275,7 +275,7 @@ export function DamagePill({
             aria-controls={result ? bodyId : undefined}
             disabled={!result}
             onClick={() => setExpanded((value) => !value)}
-            className="flex flex-wrap items-center justify-center gap-1.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default md:gap-2.5"
+            className="flex flex-wrap items-center justify-center gap-1.5 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default md:gap-2.5"
           >
             <span className="flex items-center gap-1 whitespace-nowrap text-xs font-semibold md:text-sm">
               {running && (

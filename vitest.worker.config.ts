@@ -6,5 +6,6 @@ export default defineConfig({
     globals: true,
     dangerouslyIgnoreUnhandledErrors: false,
     include: ["tests/worker/**/*.test.ts"],
+    exclude: ["tests/worker/runtime/**"],
   },
 });

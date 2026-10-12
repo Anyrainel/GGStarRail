@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const CONTROL_CLASS =
-  "h-9 w-full rounded-md border border-border bg-background/70 px-3 text-sm text-foreground outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-md border border-border bg-background/70 px-3 text-sm text-foreground outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
 
 export interface SelectOption {
   value: string;
@@ -233,7 +233,7 @@ export function ChoiceChip({
       aria-pressed={selected}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-left text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-left text-xs font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         selected
           ? "border-primary/50 bg-primary/15 text-primary"
           : "border-border bg-background/50 text-foreground hover:bg-accent"

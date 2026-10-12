@@ -295,7 +295,7 @@ export default function FeedbackPage() {
                     setDraft({ ...draft, suggestion: event.target.value });
                     setError(null);
                   }}
-                  className="min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-normal focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </label>
               <label
@@ -318,7 +318,7 @@ export default function FeedbackPage() {
                     setDraft({ ...draft, bugReport: event.target.value });
                     setError(null);
                   }}
-                  className="min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="min-h-28 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-normal focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </label>
               <label
@@ -335,7 +335,7 @@ export default function FeedbackPage() {
                   onChange={(event) =>
                     setDraft({ ...draft, contactMethod: event.target.value })
                   }
-                  className="h-10 w-full rounded-md border border-border bg-background px-3 font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-10 w-full rounded-md border border-border bg-background px-3 font-normal focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </label>
               <p

@@ -79,79 +79,79 @@ describe("independent persistence and backup identity", () => {
     localStorage.removeItem(STORAGE_KEYS.workspace);
   });
 
-  it.each([
-    "published",
-    "quest-branch",
-  ] as const)("preserves %s v4 accounts through hydration, backup and native import", async (format) => {
-    const legacy = legacyV3Account();
-    const questProgress = {
-      records: [{ id: 4000001, status: 3, progress: 100, counters: [2, 7] }],
-      importedAt: legacy.source.importedAt,
-    };
-    const account = {
-      ...legacy,
-      schemaVersion: 4,
-      characters:
-        format === "published"
-          ? legacy.characters.map((character) => ({
-              ...character,
-              traces: CANONICAL_TRACES,
-            }))
-          : legacy.characters,
-      achievementCompletion: { completedIds: [101, 102] },
-      ...(format === "quest-branch" ? { questProgress } : {}),
-    };
-    const previous = {
-      ...structuredClone(DEFAULT_WORKSPACE),
-      schemaVersion: format === "published" ? 2 : 1,
-      characterLightConeIds: { "1101": ["20001"] },
-      localAchievementCompletion: { completedIds: [103] },
-      triageRules: { ...DEFAULT_WORKSPACE.triageRules, keepScoreAtLeast: 77 },
-      account,
-    };
-    useWorkspaceStore.getState().clearWorkspace();
-    localStorage.setItem(
-      STORAGE_KEYS.workspace,
-      JSON.stringify({ version: 2, state: previous })
-    );
-    await useWorkspaceStore.persist.rehydrate();
-    const hydrated = useWorkspaceStore.getState();
-    expect(hydrated.schemaVersion).toBe(3);
-    expect(hydrated.account).toEqual({
-      ...account,
-      schemaVersion: 5,
-      characters: account.characters.map((character) => ({
-        ...character,
-        traces: CANONICAL_TRACES,
-      })),
-    });
-    expect(hydrated.characterLightConeIds).toEqual(
-      previous.characterLightConeIds
-    );
-    expect(hydrated.localAchievementCompletion).toEqual(
-      previous.localAchievementCompletion
-    );
-    expect(hydrated.triageRules).toEqual(previous.triageRules);
-    const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
-    const restored = parseBackup(
-      JSON.stringify({ ...backup, payload: previous })
-    ).payload;
-    expect(restored).toEqual({
-      ...previous,
-      schemaVersion: 3,
-      account: hydrated.account,
-    });
-    const native = parseScannerExport({
-      format: "ggstarrail-scanner-export",
-      schemaVersion: 1,
-      sourceApp: { name: "GGScanner", version: "old" },
-      exportedAt: account.source.importedAt,
-      account,
-    });
-    expect(native.account).toEqual(hydrated.account);
-    useWorkspaceStore.getState().clearWorkspace();
-    localStorage.removeItem(STORAGE_KEYS.workspace);
-  });
+  it.each(["published", "quest-branch"] as const)(
+    "preserves %s v4 accounts through hydration, backup and native import",
+    async (format) => {
+      const legacy = legacyV3Account();
+      const questProgress = {
+        records: [{ id: 4000001, status: 3, progress: 100, counters: [2, 7] }],
+        importedAt: legacy.source.importedAt,
+      };
+      const account = {
+        ...legacy,
+        schemaVersion: 4,
+        characters:
+          format === "published"
+            ? legacy.characters.map((character) => ({
+                ...character,
+                traces: CANONICAL_TRACES,
+              }))
+            : legacy.characters,
+        achievementCompletion: { completedIds: [101, 102] },
+        ...(format === "quest-branch" ? { questProgress } : {}),
+      };
+      const previous = {
+        ...structuredClone(DEFAULT_WORKSPACE),
+        schemaVersion: format === "published" ? 2 : 1,
+        characterLightConeIds: { "1101": ["20001"] },
+        localAchievementCompletion: { completedIds: [103] },
+        triageRules: { ...DEFAULT_WORKSPACE.triageRules, keepScoreAtLeast: 77 },
+        account,
+      };
+      useWorkspaceStore.getState().clearWorkspace();
+      localStorage.setItem(
+        STORAGE_KEYS.workspace,
+        JSON.stringify({ version: 2, state: previous })
+      );
+      await useWorkspaceStore.persist.rehydrate();
+      const hydrated = useWorkspaceStore.getState();
+      expect(hydrated.schemaVersion).toBe(3);
+      expect(hydrated.account).toEqual({
+        ...account,
+        schemaVersion: 5,
+        characters: account.characters.map((character) => ({
+          ...character,
+          traces: CANONICAL_TRACES,
+        })),
+      });
+      expect(hydrated.characterLightConeIds).toEqual(
+        previous.characterLightConeIds
+      );
+      expect(hydrated.localAchievementCompletion).toEqual(
+        previous.localAchievementCompletion
+      );
+      expect(hydrated.triageRules).toEqual(previous.triageRules);
+      const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
+      const restored = parseBackup(
+        JSON.stringify({ ...backup, payload: previous })
+      ).payload;
+      expect(restored).toEqual({
+        ...previous,
+        schemaVersion: 3,
+        account: hydrated.account,
+      });
+      const native = parseScannerExport({
+        format: "ggstarrail-scanner-export",
+        schemaVersion: 1,
+        sourceApp: { name: "GGScanner", version: "old" },
+        exportedAt: account.source.importedAt,
+        account,
+      });
+      expect(native.account).toEqual(hydrated.account);
+      useWorkspaceStore.getState().clearWorkspace();
+      localStorage.removeItem(STORAGE_KEYS.workspace);
+    }
+  );
 
   it("migrates workspace v1 interoperable trace keys to catalog point IDs", async () => {
     const account = legacyV3Account();

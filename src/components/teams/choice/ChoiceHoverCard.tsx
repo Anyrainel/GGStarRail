@@ -1,4 +1,4 @@
-import * as HoverCard from "@radix-ui/react-hover-card";
+import { HoverCard } from "radix-ui";
 import {
   type ReactElement,
   type ReactNode,
@@ -74,7 +74,7 @@ export function ChoiceHoverCard({
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="z-50 w-64 rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="z-50 w-64 rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-md outline-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           data-choice-hover-card
         >
           {open && !disabled && content}

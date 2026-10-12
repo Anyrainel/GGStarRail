@@ -342,7 +342,7 @@ export default function CharacterBuildView() {
                 {activeFilterCount > 0 && (
                   <button
                     type="button"
-                    className="rounded-sm text-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                    className="rounded-sm text-sm font-medium text-primary underline-offset-4 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                     onClick={() => setFilters(clearCharacterFilters(filters))}
                   >
                     {t("filter.clearAll")}

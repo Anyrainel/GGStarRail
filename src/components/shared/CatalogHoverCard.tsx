@@ -1,4 +1,4 @@
-import * as HoverCard from "@radix-ui/react-hover-card";
+import { HoverCard } from "radix-ui";
 import { type ReactElement, useState } from "react";
 import {
   CatalogLoadError,

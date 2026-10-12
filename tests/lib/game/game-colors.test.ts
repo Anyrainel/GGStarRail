@@ -16,16 +16,16 @@ beforeAll(async () => {
 describe("game colors in compiled Tailwind CSS", () => {
   it("preserves item badge and level strip colors", () => {
     expect(utilityDeclarations(css, "bg-item-badge")["background-color"]).toBe(
-      "rgb(74 59 42 / var(--tw-bg-opacity, 1))"
+      "#4a3b2a"
     );
     expect(utilityDeclarations(css, "text-item-badge-foreground").color).toBe(
-      "rgb(243 216 140 / var(--tw-text-opacity, 1))"
+      "#f3d88c"
     );
     expect(utilityDeclarations(css, "bg-item-level")["background-color"]).toBe(
-      "rgb(245 240 230 / var(--tw-bg-opacity, 1))"
+      "#f5f0e6"
     );
     expect(utilityDeclarations(css, "text-item-level-foreground").color).toBe(
-      "rgb(61 61 61 / var(--tw-text-opacity, 1))"
+      "#3d3d3d"
     );
   });
   it("merges gradient images independently of solid backgrounds", () => {
@@ -68,12 +68,12 @@ describe("game colors in compiled Tailwind CSS", () => {
     types.forEach((id, index) => {
       expect(
         utilityDeclarations(css, getCombatTypeColor(id, "text")).color
-      ).toBe(`rgb(${rgb[index]} / var(--tw-text-opacity, 1))`);
+      ).toBe(`rgb(${rgb[index]})`);
       expect(
         utilityDeclarations(css, getCombatTypeColor(id, "header"))[
           "background-color"
         ]
-      ).toBe(`rgb(${headers[index]} / var(--tw-bg-opacity, 1))`);
+      ).toBe(`rgb(${headers[index]})`);
       expect(combatTypeColor(id)).toBe(
         `rgb(${rgb[index].split(" ").join(", ")})`
       );
@@ -92,13 +92,7 @@ describe("game colors in compiled Tailwind CSS", () => {
       "#3f4064, #9c65d7",
       "#a35d55, #d0aa6e",
     ];
-    const foregrounds = [
-      "156 163 175",
-      "52 211 153",
-      "96 165 250",
-      "192 132 252",
-      "251 191 36",
-    ];
+    const foregrounds = ["#9ca3af", "#34d399", "#60a5fa", "#c084fc", "#fbbf24"];
     [1, 2, 3, 4, 5].forEach((rarity, index) => {
       expect(
         utilityDeclarations(css, getRarityColor(rarity, "gradient"))[
@@ -107,7 +101,7 @@ describe("game colors in compiled Tailwind CSS", () => {
       ).toBe(`linear-gradient(180deg, ${gradients[index]})`);
       expect(
         utilityDeclarations(css, getRarityColor(rarity, "text")).color
-      ).toBe(`rgb(${foregrounds[index]} / var(--tw-text-opacity, 1))`);
+      ).toBe(foregrounds[index]);
       expect(
         utilityDeclarations(css, getRarityColor(rarity, "bg"))[
           "background-image"
@@ -122,32 +116,55 @@ describe("game colors in compiled Tailwind CSS", () => {
     expect(getRarityColor(99, "gradient")).toBe(getRarityColor(1, "gradient"));
   });
 
+  it("keeps theme colors and surfaces bound to the selected runtime palette", () => {
+    expect(utilityDeclarations(css, "bg-background")["background-color"]).toBe(
+      "hsl(var(--background))"
+    );
+    expect(utilityDeclarations(css, "text-primary").color).toBe(
+      "hsl(var(--primary))"
+    );
+    for (const surface of ["page", "card", "select"]) {
+      expect(
+        utilityDeclarations(css, `bg-gradient-${surface}`)["background-image"]
+      ).toBe(`var(--gradient-${surface})`);
+    }
+    expect(utilityDeclarations(css, "rounded-sm")["border-radius"]).toBe(
+      "calc(var(--radius) - 4px)"
+    );
+    expect(utilityDeclarations(css, "rounded-[4px]")["border-radius"]).toBe(
+      "4px"
+    );
+    expect(css).toContain("height: var(--radix-accordion-content-height)");
+    expect(css).toContain("animation: var(--animate-accordion-down)");
+    expect(css).toContain("animation: var(--animate-accordion-up)");
+  });
+
   it("preserves every Tier header and cell opacity", () => {
     const headers = [
-      "185 47 58",
-      "221 133 89",
-      "230 180 77",
-      "67 173 139",
-      "74 133 205",
-      "117 117 117",
+      "#b92f3a",
+      "#dd8559",
+      "#e6b44d",
+      "#43ad8b",
+      "#4a85cd",
+      "#757575",
     ];
     const backgrounds = [
-      "46 12 15",
-      "55 33 22",
-      "58 45 19",
-      "17 43 35",
-      "19 33 51",
-      "29 29 29",
+      "#2e0c0f",
+      "#372116",
+      "#3a2d13",
+      "#112b23",
+      "#132133",
+      "#1d1d1d",
     ];
     (["S", "A", "B", "C", "D", "Pool"] as const).forEach((tier, index) => {
       expect(
         utilityDeclarations(css, getTierColor(tier, "header"))[
           "background-color"
         ]
-      ).toBe(`rgb(${headers[index]} / 0.7)`);
+      ).toBe(`color-mix(in oklab, ${headers[index]} 70%, transparent)`);
       expect(
         utilityDeclarations(css, getTierColor(tier, "bg"))["background-color"]
-      ).toBe(`rgb(${backgrounds[index]} / 0.4)`);
+      ).toBe(`color-mix(in oklab, ${backgrounds[index]} 40%, transparent)`);
     });
   });
 });

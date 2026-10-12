@@ -19,7 +19,7 @@ import {
 
 function Tag({ children }: { children: string }) {
   return (
-    <span className="whitespace-nowrap rounded bg-muted px-1 font-mono text-[10px] leading-4 text-foreground">
+    <span className="whitespace-nowrap rounded-[4px] bg-muted px-1 font-mono text-[10px] leading-4 text-foreground">
       {children}
     </span>
   );

@@ -269,7 +269,7 @@ export function InventoryCharacterSection({
                     }
                     size={iconSize}
                     tabIndex={0}
-                    className="rounded-md outline-none transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring group-hover:scale-105"
+                    className="rounded-md outline-hidden transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring group-hover:scale-105"
                   />
                   <span
                     className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"

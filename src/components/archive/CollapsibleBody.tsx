@@ -128,11 +128,11 @@ export function CollapsibleBody({
           title={label}
           onClick={onToggle}
           className={cn(
-            "flex w-full items-center justify-center pb-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+            "flex w-full items-center justify-center pb-1 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
             clipped
               ? cn(
                   "absolute inset-x-0 bottom-0 rounded-b-lg pt-8",
-                  fadeClassName && cn("bg-gradient-to-t", fadeClassName)
+                  fadeClassName && cn("bg-linear-to-t", fadeClassName)
                 )
               : "pt-1"
           )}

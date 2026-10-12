@@ -150,7 +150,7 @@ export function RelicStatDisplay({
         </span>
         <span
           className={cn(
-            "shrink-0 whitespace-nowrap rounded bg-black/40 font-mono text-amber-200",
+            "shrink-0 whitespace-nowrap rounded-[4px] bg-black/40 font-mono text-amber-200",
             compact ? "px-0.5 text-[10px]" : "px-1 text-xs"
           )}
           data-relic-level={relic.level}
@@ -221,7 +221,7 @@ export function RelicStatDisplay({
               (offTargetMain ? (
                 <span
                   className={cn(
-                    "flex items-center gap-0.5 rounded px-1 font-bold",
+                    "flex items-center gap-0.5 rounded-[4px] px-1 font-bold",
                     gradeClass(score.grade)
                   )}
                   role="img"
@@ -234,7 +234,7 @@ export function RelicStatDisplay({
               ) : (
                 <span
                   className={cn(
-                    "rounded px-1 font-bold",
+                    "rounded-[4px] px-1 font-bold",
                     gradeClass(score.grade)
                   )}
                 >
@@ -277,7 +277,7 @@ export function RelicStatDisplay({
                   "h-full rounded-full",
                   offTargetMain
                     ? "bg-amber-500/70"
-                    : "bg-gradient-to-r from-sky-400 via-violet-400 to-amber-300"
+                    : "bg-linear-to-r from-sky-400 via-violet-400 to-amber-300"
                 )}
                 style={{ width: `${scorePercent}%` }}
               />

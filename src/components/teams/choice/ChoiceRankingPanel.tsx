@@ -219,7 +219,7 @@ function RankingRow({
       onClick={onOpen}
       className={cn(
         rowClass,
-        "outline-none transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring"
+        "outline-hidden transition-colors hover:bg-accent/30 focus-visible:ring-2 focus-visible:ring-ring"
       )}
       {...state}
     >

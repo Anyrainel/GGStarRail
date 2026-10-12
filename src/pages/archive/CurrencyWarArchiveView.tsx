@@ -307,7 +307,7 @@ export function CurrencyWarArchiveContent({
                   aria-pressed={selected?.id === entry.id}
                   onClick={() => select(entry.id)}
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                    "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                     selected?.id === entry.id
                       ? "bg-primary/15 ring-1 ring-primary/30"
                       : "hover:bg-accent/50"
@@ -339,7 +339,7 @@ export function CurrencyWarArchiveContent({
                   type="button"
                   aria-pressed={selected?.id === entry.id}
                   onClick={() => select(entry.id)}
-                  className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-2 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+                  className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-2 outline-hidden transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <AssetImage
                     kind={activeTab.asset}
@@ -510,7 +510,7 @@ function CurrencyWarDetail({
       data-testid="currency-war-detail"
       data-strategy-quality={"quality" in record ? record.quality : undefined}
       className={cn(
-        "flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-gradient-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-gradient-card p-4 outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
         "quality" in record &&
           (record.quality === "Gold" || record.quality === "Orange") &&
           "border-[hsl(var(--quality-gold)/0.65)] bg-[linear-gradient(135deg,color-mix(in_srgb,hsl(var(--quality-gold))_55%,hsl(var(--card))),color-mix(in_srgb,hsl(var(--quality-gold))_43%,hsl(var(--card))))]",

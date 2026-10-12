@@ -368,9 +368,14 @@ async function upstreamJson(
 ): Promise<{ status: number; body: unknown }> {
   const response = await fetch(url, {
     ...init,
-    redirect: "error",
+    redirect: "manual",
     signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
   });
+  // workerd supports follow/manual only. Reject redirects before consuming
+  // the body so transient credentials never reach another upstream host.
+  if (response.status >= 300 && response.status < 400) {
+    throw new Error("Upstream redirect rejected");
+  }
   return {
     status: response.status,
     body: await readJsonWithLimit(response, MAX_RESPONSE_BYTES),

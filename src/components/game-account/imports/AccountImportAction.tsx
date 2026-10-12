@@ -1,10 +1,10 @@
 import { Download } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ComponentProps, type ReactNode, useState } from "react";
 import {
   type AccountImportMethod,
   AccountImportPanel,
 } from "@/components/game-account/imports/AccountImportPanel";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -16,8 +16,8 @@ import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
 
 interface AccountImportActionProps {
-  variant?: ButtonProps["variant"];
-  size?: ButtonProps["size"];
+  variant?: ComponentProps<typeof Button>["variant"];
+  size?: ComponentProps<typeof Button>["size"];
   className?: string;
   compactOnMobile?: boolean;
   /** The import method opened first. */

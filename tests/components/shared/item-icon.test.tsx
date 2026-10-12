@@ -25,68 +25,76 @@ describe("ItemIcon", () => {
     ["light-cone", 0],
     ["character", 10 / 3],
     ["relic-piece", 10],
-  ] as const)("uses the %s corner treatment on artwork and level strip", (kind, radius) => {
-    const { container } = render(
-      <ItemIcon kind={kind} id="test" alt="Item" rarity={5} level="Lv. 80" />
-    );
-    const art = container.querySelector<HTMLElement>("[data-item-artwork]")!;
-    expect(Number.parseFloat(art.style.borderBottomLeftRadius)).toBeCloseTo(
-      radius
-    );
-    expect(
-      Number.parseFloat(screen.getByText("Lv. 80").style.borderBottomLeftRadius)
-    ).toBeCloseTo(radius);
-    const img = art.querySelector("img");
-    expect(img).toHaveClass(
-      kind === "character" ? "object-cover" : "object-contain"
-    );
-    if (kind === "light-cone") {
-      expect(art).not.toHaveClass("ring-1");
-      expect(img).toHaveClass("h-[calc(100%+2px)]", "w-auto", "-top-px");
-      expect(art.style.backgroundImage).toBe("");
+  ] as const)(
+    "uses the %s corner treatment on artwork and level strip",
+    (kind, radius) => {
+      const { container } = render(
+        <ItemIcon kind={kind} id="test" alt="Item" rarity={5} level="Lv. 80" />
+      );
+      const art = container.querySelector<HTMLElement>("[data-item-artwork]")!;
+      expect(Number.parseFloat(art.style.borderBottomLeftRadius)).toBeCloseTo(
+        radius
+      );
+      expect(
+        Number.parseFloat(
+          screen.getByText("Lv. 80").style.borderBottomLeftRadius
+        )
+      ).toBeCloseTo(radius);
+      const img = art.querySelector("img");
+      expect(img).toHaveClass(
+        kind === "character" ? "object-cover" : "object-contain"
+      );
+      if (kind === "light-cone") {
+        expect(art).not.toHaveClass("ring-1");
+        expect(img).toHaveClass("h-[calc(100%+2px)]", "w-auto", "-top-px");
+        expect(art.style.backgroundImage).toBe("");
+      }
     }
-  });
+  );
   it.each([
     ["character", 7 / 8],
     ["light-cone", 11 / 16],
     ["relic-piece", 1],
     ["relic-set", 1],
-  ] as const)("preserves %s card proportions at every size, including the level strip", (kind, ratio) => {
-    for (const size of [
-      "xs",
-      "sm",
-      "md",
-      "lg",
-      "xl",
-    ] satisfies ItemIconSize[]) {
-      const { container, unmount } = render(
-        <ItemIcon
-          kind={kind}
-          id="test"
-          alt="Item"
-          rarity={5}
-          size={size}
-          level="Lv. 80"
-          badge={2}
-          locked
-        />
-      );
-      const icon = container.querySelector<HTMLElement>(
-        "[data-item-icon-kind]"
-      )!;
-      const artwork = container.querySelector<HTMLElement>(
-        "[data-item-artwork]"
-      )!;
-      const width = Number.parseFloat(artwork.style.width);
-      const height = Number.parseFloat(artwork.style.height);
-      expect(width / height).toBeCloseTo(ratio);
-      expect(Number.parseFloat(icon.style.width)).toBe(width);
-      expect(Number.parseFloat(icon.style.height)).toBeGreaterThan(height);
-      expect(artwork.querySelector("[data-item-badge]")).not.toBeNull();
-      expect(artwork.querySelector("[data-item-lock]")).not.toBeNull();
-      unmount();
+  ] as const)(
+    "preserves %s card proportions at every size, including the level strip",
+    (kind, ratio) => {
+      for (const size of [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl",
+      ] satisfies ItemIconSize[]) {
+        const { container, unmount } = render(
+          <ItemIcon
+            kind={kind}
+            id="test"
+            alt="Item"
+            rarity={5}
+            size={size}
+            level="Lv. 80"
+            badge={2}
+            locked
+          />
+        );
+        const icon = container.querySelector<HTMLElement>(
+          "[data-item-icon-kind]"
+        )!;
+        const artwork = container.querySelector<HTMLElement>(
+          "[data-item-artwork]"
+        )!;
+        const width = Number.parseFloat(artwork.style.width);
+        const height = Number.parseFloat(artwork.style.height);
+        expect(width / height).toBeCloseTo(ratio);
+        expect(Number.parseFloat(icon.style.width)).toBe(width);
+        expect(Number.parseFloat(icon.style.height)).toBeGreaterThan(height);
+        expect(artwork.querySelector("[data-item-badge]")).not.toBeNull();
+        expect(artwork.querySelector("[data-item-lock]")).not.toBeNull();
+        unmount();
+      }
     }
-  });
+  );
 
   it.each([
     [5, "linear-gradient(180deg, #a35d55, #d0aa6e)"],

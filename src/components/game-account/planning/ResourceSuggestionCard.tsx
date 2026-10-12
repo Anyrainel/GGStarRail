@@ -179,7 +179,7 @@ export function ResourceSuggestionCard({
         <ResponsiveDialogTrigger
           className={cn(
             ROW_CLASS,
-            "outline-none transition-colors hover:border-primary/70 hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+            "outline-hidden transition-colors hover:border-primary/70 hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
           {content}

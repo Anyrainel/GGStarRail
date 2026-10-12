@@ -146,7 +146,7 @@ export function WelcomeGuideManual() {
                   aria-current={index === step ? "step" : undefined}
                   onClick={() => navigate(index)}
                   className={cn(
-                    "flex min-w-0 flex-col items-center gap-1.5 rounded-lg border px-1 py-2 text-center text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "flex min-w-0 flex-col items-center gap-1.5 rounded-lg border px-1 py-2 text-center text-xs transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
                     index === step
                       ? "border-primary bg-primary/10 text-foreground"
                       : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"

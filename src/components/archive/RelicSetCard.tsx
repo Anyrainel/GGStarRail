@@ -49,7 +49,7 @@ export function RelicSetCard({
       aria-label={name}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card"
     >
-      <div className="flex items-center justify-center gap-1 bg-gradient-to-b from-accent/40 to-transparent px-4 pb-1 pt-3 sm:gap-2 sm:pt-4">
+      <div className="flex items-center justify-center gap-1 bg-linear-to-b from-accent/40 to-transparent px-4 pb-1 pt-3 sm:gap-2 sm:pt-4">
         {SLOT_ORDER.map((slot) => {
           const piece = slots.get(slot);
           if (!piece) return null;
@@ -93,7 +93,7 @@ export function RelicSetCard({
               key={bonus.required_pieces}
               className="leading-relaxed text-muted-foreground"
             >
-              <span className="mr-1.5 rounded bg-primary/10 px-1.5 py-0.5 align-middle text-xs font-semibold leading-none text-primary">
+              <span className="mr-1.5 rounded-[4px] bg-primary/10 px-1.5 py-0.5 align-middle text-xs font-semibold leading-none text-primary">
                 {t("archive.setPieces", { value: bonus.required_pieces })}
               </span>
               {formatGameText(

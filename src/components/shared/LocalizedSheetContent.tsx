@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import type { ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import { SheetClose, SheetContent } from "@/components/ui/sheet";
-import { cn } from "@/lib/utils";
 
 export function LocalizedSheetContent({
   className,
@@ -13,19 +12,10 @@ export function LocalizedSheetContent({
 }: ComponentProps<typeof SheetContent> & { closeLabel: string }) {
   return (
     <SheetContent
-      ref={(element) => {
-        // The Tailwind 3 registry has no close-button override. Hide its
-        // built-in control before exposing the localized control below.
-        const builtInClose = element?.firstElementChild;
-        if (builtInClose instanceof HTMLButtonElement) {
-          builtInClose.hidden = true;
-          builtInClose.setAttribute("aria-hidden", "true");
-        }
-        if (typeof ref === "function") return ref(element);
-        if (ref) ref.current = element;
-      }}
-      className={cn("[&>button:first-child]:hidden", className)}
+      ref={ref}
+      className={className}
       {...props}
+      showCloseButton={false}
     >
       {children}
       <SheetClose asChild>

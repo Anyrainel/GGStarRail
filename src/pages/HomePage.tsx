@@ -103,7 +103,7 @@ export default function HomePage() {
             href="https://github.com/Anyrainel/GGStarRail"
             target="_blank"
             rel="noreferrer"
-            className="font-medium underline underline-offset-2 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="font-medium underline underline-offset-2 hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             {t("home.disclaimerProject")}
           </a>

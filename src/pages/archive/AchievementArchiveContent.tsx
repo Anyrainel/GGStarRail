@@ -94,7 +94,7 @@ function CategoryList({
             aria-pressed={selectedCategoryId === category.id}
             onClick={() => onSelect(category.id)}
             className={cn(
-              "w-full min-w-0 rounded-lg px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+              "w-full min-w-0 rounded-lg px-3 py-2 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
               selectedCategoryId === category.id
                 ? "bg-primary/15 ring-1 ring-primary/30"
                 : "hover:bg-secondary/55"
@@ -202,7 +202,7 @@ function CategoryProgressBanner({
   const progress = achievementCompletionProgress(achievements, completedIds);
   return (
     <div className="sticky top-0 z-20 pb-2">
-      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border-2 border-primary bg-card px-3 py-2 shadow-sm">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border-2 border-primary bg-card px-3 py-2 shadow-xs">
         <h2 className="min-w-0 shrink break-words text-base font-semibold leading-tight sm:text-lg">
           {category.name}
         </h2>
@@ -259,7 +259,7 @@ function GuideLink({
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="group flex h-10 w-[4.5rem] shrink-0 items-center justify-center rounded-md px-1 outline-none transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="group flex h-10 w-[4.5rem] shrink-0 items-center justify-center rounded-md px-1 outline-hidden transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <img
         src={getAssetUrl(`assets/brands/${site}.webp`)}
@@ -368,7 +368,7 @@ function AchievementSeriesCard({
                     onClick={() =>
                       onStatusChange(seriesIds, achievement.id, !completed)
                     }
-                    className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="group flex h-10 w-10 shrink-0 items-center justify-center rounded-md outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <span
                       className={cn(

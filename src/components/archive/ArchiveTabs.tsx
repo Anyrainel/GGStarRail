@@ -91,9 +91,9 @@ export function ArchiveTabs<T extends string>({
               document.getElementById(pendingFocusId)?.focus();
             }}
             className={cn(
-              "inline-flex h-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-1.5 py-1 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:px-3",
+              "inline-flex h-full shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-1.5 py-1 text-sm font-medium outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring sm:px-3",
               active
-                ? "bg-background text-foreground shadow"
+                ? "bg-background text-foreground shadow-sm"
                 : "hover:text-foreground"
             )}
           >

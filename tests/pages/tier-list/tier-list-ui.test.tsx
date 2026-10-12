@@ -184,25 +184,30 @@ describe("HSR Tier List views", () => {
   it.each([
     ["loading", true, "status"],
     ["unavailable", false, "alert"],
-  ] as const)("keeps the title row while the catalog is %s", (_state, loading, role) => {
-    renderView(
-      <TierCatalogState
-        category="light-cone"
-        loading={loading}
-        error={loading ? null : new Error("offline")}
-      />
-    );
-    const heading = screen.getByRole("heading", {
-      level: 1,
-      name: "Light Cone Priority",
-    });
-    expect(heading.closest(".sr-only")).toBeNull();
-    expect(screen.getByRole("button", { name: "Customize" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Manage lists" })).toBeDisabled();
-    expect(
-      screen.getByRole(role).closest("[data-wide-content]")
-    ).not.toBeNull();
-  });
+  ] as const)(
+    "keeps the title row while the catalog is %s",
+    (_state, loading, role) => {
+      renderView(
+        <TierCatalogState
+          category="light-cone"
+          loading={loading}
+          error={loading ? null : new Error("offline")}
+        />
+      );
+      const heading = screen.getByRole("heading", {
+        level: 1,
+        name: "Light Cone Priority",
+      });
+      expect(heading.closest(".sr-only")).toBeNull();
+      expect(screen.getByRole("button", { name: "Customize" })).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: "Manage lists" })
+      ).toBeDisabled();
+      expect(
+        screen.getByRole(role).closest("[data-wide-content]")
+      ).not.toBeNull();
+    }
+  );
 
   it("titles the catalog state with the active list's saved name", () => {
     act(() => {

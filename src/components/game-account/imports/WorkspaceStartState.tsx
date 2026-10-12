@@ -50,7 +50,7 @@ function ImportMethodTiles() {
             key={value}
             type="button"
             onClick={() => setMethod(value)}
-            className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-card/50 p-3 text-left text-sm font-medium outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-card/50 p-3 text-left text-sm font-medium outline-hidden transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
             data-import-method={value}
           >
             <span className="shrink-0 rounded-md bg-primary/10 p-1.5 text-primary">

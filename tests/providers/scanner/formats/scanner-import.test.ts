@@ -279,16 +279,15 @@ describe("GOODScanner HSR import compatibility", () => {
     await expect(parseVersionedScannerExport(input)).rejects.toThrow();
   });
 
-  it.each([
-    "source",
-    "coverage",
-    "entries",
-  ] as const)("rejects achievement evidence without required %s", async (field) => {
-    const input = productionScannerV3([]);
-    delete (input.achievements as unknown as Record<string, unknown>)[field];
+  it.each(["source", "coverage", "entries"] as const)(
+    "rejects achievement evidence without required %s",
+    async (field) => {
+      const input = productionScannerV3([]);
+      delete (input.achievements as unknown as Record<string, unknown>)[field];
 
-    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
-  });
+      await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+    }
+  );
 
   it.each([
     ["non-packet source", "source.kind", "screenCapture"],
@@ -298,22 +297,25 @@ describe("GOODScanner HSR import compatibility", () => {
     ["non-ASCII source revision", "source.revision", "抓包-1"],
     ["unknown coverage", "coverage", "unknown"],
     ["unknown status", "entries.0.status", "finished"],
-  ])("rejects production v3 achievement evidence with %s", async (_label, path, value) => {
-    const input = productionScannerV3([
-      { achievementId: 1, status: "completed" },
-    ]);
-    if (path === "source.kind") {
-      input.achievements.source.kind = value;
-    } else if (path === "source.revision") {
-      input.achievements.source.revision = value;
-    } else if (path === "coverage") {
-      input.achievements.coverage = value;
-    } else {
-      input.achievements.entries[0]!.status = value;
-    }
+  ])(
+    "rejects production v3 achievement evidence with %s",
+    async (_label, path, value) => {
+      const input = productionScannerV3([
+        { achievementId: 1, status: "completed" },
+      ]);
+      if (path === "source.kind") {
+        input.achievements.source.kind = value;
+      } else if (path === "source.revision") {
+        input.achievements.source.revision = value;
+      } else if (path === "coverage") {
+        input.achievements.coverage = value;
+      } else {
+        input.achievements.entries[0]!.status = value;
+      }
 
-    await expect(parseVersionedScannerExport(input)).rejects.toThrow();
-  });
+      await expect(parseVersionedScannerExport(input)).rejects.toThrow();
+    }
+  );
 
   it("rejects raw numeric protocol status in production v3 entries", async () => {
     const input = productionScannerV3([

@@ -46,7 +46,7 @@ export function CompactNumberInput({
       max={max}
       value={draft}
       className={cn(
-        "h-7 w-12 rounded-md border border-input bg-background px-1 text-center text-xs tabular-nums text-foreground outline-none transition-colors [appearance:textfield] focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+        "h-7 w-12 rounded-md border border-input bg-background px-1 text-center text-xs tabular-nums text-foreground outline-hidden transition-colors [appearance:textfield] focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
         className
       )}
       onChange={(event) => {

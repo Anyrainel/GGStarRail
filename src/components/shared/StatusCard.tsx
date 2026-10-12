@@ -27,7 +27,7 @@ export function StatusCard({
   const { t } = useI18n();
   return (
     <Card className="relative overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-primary/70 to-transparent" />
       <CardHeader className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div className="rounded-lg border border-border bg-background/70 p-2 text-primary">

@@ -64,7 +64,7 @@ export function EmptyState({
             className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
             aria-hidden="true"
           />
-          <div className="relative rounded-full border border-border bg-background p-4 shadow-sm">
+          <div className="relative rounded-full border border-border bg-background p-4 shadow-xs">
             <Icon className="h-12 w-12 text-primary" aria-hidden="true" />
           </div>
         </div>

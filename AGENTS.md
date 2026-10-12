@@ -69,7 +69,7 @@ labels, and `src/app/App.tsx` for the actual route components.
 
 | Need | Source of truth |
 | --- | --- |
-| Theme colors and surfaces | `tailwind.config.ts`, `src/lib/theme/generator.ts`: use `bg-background`, `text-foreground`, `bg-primary`, `bg-gradient-card`, `bg-gradient-select` |
+| Theme colors and surfaces | `src/index.css`, `src/lib/theme/generator.ts`: use `bg-background`, `text-foreground`, `bg-primary`, `bg-gradient-card`, `bg-gradient-select` |
 | Dynamic Combat Type, rarity and Tier classes | `src/components/shared/colors.ts`: `getCombatTypeColor(id, "text")`, `getRarityColor(rarity, "gradient")`, `getTierColor(tier, "header")`; compose with `cn()` |
 | Game palettes / raw chart colors | `src/config/gameColors.ts`; `src/lib/game/colors.ts` exposes actual CSS values for non-DOM consumers. Change values in the palette, not in individual components |
 | Item identity and filter controls | `src/components/shared/ItemIcon.tsx`, `AssetImage.tsx`, `FilterChip.tsx`, `FilterChipGroup.tsx` |

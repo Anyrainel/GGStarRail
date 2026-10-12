@@ -59,7 +59,7 @@ export function CharacterComments({ characterId }: { characterId: string }) {
             onChange={(event) => setBody(event.target.value)}
             maxLength={1000}
             disabled={busy}
-            className="min-h-24 w-full rounded-md border border-border bg-background p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-24 w-full rounded-md border border-border bg-background p-3 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           />
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm">{body.length}/1000</span>

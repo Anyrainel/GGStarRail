@@ -77,7 +77,7 @@ export function OptionButton({
         disabled={disabled}
         onClick={onSelect}
         className={cn(
-          "flex h-full w-full min-w-0 flex-wrap items-baseline rounded-lg border-2 px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-2",
+          "flex h-full w-full min-w-0 flex-wrap items-baseline rounded-lg border-2 px-2 py-1.5 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:py-2",
           selected
             ? "border-primary bg-primary/10"
             : "border-border bg-background/20 hover:bg-accent/30"

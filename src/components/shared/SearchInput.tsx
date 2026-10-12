@@ -55,9 +55,9 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           aria-label={label}
           onChange={(event) => onValueChange(event.target.value)}
           className={cn(
-            "w-full border border-border text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring [&::-webkit-search-cancel-button]:appearance-none",
+            "w-full border border-border text-foreground placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring [&::-webkit-search-cancel-button]:appearance-none",
             prominent
-              ? "h-11 rounded-xl bg-card/50 pl-10 pr-3 text-base shadow-sm md:text-sm"
+              ? "h-11 rounded-xl bg-card/50 pl-10 pr-3 text-base shadow-xs md:text-sm"
               : "h-9 rounded-md bg-background pl-8 pr-8 text-sm",
             className
           )}
@@ -69,7 +69,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             aria-label={t("common.clear")}
             title={t("common.clear")}
             onClick={() => onValueChange("")}
-            className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="absolute right-1 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground outline-hidden hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>

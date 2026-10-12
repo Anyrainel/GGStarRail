@@ -1,0 +1,60 @@
+{
+  "fetched": "2026-10-12",
+  "style": "new-york-v4",
+  "normalizations": [
+    "Map cn imports to @/lib/utils",
+    "Apply repository Biome formatting",
+    "Normalize CRLF to LF for installed-source digest"
+  ],
+  "components": [
+    {
+      "name": "accordion",
+      "path": "src/components/ui/accordion.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/accordion.json",
+      "upstreamSha256": "99de242681eb43121969db02bbb102aeeb1865ef52c7635672508a58c5429085",
+      "sha256": "772940cd32fd773f00ff2b04b28dabfb6bc52e245c2021014046d07c33fba4bc"
+    },
+    {
+      "name": "badge",
+      "path": "src/components/ui/badge.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/badge.json",
+      "upstreamSha256": "13a9380dfff853ee730c14a52df49f22aecd31f40f2998d7c1e7ec458b6e1650",
+      "sha256": "295ff39ff803a78f3c3f1ca3ada78bd481eaa53ec42db724d64e87f8027b9cb4"
+    },
+    {
+      "name": "button",
+      "path": "src/components/ui/button.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/button.json",
+      "upstreamSha256": "79dd6f75f8136394442202d6b8b922fb269eaad0a5dba579397c9d5b41f893bb",
+      "sha256": "64db57e069fdbdb15351fbc259d04e6c0542af91f7914a74a5e731f4dfec9281"
+    },
+    {
+      "name": "card",
+      "path": "src/components/ui/card.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/card.json",
+      "upstreamSha256": "ef8305b12c3112dab42a4708b41b1ebcc042fa5ab4c20f039da8d45b09ed5059",
+      "sha256": "d60cc35e64363b884169eb69280e829a9ef01fcabd122e76055a172b1d201246"
+    },
+    {
+      "name": "dropdown-menu",
+      "path": "src/components/ui/dropdown-menu.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/dropdown-menu.json",
+      "upstreamSha256": "d954efb735f13734751207ad22cb0cddd7f6ec53c59d16675d103dae08cb61fb",
+      "sha256": "db601a497801b1176fd9632452947045cfac83e44781a0eb1d920182b4e1be74"
+    },
+    {
+      "name": "popover",
+      "path": "src/components/ui/popover.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/popover.json",
+      "upstreamSha256": "3f99d3add6c9fa4f03721e81297ee10e1310785ee1d9d9d4c82a114d84ab0757",
+      "sha256": "1e8c516c1bf4880905207041bbd3e36e70d403a4f77854a36251d27a5b97f981"
+    },
+    {
+      "name": "sheet",
+      "path": "src/components/ui/sheet.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/sheet.json",
+      "upstreamSha256": "ea473d38a26a9b0b879e5a13139899ad45e9782e896b3fa205c7763a6c506876",
+      "sha256": "2a523cd3c4180c86ca76404de22c80bed68086f966e771684f11459d0ce506c9"
+    }
+  ]
+}

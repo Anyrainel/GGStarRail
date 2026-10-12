@@ -110,7 +110,7 @@ function ValueMarker({ number }: { number: number }) {
   return (
     <span
       title={t("archive.skillValueNumber", { value: number })}
-      className="mx-0.5 inline-flex min-w-5 items-center justify-center rounded border border-primary/25 bg-primary/10 px-1 text-xs font-semibold leading-5 text-primary"
+      className="mx-0.5 inline-flex min-w-5 items-center justify-center rounded-[4px] border border-primary/25 bg-primary/10 px-1 text-xs font-semibold leading-5 text-primary"
     >
       {number}
     </span>
@@ -215,7 +215,7 @@ function CardToggle({
         type="button"
         aria-expanded={expanded}
         onClick={onToggle}
-        className="flex w-full items-center gap-3 p-3 text-left text-sm font-semibold transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+        className="flex w-full items-center gap-3 p-3 text-left text-sm font-semibold transition-colors hover:bg-accent/30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
         <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1">
           {children}

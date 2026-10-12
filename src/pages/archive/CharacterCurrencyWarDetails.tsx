@@ -232,9 +232,9 @@ export function CharacterCurrencyWarDetails({
               aria-pressed={position === value}
               onClick={() => setPosition(value)}
               className={cn(
-                "inline-flex h-full items-center rounded-md px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                "inline-flex h-full items-center rounded-md px-3 text-sm font-medium outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                 position === value
-                  ? "bg-background text-foreground shadow"
+                  ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >

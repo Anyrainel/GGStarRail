@@ -85,26 +85,32 @@ describe("shared feedback client", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it.each([
-    401, 429, 503,
-  ])("reports recoverable server failures: %s", async (status) => {
-    await expect(
-      submitFeedback(
-        { rating: 5, suggestion: "Feedback", bugReport: "", contactMethod: "" },
-        async () => "synthetic-token",
-        vi.fn(async () => Response.json({ retryAt: 123 }, { status }))
-      )
-    ).rejects.toEqual(
-      new FeedbackError(
-        status === 401
-          ? "signed-out"
-          : status === 429
-            ? "rate-limited"
-            : "unavailable",
-        status === 429 ? 123 : null
-      )
-    );
-  });
+  it.each([401, 429, 503])(
+    "reports recoverable server failures: %s",
+    async (status) => {
+      await expect(
+        submitFeedback(
+          {
+            rating: 5,
+            suggestion: "Feedback",
+            bugReport: "",
+            contactMethod: "",
+          },
+          async () => "synthetic-token",
+          vi.fn(async () => Response.json({ retryAt: 123 }, { status }))
+        )
+      ).rejects.toEqual(
+        new FeedbackError(
+          status === 401
+            ? "signed-out"
+            : status === 429
+              ? "rate-limited"
+              : "unavailable",
+          status === 429 ? 123 : null
+        )
+      );
+    }
+  );
 });
 
 describe("Star Rail feedback and support pages", () => {

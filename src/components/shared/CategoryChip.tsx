@@ -33,7 +33,7 @@ export function CategoryChip({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium leading-none outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium leading-none outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         active
           ? "border-primary/40 bg-primary/15 text-foreground"
           : "border-border text-muted-foreground hover:text-foreground",

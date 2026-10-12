@@ -1,14 +1,11 @@
 param(
   [ValidateRange(1, 65535)]
-  [int]$Port = 41737,
-  [ValidateRange(1, 65535)]
-  [int]$WorkerPort = 41738
+  [int]$Port = 41737
 )
 
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $demoUrl = "http://127.0.0.1:$Port"
-$workerUrl = "http://127.0.0.1:$WorkerPort"
 $logDirectory = Join-Path $env:TEMP "ggstarrail-demo"
 $mutex = [System.Threading.Mutex]::new($false, "Local\GGStarRailDemo-$Port")
 $mutexAcquired = $false
@@ -51,7 +48,7 @@ function Test-WorkerDemo {
   try {
     $response = Invoke-WebRequest `
       -UseBasicParsing `
-      -Uri "$workerUrl/api/health" `
+      -Uri "$demoUrl/api/health" `
       -TimeoutSec 2
     return $response.StatusCode -eq 200 -and
       $response.Content.Contains('"product":"GGStarRail"')
@@ -90,23 +87,6 @@ try {
 
   New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
   $runId = Get-Date -Format "yyyyMMdd-HHmmss"
-  $workerListener = Get-LocalListener -LocalPort $WorkerPort
-  if ($workerListener) {
-    if (-not (Test-ProjectProcess -ProcessId $workerListener.OwningProcess)) {
-      throw "Worker port $WorkerPort is already used by another process."
-    }
-    if (-not (Test-WorkerDemo)) {
-      throw "A project process owns Worker port $WorkerPort, but its health check failed."
-    }
-  } else {
-    $workerProcess = Start-DemoProcess `
-      -Arguments @(
-        "run", "dev:worker", "--", "--ip", "127.0.0.1", "--port", "$WorkerPort"
-      ) `
-      -Name "worker-$WorkerPort" `
-      -RunId $runId
-  }
-
   $webListener = Get-LocalListener -LocalPort $Port
   if ($webListener) {
     if (-not (Test-ProjectProcess -ProcessId $webListener.OwningProcess)) {
@@ -128,7 +108,7 @@ try {
   do {
     if ((Test-WebDemo) -and (Test-WorkerDemo)) {
       Write-Output "GGStarRail is running at $demoUrl"
-      Write-Output "Import Worker is running at $workerUrl"
+      Write-Output "Import Worker is running at $demoUrl/api/health"
       Write-Output "Logs: $logDirectory"
       exit 0
     }
@@ -141,7 +121,7 @@ try {
     Start-Sleep -Milliseconds 250
   } while ((Get-Date) -lt $deadline)
 
-  throw "GGStarRail web and Worker processes did not both become healthy. Logs: $logDirectory"
+  throw "GGStarRail web and Worker routes did not both become healthy. Logs: $logDirectory"
 } catch {
   foreach ($process in $launchedProcesses) {
     if (-not $process.HasExited) {

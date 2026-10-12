@@ -1,12 +1,13 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  type ComponentProps,
   createContext,
   type ReactNode,
   useContext,
   useLayoutEffect,
 } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, type ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,7 +51,8 @@ export function PageActions({ primary, overflow }: PageActionContent) {
   );
 }
 
-interface PageActionButtonProps extends Omit<ButtonProps, "children"> {
+interface PageActionButtonProps
+  extends Omit<ComponentProps<typeof Button>, "children"> {
   icon: LucideIcon;
   label: string;
 }

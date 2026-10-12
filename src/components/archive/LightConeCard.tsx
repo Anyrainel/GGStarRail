@@ -55,7 +55,7 @@ export function LightConeCard({
             aria-description={t("field.rarity", { value: lightCone.rarity })}
             onBlur={release}
             onPointerLeave={release}
-            className="flex h-full min-w-0 items-center gap-2 rounded-lg bg-card/50 p-2 text-left transition-all hover:scale-[1.02] hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-full min-w-0 items-center gap-2 rounded-lg bg-card/50 p-2 text-left transition-all hover:scale-[1.02] hover:bg-card/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             <ItemIcon
               kind="light-cone"

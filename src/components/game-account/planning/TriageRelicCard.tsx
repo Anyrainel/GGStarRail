@@ -87,7 +87,7 @@ export function TriageRelicCard({
 
   return (
     <article
-      className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-gradient-card text-card-foreground shadow"
+      className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-gradient-card text-card-foreground shadow-sm"
       data-triage-decision={result.decision}
     >
       <div className="flex min-w-0 items-center gap-3 p-3">
@@ -114,7 +114,7 @@ export function TriageRelicCard({
           aria-expanded={expanded}
           aria-controls={detailId}
           onClick={onToggle}
-          className="flex min-w-0 flex-1 items-center gap-2 self-stretch rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-w-0 flex-1 items-center gap-2 self-stretch rounded-md text-left outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           <span className="min-w-0 flex-1">
             <span className="flex min-w-0 items-start gap-3">

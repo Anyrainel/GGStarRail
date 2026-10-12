@@ -59,7 +59,7 @@ export function SortToggleGroup({
             disabled={disabled}
             onClick={() => onChange(option.value)}
             className={cn(
-              "inline-flex h-7 w-9 items-center justify-center border border-border outline-none transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+              "inline-flex h-7 w-9 items-center justify-center border border-border outline-hidden transition-colors focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
               index === 0 && "rounded-l-sm",
               index === OPTIONS.length - 1 && "rounded-r-sm",
               index > 0 && "-ml-px",

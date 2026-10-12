@@ -13,7 +13,7 @@ const assets = new Set(
 assert(assets.size > 0, "Home page asset references were not found");
 for (const asset of assets) {
   const source = await readFile(path.join(root, "public", asset));
-  const published = await readFile(path.join(root, "dist", asset));
+  const published = await readFile(path.join(root, "dist/client", asset));
   assert(
     source.equals(published),
     `Home page asset differs in build: ${asset}`

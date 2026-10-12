@@ -315,24 +315,23 @@ describe("GGArtifact family shell", () => {
     );
   });
 
-  it.each([
-    "/builds/team-damage",
-    "/team-damage",
-    "/team-damage/frozen",
-  ])("redirects %s to the DMG Optimizer and keeps the open team", async (path) => {
-    const team = emptyTeam("team:redirect");
-    team.members[0] = { characterId: "1102", options: {}, skill: "kit" };
-    useTeamStore.setState({ teams: [team], activeTeamId: null });
-    renderApp(`${path}?team=${encodeURIComponent(team.id)}`);
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).toHaveTextContent(
-        `${APP_PATHS.teamDamage}?team=${encodeURIComponent(team.id)}`
-      )
-    );
-    expect(
-      await screen.findByRole("button", { name: "Back to teams" })
-    ).toBeInTheDocument();
-  });
+  it.each(["/builds/team-damage", "/team-damage", "/team-damage/frozen"])(
+    "redirects %s to the DMG Optimizer and keeps the open team",
+    async (path) => {
+      const team = emptyTeam("team:redirect");
+      team.members[0] = { characterId: "1102", options: {}, skill: "kit" };
+      useTeamStore.setState({ teams: [team], activeTeamId: null });
+      renderApp(`${path}?team=${encodeURIComponent(team.id)}`);
+      await waitFor(() =>
+        expect(screen.getByTestId("location")).toHaveTextContent(
+          `${APP_PATHS.teamDamage}?team=${encodeURIComponent(team.id)}`
+        )
+      );
+      expect(
+        await screen.findByRole("button", { name: "Back to teams" })
+      ).toBeInTheDocument();
+    }
+  );
 
   it("keeps the app shell bounded so page layouts own content scrolling", () => {
     const { unmount } = renderApp(APP_PATHS.characters);

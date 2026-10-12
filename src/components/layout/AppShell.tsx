@@ -62,7 +62,7 @@ function SiteSwitcher() {
     <div className="flex shrink-0 items-center gap-1">
       <Link
         to={APP_PATHS.home}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-accent/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={t("app.name")}
         title={t("site.home")}
       >
@@ -389,7 +389,7 @@ function SectionTabs() {
 
   return (
     <div
-      className="hidden shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-sm md:block"
+      className="hidden shrink-0 border-b border-border/50 bg-card/20 backdrop-blur-xs md:block"
       data-testid="section-tabs"
     >
       <div className="container mx-auto overflow-x-auto pb-2 scrollbar-none">
@@ -465,7 +465,7 @@ export function AppShell({
         <div className="shrink-0 bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground">
           {t("app.developmentNotice")}
         </div>
-        <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-sm">
+        <header className="z-50 h-14 shrink-0 bg-card/20 backdrop-blur-xs">
           <div className="container mx-auto flex h-14 items-center justify-between gap-2 px-4">
             <div className="flex min-w-0 flex-1 items-center gap-1 md:gap-4">
               <MobileMenu />

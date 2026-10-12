@@ -73,7 +73,7 @@ export function RelicSetFilterGroup({
           type="button"
           aria-expanded={expanded}
           onClick={() => setExpanded((current) => !current)}
-          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-none transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-hidden transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring"
         >
           {label}
           {value.size > 0 && (

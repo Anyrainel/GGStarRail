@@ -54,7 +54,7 @@ import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 type SuccessState = "import" | null;
 
 const FIELD_CLASS =
-  "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30";
+  "h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-hidden transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30";
 
 function readFileText(file: File): Promise<string> {
   if (typeof file.text === "function") return file.text();
@@ -337,7 +337,7 @@ export function AccountImportPanel({
                   {t("scanner.menu")}
                 </a>
               </Button>
-              <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-within:outline-none focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
+              <label className="inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-within:outline-hidden focus-within:ring-2 focus-within:ring-ring has-[:disabled]:pointer-events-none has-[:disabled]:opacity-50">
                 <FileJson className="h-4 w-4" aria-hidden />
                 {busy ? t("common.loading") : t("imports.selectFile")}
                 <input
@@ -440,7 +440,7 @@ export function AccountImportPanel({
               <label className="block space-y-1.5 text-sm font-medium">
                 <span>{t("imports.credentials.cookie")}</span>
                 <textarea
-                  className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
+                  className="min-h-24 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs outline-hidden transition-colors focus:border-primary/60 focus:ring-2 focus:ring-ring/30"
                   value={rawCookie}
                   onChange={(event) => setRawCookie(event.target.value)}
                   autoComplete="off"

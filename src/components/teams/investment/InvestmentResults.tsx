@@ -290,7 +290,7 @@ export function CombinedOrder({
                       key={slot}
                       data-chosen={chosen || undefined}
                       className={cn(
-                        "items-center gap-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-xs",
+                        "items-center gap-1 whitespace-nowrap rounded-[4px] border px-1.5 py-0.5 text-xs",
                         chosen
                           ? "inline-flex border-primary/40 bg-primary/10 font-semibold"
                           : "hidden border-border text-muted-foreground sm:inline-flex"

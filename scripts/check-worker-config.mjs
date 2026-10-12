@@ -12,6 +12,14 @@ const requiredSnippets = [
   '"APP_ID": "ggstarrail"',
   '"binding": "ASSETS"',
   '"not_found_handling": "none"',
+  '"directory": "./dist/client"',
+  '"run_worker_first": [',
+  '"/*"',
+  '"!/assets/*"',
+  '"!/media/*"',
+  '"!/*.ico"',
+  '"!/*.svg"',
+  '"!/*.txt"',
   '"pattern": "hsr.ggartifact.com"',
 ];
 const missing = requiredSnippets.filter((snippet) => !source.includes(snippet));

@@ -298,7 +298,7 @@ function CharacterCardComponent({
             badge={iconOnly ? bonus.tier : undefined}
             size={isVeryNarrow ? "xs" : "sm"}
             tabIndex={setDefinition ? 0 : undefined}
-            className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-md outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           />
           {!iconOnly && (
             <span className="min-w-0 leading-tight" aria-hidden="true">
@@ -378,7 +378,7 @@ function CharacterCardComponent({
           </div>
           <div
             className={cn(
-              "bg-gradient-to-br from-amber-100 via-orange-300 to-amber-500 bg-clip-text pr-0.5 font-black italic leading-none tracking-tighter text-transparent",
+              "bg-linear-to-br from-amber-100 via-orange-300 to-amber-500 bg-clip-text pr-0.5 font-black italic leading-none tracking-tighter text-transparent",
               isVeryNarrow ? "text-xl" : "text-2xl"
             )}
             data-aggregate-score
@@ -464,7 +464,7 @@ function CharacterCardComponent({
               aria-label={t("characterLoadout.openArchive", {
                 name: characterName,
               })}
-              className="shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="shrink-0 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ItemIcon
                 kind="character"
@@ -564,7 +564,7 @@ function CharacterCardComponent({
                   locked={lightCone.locked}
                   size={iconSize}
                   tabIndex={lightConeDefinition ? 0 : undefined}
-                  className="rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </CatalogHoverCard>
             ) : (

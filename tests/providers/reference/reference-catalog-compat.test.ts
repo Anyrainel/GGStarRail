@@ -29,23 +29,21 @@ function mockMember(schemaVersion: string, collection?: string) {
 }
 
 describe("current reference producer runtime schema boundary", () => {
-  it.each([
-    "1.0.0",
-    "1.1.0",
-    "1.2.0",
-    "1.3.0",
-  ])("rejects an obsolete %s runtime manifest", async (schemaVersion) => {
-    vi.doMock("@/generated/catalog/manifest.json", () => ({
-      default: {
-        ...websiteManifest,
-        reference_manifest: {
-          ...websiteManifest.reference_manifest,
-          schema_version: schemaVersion,
+  it.each(["1.0.0", "1.1.0", "1.2.0", "1.3.0"])(
+    "rejects an obsolete %s runtime manifest",
+    async (schemaVersion) => {
+      vi.doMock("@/generated/catalog/manifest.json", () => ({
+        default: {
+          ...websiteManifest,
+          reference_manifest: {
+            ...websiteManifest.reference_manifest,
+            schema_version: schemaVersion,
+          },
         },
-      },
-    }));
-    await expect(import("@/providers/reference/catalog")).rejects.toThrow();
-  });
+      }));
+      await expect(import("@/providers/reference/catalog")).rejects.toThrow();
+    }
+  );
 
   it.each([
     "loadCharacters",

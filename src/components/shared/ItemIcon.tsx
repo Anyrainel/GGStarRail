@@ -119,7 +119,7 @@ export function itemIconCornerMetrics(size: ItemIconSize): {
 
 /** The rank-badge colours shared by every item tile. */
 export const ITEM_BADGE_CLASS =
-  "bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-sm";
+  "bg-item-badge font-semibold leading-none text-item-badge-foreground shadow-xs";
 
 interface CornerAsset extends CatalogAssetRef {
   alt: string;
@@ -262,7 +262,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
         {showMarker && (
           <span
             className={cn(
-              "absolute left-0 top-0 flex items-center justify-center shadow-sm",
+              "absolute left-0 top-0 flex items-center justify-center shadow-xs",
               MARKER_TONES[marker.tone ?? "destructive"]
             )}
             style={{
@@ -305,7 +305,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
         {locked === true && (
           <span
-            className="absolute right-0 top-0 flex items-center justify-center bg-red-950/90 text-red-200 shadow-sm"
+            className="absolute right-0 top-0 flex items-center justify-center bg-red-950/90 text-red-200 shadow-xs"
             style={{
               width: config.corner,
               height: config.corner,
@@ -324,7 +324,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
         {locked === null && (
           <span
-            className="absolute right-0 top-0 flex items-center justify-center bg-slate-950/85 text-slate-200 shadow-sm"
+            className="absolute right-0 top-0 flex items-center justify-center bg-slate-950/85 text-slate-200 shadow-xs"
             style={{
               width: config.corner,
               height: config.corner,
@@ -343,7 +343,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
 
         {!showStatus && cornerAsset && (
           <span
-            className="absolute right-0 top-0 flex items-center justify-center rounded-full bg-black/45 shadow-sm backdrop-blur-sm"
+            className="absolute right-0 top-0 flex items-center justify-center rounded-full bg-black/45 shadow-xs backdrop-blur-xs"
             style={{
               width: config.corner,
               height: config.corner,

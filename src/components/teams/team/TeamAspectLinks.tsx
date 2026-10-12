@@ -23,7 +23,7 @@ export function TeamAspectLinks({
         <Link
           key={other}
           to={{ pathname: TEAM_DMG_TABS[other].path, search }}
-          className="inline-flex items-center gap-1 border-b border-transparent text-base text-primary outline-none hover:border-primary focus-visible:border-primary xl:text-lg"
+          className="inline-flex items-center gap-1 border-b border-transparent text-base text-primary outline-hidden hover:border-primary focus-visible:border-primary xl:text-lg"
         >
           {t(TEAM_DMG_TABS[other].aspectKey)}
           <ArrowUpRight className="size-4 md:size-5" aria-hidden />

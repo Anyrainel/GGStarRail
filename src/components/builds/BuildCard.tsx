@@ -156,7 +156,7 @@ function WeightToken({
         <button
           type="button"
           aria-label={`${accessibleName}: ${percentage}%`}
-          className="flex h-7 max-w-full items-center rounded-md border border-border bg-gradient-select text-xs shadow-sm outline-none transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring"
+          className="flex h-7 max-w-full items-center rounded-md border border-border bg-gradient-select text-xs shadow-xs outline-hidden transition-all hover:brightness-110 focus-visible:ring-1 focus-visible:ring-ring"
         >
           <span className="max-w-20 truncate px-2">{propertyName}</span>
           <span className="h-4 w-px shrink-0 bg-border" aria-hidden="true" />
@@ -371,7 +371,7 @@ export function BuildCard({
               <input
                 value={nameDraft}
                 aria-label={t("build.name")}
-                className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
+                className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-hidden focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
                 onChange={(event) => setNameDraft(event.target.value)}
                 onBlur={() => {
                   const nextName = nameDraft.trim();

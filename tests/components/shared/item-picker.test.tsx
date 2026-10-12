@@ -32,40 +32,39 @@ describe("shared catalog picker", () => {
     view.unmount();
     // The global teardown guard proves that no delayed callback survives.
   });
-  it.each([
-    "character",
-    "light-cone",
-    "relic-set",
-  ] as const)("searches and selects %s with the same controls", async (kind) => {
-    const references = await loadBuildReferences();
-    const items = catalogPickerItems(kind, references, "en", "Trailblazer");
-    const chosen = items[0]!;
-    const onChange = vi.fn();
-    const user = userEvent.setup();
-    const view = render(
-      <I18nProvider>
-        <ItemPicker
-          kind={kind}
-          items={items}
-          value={null}
-          label="Choose"
-          onChange={onChange}
-          filters={[rarityPickerFilter(items, "Rarity")]}
-        />
-      </I18nProvider>
-    );
-    await user.click(screen.getByRole("button", { name: "Choose" }));
-    await user.type(screen.getByRole("searchbox"), "no-such-item");
-    expect(screen.getByRole("status")).toHaveTextContent("No items match");
-    await user.clear(screen.getByRole("searchbox"));
-    await user.type(screen.getByRole("searchbox"), chosen.name);
-    await user.click(screen.getByRole("button", { name: chosen.name }));
-    expect(onChange).toHaveBeenCalledExactlyOnceWith(chosen.id);
-    expect(screen.queryByRole("dialog")).toBeNull();
-    await user.click(screen.getByRole("button", { name: "Choose" }));
-    expect(screen.getByRole("searchbox")).toHaveValue("");
-    view.unmount();
-  });
+  it.each(["character", "light-cone", "relic-set"] as const)(
+    "searches and selects %s with the same controls",
+    async (kind) => {
+      const references = await loadBuildReferences();
+      const items = catalogPickerItems(kind, references, "en", "Trailblazer");
+      const chosen = items[0]!;
+      const onChange = vi.fn();
+      const user = userEvent.setup();
+      const view = render(
+        <I18nProvider>
+          <ItemPicker
+            kind={kind}
+            items={items}
+            value={null}
+            label="Choose"
+            onChange={onChange}
+            filters={[rarityPickerFilter(items, "Rarity")]}
+          />
+        </I18nProvider>
+      );
+      await user.click(screen.getByRole("button", { name: "Choose" }));
+      await user.type(screen.getByRole("searchbox"), "no-such-item");
+      expect(screen.getByRole("status")).toHaveTextContent("No items match");
+      await user.clear(screen.getByRole("searchbox"));
+      await user.type(screen.getByRole("searchbox"), chosen.name);
+      await user.click(screen.getByRole("button", { name: chosen.name }));
+      expect(onChange).toHaveBeenCalledExactlyOnceWith(chosen.id);
+      expect(screen.queryByRole("dialog")).toBeNull();
+      await user.click(screen.getByRole("button", { name: "Choose" }));
+      expect(screen.getByRole("searchbox")).toHaveValue("");
+      view.unmount();
+    }
+  );
 
   it("restricts Light Cones by Path, excludes duplicates, and clears individual slots", async () => {
     const references = await loadBuildReferences();

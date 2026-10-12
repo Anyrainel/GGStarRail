@@ -12,7 +12,10 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
   const config = structuredClone(
     createRequire(import.meta.url)("../.dependency-cruiser.cjs")
   );
-  config.options.tsConfig.fileName = path.join(root, "tsconfig.app.json");
+  config.options.webpackConfig.fileName = path.join(
+    root,
+    ".dependency-resolution.cjs"
+  );
   const cwd = mkdtempSync(path.join(tmpdir(), "ggstarrail-deps-"));
   const write = (name, source) => {
     const target = path.join(cwd, name);
@@ -59,7 +62,18 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       'import "../services/workflow.ts"; import "react/jsx-runtime";'
     );
     write("src/lib/runtime.ts", 'import "../domain/model.ts";');
-    write("src/domain/model.ts", "export const value = true;");
+    write(
+      "src/domain/model.ts",
+      "export const value = true; export interface Contract { id: string }"
+    );
+    write(
+      "src/lib/contract.ts",
+      'import type { Contract } from "../domain/model.ts"; export type Local = Contract;'
+    );
+    write(
+      "src/lib/namedContract.ts",
+      'import { type Contract } from "../domain/model.ts"; export type Local = Contract;'
+    );
     write(
       "src/services/workflow.ts",
       'import "../components/shared/control.ts"; import "../stores/live.ts";'
@@ -92,7 +106,7 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       [
         path.join(
           root,
-          "node_modules/dependency-cruiser/bin/dependency-cruise.mjs"
+          "node_modules/dependency-cruiser/bin/dependency-cruiser.mjs"
         ),
         "src",
         "worker",
@@ -105,6 +119,10 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
     );
     assert.ok(result.status > 0, result.stderr + result.stdout);
     const violations = result.stdout;
+    assert.doesNotMatch(
+      violations,
+      /libraries-use-domain-contracts-only: src\/lib\/(?:contract|namedContract)\.ts/
+    );
     assert.match(
       violations,
       /production-has-no-test-dependencies: src\/providers\/bad\.ts.*node_modules\/vitest\/dist\/index\.js/

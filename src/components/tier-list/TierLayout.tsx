@@ -344,7 +344,7 @@ function GroupTabs<Group extends string>({
   }
 
   return (
-    <div className="scrollbar-none sticky top-0 z-10 max-w-full overflow-x-auto bg-background/95 backdrop-blur">
+    <div className="scrollbar-none sticky top-0 z-10 max-w-full overflow-x-auto bg-background/95 backdrop-blur-sm">
       <div
         role="tablist"
         aria-label={label}
@@ -375,7 +375,7 @@ function GroupTabs<Group extends string>({
               title={dense ? group.name : undefined}
               onClick={() => onSelect(group.id)}
               className={cn(
-                "inline-flex h-14 min-w-fit flex-1 shrink-0 flex-col items-center justify-center gap-1 border-b-2 px-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring min-[560px]:px-2",
+                "inline-flex h-14 min-w-fit flex-1 shrink-0 flex-col items-center justify-center gap-1 border-b-2 px-0.5 text-xs font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring min-[560px]:px-2",
                 dense
                   ? "md:min-w-16 md:flex-none"
                   : "min-[560px]:min-w-16 min-[560px]:flex-none",

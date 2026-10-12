@@ -130,7 +130,7 @@ export function CavernPlanPicker({
                 title={item?.name}
                 onClick={() => setTarget(index)}
                 className={cn(
-                  "flex min-w-0 items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex min-w-0 items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-medium outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                   active
                     ? "border-primary/40 bg-primary/15 text-foreground"
                     : "border-border text-muted-foreground hover:text-foreground"
@@ -156,7 +156,7 @@ export function CavernPlanPicker({
                   </>
                 ) : (
                   <span
-                    className="h-5 w-5 shrink-0 rounded border border-dashed border-border"
+                    className="h-5 w-5 shrink-0 rounded-[4px] border border-dashed border-border"
                     aria-hidden="true"
                   />
                 )}

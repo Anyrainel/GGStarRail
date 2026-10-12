@@ -133,7 +133,7 @@ module.exports = {
       name: "no-unresolved-imports",
       severity: "error",
       from: {},
-      to: { couldNotResolve: true },
+      to: { couldNotResolve: true, pathNot: "^cloudflare:workers$" },
     },
     {
       name: "domain-is-framework-free",
@@ -183,8 +183,10 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: "node_modules" },
-    tsConfig: { fileName: "tsconfig.app.json" },
-    tsPreCompilationDeps: true,
+    // SWC reads TypeScript imports (including type-only edges) without using
+    // the JavaScript compiler API removed in TypeScript 7.
+    parser: "swc",
+    webpackConfig: { fileName: ".dependency-resolution.cjs" },
     enhancedResolveOptions: {
       exportsFields: ["exports"],
       conditionNames: ["import", "require", "node", "default"],

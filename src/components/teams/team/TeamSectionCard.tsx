@@ -66,7 +66,7 @@ export function TeamSectionCard({
             aria-expanded={open}
             aria-controls={bodyId}
             onClick={() => setOpen((value) => !value)}
-            className="flex min-w-0 flex-1 cursor-pointer select-none items-center gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-w-0 flex-1 cursor-pointer select-none items-center gap-2 rounded-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
             {heading}
             <ChevronDown

@@ -362,7 +362,7 @@ function CharacterListRow({
       aria-pressed={selected}
       onClick={onSelect}
       className={cn(
-        "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+        "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
         selected ? "bg-primary/15 ring-1 ring-primary/30" : "hover:bg-accent/50"
       )}
     >
@@ -411,7 +411,7 @@ function CharacterGridTile({
       data-character-id={character.id}
       aria-pressed={selected}
       onClick={onSelect}
-      className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-1 outline-none transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex min-w-0 flex-col items-center gap-1 rounded-lg p-1 outline-hidden transition-colors hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ItemIcon
         kind="character"

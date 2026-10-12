@@ -41,7 +41,7 @@ export function FeatureCard({
       data-wn-card
       to={link}
       className={cn(
-        "group relative flex flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group relative flex flex-col justify-end overflow-hidden rounded-2xl border border-border bg-card shadow-md transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
         featured
           ? "min-h-[200px] md:min-h-[260px]"
           : "min-h-[180px] md:min-h-[200px]"
@@ -70,7 +70,7 @@ export function FeatureCard({
       </div>
       <div className="relative z-10 flex flex-col gap-2 p-5 pb-14 md:max-w-[52%]">
         <div className="flex items-center gap-3">
-          <div className="rounded-lg border border-primary/30 bg-primary/20 p-2 text-primary shadow-lg shadow-primary/10 backdrop-blur-sm">
+          <div className="rounded-lg border border-primary/30 bg-primary/20 p-2 text-primary shadow-lg shadow-primary/10 backdrop-blur-xs">
             {icon}
           </div>
           <span className="text-sm font-semibold uppercase tracking-wider text-foreground/60">

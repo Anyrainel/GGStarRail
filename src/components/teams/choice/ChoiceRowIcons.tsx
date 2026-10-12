@@ -70,7 +70,7 @@ function RowSetArt({
       sourcePath={item.iconPath}
       alt=""
       draggable={false}
-      className={cn("object-contain drop-shadow", className)}
+      className={cn("object-contain drop-shadow-sm", className)}
     />
   );
 }

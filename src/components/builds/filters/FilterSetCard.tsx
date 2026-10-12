@@ -202,7 +202,7 @@ function SlotRuleGrid({
             title={countText ?? undefined}
             onClick={() => onSelectFilter(filter.id)}
             className={cn(
-              "flex min-w-0 items-center justify-between gap-1 rounded-md px-1 py-1 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring md:px-2",
+              "flex min-w-0 items-center justify-between gap-1 rounded-md px-1 py-1 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring md:px-2",
               selected
                 ? "bg-primary/15 ring-1 ring-primary/30"
                 : "hover:bg-accent hover:text-accent-foreground"

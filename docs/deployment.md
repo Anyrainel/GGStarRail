@@ -4,6 +4,20 @@ Production is a single Cloudflare Worker named `ggstarrail` at
 https://hsr.ggartifact.com. It serves the Vite output and the existing `/api/`
 import handlers. No database, bucket, or GenshinTools credentials are needed.
 
+`npm run dev` runs both the frontend and the Worker through Cloudflare's Vite
+plugin on one origin. `npm run demo:start` starts this same server and checks
+both the page and `/api/health`. `vite build` emits browser assets in
+`dist/client` and the Worker plus deployment configuration in `dist/ggstarrail`.
+Wrangler uses the generated deployment configuration when publishing the build.
+The source `wrangler.jsonc` keeps explicit asset routing: extensionless app
+navigations fall back in the Worker, while missing files keep their 404 status.
+
+`npm run types:worker` generates bindings and runtime declarations from the
+Wrangler configuration. `npm run check:worker-types` rejects drift. Worker
+validation keeps direct Node unit tests and adds workerd integration tests with
+real bindings, static assets and outbound requests mocked by MSW. Build the app
+before running the runtime tests so their assets match the production output.
+
 ## Website sign-in
 
 Both game sites share the existing Logto **Single Page App**
@@ -40,7 +54,7 @@ See [Logto's React integration guide](https://docs.logto.io/quick-starts/react).
 ## Automatic publishing
 
 Connect `Anyrainel/GGStarRail` in Workers & Pages > ggstarrail > Settings >
-Builds. Use production branch `main`, root directory `/`, Node 22, build
+Builds. Use production branch `main`, root directory `/`, Node 24 LTS, build
 command `npm run build:cloudflare`, and deploy command `npx wrangler deploy`.
 The Cloudflare project name must match the Wrangler name. Checks run before
 deployment; failed validation prevents publishing. Keep preview branches from

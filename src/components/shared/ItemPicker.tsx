@@ -135,7 +135,7 @@ export function ItemPicker({
       title={triggerTitle ?? triggerLabel ?? selected?.name ?? label}
       data-item-picker={kind}
       className={cn(
-        "group relative flex shrink-0 flex-col items-center gap-1 outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "group relative flex shrink-0 flex-col items-center gap-1 outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
         framed
           ? "rounded-lg border border-border bg-gradient-select text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           : "rounded-md transition-transform enabled:hover:scale-105",
@@ -197,7 +197,7 @@ export function ItemPicker({
             }}
             aria-label={`${t("common.search")}: ${label}`}
             placeholder={t("common.search")}
-            className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
         {filters.map((filter) => (
@@ -215,7 +215,7 @@ export function ItemPicker({
                   key={option.id}
                   aria-pressed={active}
                   className={cn(
-                    "rounded-md border border-border px-2 py-1 text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+                    "rounded-md border border-border px-2 py-1 text-xs outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
                     active
                       ? "border-primary bg-primary/20 text-primary"
                       : "bg-background text-muted-foreground"
@@ -256,7 +256,7 @@ export function ItemPicker({
                   if (closeOnSelect) changeOpen(false);
                 }}
                 className={cn(
-                  "relative flex min-w-0 flex-col items-center gap-1 rounded-lg p-1.5 text-center outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
+                  "relative flex min-w-0 flex-col items-center gap-1 rounded-lg p-1.5 text-center outline-hidden hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring",
                   highlighted.has(item.id) &&
                     "bg-primary/20 ring-1 ring-inset ring-primary"
                 )}
@@ -362,7 +362,7 @@ export function ItemPickerEmptyTile({
   const width = itemIconWidth(size);
   return (
     <span
-      className="relative flex items-center justify-center overflow-hidden rounded-md border-2 border-border bg-gradient-select shadow-sm ring-1 ring-inset ring-foreground/20 transition-shadow group-hover:shadow-md group-disabled:bg-muted"
+      className="relative flex items-center justify-center overflow-hidden rounded-md border-2 border-border bg-gradient-select shadow-xs ring-1 ring-inset ring-foreground/20 transition-shadow group-hover:shadow-md group-disabled:bg-muted"
       style={{
         width,
         height: height ?? width,

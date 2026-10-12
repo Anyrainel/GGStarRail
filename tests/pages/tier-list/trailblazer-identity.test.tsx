@@ -50,26 +50,29 @@ describe("Trailblazer identity", () => {
     }
   });
 
-  it.each([
-    0, 1, 2,
-  ])("hydrates v%s saved ranks through the real store without losing the higher placement", async (version) => {
-    const state =
-      version === 0
-        ? { assignments }
-        : {
-            schemaVersion: version,
-            assignments,
-            groupAssignments: {},
-            updatedAt: 123,
-          };
-    localStorage.setItem(
-      STORAGE_KEYS.characterPriority,
-      JSON.stringify({ state, version })
-    );
-    await useCharacterPriorityStore.persist.rehydrate();
-    expect(useCharacterPriorityStore.getState().assignments).toEqual(expected);
-    expect(useCharacterPriorityStore.getState().schemaVersion).toBe(2);
-  });
+  it.each([0, 1, 2])(
+    "hydrates v%s saved ranks through the real store without losing the higher placement",
+    async (version) => {
+      const state =
+        version === 0
+          ? { assignments }
+          : {
+              schemaVersion: version,
+              assignments,
+              groupAssignments: {},
+              updatedAt: 123,
+            };
+      localStorage.setItem(
+        STORAGE_KEYS.characterPriority,
+        JSON.stringify({ state, version })
+      );
+      await useCharacterPriorityStore.persist.rehydrate();
+      expect(useCharacterPriorityStore.getState().assignments).toEqual(
+        expected
+      );
+      expect(useCharacterPriorityStore.getState().schemaVersion).toBe(2);
+    }
+  );
 
   it("migrates JSON imports and saved libraries with the same identity rules", async () => {
     const document = {

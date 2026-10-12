@@ -37,7 +37,7 @@ export function InventorySection({
         <h2 className="min-w-0 text-lg font-semibold">
           <button
             type="button"
-            className="flex min-w-0 items-start gap-1.5 rounded-md text-left text-foreground/90 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex min-w-0 items-start gap-1.5 rounded-md text-left text-foreground/90 outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             aria-controls={contentId}
             aria-expanded={expanded}
             onClick={() => setExpanded((value) => !value)}
@@ -78,7 +78,7 @@ export function InventoryFilteredEmpty({
     <EmptyState variant="inline" messageKey="empty.filtered" icon={icon}>
       <button
         type="button"
-        className="rounded-sm font-medium text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-sm font-medium text-primary underline-offset-4 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         onClick={onClear}
       >
         {t("filter.clearAll")}

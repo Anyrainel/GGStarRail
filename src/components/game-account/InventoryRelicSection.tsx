@@ -304,7 +304,7 @@ export function InventoryRelicSection({
           type="button"
           aria-expanded={setsOpen}
           onClick={() => setSetsOpen((value) => !value)}
-          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-none transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background/30 px-3 text-sm font-medium text-foreground outline-hidden transition-colors hover:bg-background/50 focus-visible:ring-2 focus-visible:ring-ring"
         >
           {t("inventory.filterBySet")}
           <ChevronDown
@@ -462,7 +462,7 @@ function RelicTile({
         }
         size={iconSize}
         tabIndex={0}
-        className="rounded-md outline-none transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring"
+        className="rounded-md outline-hidden transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-ring"
         data-relic-key={relic.key}
       />
     </CatalogHoverCard>

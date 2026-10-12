@@ -91,7 +91,7 @@ export function RelicFilterSidebar({
                 aria-pressed={selected}
                 onClick={() => onSelectCharacter(character.id)}
                 className={cn(
-                  "flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex w-full min-w-0 items-center gap-2 rounded-lg px-2 py-1.5 text-left outline-hidden transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                   selected
                     ? "bg-primary/15 ring-1 ring-primary/30"
                     : "hover:bg-accent hover:text-accent-foreground"

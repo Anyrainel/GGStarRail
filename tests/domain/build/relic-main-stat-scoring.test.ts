@@ -47,71 +47,73 @@ const scenarios = [
 }[];
 
 describe("generated Relic main-stat scoring", () => {
-  it.each(
-    scenarios
-  )("scores $label by generated level progress, independent of its observed value", async (scenario) => {
-    const references = await loadBuildReferences();
-    const context = createRelicScoringContext(references);
-    const piece = references.relicPieces.byId.get(scenario.definitionId);
-    if (!piece) throw new Error(`Missing Relic piece ${scenario.definitionId}`);
+  it.each(scenarios)(
+    "scores $label by generated level progress, independent of its observed value",
+    async (scenario) => {
+      const references = await loadBuildReferences();
+      const context = createRelicScoringContext(references);
+      const piece = references.relicPieces.byId.get(scenario.definitionId);
+      if (!piece)
+        throw new Error(`Missing Relic piece ${scenario.definitionId}`);
 
-    const maxDisplayValue = generatedRelicMainStatDisplayValues(
-      piece,
-      scenario.propertyId,
-      piece.max_level,
-      references.properties.properties,
-      references.progression.relic_main_affixes
-    ).uiRounded;
-    const uiRoundedValues: number[] = [];
-    const uiRoundedScores: number[] = [];
-    const copiedValueScores: number[] = [];
-    const corruptValueScores: number[] = [];
-
-    for (const level of levels) {
-      const generated = generatedRelicMainStatDisplayValues(
+      const maxDisplayValue = generatedRelicMainStatDisplayValues(
         piece,
         scenario.propertyId,
-        level,
+        piece.max_level,
         references.properties.properties,
         references.progression.relic_main_affixes
-      );
-      expect(() =>
-        validateRelicMainStatDisplayValue(
+      ).uiRounded;
+      const uiRoundedValues: number[] = [];
+      const uiRoundedScores: number[] = [];
+      const copiedValueScores: number[] = [];
+      const corruptValueScores: number[] = [];
+
+      for (const level of levels) {
+        const generated = generatedRelicMainStatDisplayValues(
           piece,
-          { statId: scenario.propertyId, value: generated.uiRounded },
+          scenario.propertyId,
           level,
           references.properties.properties,
           references.progression.relic_main_affixes
-        )
-      ).not.toThrow();
+        );
+        expect(() =>
+          validateRelicMainStatDisplayValue(
+            piece,
+            { statId: scenario.propertyId, value: generated.uiRounded },
+            level,
+            references.properties.properties,
+            references.progression.relic_main_affixes
+          )
+        ).not.toThrow();
 
-      const scoreObservedValue = (value: number) => {
-        const relic: Relic = {
-          key: `${scenario.propertyId}:${level}`,
-          definitionId: piece.id,
-          setId: piece.set_id,
-          slot: scenario.slot,
-          rarity: piece.rarity,
-          level,
-          mainStat: { statId: scenario.propertyId, value },
-          substats: [],
-          locked: false,
-          discarded: false,
+        const scoreObservedValue = (value: number) => {
+          const relic: Relic = {
+            key: `${scenario.propertyId}:${level}`,
+            definitionId: piece.id,
+            setId: piece.set_id,
+            slot: scenario.slot,
+            rarity: piece.rarity,
+            level,
+            mainStat: { statId: scenario.propertyId, value },
+            substats: [],
+            locked: false,
+            discarded: false,
+          };
+          return scoreRelic(relic, mainStatOnlyProfile, context).mainStatScore;
         };
-        return scoreRelic(relic, mainStatOnlyProfile, context).mainStatScore;
-      };
 
-      uiRoundedValues.push(generated.uiRounded);
-      uiRoundedScores.push(scoreObservedValue(generated.uiRounded));
-      copiedValueScores.push(scoreObservedValue(maxDisplayValue));
-      corruptValueScores.push(scoreObservedValue(999_999));
+        uiRoundedValues.push(generated.uiRounded);
+        uiRoundedScores.push(scoreObservedValue(generated.uiRounded));
+        copiedValueScores.push(scoreObservedValue(maxDisplayValue));
+        corruptValueScores.push(scoreObservedValue(999_999));
+      }
+
+      expect(uiRoundedValues).toEqual(scenario.expectedUiRounded);
+      expect(uiRoundedScores).toEqual(expectedScores);
+      expect(copiedValueScores).toEqual(expectedScores);
+      expect(corruptValueScores).toEqual(expectedScores);
+      expect(uiRoundedScores[0]).toBeLessThan(uiRoundedScores[1] ?? 0);
+      expect(uiRoundedScores[1]).toBeLessThan(uiRoundedScores[2] ?? 0);
     }
-
-    expect(uiRoundedValues).toEqual(scenario.expectedUiRounded);
-    expect(uiRoundedScores).toEqual(expectedScores);
-    expect(copiedValueScores).toEqual(expectedScores);
-    expect(corruptValueScores).toEqual(expectedScores);
-    expect(uiRoundedScores[0]).toBeLessThan(uiRoundedScores[1] ?? 0);
-    expect(uiRoundedScores[1]).toBeLessThan(uiRoundedScores[2] ?? 0);
-  });
+  );
 });

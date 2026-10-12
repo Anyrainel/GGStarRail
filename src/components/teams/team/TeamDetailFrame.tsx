@@ -43,7 +43,7 @@ function TeamTitle({ team }: { team: TeamPlan }) {
           if (event.key === "Enter") event.currentTarget.blur();
           if (event.key === "Escape") setEditing(false);
         }}
-        className="h-10 min-w-0 flex-1 rounded-md border border-input bg-transparent px-2 text-xl font-black tracking-tight outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-2xl"
+        className="h-10 min-w-0 flex-1 rounded-md border border-input bg-transparent px-2 text-xl font-black tracking-tight outline-hidden focus-visible:ring-1 focus-visible:ring-ring md:text-2xl"
       />
     );
   return (
@@ -55,7 +55,7 @@ function TeamTitle({ team }: { team: TeamPlan }) {
           setDraft(team.name ?? "");
           setEditing(true);
         }}
-        className="max-w-full truncate rounded-sm text-left outline-none hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
+        className="max-w-full truncate rounded-sm text-left outline-hidden hover:text-primary focus-visible:ring-2 focus-visible:ring-ring"
       >
         {name}
       </button>

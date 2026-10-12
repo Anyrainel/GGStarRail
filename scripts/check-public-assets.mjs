@@ -4,7 +4,7 @@ import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const publicDirectory = path.join(root, "public");
-const outputDirectory = path.join(root, "dist");
+const outputDirectory = path.join(root, "dist/client");
 const lookup = JSON.parse(
   await readFile(
     path.join(root, "src/generated/assets/runtime-lookup.json"),

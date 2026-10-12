@@ -31,7 +31,7 @@ export function ResourcePriorityGroup({
           aria-controls={bodyId}
           onClick={onToggle}
           className={cn(
-            "flex w-full select-none items-center gap-1 px-3 py-2 text-left text-base font-bold tracking-wide text-foreground transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+            "flex w-full select-none items-center gap-1 px-3 py-2 text-left text-base font-bold tracking-wide text-foreground transition-colors hover:bg-accent/30 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
             collapsed ? "rounded-lg" : "rounded-t-lg"
           )}
         >

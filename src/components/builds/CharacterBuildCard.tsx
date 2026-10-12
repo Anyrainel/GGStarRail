@@ -83,7 +83,7 @@ function CharacterBuildCardComponent({
               aria-label={t("characterLoadout.openArchive", {
                 name: presentation.name,
               })}
-              className="shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="shrink-0 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ItemIcon
                 kind="character"
