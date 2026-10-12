@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "prepare": "node scripts/install-git-hooks.mjs",
-    "test:tooling": "node --test scripts/git-hooks.test.mjs",
+    "test:tooling": "node --test scripts/git-hooks.test.mjs scripts/dependency-rules.test.mjs",
     "dev": "vite",
     "demo:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-demo.ps1",
     "dev:wrangler": "npm run dev:worker",

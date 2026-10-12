@@ -52,13 +52,26 @@ Cloudflare manages its DNS and certificate. Normal releases use Git pushes;
 
 ## Reproducible clean builds
 
-`npm ci` / `npm install` installs the tracked `.githooks/pre-push` hook through
+`npm ci` / `npm install` installs tracked commit and push hooks in `.githooks` through
 `prepare`. For an existing checkout, run `npm run prepare` once. Installation
 refuses to overwrite a different `core.hooksPath`. Pushes require a clean tree
 and run `git diff --check` plus the same complete `npm run check` used by CI
 and Cloudflare; any nonzero exit blocks the push. Branch pushes must match the
-checked-out commit so an unrelated clean checkout cannot validate them. Git hooks can be bypassed,
+checked-out commit so an unrelated clean checkout cannot validate them. The hook
+rechecks HEAD and cleanliness after validation to reject concurrent edits or commits.
+Git hooks can be bypassed,
 so remote validation remains required.
+
+The commit gate checks staged whitespace, lint, types, dependency boundaries,
+hook regression tests, localization and UI conventions, related app tests,
+and Worker checks when relevant. It does not rewrite or stash files and rejects
+partially staged files so checks cannot validate a different version from the index.
+
+`npm run depcheck` gates cycles, unresolved imports, domain/framework separation,
+provider/state separation, credential boundaries, independent UI primitives,
+store/UI separation, test-only imports, browser Node built-ins, and browser/Worker/tooling
+isolation. It runs on commits, pushes, CI, and Cloudflare. These rules use
+GGStarRail's own layers; GenshinTools game-specific checks are not applicable.
 
 UI tests track real timeouts and intervals per test. After unmounting, teardown
 allows 25 ms for deferred focus cleanup, then fails and cancels outstanding

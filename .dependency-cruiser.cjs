@@ -2,10 +2,43 @@
 module.exports = {
   forbidden: [
     {
+      name: "ui-primitives-are-independent",
+      severity: "error",
+      from: { path: "^src/components/ui/" },
+      to: {
+        path: "^src/",
+        pathNot: ["^src/components/ui/", "^src/lib/utils\\.ts$"],
+      },
+    },
+    {
+      name: "stores-do-not-own-ui",
+      severity: "error",
+      from: { path: "^src/stores/" },
+      to: { path: "^src/(components|pages|hooks|contexts)/" },
+    },
+    {
       name: "no-circular",
       severity: "error",
       from: {},
       to: { circular: true },
+    },
+    {
+      name: "production-has-no-test-dependencies",
+      severity: "error",
+      from: { path: "^(src|worker)/" },
+      to: {
+        path: [
+          "^tests/",
+          "(^|node_modules/)(vitest|@vitest|@testing-library|@playwright)(/|$)",
+          "^node:test$",
+        ],
+      },
+    },
+    {
+      name: "no-unresolved-imports",
+      severity: "error",
+      from: {},
+      to: { couldNotResolve: true },
     },
     {
       name: "domain-is-framework-free",
@@ -14,7 +47,7 @@ module.exports = {
       to: {
         path: [
           "^src/(components|contexts|hooks|pages|providers|stores)/",
-          "^(react|react-dom|react-router-dom|zustand)$",
+          "(^|node_modules/)(react|react-dom|react-router-dom|zustand)(/|$)",
         ],
       },
     },
@@ -38,13 +71,19 @@ module.exports = {
       name: "browser-has-no-node-builtins",
       severity: "error",
       from: { path: "^src/" },
-      to: { path: ["^node:", "^(fs|path|os|crypto|http|https|stream)$"] },
+      to: { dependencyTypes: ["core"] },
     },
     {
       name: "worker-is-standalone",
       severity: "error",
       from: { path: "^worker/" },
-      to: { path: "^src/" },
+      to: { path: ["^src/", "^tests/", "^scripts/"] },
+    },
+    {
+      name: "browser-cannot-import-worker-or-tooling",
+      severity: "error",
+      from: { path: "^src/" },
+      to: { path: ["^worker/", "^scripts/"] },
     },
   ],
   options: {
@@ -56,6 +95,8 @@ module.exports = {
       conditionNames: ["import", "require", "node", "default"],
       mainFields: ["module", "main", "types", "typings"],
     },
-    exclude: { path: ["node_modules", "dist", "coverage", "\\.d\\.ts$"] },
+    // Keep imported package nodes visible to framework/test-dependency rules.
+    // doNotFollow stops traversal into their internals.
+    exclude: { path: ["dist", "coverage", "\\.d\\.ts$"] },
   },
 };

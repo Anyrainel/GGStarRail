@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { installGitHooks } from "./install-git-hooks.mjs";
+import { runPreCommit } from "./pre-commit.mjs";
 import { runPrePush } from "./pre-push.mjs";
 
 test("installs hooks in fresh clones, is idempotent, and preserves custom hooks", () => {
@@ -40,9 +41,16 @@ test("pre-push runs the complete gate and propagates failures", () => {
     assert.deepEqual(
       calls.map(([, args]) => args),
       [
+        ["rev-parse", "HEAD"],
         ["status", "--porcelain"],
         ["diff", "--check"],
         ["run", "check"],
+        ...(exitCode === 0
+          ? [
+              ["rev-parse", "HEAD"],
+              ["status", "--porcelain"],
+            ]
+          : []),
       ]
     );
   }
@@ -55,13 +63,14 @@ test("pre-push blocks dirty trees and failed Git commands before validation", ()
   ]) {
     let calls = 0;
     assert.equal(
-      runPrePush(() => {
+      runPrePush((_command, args) => {
         calls++;
+        if (args.includes("rev-parse")) return { status: 0, stdout: "head" };
         return status;
       }),
       1
     );
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
   }
   let calls = 0;
   assert.equal(
@@ -92,5 +101,84 @@ test("pre-push validates the pushed branch commit rather than an unrelated clean
     runPrePush(run, `refs/heads/main ${head} refs/heads/main ${other}`),
     0
   );
-  assert.deepEqual(calls.at(-1), ["run", "check"]);
+  assert.ok(calls.some((args) => args.join(" ") === "run check"));
+});
+
+test("push blocks edits and new commits made while checks run", () => {
+  for (const mutation of ["head", "tree"]) {
+    let checked = false;
+    const result = runPrePush((_command, args) => {
+      if (args.includes("check")) checked = true;
+      return {
+        status: 0,
+        stdout: args.includes("rev-parse")
+          ? checked && mutation === "head"
+            ? "new"
+            : "old"
+          : checked && mutation === "tree"
+            ? " M file"
+            : "",
+      };
+    });
+    assert.equal(result, 1);
+  }
+});
+
+test("commit gates check related tests, dependency boundaries, conventions and Worker changes", () => {
+  const calls = [];
+  assert.equal(
+    runPreCommit((command, args) => {
+      calls.push([command, args]);
+      return {
+        status: 0,
+        stdout:
+          args.includes("--cached") && args.includes("-z")
+            ? "src/file with spaces.ts\0worker/index.ts\0"
+            : "",
+      };
+    }),
+    0
+  );
+  assert.ok(calls.some(([, args]) => args.join(" ") === "run depcheck"));
+  assert.ok(calls.some(([, args]) => args.join(" ") === "run check:worker"));
+  assert.ok(
+    calls.some(
+      ([, args]) =>
+        args.includes("tests/ui-invariants.test.ts") &&
+        args.includes("tests/i18n.test.tsx")
+    )
+  );
+  const related = calls.find(([, args]) => args.includes("related"));
+  assert.equal(related[1].at(-1), "src/file with spaces.ts");
+});
+
+test("commit gates reject partial staging and propagate check failures without rewriting files", () => {
+  let calls = 0;
+  assert.equal(
+    runPreCommit(() => {
+      calls++;
+      return { status: 0, stdout: "src/a.ts\0" };
+    }),
+    1
+  );
+  assert.equal(calls, 2);
+  for (const failingGate of [
+    "lint",
+    "type-check",
+    "depcheck",
+    "test:tooling",
+    "related",
+    "check:worker",
+  ]) {
+    assert.equal(
+      runPreCommit((_command, args) => ({
+        status: args.includes(failingGate) ? 7 : 0,
+        stdout:
+          args.includes("--cached") && args.includes("-z")
+            ? "src/a.ts\0worker/index.ts\0"
+            : "",
+      })),
+      7
+    );
+  }
 });

@@ -16,7 +16,7 @@ export function installGitHooks(cwd = process.cwd()) {
   }
   const result = git("config", "--local", "core.hooksPath", ".githooks");
   if (result.status !== 0) throw new Error(result.stderr);
-  console.log("GGStarRail pre-push validation installed.");
+  console.log("GGStarRail commit and push validation installed.");
 }
 
 if (

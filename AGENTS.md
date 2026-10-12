@@ -22,6 +22,10 @@
 - Fresh clones run `npm run data:restore` and `npm run assets:webp` before
   checking. Publish the checksummed data release before pushing its lockfile.
 - Run `npm run check` and `git diff --check` before committing.
+- `npm ci` / `npm install` installs `.githooks` via `prepare`; existing checkouts
+  can run `npm run prepare`. Commits gate lint, types, dependency boundaries,
+  conventions and related tests; pushes run the full validation stack against
+  a clean, unchanged HEAD. Do not bypass the hooks to publish failing changes.
 
 ## Project Layout And Commands
 

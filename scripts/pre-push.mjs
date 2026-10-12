@@ -1,8 +1,11 @@
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
+import { runGate } from "./run-gate.mjs";
 
-export function runPrePush(run = spawnSync, updates = "") {
+export function runPrePush(run = runGate, updates = "") {
+  const initialHead = run("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+  if (initialHead.error || initialHead.status !== 0)
+    return initialHead.status || 1;
   const branchCommits = updates
     .trim()
     .split("\n")
@@ -14,9 +17,7 @@ export function runPrePush(run = spawnSync, updates = "") {
     )
     .map(([, sha]) => sha);
   if (branchCommits.length) {
-    const head = run("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
-    if (head.error || head.status !== 0) return head.status || 1;
-    if (branchCommits.some((sha) => sha !== head.stdout.trim())) {
+    if (branchCommits.some((sha) => sha !== initialHead.stdout.trim())) {
       console.error(
         "Pre-push validation must run from the commit being pushed. Switch to that branch and retry."
       );
@@ -33,13 +34,28 @@ export function runPrePush(run = spawnSync, updates = "") {
   }
   for (const [command, args] of [
     ["git", ["diff", "--check"]],
-    [process.platform === "win32" ? "npm.cmd" : "npm", ["run", "check"]],
+    ["npm", ["run", "check"]],
   ]) {
     const result = run(command, args, {
       stdio: "inherit",
-      shell: process.platform === "win32" && command === "npm.cmd",
     });
     if (result.error || result.status !== 0) return result.status || 1;
+  }
+  const finalHead = run("git", ["rev-parse", "HEAD"], { encoding: "utf8" });
+  if (finalHead.error || finalHead.status !== 0) return finalHead.status || 1;
+  const finalStatus = run("git", ["status", "--porcelain"], {
+    encoding: "utf8",
+  });
+  if (finalStatus.error || finalStatus.status !== 0)
+    return finalStatus.status || 1;
+  if (
+    finalHead.stdout.trim() !== initialHead.stdout.trim() ||
+    finalStatus.stdout.trim()
+  ) {
+    console.error(
+      "Push blocked: the commit or working tree changed during validation. Retry from a clean checkout."
+    );
+    return 1;
   }
   return 0;
 }
@@ -48,5 +64,5 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(process.argv[1]).href
 ) {
-  process.exitCode = runPrePush(spawnSync, readFileSync(0, "utf8"));
+  process.exitCode = runPrePush(runGate, readFileSync(0, "utf8"));
 }
