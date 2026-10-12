@@ -29,13 +29,6 @@
       "sha256": "64db57e069fdbdb15351fbc259d04e6c0542af91f7914a74a5e731f4dfec9281"
     },
     {
-      "name": "card",
-      "path": "src/components/ui/card.tsx",
-      "source": "https://ui.shadcn.com/r/styles/new-york-v4/card.json",
-      "upstreamSha256": "ef8305b12c3112dab42a4708b41b1ebcc042fa5ab4c20f039da8d45b09ed5059",
-      "sha256": "d60cc35e64363b884169eb69280e829a9ef01fcabd122e76055a172b1d201246"
-    },
-    {
       "name": "dropdown-menu",
       "path": "src/components/ui/dropdown-menu.tsx",
       "source": "https://ui.shadcn.com/r/styles/new-york-v4/dropdown-menu.json",
@@ -55,6 +48,15 @@
       "source": "https://ui.shadcn.com/r/styles/new-york-v4/sheet.json",
       "upstreamSha256": "ea473d38a26a9b0b879e5a13139899ad45e9782e896b3fa205c7763a6c506876",
       "sha256": "2a523cd3c4180c86ca76404de22c80bed68086f966e771684f11459d0ce506c9"
+    }
+  ],
+  "customizedComponents": [
+    {
+      "name": "card",
+      "path": "src/components/ui/card.tsx",
+      "source": "https://ui.shadcn.com/r/styles/new-york-v4/card.json",
+      "upstreamSha256": "ef8305b12c3112dab42a4708b41b1ebcc042fa5ab4c20f039da8d45b09ed5059",
+      "documentation": "docs/shadcn-customizations.md"
     }
   ]
 }

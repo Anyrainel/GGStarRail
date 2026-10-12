@@ -282,7 +282,7 @@ function DesktopNavigation() {
             variant={active ? "secondary" : "ghost"}
             asChild
             className={cn(
-              "h-9 gap-1 px-3 pb-2.5 pt-1.5",
+              "h-9 gap-1 px-3 py-2",
               active && "bg-primary/10 text-primary hover:bg-primary/20"
             )}
           >
@@ -336,7 +336,7 @@ function MobileMenu() {
                   variant="ghost"
                   asChild
                   className={cn(
-                    "h-9 w-full justify-start gap-2 pb-2.5 pt-1.5 text-sm font-semibold",
+                    "h-9 w-full justify-start gap-2 py-2 text-sm font-semibold",
                     sectionActive && "text-primary"
                   )}
                   onClick={() => setOpen(false)}
@@ -354,7 +354,7 @@ function MobileMenu() {
                         key={item.path}
                         variant={active ? "secondary" : "ghost"}
                         asChild
-                        className="h-8 w-full justify-start gap-2 pb-2 pt-1 text-sm font-normal"
+                        className="h-8 w-full justify-start gap-2 py-1.5 text-sm font-normal"
                         onClick={() => setOpen(false)}
                       >
                         <Link
@@ -410,7 +410,7 @@ function SectionTabs() {
                 variant={active ? "default" : "ghost"}
                 asChild
                 className={cn(
-                  "h-9 gap-2 px-4 pb-2.5 pt-1.5 text-sm",
+                  "h-9 gap-2 px-4 py-2 text-sm",
                   active &&
                     "bg-primary/60 text-primary-foreground hover:bg-primary/70"
                 )}

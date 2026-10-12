@@ -19,6 +19,7 @@ import {
   PlanarSetPicker,
 } from "@/components/shared/relic/CavernPlanPicker";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -359,230 +360,239 @@ export function BuildCard({
 
   return (
     <>
-      <article
-        className="overflow-hidden rounded-lg border border-border bg-muted/30"
-        data-build-card
-        data-build-category={build.category}
-      >
-        <div className="px-2 pt-2 md:px-3">
-          <div className="flex min-w-0 items-center gap-1 md:gap-2">
-            <label className="min-w-0 flex-1">
-              <span className="sr-only">{t("build.name")}</span>
-              <input
-                value={nameDraft}
-                aria-label={t("build.name")}
-                className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-hidden focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
-                onChange={(event) => setNameDraft(event.target.value)}
-                onBlur={() => {
-                  const nextName = nameDraft.trim();
-                  if (nextName && nextName !== displayName)
-                    onBuildChange({ ...build, name: nextName });
-                  else setNameDraft(displayName);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") event.currentTarget.blur();
-                }}
-              />
-            </label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 shrink-0 p-1 md:h-8 md:w-8"
-                  aria-label={t("common.more")}
-                >
-                  <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onDuplicate && (
-                  <DropdownMenuItem onSelect={onDuplicate}>
-                    <Copy />
-                    {t("build.duplicate")}
+      <Card asChild className="shadow-none">
+        <article
+          className="overflow-hidden rounded-lg border border-border bg-muted/30"
+          data-build-card
+          data-build-category={build.category}
+        >
+          <CardHeader className="items-stretch gap-0 px-2 pt-2 md:px-3">
+            <div className="flex min-w-0 items-center gap-1 md:gap-2">
+              <label className="min-w-0 flex-1">
+                <span className="sr-only">{t("build.name")}</span>
+                <input
+                  value={nameDraft}
+                  aria-label={t("build.name")}
+                  className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-hidden focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
+                  onChange={(event) => setNameDraft(event.target.value)}
+                  onBlur={() => {
+                    const nextName = nameDraft.trim();
+                    if (nextName && nextName !== displayName)
+                      onBuildChange({ ...build, name: nextName });
+                    else setNameDraft(displayName);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") event.currentTarget.blur();
+                  }}
+                />
+              </label>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 shrink-0 p-1 md:h-8 md:w-8"
+                    aria-label={t("common.more")}
+                  >
+                    <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onDuplicate && (
+                    <DropdownMenuItem onSelect={onDuplicate}>
+                      <Copy />
+                      {t("build.duplicate")}
+                    </DropdownMenuItem>
+                  )}
+                  {onMove && (
+                    <>
+                      <DropdownMenuItem
+                        disabled={!canMoveUp}
+                        onSelect={() => onMove("up")}
+                      >
+                        <ArrowUp />
+                        {t("build.moveUp")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        disabled={!canMoveDown}
+                        onSelect={() => onMove("down")}
+                      >
+                        <ArrowDown />
+                        {t("build.moveDown")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onSelect={() => setScoringOpen(true)}>
+                    <SlidersHorizontal />
+                    {t("build.scoringConfigure")}
                   </DropdownMenuItem>
-                )}
-                {onMove && (
-                  <>
-                    <DropdownMenuItem
-                      disabled={!canMoveUp}
-                      onSelect={() => onMove("up")}
-                    >
-                      <ArrowUp />
-                      {t("build.moveUp")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      disabled={!canMoveDown}
-                      onSelect={() => onMove("down")}
-                    >
-                      <ArrowDown />
-                      {t("build.moveDown")}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onSelect={() => setScoringOpen(true)}>
-                  <SlidersHorizontal />
-                  {t("build.scoringConfigure")}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onSelect={onDelete}
-                >
-                  <Trash2 />
-                  {t("build.delete")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-
-        <div className="px-2 py-1.5 md:py-2">
-          <div className="border-t border-border pt-1">
-            <div className="flex min-w-0 items-center justify-center gap-2 md:gap-3">
-              <section
-                aria-label={t("build.setPlanTitle")}
-                className="flex w-16 shrink-0 flex-col items-center gap-1 md:pl-1"
-                data-build-set-plan
-              >
-                {build.category === "cavern" ? (
-                  <CavernPlanPicker
-                    value={cavernPlan}
-                    items={cavernSets}
-                    label={t("build.cavernSet")}
-                    triggerSize={setTriggerSize}
-                    onChange={setCavernPlan}
-                  />
-                ) : (
-                  <PlanarSetPicker
-                    value={build.planarSetId}
-                    items={planarSets}
-                    label={t("build.planarSet")}
-                    triggerSize={setTriggerSize}
-                    onChange={(planarSetId) =>
-                      onBuildChange({ ...build, planarSetId })
-                    }
-                  />
-                )}
-                <SetPlanNames sets={planSets} />
-              </section>
-
-              <section className="min-w-0 flex-1 space-y-0.5 md:space-y-1">
-                <div className="grid grid-cols-2 gap-1">
-                  {BUILD_SLOTS.filter(
-                    ([slot]) => slot in build.preferredMainStats
-                  ).map(([slot, catalogSlot]) => {
-                    const slotDefinition =
-                      references.properties.relicSlotById.get(catalogSlot);
-                    const validProperties =
-                      slotDefinition?.valid_main_properties ?? [];
-                    const slotName = localizedName(
-                      slotDefinition?.name,
-                      locale,
-                      slot
-                    );
-                    return (
-                      <div
-                        key={slot}
-                        className="min-w-0"
-                        data-build-slot={slot}
-                      >
-                        <StatSelect
-                          label={slotName}
-                          values={buildMainStats(build, slot)}
-                          options={validProperties.map((propertyId) => {
-                            const label = localizedPropertyName(
-                              propertyId,
-                              references.properties,
-                              locale
-                            );
-                            return {
-                              value: propertyId,
-                              label,
-                              compactLabel: compactPropertyName(
-                                propertyId,
-                                label,
-                                t
-                              ),
-                            };
-                          })}
-                          maxLength={validProperties.length}
-                          minimumLength={1}
-                          compact={isMobile}
-                          addLabel={t("build.addMainStat", { slot: slotName })}
-                          deselectLabel={t("build.deselectMainStat")}
-                          onValuesChange={(values) =>
-                            setMainStats(slot, values)
-                          }
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="min-w-0 space-y-0.5" data-build-substats>
-                  <div className="flex min-w-0 items-center gap-1">
-                    <span
-                      className={cn(
-                        "truncate font-medium text-muted-foreground select-none",
-                        isMobile ? "text-[10px]" : "text-xs"
-                      )}
-                    >
-                      {t("build.substats")}
-                    </span>
-                    {unweightedProperties.length > 0 && (
-                      <LightweightSelect
-                        value=""
-                        onValueChange={(propertyId) => {
-                          if (propertyId) setWeight(propertyId, 1);
-                        }}
-                      >
-                        <LightweightSelectTrigger
-                          aria-label={t("build.addSubstat")}
-                          className="h-5 w-5 justify-center border-0 bg-primary/5 p-0 text-primary/70 shadow-none transition-transform hover:scale-[1.2] hover:bg-primary/10 hover:text-primary [&>svg]:hidden"
-                        >
-                          <span className="flex items-center justify-center">
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                          </span>
-                        </LightweightSelectTrigger>
-                        <LightweightSelectContent collisionPadding={8}>
-                          {unweightedProperties.map(({ propertyId, name }) => (
-                            <LightweightSelectItem
-                              key={propertyId}
-                              value={propertyId}
-                              className="text-sm"
-                            >
-                              {name}
-                            </LightweightSelectItem>
-                          ))}
-                        </LightweightSelectContent>
-                      </LightweightSelect>
-                    )}
-                  </div>
-                  <div className="flex min-h-8 min-w-0 flex-wrap items-center gap-1">
-                    {visibleWeights.map(
-                      ({ propertyId, weight, name, compactName }) => (
-                        <WeightToken
-                          key={propertyId}
-                          label={t("scoring.weightsTitle")}
-                          propertyName={compactName}
-                          accessibleName={name}
-                          weight={weight}
-                          onChange={(nextWeight) =>
-                            setWeight(propertyId, nextWeight)
-                          }
-                        />
-                      )
-                    )}
-                  </div>
-                </div>
-              </section>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onSelect={onDelete}
+                  >
+                    <Trash2 />
+                    {t("build.delete")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </div>
-        </div>
-      </article>
+          </CardHeader>
+
+          <CardContent className="px-2 py-1.5 md:py-2">
+            <div className="border-t border-border pt-1">
+              <div className="flex min-w-0 items-center justify-center gap-2 md:gap-3">
+                <section
+                  aria-label={t("build.setPlanTitle")}
+                  className="flex w-16 shrink-0 flex-col items-center gap-1 md:pl-1"
+                  data-build-set-plan
+                >
+                  {build.category === "cavern" ? (
+                    <CavernPlanPicker
+                      value={cavernPlan}
+                      items={cavernSets}
+                      label={t("build.cavernSet")}
+                      triggerSize={setTriggerSize}
+                      onChange={setCavernPlan}
+                    />
+                  ) : (
+                    <PlanarSetPicker
+                      value={build.planarSetId}
+                      items={planarSets}
+                      label={t("build.planarSet")}
+                      triggerSize={setTriggerSize}
+                      onChange={(planarSetId) =>
+                        onBuildChange({ ...build, planarSetId })
+                      }
+                    />
+                  )}
+                  <SetPlanNames sets={planSets} />
+                </section>
+
+                <section className="min-w-0 flex-1 space-y-0.5 md:space-y-1">
+                  <div className="grid grid-cols-2 gap-1">
+                    {BUILD_SLOTS.filter(
+                      ([slot]) => slot in build.preferredMainStats
+                    ).map(([slot, catalogSlot]) => {
+                      const slotDefinition =
+                        references.properties.relicSlotById.get(catalogSlot);
+                      const validProperties =
+                        slotDefinition?.valid_main_properties ?? [];
+                      const slotName = localizedName(
+                        slotDefinition?.name,
+                        locale,
+                        slot
+                      );
+                      return (
+                        <div
+                          key={slot}
+                          className="min-w-0"
+                          data-build-slot={slot}
+                        >
+                          <StatSelect
+                            label={slotName}
+                            values={buildMainStats(build, slot)}
+                            options={validProperties.map((propertyId) => {
+                              const label = localizedPropertyName(
+                                propertyId,
+                                references.properties,
+                                locale
+                              );
+                              return {
+                                value: propertyId,
+                                label,
+                                compactLabel: compactPropertyName(
+                                  propertyId,
+                                  label,
+                                  t
+                                ),
+                              };
+                            })}
+                            maxLength={validProperties.length}
+                            minimumLength={1}
+                            compact={isMobile}
+                            addLabel={t("build.addMainStat", {
+                              slot: slotName,
+                            })}
+                            deselectLabel={t("build.deselectMainStat")}
+                            onValuesChange={(values) =>
+                              setMainStats(slot, values)
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="min-w-0 space-y-0.5" data-build-substats>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <span
+                        className={cn(
+                          "truncate font-medium text-muted-foreground select-none",
+                          isMobile ? "text-[10px]" : "text-xs"
+                        )}
+                      >
+                        {t("build.substats")}
+                      </span>
+                      {unweightedProperties.length > 0 && (
+                        <LightweightSelect
+                          value=""
+                          onValueChange={(propertyId) => {
+                            if (propertyId) setWeight(propertyId, 1);
+                          }}
+                        >
+                          <LightweightSelectTrigger
+                            aria-label={t("build.addSubstat")}
+                            className="h-5 w-5 justify-center border-0 bg-primary/5 p-0 text-primary/70 shadow-none transition-transform hover:scale-[1.2] hover:bg-primary/10 hover:text-primary [&>svg]:hidden"
+                          >
+                            <span className="flex items-center justify-center">
+                              <Plus
+                                className="h-3.5 w-3.5"
+                                aria-hidden="true"
+                              />
+                            </span>
+                          </LightweightSelectTrigger>
+                          <LightweightSelectContent collisionPadding={8}>
+                            {unweightedProperties.map(
+                              ({ propertyId, name }) => (
+                                <LightweightSelectItem
+                                  key={propertyId}
+                                  value={propertyId}
+                                  className="text-sm"
+                                >
+                                  {name}
+                                </LightweightSelectItem>
+                              )
+                            )}
+                          </LightweightSelectContent>
+                        </LightweightSelect>
+                      )}
+                    </div>
+                    <div className="flex min-h-8 min-w-0 flex-wrap items-center gap-1">
+                      {visibleWeights.map(
+                        ({ propertyId, weight, name, compactName }) => (
+                          <WeightToken
+                            key={propertyId}
+                            label={t("scoring.weightsTitle")}
+                            propertyName={compactName}
+                            accessibleName={name}
+                            weight={weight}
+                            onChange={(nextWeight) =>
+                              setWeight(propertyId, nextWeight)
+                            }
+                          />
+                        )
+                      )}
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </CardContent>
+        </article>
+      </Card>
 
       <ResponsiveDialog open={scoringOpen} onOpenChange={setScoringOpen}>
         <ResponsiveDialogContent closeLabel={t("common.close")}>

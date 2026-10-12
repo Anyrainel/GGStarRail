@@ -20,6 +20,12 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -181,223 +187,228 @@ export function TeamCard({
   }
 
   return (
-    <article
-      ref={drag?.setNodeRef}
-      style={{ ...drag?.style, order }}
-      hidden={hidden}
-      aria-label={teamDisplayName(team, teams, t)}
-      data-team-card={ghost ? "ghost" : team.id}
-      className={cn(
-        "group mx-auto w-full max-w-[23.5rem] rounded-xl border xl:max-w-[24.5rem] border-border bg-card/40 backdrop-blur-md transition-colors hover:border-primary/40",
-        unowned &&
-          "opacity-50 grayscale transition-[filter,opacity] focus-within:opacity-100 focus-within:grayscale-0 hover:opacity-100 hover:grayscale-0",
-        drag?.dragging && "z-20 shadow-2xl"
-      )}
-    >
-      <div className="flex items-center gap-1 px-2 pb-0.5 pt-2 xl:gap-1.5 xl:px-3 xl:pb-1 xl:pt-3">
-        {drag?.enabled ? (
-          <button
+    <Card asChild className="shadow-none">
+      <article
+        ref={drag?.setNodeRef}
+        style={{ ...drag?.style, order }}
+        hidden={hidden}
+        aria-label={teamDisplayName(team, teams, t)}
+        data-team-card={ghost ? "ghost" : team.id}
+        className={cn(
+          "group mx-auto w-full max-w-[23.5rem] rounded-xl border xl:max-w-[24.5rem] border-border bg-card/40 backdrop-blur-md transition-colors hover:border-primary/40",
+          unowned &&
+            "opacity-50 grayscale transition-[filter,opacity] focus-within:opacity-100 focus-within:grayscale-0 hover:opacity-100 hover:grayscale-0",
+          drag?.dragging && "z-20 shadow-2xl"
+        )}
+      >
+        <CardHeader className="flex-row items-center gap-1 px-2 pb-0.5 pt-2 xl:gap-1.5 xl:px-3 xl:pb-1 xl:pt-3">
+          {drag?.enabled ? (
+            <button
+              type="button"
+              ref={drag.setActivatorNodeRef}
+              {...drag.attributes}
+              {...drag.listeners}
+              aria-label={t("teamDmg.dragHandle")}
+              title={t("teamDmg.dragHandle")}
+              className="flex w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing xl:w-5"
+            >
+              <GripVertical className="h-3.5 w-3.5" aria-hidden />
+            </button>
+          ) : (
+            <span
+              className="w-4 shrink-0 text-center text-[11px] font-bold tabular-nums text-muted-foreground xl:w-5 xl:text-xs"
+              aria-hidden
+            >
+              {ghost ? 1 : index + 1}
+            </span>
+          )}
+          <TeamNameInput team={team} teams={teams} disabled={ghost} />
+          {!ghost && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0 p-0 xl:h-7 xl:w-7"
+                  aria-label={t("teamDmg.teamActions")}
+                >
+                  <MoreVertical className="h-4 w-4" aria-hidden />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem disabled={!onMoveUp} onSelect={onMoveUp}>
+                  <ArrowUp className="h-4 w-4" aria-hidden />
+                  {t("teamDmg.moveUp")}
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled={!onMoveDown} onSelect={onMoveDown}>
+                  <ArrowDown className="h-4 w-4" aria-hidden />
+                  {t("teamDmg.moveDown")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => duplicateTeam(team.id)}>
+                  <Copy className="h-4 w-4" aria-hidden />
+                  {t("combat.team.duplicate")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden />
+                  {t("combat.team.delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </CardHeader>
+
+        <CardContent className="px-2 py-1.5 xl:px-3 xl:py-2">
+          <div className="mx-auto grid w-fit grid-cols-[auto_repeat(4,auto)] items-center justify-items-center gap-1.5 pr-1 xl:gap-3 xl:pr-2">
+            <span aria-hidden />
+            {slots.map((slot) => {
+              const character = characterOf(slot);
+              const combatType = character
+                ? references.properties.combatTypeById.get(
+                    character.combat_type_id
+                  )
+                : undefined;
+              return combatType ? (
+                <AssetImage
+                  key={`type-${slot}`}
+                  kind="combat-type"
+                  id={combatType.id}
+                  sourcePath={combatType.icon_path}
+                  alt={localizedName(combatType.name, locale, combatType.id)}
+                  title={localizedName(combatType.name, locale, combatType.id)}
+                  draggable={false}
+                  className="h-4 w-4 object-contain xl:h-5 xl:w-5"
+                />
+              ) : (
+                <span key={`type-${slot}`} className="h-4 w-4 xl:h-5 xl:w-5" />
+              );
+            })}
+
+            <span title={t("teamDmg.row.characters")}>
+              <UserRound className={ROW_ICON} aria-hidden />
+            </span>
+            {slots.map((slot) => {
+              const plan = team.members[slot];
+              const member = preview.get(slot);
+              return (
+                <ItemPicker
+                  key={`character-${slot}`}
+                  kind="character"
+                  label={t("combat.slot.add")}
+                  value={plan?.characterId ?? null}
+                  items={characterItemsFor(slot)}
+                  triggerSize="md"
+                  badge={member?.eidolon}
+                  onChange={(id) => pickCharacter(slot, id)}
+                  onClear={
+                    !ghost && plan && slot === lastFilled
+                      ? () => removeMember(team.id, slot)
+                      : undefined
+                  }
+                />
+              );
+            })}
+
+            <span title={t("teamDmg.row.lightCones")}>
+              <WandSparkles className={ROW_ICON} aria-hidden />
+            </span>
+            {slots.map((slot) => {
+              const character = characterOf(slot);
+              const member = preview.get(slot);
+              return (
+                <ItemPicker
+                  key={`light-cone-${slot}`}
+                  kind="light-cone"
+                  square
+                  label={t("combat.member.lightCone")}
+                  value={member?.lightCone?.id ?? null}
+                  {...lightConeChoices(character?.path_id)}
+                  triggerSize="md"
+                  badge={member?.lightCone?.superimposition}
+                  disabled={!character || ghost}
+                  onChange={(id) =>
+                    updateMember(team.id, slot, {
+                      lightCone: {
+                        id,
+                        superimposition:
+                          member?.lightCone?.superimposition ?? 1,
+                      },
+                    })
+                  }
+                  onClear={() =>
+                    updateMember(team.id, slot, { lightCone: null })
+                  }
+                />
+              );
+            })}
+
+            <span title={t("teamDmg.row.cavern")}>
+              <Gem className={ROW_ICON} aria-hidden />
+            </span>
+            {slots.map((slot) => (
+              <CavernCell
+                key={`cavern-${slot}`}
+                team={team}
+                slot={slot}
+                member={preview.get(slot)}
+                size="md"
+                disabled={ghost}
+                lookup={lookup}
+              />
+            ))}
+
+            <span title={t("teamDmg.row.planar")}>
+              <Orbit className={ROW_ICON} aria-hidden />
+            </span>
+            {slots.map((slot) => (
+              <PlanarCell
+                key={`planar-${slot}`}
+                team={team}
+                slot={slot}
+                member={preview.get(slot)}
+                size="md"
+                disabled={ghost}
+                lookup={lookup}
+              />
+            ))}
+          </div>
+        </CardContent>
+
+        <CardFooter className="px-2 pb-2 pt-1.5 xl:px-3 xl:pb-3 xl:pt-2">
+          <Button
             type="button"
-            ref={drag.setActivatorNodeRef}
-            {...drag.attributes}
-            {...drag.listeners}
-            aria-label={t("teamDmg.dragHandle")}
-            title={t("teamDmg.dragHandle")}
-            className="flex w-4 shrink-0 cursor-grab touch-none items-center justify-center rounded-sm text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing xl:w-5"
+            variant="outline"
+            disabled={!hasMember || ghost}
+            onClick={() => onOpen(team.id)}
+            className="h-8 w-full gap-1.5 text-xs font-semibold xl:h-9 xl:gap-2 xl:text-sm"
           >
-            <GripVertical className="h-3.5 w-3.5" aria-hidden />
-          </button>
-        ) : (
-          <span
-            className="w-4 shrink-0 text-center text-[11px] font-bold tabular-nums text-muted-foreground xl:w-5 xl:text-xs"
-            aria-hidden
-          >
-            {ghost ? 1 : index + 1}
-          </span>
-        )}
-        <TeamNameInput team={team} teams={teams} disabled={ghost} />
+            <FooterIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4" aria-hidden />
+            {t(meta.labelKey)}
+          </Button>
+        </CardFooter>
+
         {!ghost && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0 p-0 xl:h-7 xl:w-7"
-                aria-label={t("teamDmg.teamActions")}
-              >
-                <MoreVertical className="h-4 w-4" aria-hidden />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem disabled={!onMoveUp} onSelect={onMoveUp}>
-                <ArrowUp className="h-4 w-4" aria-hidden />
-                {t("teamDmg.moveUp")}
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled={!onMoveDown} onSelect={onMoveDown}>
-                <ArrowDown className="h-4 w-4" aria-hidden />
-                {t("teamDmg.moveDown")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => duplicateTeam(team.id)}>
-                <Copy className="h-4 w-4" aria-hidden />
-                {t("combat.team.duplicate")}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onSelect={() => setConfirmDelete(true)}
-              >
-                <Trash2 className="h-4 w-4" aria-hidden />
-                {t("combat.team.delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ConfirmDialog
+            open={confirmDelete}
+            onOpenChange={setConfirmDelete}
+            title={t("combat.team.delete")}
+            description={t("combat.team.deleteConfirm", {
+              name: teamDisplayName(team, teams, t),
+            })}
+            confirmLabel={t("combat.team.delete")}
+            cancelLabel={t("common.cancel")}
+            destructive
+            onConfirm={() => {
+              forgetTeamResults(team.id);
+              removeTeam(team.id);
+            }}
+          />
         )}
-      </div>
-
-      <div className="px-2 py-1.5 xl:px-3 xl:py-2">
-        <div className="mx-auto grid w-fit grid-cols-[auto_repeat(4,auto)] items-center justify-items-center gap-1.5 pr-1 xl:gap-3 xl:pr-2">
-          <span aria-hidden />
-          {slots.map((slot) => {
-            const character = characterOf(slot);
-            const combatType = character
-              ? references.properties.combatTypeById.get(
-                  character.combat_type_id
-                )
-              : undefined;
-            return combatType ? (
-              <AssetImage
-                key={`type-${slot}`}
-                kind="combat-type"
-                id={combatType.id}
-                sourcePath={combatType.icon_path}
-                alt={localizedName(combatType.name, locale, combatType.id)}
-                title={localizedName(combatType.name, locale, combatType.id)}
-                draggable={false}
-                className="h-4 w-4 object-contain xl:h-5 xl:w-5"
-              />
-            ) : (
-              <span key={`type-${slot}`} className="h-4 w-4 xl:h-5 xl:w-5" />
-            );
-          })}
-
-          <span title={t("teamDmg.row.characters")}>
-            <UserRound className={ROW_ICON} aria-hidden />
-          </span>
-          {slots.map((slot) => {
-            const plan = team.members[slot];
-            const member = preview.get(slot);
-            return (
-              <ItemPicker
-                key={`character-${slot}`}
-                kind="character"
-                label={t("combat.slot.add")}
-                value={plan?.characterId ?? null}
-                items={characterItemsFor(slot)}
-                triggerSize="md"
-                badge={member?.eidolon}
-                onChange={(id) => pickCharacter(slot, id)}
-                onClear={
-                  !ghost && plan && slot === lastFilled
-                    ? () => removeMember(team.id, slot)
-                    : undefined
-                }
-              />
-            );
-          })}
-
-          <span title={t("teamDmg.row.lightCones")}>
-            <WandSparkles className={ROW_ICON} aria-hidden />
-          </span>
-          {slots.map((slot) => {
-            const character = characterOf(slot);
-            const member = preview.get(slot);
-            return (
-              <ItemPicker
-                key={`light-cone-${slot}`}
-                kind="light-cone"
-                square
-                label={t("combat.member.lightCone")}
-                value={member?.lightCone?.id ?? null}
-                {...lightConeChoices(character?.path_id)}
-                triggerSize="md"
-                badge={member?.lightCone?.superimposition}
-                disabled={!character || ghost}
-                onChange={(id) =>
-                  updateMember(team.id, slot, {
-                    lightCone: {
-                      id,
-                      superimposition: member?.lightCone?.superimposition ?? 1,
-                    },
-                  })
-                }
-                onClear={() => updateMember(team.id, slot, { lightCone: null })}
-              />
-            );
-          })}
-
-          <span title={t("teamDmg.row.cavern")}>
-            <Gem className={ROW_ICON} aria-hidden />
-          </span>
-          {slots.map((slot) => (
-            <CavernCell
-              key={`cavern-${slot}`}
-              team={team}
-              slot={slot}
-              member={preview.get(slot)}
-              size="md"
-              disabled={ghost}
-              lookup={lookup}
-            />
-          ))}
-
-          <span title={t("teamDmg.row.planar")}>
-            <Orbit className={ROW_ICON} aria-hidden />
-          </span>
-          {slots.map((slot) => (
-            <PlanarCell
-              key={`planar-${slot}`}
-              team={team}
-              slot={slot}
-              member={preview.get(slot)}
-              size="md"
-              disabled={ghost}
-              lookup={lookup}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div className="px-2 pb-2 pt-1.5 xl:px-3 xl:pb-3 xl:pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={!hasMember || ghost}
-          onClick={() => onOpen(team.id)}
-          className="h-8 w-full gap-1.5 text-xs font-semibold xl:h-9 xl:gap-2 xl:text-sm"
-        >
-          <FooterIcon className="h-3.5 w-3.5 xl:h-4 xl:w-4" aria-hidden />
-          {t(meta.labelKey)}
-        </Button>
-      </div>
-
-      {!ghost && (
-        <ConfirmDialog
-          open={confirmDelete}
-          onOpenChange={setConfirmDelete}
-          title={t("combat.team.delete")}
-          description={t("combat.team.deleteConfirm", {
-            name: teamDisplayName(team, teams, t),
-          })}
-          confirmLabel={t("combat.team.delete")}
-          cancelLabel={t("common.cancel")}
-          destructive
-          onConfirm={() => {
-            forgetTeamResults(team.id);
-            removeTeam(team.id);
-          }}
-        />
-      )}
-    </article>
+      </article>
+    </Card>
   );
 }
