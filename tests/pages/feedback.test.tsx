@@ -150,7 +150,9 @@ describe("Star Rail feedback and support pages", () => {
     expect(
       await screen.findByText("Thanks, your feedback was sent.")
     ).toBeInTheDocument();
-    expect(localStorage.getItem("ggstarrail:feedback:draft:v1")).toBeNull();
+    await waitFor(() =>
+      expect(localStorage.getItem("ggstarrail:feedback:draft:v1")).toBeNull()
+    );
     expect(
       localStorage.getItem(
         "ggstarrail:feedback:synthetic-subject:next-allowed:v1"
