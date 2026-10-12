@@ -10,6 +10,7 @@ export interface FeedbackInput {
   suggestion: string;
   bugReport: string;
   contactMethod: string;
+  hidden?: boolean;
 }
 
 export class FeedbackError extends Error {
@@ -44,7 +45,7 @@ export async function submitFeedback(
       },
       body: JSON.stringify({
         game: "HSR",
-        public: true,
+        public: !input.hidden,
         rating: input.rating,
         suggestion: input.suggestion.trim() || undefined,
         bugReport: input.bugReport.trim() || undefined,

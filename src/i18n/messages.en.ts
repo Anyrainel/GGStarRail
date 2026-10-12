@@ -1,4 +1,10 @@
 export const messagesEn = {
+  "feedback.hide": "Hide from public feedback",
+  "feedback.hidden": "Hidden",
+  "feedback.publish": "Make public",
+  "feedback.anonymous": "Anonymous",
+  "feedback.upvote": "Upvote",
+  "feedback.updateFailed": "Couldn't update feedback. Please try again.",
   "community.discussion": "Discussion",
   "home.index.feedback.description": "Player feedback and suggestions",
   "community.loading": "Loading posts…",
@@ -15,7 +21,7 @@ export const messagesEn = {
   "community.commentNotice":
     "Comments are public. Don't include personal information.",
   "community.feedbackNotice":
-    "Feedback is public. Your contact method stays private.",
+    "Feedback is public unless hidden. Your contact method stays private.",
   "support.title": "Support GGArtifact",
   "support.description":
     "Thank you for supporting continued development and maintenance.",

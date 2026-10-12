@@ -1,6 +1,12 @@
 import type { MessageKey } from "./messages.en";
 
 export const messagesZhCn = {
+  "feedback.hide": "从公开反馈中隐藏",
+  "feedback.hidden": "已隐藏",
+  "feedback.publish": "公开反馈",
+  "feedback.anonymous": "匿名用户",
+  "feedback.upvote": "赞同",
+  "feedback.updateFailed": "反馈更新失败，请重试。",
   "community.discussion": "角色讨论",
   "home.index.feedback.description": "玩家反馈与建议",
   "community.loading": "正在加载…",
@@ -15,7 +21,7 @@ export const messagesZhCn = {
   "community.postFailed": "评论提交失败，请重试。",
   "community.rateLimited": "请稍等一分钟再发表评论。",
   "community.commentNotice": "评论会公开展示，请勿填写个人隐私信息。",
-  "community.feedbackNotice": "反馈内容会公开展示，联系方式仅站长可见。",
+  "community.feedbackNotice": "未隐藏的反馈会公开展示，联系方式仅站长可见。",
   "support.title": "支持 GGArtifact",
   "support.description": "感谢你支持项目的持续开发与维护。",
   "feedback.description": "感谢您的宝贵时间。",

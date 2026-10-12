@@ -146,6 +146,9 @@ describe("Star Rail feedback and support pages", () => {
       screen.getByRole("button", { name: "Submit feedback" })
     ).toBeDisabled();
     fillFeedback();
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Hide from public feedback" })
+    );
     fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(
       await screen.findByText("Thanks, your feedback was sent.")
@@ -162,10 +165,43 @@ describe("Star Rail feedback and support pages", () => {
       FEEDBACK_ENDPOINT,
       expect.objectContaining({ body: expect.stringContaining('"game":"HSR"') })
     );
+    expect(fetchImpl).toHaveBeenCalledWith(
+      FEEDBACK_ENDPOINT,
+      expect.objectContaining({
+        body: expect.stringContaining('"public":false'),
+      })
+    );
     expect(Object.keys(localStorage).some((key) => key.includes("token"))).toBe(
       false
     );
   });
+
+  it.each([1, 2])(
+    "restores persisted draft version %s with a compatible visibility choice",
+    (schemaVersion) => {
+      localStorage.setItem(
+        "ggstarrail:feedback:draft:v1",
+        JSON.stringify({
+          schemaVersion,
+          rating: 4,
+          suggestion: "Saved feedback",
+          bugReport: "",
+          contactMethod: "",
+          ...(schemaVersion === 2 ? { hidden: true } : {}),
+        })
+      );
+      renderPage(<FeedbackPage />);
+      fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
+      expect(screen.getByLabelText(/Suggestion \/ Experience/)).toHaveValue(
+        "Saved feedback"
+      );
+      const checkbox = screen.getByRole("checkbox", {
+        name: "Hide from public feedback",
+      });
+      if (schemaVersion === 2) expect(checkbox).toBeChecked();
+      else expect(checkbox).not.toBeChecked();
+    }
+  );
 
   it("preserves the draft on failure and offers sign-in recovery", async () => {
     vi.stubGlobal(

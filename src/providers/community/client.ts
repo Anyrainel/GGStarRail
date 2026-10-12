@@ -7,6 +7,11 @@ export interface CommunityPost {
   rating?: number;
   suggestion?: string | null;
   bugReport?: string | null;
+  authorEmail?: string | null;
+  isPublic?: boolean;
+  isOwner?: boolean;
+  upvotes?: number;
+  hasUpvoted?: boolean;
 }
 export interface PostPage {
   items: CommunityPost[];
@@ -28,14 +33,50 @@ export function communityUrl(characterId?: string): URL {
 export async function fetchPosts(
   characterId: string | undefined,
   cursor: string | null,
-  signal: AbortSignal
+  signal: AbortSignal,
+  getToken?: () => Promise<string>
 ): Promise<PostPage> {
   const url = communityUrl(characterId);
   if (cursor) url.searchParams.set("cursor", cursor);
-  const response = await fetch(url.href, { credentials: "omit", signal });
+  const headers: Record<string, string> = {};
+  if (!characterId && getToken) {
+    const token = await getToken();
+    if (!token) throw new CommentError(401);
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const response = await fetch(url.href, {
+    credentials: "omit",
+    signal,
+    ...(getToken && !characterId ? { headers } : {}),
+  });
   if (!response.ok) throw new CommentError(response.status);
   return response.json();
 }
+export async function updateFeedbackPost(
+  id: string,
+  action: "visibility" | "vote",
+  enabled: boolean,
+  getToken: () => Promise<string>
+): Promise<CommunityPost> {
+  const token = await getToken();
+  if (!token) throw new CommentError(401);
+  const url = new URL(FEEDBACK_ENDPOINT);
+  url.pathname += `/${encodeURIComponent(id)}/${action}`;
+  const response = await fetch(url.href, {
+    method: "POST",
+    credentials: "omit",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(
+      action === "visibility" ? { public: enabled } : { voted: enabled }
+    ),
+  });
+  if (!response.ok) throw new CommentError(response.status);
+  return response.json();
+}
+
 export async function submitComment(
   characterId: string,
   body: string,

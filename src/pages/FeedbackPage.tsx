@@ -22,12 +22,14 @@ import {
 } from "@/providers/community/feedback";
 
 interface FeedbackDraft {
+  hidden: boolean;
   rating: number | null;
   suggestion: string;
   bugReport: string;
   contactMethod: string;
 }
 const EMPTY_DRAFT: FeedbackDraft = {
+  hidden: false,
   rating: null,
   suggestion: "",
   bugReport: "",
@@ -39,7 +41,8 @@ function readDraft(): FeedbackDraft {
   try {
     const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) ?? "null");
     if (
-      draft?.schemaVersion !== 1 ||
+      // v1 drafts did not have a visibility choice; preserve their public default.
+      ![1, 2].includes(draft?.schemaVersion) ||
       !(
         draft.rating === null ||
         (Number.isInteger(draft.rating) &&
@@ -58,6 +61,7 @@ function readDraft(): FeedbackDraft {
     )
       return EMPTY_DRAFT;
     return {
+      hidden: draft.hidden === true,
       rating: draft.rating,
       suggestion: draft.suggestion,
       bugReport: draft.bugReport,
@@ -89,13 +93,14 @@ export default function FeedbackPage() {
         draft.rating === null &&
         !draft.suggestion &&
         !draft.bugReport &&
-        !draft.contactMethod
+        !draft.contactMethod &&
+        !draft.hidden
       )
         localStorage.removeItem(DRAFT_KEY);
       else
         localStorage.setItem(
           DRAFT_KEY,
-          JSON.stringify({ schemaVersion: 1, ...draft })
+          JSON.stringify({ schemaVersion: 2, ...draft })
         );
     } catch {
       /* Drafts can still be submitted when browser storage is blocked. */
@@ -337,6 +342,21 @@ export default function FeedbackPage() {
                   }
                   className="h-10 w-full rounded-md border border-border bg-background px-3 font-normal focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                 />
+              </label>
+              <label
+                htmlFor="feedback-hidden"
+                className="flex items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  id="feedback-hidden"
+                  checked={draft.hidden}
+                  disabled={busy}
+                  onChange={(event) =>
+                    setDraft({ ...draft, hidden: event.target.checked })
+                  }
+                />
+                {t("feedback.hide")}
               </label>
               <p
                 role={error ? "alert" : undefined}

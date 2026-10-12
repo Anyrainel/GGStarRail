@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { FeedbackControls } from "@/components/shared/FeedbackControls";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
 import { fetchPosts, type PostPage } from "@/providers/community/client";
 
@@ -10,14 +12,18 @@ export function PublicPosts({
   characterId?: string;
   revision?: number;
 }) {
+  const auth = useAuth();
   return (
     <PostList
-      key={`${characterId ?? "feedback"}:${revision}`}
+      key={`${characterId ?? "feedback"}:${revision}:${!characterId && auth.isAuthenticated ? (auth.accountId ?? "signed-in") : "anonymous"}`}
       characterId={characterId}
     />
   );
 }
 function PostList({ characterId }: { characterId?: string }) {
+  const auth = useAuth();
+  const getToken =
+    !characterId && auth.isAuthenticated ? auth.getFeedbackToken : undefined;
   const { t, locale } = useI18n();
   const [history, setHistory] = useState<(string | null)[]>([null]);
   const [request, setRequest] = useState({
@@ -30,7 +36,7 @@ function PostList({ characterId }: { characterId?: string }) {
     const controller = new AbortController();
     setResult(null);
     setFailed(false);
-    fetchPosts(characterId, request.cursor, controller.signal).then(
+    fetchPosts(characterId, request.cursor, controller.signal, getToken).then(
       (data) => {
         if (!controller.signal.aborted) setResult(data);
       },
@@ -39,7 +45,7 @@ function PostList({ characterId }: { characterId?: string }) {
       }
     );
     return () => controller.abort();
-  }, [characterId, request]);
+  }, [characterId, request, getToken]);
   return (
     <div className="space-y-3" aria-live="polite">
       {failed ? (
@@ -59,6 +65,7 @@ function PostList({ characterId }: { characterId?: string }) {
             key={post.id}
             className="space-y-2 break-words rounded-lg border border-border bg-gradient-card p-4"
           >
+            {!characterId && <FeedbackControls post={post} />}
             <div className="flex flex-wrap items-center justify-between gap-2">
               {post.rating != null && (
                 <span
