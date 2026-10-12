@@ -11,7 +11,6 @@ import {
   Library,
   Lightbulb,
   Medal,
-  MessageSquare,
   SlidersHorizontal,
   TrendingUp,
   Trophy,
@@ -65,17 +64,6 @@ export interface NavigationSection {
 export const TEAM_DAMAGE_SECTION_PATH = "/team-damage";
 
 export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
-  {
-    path: "/feedback",
-    labelKey: "account.feedback",
-    items: [
-      {
-        path: APP_PATHS.feedback,
-        labelKey: "account.feedback",
-        icon: MessageSquare,
-      },
-    ],
-  },
   {
     path: "/account-data",
     labelKey: "nav.accountData",

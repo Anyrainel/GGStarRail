@@ -18,19 +18,12 @@ describe("GGArtifact Star Rail home", () => {
       screen.getByRole("heading", { level: 1, name: "GGArtifact" })
     ).toBeInTheDocument();
     const index = screen.getByRole("region", { name: "Find your next step" });
-    expect(within(index).getAllByRole("link")).toHaveLength(18);
+    expect(within(index).getAllByRole("link")).toHaveLength(17);
     expect(
       within(index)
         .getAllByRole("heading", { level: 3 })
         .map((heading) => heading.textContent)
-    ).toEqual([
-      "Feedback",
-      "Account Data",
-      "Team DMG",
-      "Builds",
-      "Tier List",
-      "Archive",
-    ]);
+    ).toEqual(["Account Data", "Team DMG", "Builds", "Tier List", "Archive"]);
     expect(
       within(index).getByRole("link", { name: /Currency War lookup/ })
     ).toHaveAttribute("href", APP_PATHS.archiveCurrencyWar);

@@ -17,7 +17,7 @@ describe("HSR route foundation", () => {
 
   it("lists the Team DMG tabs in navigation order", () => {
     const section = NAVIGATION_SECTIONS.map((entry) => entry.path);
-    expect(section.indexOf("/team-damage")).toBe(2);
+    expect(section.indexOf("/team-damage")).toBe(1);
     expect(
       ROUTE_REGISTRY.filter((route) =>
         route.path.startsWith("/team-damage")

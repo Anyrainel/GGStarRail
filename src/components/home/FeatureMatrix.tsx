@@ -11,10 +11,6 @@ import type { MessageKey } from "@/i18n/messages.en";
 const INDEX_COPY: Partial<
   Record<AppPath, { title: MessageKey; description: MessageKey }>
 > = {
-  [APP_PATHS.feedback]: {
-    title: "account.feedback",
-    description: "home.index.feedback.description",
-  },
   [APP_PATHS.characters]: {
     title: "home.index.characters.title",
     description: "home.index.characters.description",
