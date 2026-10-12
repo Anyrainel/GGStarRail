@@ -31,6 +31,11 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
     );
     write("node_modules/react/jsx-runtime.js", "export const jsx = () => {};");
     write(
+      "node_modules/vitest/package.json",
+      '{"name":"vitest","exports":"./dist/index.js"}'
+    );
+    write("node_modules/vitest/dist/index.js", "export const it = () => {};");
+    write(
       "src/ui.ts",
       'import "node:child_process"; import "../tests/helper.js"; import "./missing.js";'
     );
@@ -58,7 +63,10 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       'import "../services/workflow.ts"; import "../providers/hoyolab/secret.ts";'
     );
     write("src/providers/hoyolab/secret.ts", "export const value = true;");
-    write("src/providers/bad.ts", 'import "../components/shared/control.ts";');
+    write(
+      "src/providers/bad.ts",
+      'import "../components/shared/control.ts"; import "vitest";'
+    );
     write("src/config/bad.ts", 'import "../services/workflow.ts";');
     write("src/hooks/bad.ts", 'import "../app/entry.ts";');
     write("src/app/entry.ts", "export const value = true;");
@@ -82,6 +90,10 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
     );
     assert.ok(result.status > 0, result.stderr + result.stdout);
     const violations = result.stdout;
+    assert.match(
+      violations,
+      /production-has-no-test-dependencies: src\/providers\/bad\.ts.*node_modules\/vitest\/dist\/index\.js/
+    );
     for (const rule of [
       "domain-is-framework-free",
       "browser-has-no-node-builtins",

@@ -176,6 +176,6 @@ module.exports = {
     },
     // Keep imported package nodes visible to framework/test-dependency rules.
     // doNotFollow stops traversal into their internals.
-    exclude: { path: ["dist", "coverage", "\\.d\\.ts$"] },
+    exclude: { path: ["^dist(/|$)", "^coverage(/|$)", "\\.d\\.ts$"] },
   },
 };
