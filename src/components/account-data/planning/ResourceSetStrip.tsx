@@ -3,7 +3,7 @@ import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { useI18n } from "@/i18n/I18nContext";
-import type { RelicKind } from "@/lib/relicPresentation";
+import type { RelicKind } from "@/services/catalog/relicPresentation";
 
 export interface ResourceSetOption {
   setId: string;

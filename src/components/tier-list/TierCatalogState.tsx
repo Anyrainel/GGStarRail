@@ -1,8 +1,8 @@
+import { WideLayout } from "@/components/layout/WideLayout";
 import {
   CatalogLoadError,
   CatalogLoading,
-} from "@/components/account/CatalogLoadState";
-import { WideLayout } from "@/components/layout/WideLayout";
+} from "@/components/shared/CatalogLoadState";
 import type { TierDocument } from "@/domain/tier-list/document";
 import { useI18n } from "@/i18n/I18nContext";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";

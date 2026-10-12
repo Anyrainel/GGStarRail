@@ -11,9 +11,9 @@ import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
-import { filterArchiveItems } from "@/lib/archiveFilters";
-import { formatGameText } from "@/lib/gameText";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
+import { formatGameText } from "@/lib/game/text";
+import { filterArchiveItems } from "@/lib/search/archiveFilters";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,

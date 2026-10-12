@@ -1,22 +1,22 @@
 import { ChevronDown, ChevronUp, Info } from "lucide-react";
 import { useId } from "react";
 import { RelicStatDisplay } from "@/components/account-data/RelicStatDisplay";
-import { GradeBadge } from "@/components/builds/BuildControls";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import { GradeBadge } from "@/components/shared/FieldControls";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import type { RelicTriageEvaluation } from "@/domain/build/evaluation";
 import type { BuildConfiguration } from "@/domain/build/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
-import type { BuildReferences } from "@/lib/buildReferences";
+import { cn } from "@/lib/utils";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import {
   characterCatalogName,
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import { shortStatKey } from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
+} from "@/services/catalog/presentation";
+import { shortStatKey } from "@/services/catalog/relicPresentation";
 import { TRIAGE_DECISION, TRIAGE_REASON_KEY } from "./triagePresentation";
 
 const RARITY_TEXT: Readonly<Record<number, string>> = {

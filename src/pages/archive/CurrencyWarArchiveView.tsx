@@ -7,7 +7,6 @@ import {
   CollapsibleBody,
   useRowExpansion,
 } from "@/components/archive/CollapsibleBody";
-import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
@@ -20,9 +19,8 @@ import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { isArchiveSearchActive } from "@/lib/archiveFilters";
-import { characterCatalogName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
+import { isArchiveSearchActive } from "@/lib/search/archiveFilters";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
@@ -41,6 +39,8 @@ import type {
   CurrencyWarStrategy,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import { characterCatalogName } from "@/services/catalog/presentation";
+import { characterArchiveHref } from "@/services/navigation/characterArchiveLink";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   CurrencyWarBondTiers,

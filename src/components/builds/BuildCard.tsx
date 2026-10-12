@@ -8,13 +8,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { StatSelect } from "@/components/builds/StatSelect";
 import {
   NumberField,
   TextField,
   ToggleField,
-} from "@/components/builds/BuildControls";
-import { StatSelect } from "@/components/builds/StatSelect";
-import type { PickerItem } from "@/components/shared/ItemPicker";
+} from "@/components/shared/FieldControls";
 import {
   CavernPlanPicker,
   PlanarSetPicker,
@@ -50,16 +49,17 @@ import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { buildDisplayName } from "@/lib/buildPresentation";
-import type { BuildReferences } from "@/lib/buildReferences";
-import { catalogPickerItems } from "@/lib/catalogPickerItems";
+import { cn } from "@/lib/utils";
+import type { RelicSlotId } from "@/providers/reference/types";
+import { buildDisplayName } from "@/services/builds/presentation";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
+import { catalogPickerItems } from "@/services/catalog/pickerItems";
+import type { PickerItem } from "@/services/catalog/pickerTypes";
 import {
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import { shortStatKey } from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
-import type { RelicSlotId } from "@/providers/reference/types";
+} from "@/services/catalog/presentation";
+import { shortStatKey } from "@/services/catalog/relicPresentation";
 
 const BUILD_SLOTS = [
   ["body", "BODY"],

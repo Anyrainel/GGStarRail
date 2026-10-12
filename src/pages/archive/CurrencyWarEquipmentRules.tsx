@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
-import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
-import { characterCatalogName } from "@/lib/catalogPresentation";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,
   CurrencyWarBond,
   CurrencyWarEquipment,
 } from "@/providers/reference/types";
+import { characterCatalogName } from "@/services/catalog/presentation";
+import { characterArchiveHref } from "@/services/navigation/characterArchiveLink";
 
 export function CurrencyWarEquipmentRules({
   equipment,

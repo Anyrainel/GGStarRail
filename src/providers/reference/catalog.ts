@@ -1,9 +1,9 @@
-import { loadAchievementLogic } from "@/data/achievementLoader";
 import manifestJson from "@/data/game/manifest.json";
-import { loadGameMember } from "@/data/gameDataLoader";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
+import { loadAchievementLogic } from "@/providers/reference/achievementLoader";
+import { loadGameMember } from "@/providers/reference/gameDataLoader";
 import { loadCatalogAssetLookup } from "./assets";
 import type {
   CharacterDefinition,

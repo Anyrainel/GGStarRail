@@ -1,10 +1,6 @@
 import { UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AccountCoverageNotice } from "@/components/account/AccountCoverageNotice";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import {
   type CardLayout,
@@ -20,18 +16,22 @@ import {
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
 import {
   characterCatalogName,
   localizedName,
   localizedSearchText,
-} from "@/lib/catalogPresentation";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+} from "@/services/catalog/presentation";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 

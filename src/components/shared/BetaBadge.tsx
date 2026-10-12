@@ -1,5 +1,5 @@
-import { isBetaEntity } from "@/data/gameDataLoader";
 import { useI18n } from "@/i18n/I18nContext";
+import { isBetaEntity } from "@/providers/reference/gameDataLoader";
 
 export function BetaBadge({
   member,

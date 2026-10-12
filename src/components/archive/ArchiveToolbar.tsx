@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { useBetaSearch } from "@/hooks/useBetaSearch";
-import { isArchiveSearchActive } from "@/lib/archiveFilters";
+import { isArchiveSearchActive } from "@/lib/search/archiveFilters";
 
 interface ArchiveToolbarProps {
   searchQuery: string;

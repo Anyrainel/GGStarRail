@@ -1,10 +1,6 @@
 import { Filter, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AccountImportAction } from "@/components/account/AccountImportAction";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { FilterSetCard } from "@/components/builds/filters/FilterSetCard";
 import {
@@ -21,6 +17,10 @@ import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
@@ -38,14 +38,14 @@ import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
-import { buildDisplayName } from "@/lib/buildPresentation";
-import { createRelicScoringContext } from "@/lib/buildReferences";
-import { catalogPickerItems } from "@/lib/catalogPickerItems";
+import { buildDisplayName } from "@/services/builds/presentation";
+import { createRelicScoringContext } from "@/services/catalog/buildReferences";
+import { catalogPickerItems } from "@/services/catalog/pickerItems";
 import {
   characterCatalogPresentation,
   localizedName,
   localizedSearchText,
-} from "@/lib/catalogPresentation";
+} from "@/services/catalog/presentation";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 const CANDIDATE_LIMIT = 18;

@@ -1,6 +1,6 @@
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { formatCatalogValue } from "@/lib/gameText";
+import { formatCatalogValue } from "@/lib/game/text";
 import type {
   CharacterDefinition,
   CharacterStatScaling,

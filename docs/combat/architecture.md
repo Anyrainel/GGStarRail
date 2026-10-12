@@ -1,8 +1,10 @@
 # Combat engine architecture
 
+For repository-level ownership and dependencies, see [Repository architecture](../architecture.md).
+
 The combat engine simulates a team's damage over a number of cycles and lets
 the optimizer re-score equipment without re-simulating. It lives in
-`src/domain/combat/` and is framework-free; `src/lib/combat/` connects it to
+`src/domain/combat/` and is framework-free; `src/services/combat/` connects it to
 catalogs, the account, and the UI.
 
 ## Layers
@@ -21,7 +23,7 @@ is the directory under `src/domain/combat/`.
 | `optimize/` | Equipment search on top of a cached ledger: objective, ideal Relics, inventory search, stat weights, comparisons, investment paths | `TeamObjective`, `generateIdealRelics`, `searchRelics`, `deriveStatWeights`, `compareLightCones`, `compareSetPlans`, `investmentPath` |
 | `impl/` | One kit per catalog entity, written by translator agents | default-exported definitions |
 
-`src/lib/combat/` turns persisted teams into `TeamInput`. It resolves each
+`src/services/combat/` turns persisted teams into `TeamInput`. It resolves each
 value from the user's override, then the account, then the user's builds,
 then the in-game recommendations. It runs jobs (`simulate`, `optimize`,
 `ideal`, `compare`, `investment`) in a module worker, and maps engine
@@ -69,7 +71,7 @@ Rules that keep this valid:
   Hits a kit deals "against Shocked enemies" name the debuff (`gatedBy`)
   and inherit its landing chance the same way.
 
-`tests/combat/objective-consistency.test.ts` checks the main invariant: for
+`tests/domain/combat/objective-consistency.test.ts` checks the main invariant: for
 any loadout, the objective's score equals a full simulation.
 
 ## Expected values

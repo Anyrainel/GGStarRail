@@ -1,9 +1,9 @@
 import { useI18n } from "@/i18n/I18nContext";
-import { characterCatalogName } from "@/lib/catalogPresentation";
 import type {
   CharacterDefinition,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import { characterCatalogName } from "@/services/catalog/presentation";
 import { CharacterBadgeGroup } from "./CharacterBadgeGroup";
 
 export function CharacterInfo({

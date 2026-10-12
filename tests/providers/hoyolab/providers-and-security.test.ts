@@ -1,0 +1,199 @@
+import fs from "node:fs";
+import path from "node:path";
+import { describe, expect, it, vi } from "vitest";
+import manifest from "@/generated/hsr-reference/manifest.json";
+import {
+  EphemeralAuthMaterial,
+  importFromHoYoLab,
+} from "@/providers/hoyolab/ephemeralAuth";
+import { parseReferenceManifest } from "@/providers/reference/manifest";
+import { parseScannerExport } from "@/providers/scanner/schema";
+import { PROVIDER_REGISTRY } from "@/providers/types";
+import { makeAccountSnapshot } from "../../fixtures";
+
+const credentialMarker = "ltoken=VERY_PRIVATE_MARKER_2026";
+const V1_COUNT_KEYS = [
+  "cavern_relic_sets",
+  "character_experience_tables",
+  "characters",
+  "combat_types",
+  "light_cone_experience_tables",
+  "light_cones",
+  "logical_relic_pieces",
+  "paths",
+  "planar_ornament_sets",
+  "properties",
+  "relic_experience_tables",
+  "relic_main_affix_character_weights",
+  "relic_main_affix_score_bases",
+  "relic_main_affixes",
+  "relic_piece_variants",
+  "relic_sets",
+  "relic_slots",
+  "relic_sub_affix_character_weights",
+  "relic_sub_affix_score_bases",
+  "relic_sub_affixes",
+] as const;
+
+describe("provider and credential boundaries", () => {
+  it("accepts only the exact audited reference producer manifest shapes", () => {
+    expect(parseReferenceManifest(manifest).locales).toEqual(["en", "zh-CN"]);
+    const legacyFiles = Object.fromEntries(
+      Object.entries(manifest.files).filter(
+        ([fileName]) =>
+          fileName !== "achievement_categories.json" &&
+          fileName !== "achievements.json"
+      )
+    );
+    const v1Counts = Object.fromEntries(
+      V1_COUNT_KEYS.map((key) => [key, manifest.counts[key]])
+    );
+    expect(
+      parseReferenceManifest({
+        ...manifest,
+        counts: v1Counts,
+        files: legacyFiles,
+        schema_version: "1.0.0",
+      }).schema_version
+    ).toBe("1.0.0");
+    const v1_1Counts = Object.fromEntries(
+      Object.entries(manifest.counts).filter(
+        ([key]) => !key.startsWith("achievement")
+      )
+    );
+    expect(
+      parseReferenceManifest({
+        ...manifest,
+        counts: v1_1Counts,
+        files: legacyFiles,
+        schema_version: "1.1.0",
+      }).schema_version
+    ).toBe("1.1.0");
+    expect(() =>
+      parseReferenceManifest({ ...manifest, schema_version: "1.4.0" })
+    ).toThrow(/schema_version/);
+    expect(() =>
+      parseReferenceManifest({ ...manifest, schema_version: "1.3.0" })
+    ).toThrow(/currency_war/);
+    expect(() =>
+      parseReferenceManifest({
+        ...manifest,
+        source: { ...manifest.source, source_id: "other_source" },
+      })
+    ).toThrow(/source_id/);
+    expect(() =>
+      parseReferenceManifest({ ...manifest, game_id: "genshin" })
+    ).toThrow(/game_id/);
+  });
+
+  it("parses the GGStarRail scanner envelope and rejects credential fields", () => {
+    const account = makeAccountSnapshot();
+    if (account.characters[0]) {
+      account.characters[0].lightConeKey = "light-cone:1";
+    }
+    const input = {
+      format: "ggstarrail-scanner-export",
+      schemaVersion: 1,
+      sourceApp: { name: "FutureScanner", version: "0.1.0" },
+      exportedAt: "2026-08-30T00:00:00.000Z",
+      account,
+    };
+    expect(parseScannerExport(input).account.profileId).toBe("profile:local");
+    expect(() =>
+      parseScannerExport({ ...input, accountCookie: credentialMarker })
+    ).toThrow(/Sensitive field/);
+  });
+
+  it("keeps provider IDs unique", () => {
+    const ids = PROVIDER_REGISTRY.map((provider) => provider.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("uses credential material once, clears it, and exposes only a safe error", async () => {
+    const deviceMarker = "DEVICE_PRIVATE_MARKER_2026";
+    const auth = new EphemeralAuthMaterial({
+      credentials: {
+        kind: "fields",
+        fields: {
+          ltuid_v2: "600000001",
+          ltmid_v2: "mid-private",
+          ltoken_v2: credentialMarker,
+        },
+      },
+      device: {
+        deviceId: deviceMarker,
+        deviceFp: "1234567890123",
+      },
+    });
+    const transport = vi.fn(async (request) => {
+      expect(request.credentials).toEqual({
+        kind: "fields",
+        fields: {
+          ltuid_v2: "600000001",
+          ltmid_v2: "mid-private",
+          ltoken_v2: credentialMarker,
+        },
+      });
+      expect(request.device.deviceId).toBe(deviceMarker);
+      throw new Error(`network failed ${credentialMarker}`);
+    });
+    const error = await importFromHoYoLab(
+      { uid: "600000001", region: "os", auth },
+      { transport }
+    ).catch((reason: unknown) => reason);
+
+    expect(transport).toHaveBeenCalledOnce();
+    expect(String(error)).toContain("HOYOLAB_IMPORT_FAILED");
+    expect(String(error)).not.toContain(credentialMarker);
+    expect(String(error)).not.toContain(deviceMarker);
+    expect(JSON.stringify(auth)).toBe('"[REDACTED]"');
+    await expect(auth.consumeOnce(async () => "nope")).rejects.toThrow(
+      /cleared/
+    );
+    expect(JSON.stringify(localStorage)).not.toContain(credentialMarker);
+  });
+
+  it("reports absent transient device material as configuration required", () => {
+    expect(
+      () =>
+        new EphemeralAuthMaterial({
+          credentials: {
+            kind: "fields",
+            fields: { cookie_token_v2: credentialMarker },
+          },
+          device: undefined as never,
+        })
+    ).toThrow("HOYOLAB_CONFIGURATION_REQUIRED");
+  });
+
+  it("prevents persisted modules from importing ephemeral credentials", () => {
+    const forbiddenModules = [
+      path.resolve("src/stores"),
+      path.resolve("src/services/backup/workspace.ts"),
+    ];
+    const violations: string[] = [];
+    for (const target of forbiddenModules) {
+      const files = fs.statSync(target).isDirectory()
+        ? fs
+            .readdirSync(target, { recursive: true })
+            .map(String)
+            .filter((file) => /\.(ts|tsx)$/.test(file))
+            .map((file) => path.join(target, file))
+        : [target];
+      for (const file of files) {
+        const source = fs.readFileSync(file, "utf8");
+        if (source.includes("providers/hoyolab")) violations.push(file);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("contains no storage or logging call in the HoYoLAB provider", () => {
+    const source = fs.readFileSync(
+      path.resolve("src/providers/hoyolab/ephemeralAuth.ts"),
+      "utf8"
+    );
+    expect(source).not.toMatch(/localStorage|sessionStorage|indexedDB/);
+    expect(source).not.toMatch(/console\.(log|info|warn|error)/);
+  });
+});

@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 import { cn } from "@/lib/utils";
 import "./FeatureCard.css";
 

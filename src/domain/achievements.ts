@@ -1,5 +1,5 @@
-import { itemMatchesArchiveFilterScope } from "@/lib/archiveFilters";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
+import { itemMatchesArchiveFilterScope } from "@/lib/search/archiveFilters";
 
 export const UNKNOWN_ACHIEVEMENT_VERSION = "unknown";
 

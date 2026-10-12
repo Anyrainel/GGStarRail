@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
+import { cn } from "@/lib/utils";
 import {
   FEEDBACK_CONTACT_LIMIT,
   FEEDBACK_TEXT_LIMIT,
   FeedbackError,
   submitFeedback,
-} from "@/lib/feedback";
-import { cn } from "@/lib/utils";
+} from "@/providers/community/feedback";
 
 interface FeedbackDraft {
   rating: number | null;

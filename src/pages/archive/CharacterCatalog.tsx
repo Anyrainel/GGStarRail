@@ -6,7 +6,6 @@ import {
   ArchiveToolbar,
 } from "@/components/archive/ArchiveToolbar";
 import { CharacterComments } from "@/components/archive/CharacterComments";
-import { CHARACTER_ARCHIVE_ID_PARAM } from "@/components/archive/characterArchiveLink";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
@@ -20,13 +19,12 @@ import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
+import { formatGameText } from "@/lib/game/text";
 import {
   filterArchiveItems,
   isArchiveSearchActive,
-} from "@/lib/archiveFilters";
-import { characterCatalogName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+} from "@/lib/search/archiveFilters";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
@@ -37,6 +35,8 @@ import type {
   CharacterDefinition,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import { characterCatalogName } from "@/services/catalog/presentation";
+import { CHARACTER_ARCHIVE_ID_PARAM } from "@/services/navigation/characterArchiveLink";
 import { CatalogEmpty, CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import { CharacterBaseStats } from "./CharacterBaseStats";
 import { CharacterCurrencyWarDetails } from "./CharacterCurrencyWarDetails";

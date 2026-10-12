@@ -8,9 +8,9 @@ import type {
 } from "@/components/tier-list/tierTableTypes";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import { localizedName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
-import { createRelicSetRarityMap } from "@/lib/relicRarity";
+import { formatGameText } from "@/lib/game/text";
+import { localizedName } from "@/services/catalog/presentation";
+import { createRelicSetRarityMap } from "@/services/catalog/relicRarity";
 import { useRelicPriorityStore } from "@/stores/useRelicPriorityStore";
 
 type RelicKind = "cavern_relic" | "planar_ornament";

@@ -1,7 +1,7 @@
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { formatStarValues } from "@/lib/currencyWarPresentation";
 import type { CurrencyWarStarLevel } from "@/providers/reference/types";
+import { formatStarValues } from "@/services/catalog/currencyWarPresentation";
 import {
   CurrencyWarPropertyList,
   CurrencyWarPropertyRow,

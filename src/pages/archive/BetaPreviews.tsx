@@ -8,14 +8,17 @@ import {
   ResponsiveDialogTitle,
   ResponsiveDialogTrigger,
 } from "@/components/ui/responsive-dialog";
-import { loadGameMember } from "@/data/gameDataLoader";
-import type { BetaPreview, BetaPreviewSection } from "@/data/types";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { formatCatalogValue, formatGameText } from "@/lib/gameText";
+import { formatCatalogValue, formatGameText } from "@/lib/game/text";
 import { cn } from "@/lib/utils";
+import type {
+  BetaPreview,
+  BetaPreviewSection,
+} from "@/providers/reference/betaTypes";
 import { getLocalizedValue } from "@/providers/reference/catalog";
+import { loadGameMember } from "@/providers/reference/gameDataLoader";
 import { CatalogFailure, CatalogLoading } from "./CatalogStatus";
 
 const previewKinds = {

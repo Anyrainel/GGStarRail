@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   LightConeDefinition,

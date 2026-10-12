@@ -2,10 +2,6 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
-import {
   CharacterFilterPanel,
   type CharacterFilters,
   characterFilterCount,
@@ -14,13 +10,17 @@ import {
 } from "@/components/account-data/CharacterFilterPanel";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
-import { ConfirmDialog } from "@/components/builds/ConfirmDialog";
-import { StatusBanner } from "@/components/builds/StatusBanner";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StatusBanner } from "@/components/shared/StatusBanner";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
@@ -29,12 +29,12 @@ import type { BuildConfiguration } from "@/domain/build/schemas";
 import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
 import {
   characterCatalogPresentation,
   localizedName,
   localizedSearchText,
-} from "@/lib/catalogPresentation";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+} from "@/services/catalog/presentation";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 

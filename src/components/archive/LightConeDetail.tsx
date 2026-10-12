@@ -3,14 +3,14 @@ import { BetaBadge } from "@/components/shared/BetaBadge";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { RarityStars } from "@/components/shared/RarityStars";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
-import { formatGameTextVariants } from "@/lib/gameTextVariants";
-import { groupLightConeEffects } from "@/lib/lightConeEffects";
+import { formatGameText } from "@/lib/game/text";
+import { formatGameTextVariants } from "@/lib/game/textVariants";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   LightConeDefinition,
   PathDefinition,
 } from "@/providers/reference/types";
+import { groupLightConeEffects } from "@/services/catalog/lightConeEffects";
 
 export function LightConeDetail({
   lightCone,

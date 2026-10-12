@@ -35,6 +35,34 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       'import "node:child_process"; import "../tests/helper.js"; import "./missing.js";'
     );
     write("tests/helper.js", "export const fixture = true;");
+    write("src/components/ui/primitive.ts", 'import "../shared/control.ts";');
+    write(
+      "src/components/shared/control.ts",
+      'import "../account/Feature.ts";'
+    );
+    write("src/components/layout/shell.ts", 'import "../account/Feature.ts";');
+    write("src/components/account/Feature.ts", 'import "../builds/Other.ts";');
+    write("src/components/builds/Other.ts", "export const value = true;");
+    write(
+      "src/lib/bad.ts",
+      'import "../services/workflow.ts"; import "react/jsx-runtime";'
+    );
+    write("src/lib/runtime.ts", 'import "../domain/model.ts";');
+    write("src/domain/model.ts", "export const value = true;");
+    write(
+      "src/services/workflow.ts",
+      'import "../components/shared/control.ts"; import "../stores/live.ts";'
+    );
+    write(
+      "src/stores/live.ts",
+      'import "../services/workflow.ts"; import "../providers/hoyolab/secret.ts";'
+    );
+    write("src/providers/hoyolab/secret.ts", "export const value = true;");
+    write("src/providers/bad.ts", 'import "../components/shared/control.ts";');
+    write("src/config/bad.ts", 'import "../services/workflow.ts";');
+    write("src/hooks/bad.ts", 'import "../app/entry.ts";');
+    write("src/app/entry.ts", "export const value = true;");
+    write("src/providers/browserWorker.ts", 'import "../../worker/index.ts";');
     write("worker/index.ts", 'import "../src/ui.ts";');
     const result = spawnSync(
       process.execPath,
@@ -60,6 +88,21 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       "production-has-no-test-dependencies",
       "no-unresolved-imports",
       "worker-is-standalone",
+      "ui-primitives-are-independent",
+      "shared-ui-has-no-feature-or-layout-dependencies",
+      "layouts-have-no-feature-dependencies",
+      "feature-components-are-isolated",
+      "libraries-are-leaf-utilities",
+      "libraries-use-domain-contracts-only",
+      "leaf-code-is-framework-free",
+      "services-do-not-own-react-or-live-state",
+      "stores-do-not-own-ui",
+      "providers-do-not-own-ui-or-state",
+      "foundations-do-not-import-application-layers",
+      "composition-is-at-the-top",
+      "persisted-state-cannot-see-hoyolab-auth",
+      "browser-cannot-import-worker-or-tooling",
+      "no-circular",
     ])
       assert.ok(violations.includes(rule), `Missing violation: ${rule}`);
   } finally {

@@ -12,10 +12,10 @@ import type { ScoredRelic } from "@/domain/build/evaluation";
 import type { BuildFilterMatch } from "@/domain/build/filters";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
-import type { BuildReferences } from "@/lib/buildReferences";
-import { localizedName } from "@/lib/catalogPresentation";
-import type { RelicSlotId } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
+import { localizedName } from "@/services/catalog/presentation";
+import type { RelicSlotId } from "@/services/catalog/relicPresentation";
 
 const TITLE_CLASS = "text-base leading-tight md:text-xl";
 

@@ -1,4 +1,4 @@
-import { loadGameMember } from "@/data/gameDataLoader";
+import { loadGameMember } from "@/providers/reference/gameDataLoader";
 import { loadCatalogAssetLookup } from "./assets";
 import { HSR_REFERENCE_MANIFEST } from "./catalog";
 import type {

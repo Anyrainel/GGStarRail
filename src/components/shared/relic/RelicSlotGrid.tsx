@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { type ItemIconSize, itemIconWidth } from "@/components/shared/ItemIcon";
 import { useElementWidth } from "@/hooks/useElementWidth";
+import { cn } from "@/lib/utils";
 import {
   CAVERN_SLOTS,
   PLANAR_SLOTS,
   type RelicSlotId,
-} from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
+} from "@/services/catalog/relicPresentation";
 
 export type RelicSlotGridLayout = "auto" | "row" | "stacked";
 

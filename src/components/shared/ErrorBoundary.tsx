@@ -2,7 +2,7 @@ import { AlertTriangle, Copy, RefreshCw } from "lucide-react";
 import React, { type ErrorInfo, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
-import { redactDiagnostic } from "@/lib/security";
+import { redactDiagnostic } from "@/lib/security/credentials";
 
 interface ErrorBoundaryProps {
   children: ReactNode;

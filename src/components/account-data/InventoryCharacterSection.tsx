@@ -1,10 +1,6 @@
 import { UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
-import {
   ChipGroupGap,
   InventoryChipRow,
   InventoryFilteredEmpty,
@@ -13,6 +9,10 @@ import {
 } from "@/components/account-data/InventorySection";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
@@ -24,12 +24,12 @@ import {
 import type { Character } from "@/domain/account/schemas";
 import { useCharacterReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
+import type { CharacterDefinition } from "@/providers/reference/types";
 import {
   characterCatalogName,
   localizedName,
   localizedSearchText,
-} from "@/lib/catalogPresentation";
-import type { CharacterDefinition } from "@/providers/reference/types";
+} from "@/services/catalog/presentation";
 
 type LevelGroup = "max" | "other";
 

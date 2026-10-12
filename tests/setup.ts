@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { cleanup, configure } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, vi } from "vitest";
-import { installTimerGuard } from "./timerGuard";
+import { installTimerGuard } from "./helpers/timerGuard";
 
 let timerGuard: ReturnType<typeof installTimerGuard>;
 

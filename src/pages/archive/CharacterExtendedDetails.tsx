@@ -7,7 +7,7 @@ import {
   LightweightSelectValue,
 } from "@/components/ui/lightweight-select";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatCatalogValue, formatGameText } from "@/lib/gameText";
+import { formatCatalogValue, formatGameText } from "@/lib/game/text";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   CharacterDefinition,

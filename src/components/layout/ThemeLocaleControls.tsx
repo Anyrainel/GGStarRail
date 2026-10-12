@@ -8,10 +8,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { THEME_IDS, useTheme } from "@/contexts/ThemeContext";
-import type { ThemeId } from "@/contexts/themeTypes";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { getThemePrimaryColor } from "@/lib/themeGenerator";
+import { getThemePrimaryColor } from "@/lib/theme/generator";
+import type { ThemeId } from "@/lib/theme/types";
 
 const THEME_LABELS: Record<ThemeId, MessageKey> = {
   astral: "theme.astral",

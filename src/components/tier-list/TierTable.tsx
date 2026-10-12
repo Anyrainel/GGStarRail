@@ -36,8 +36,8 @@ import type {
 } from "@/domain/tier-list/types";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import { localizedName } from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
+import { localizedName } from "@/services/catalog/presentation";
 import { useTierLibraryStore } from "@/stores/useTierLibraryStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { TierItemPreview } from "./TierItem";

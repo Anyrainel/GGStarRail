@@ -8,8 +8,8 @@ import {
   LightweightSelectValue,
 } from "@/components/ui/lightweight-select";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
-import { formatGameTextVariants } from "@/lib/gameTextVariants";
+import { formatGameText } from "@/lib/game/text";
+import { formatGameTextVariants } from "@/lib/game/textVariants";
 import { cn } from "@/lib/utils";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type { LocalizedText } from "@/providers/reference/types";

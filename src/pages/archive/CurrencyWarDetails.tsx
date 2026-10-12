@@ -1,9 +1,8 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatStarValues } from "@/lib/currencyWarPresentation";
-import { formatCatalogValue, formatGameText } from "@/lib/gameText";
-import { formatGameTextVariants } from "@/lib/gameTextVariants";
+import { formatCatalogValue, formatGameText } from "@/lib/game/text";
+import { formatGameTextVariants } from "@/lib/game/textVariants";
 import { cn } from "@/lib/utils";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
@@ -13,6 +12,7 @@ import type {
   LocalizedText,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import { formatStarValues } from "@/services/catalog/currencyWarPresentation";
 
 export function currencyWarSearchText(value: unknown): string {
   if (value === null || typeof value !== "object") return "";

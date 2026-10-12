@@ -1,10 +1,6 @@
 import { ChevronDown, Gem, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
-import {
   ChipGroupGap,
   InventoryChipRow,
   InventoryFilteredEmpty,
@@ -13,6 +9,10 @@ import {
 } from "@/components/account-data/InventorySection";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChip } from "@/components/shared/FilterChip";
@@ -25,14 +25,17 @@ import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import { localizedName, localizedSearchText } from "@/lib/catalogPresentation";
+import { cn } from "@/lib/utils";
+import type { RelicPieceDefinition } from "@/providers/reference/types";
+import {
+  localizedName,
+  localizedSearchText,
+} from "@/services/catalog/presentation";
 import {
   RELIC_SLOTS,
   type RelicKind,
   type RelicSlotId,
-} from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
-import type { RelicPieceDefinition } from "@/providers/reference/types";
+} from "@/services/catalog/relicPresentation";
 
 type EquipmentGroup = "equipped" | "unequipped";
 type RelicLevelGroup = "max" | "enhanced" | "zero";

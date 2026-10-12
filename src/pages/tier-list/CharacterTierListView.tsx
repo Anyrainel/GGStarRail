@@ -9,8 +9,11 @@ import type {
 import { characterAppearanceId } from "@/domain/characterIdentity";
 import { useCharacterReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
+import {
+  characterCatalogName,
+  localizedName,
+} from "@/services/catalog/presentation";
 import { useCharacterPriorityStore } from "@/stores/useCharacterPriorityStore";
 import { useTrailblazerAppearanceStore } from "@/stores/useTrailblazerAppearanceStore";
 

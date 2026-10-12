@@ -5,7 +5,7 @@ import {
   useState,
 } from "react";
 import type { CatalogAssetRef } from "@/domain/assets";
-import { resolveCatalogAsset } from "@/lib/assets";
+import { resolveCatalogAsset } from "@/lib/assets/urls";
 
 export interface AssetImageProps
   extends CatalogAssetRef,

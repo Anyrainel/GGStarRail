@@ -2,7 +2,6 @@ import { CircleAlert, Star } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { RelicStatDisplay } from "@/components/account-data/RelicStatDisplay";
-import { characterArchiveHref } from "@/components/archive/characterArchiveLink";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
@@ -23,20 +22,24 @@ import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
 import type { MessageKey } from "@/i18n/messages.en";
-import { buildDisplayName } from "@/lib/buildPresentation";
+import { cn } from "@/lib/utils";
+import type { CharacterDefinition } from "@/providers/reference/types";
+import { buildDisplayName } from "@/services/builds/presentation";
 import {
   type BuildReferences,
   createRelicScoringContext,
-} from "@/lib/buildReferences";
-import { characterCatalogName, localizedName } from "@/lib/catalogPresentation";
+} from "@/services/catalog/buildReferences";
+import {
+  characterCatalogName,
+  localizedName,
+} from "@/services/catalog/presentation";
 import {
   type EquippedSetBonus,
   equippedSetSummary,
   type RelicKind,
-} from "@/lib/relicPresentation";
-import { createRelicSetRarityMap } from "@/lib/relicRarity";
-import { cn } from "@/lib/utils";
-import type { CharacterDefinition } from "@/providers/reference/types";
+} from "@/services/catalog/relicPresentation";
+import { createRelicSetRarityMap } from "@/services/catalog/relicRarity";
+import { characterArchiveHref } from "@/services/navigation/characterArchiveLink";
 
 /** Computed once by CharacterView so every card shares the same density. */
 export interface CardLayout {

@@ -1,7 +1,7 @@
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { useI18n } from "@/i18n/I18nContext";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 
 const SUPPORT_IMAGES = ["assets/support/imga.JPG", "assets/support/imgv.JPG"];
 

@@ -3,7 +3,7 @@ import { PublicPosts } from "@/components/shared/PublicPosts";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
-import { CommentError, submitComment } from "@/lib/community";
+import { CommentError, submitComment } from "@/providers/community/client";
 
 export function CharacterComments({ characterId }: { characterId: string }) {
   const { t } = useI18n();

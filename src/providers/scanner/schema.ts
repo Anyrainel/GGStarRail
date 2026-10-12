@@ -15,7 +15,7 @@ import {
   type RelicSlot,
   StableIdSchema,
 } from "@/domain/account/schemas";
-import { assertNoSensitiveFields } from "@/lib/security";
+import { assertNoSensitiveFields } from "@/lib/security/credentials";
 import {
   HSR_REFERENCE_MANIFEST,
   HSR_REFERENCE_REVISION,

@@ -10,7 +10,7 @@ Kits translate one catalog entity into combat behaviour. They live in
 | Relic set | `relicSets/<id>-<slug>.ts` | `defineRelicSet(id, { twoPiece, fourPiece })` |
 
 - The file default-exports the definition. Its numeric prefix must equal the ID;
-  `src/lib/combat/kits.ts` discovers files automatically and checks this.
+  `src/services/combat/kits.ts` discovers files automatically and checks this.
 - The dossier prints the expected path.
 - Trailblazer variants use the canonical (Caelus) ID: 8001, 8003, 8005, 8007,
   8009. Parameters resolve against the account's actual variant.
@@ -301,7 +301,7 @@ at build time).
 ```bash
 npm run combat:dossier -- C 1102          # text, IDs, facts, current kit, tracker
 KIT_FILES=src/domain/combat/impl/characters/1102-seele.ts \
-  npx vitest run tests/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept
+  npx vitest run tests/domain/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept
 npx vitest run tests/combat               # registry health + reference tests
 npx tsc -p tsconfig.app.json --noEmit
 ```

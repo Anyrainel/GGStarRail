@@ -18,7 +18,7 @@ import {
   SCANNER_RELEASES,
 } from "@/config/scannerDownload";
 import { useI18n } from "@/i18n/I18nContext";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 import { cn } from "@/lib/utils";
 
 export default function ScannerDownloadPage() {

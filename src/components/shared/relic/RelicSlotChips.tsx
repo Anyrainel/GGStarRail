@@ -1,14 +1,14 @@
 import { Fragment } from "react";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { useI18n } from "@/i18n/I18nContext";
+import { cn } from "@/lib/utils";
 import {
   CAVERN_SLOTS,
   PLANAR_SLOTS,
   RELIC_SLOTS,
   type RelicKind,
   type RelicSlotId,
-} from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
+} from "@/services/catalog/relicPresentation";
 import { RelicKindIcon } from "./RelicKindIcon";
 
 const GROUPS = [

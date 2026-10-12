@@ -3,16 +3,16 @@ import { useRef, useState } from "react";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/i18n/I18nContext";
-import type { BuildWorkspaceBundle } from "@/lib/buildBundle";
+import type { BuildWorkspaceBundle } from "@/services/builds/bundle";
 import {
   parseBuildWorkspaceBundle,
   serializeBuildWorkspaceBundle,
-} from "@/lib/buildBundle";
-import type { BuildReferences } from "@/lib/buildReferences";
+} from "@/services/builds/bundle";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
-import { ConfirmDialog } from "./ConfirmDialog";
-import { StatusBanner, type StatusTone } from "./StatusBanner";
+import { ConfirmDialog } from "../shared/ConfirmDialog";
+import { StatusBanner, type StatusTone } from "../shared/StatusBanner";
 
 interface WorkspaceStatus {
   tone: StatusTone;

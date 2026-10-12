@@ -7,8 +7,8 @@ import {
   useState,
 } from "react";
 import { AUTH_CALLBACK_PATH, AUTH_CONFIG } from "@/config/auth";
-import { StarRailAuthClient } from "@/lib/authClient";
-import { rememberAuthReturnPath } from "@/lib/authNavigation";
+import { StarRailAuthClient } from "@/providers/auth/client";
+import { rememberAuthReturnPath } from "@/services/auth/navigation";
 
 interface AuthState {
   isAuthenticated: boolean;

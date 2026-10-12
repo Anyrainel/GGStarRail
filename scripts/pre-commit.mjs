@@ -30,8 +30,8 @@ export function runPreCommit(run = runGate) {
       [
         "node_modules/vitest/vitest.mjs",
         "run",
-        "tests/i18n.test.tsx",
-        "tests/ui-invariants.test.ts",
+        "tests/i18n/i18n.test.tsx",
+        "tests/contracts/ui-invariants.test.ts",
       ],
     ],
   ];

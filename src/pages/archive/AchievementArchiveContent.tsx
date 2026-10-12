@@ -20,7 +20,7 @@ import {
 } from "@/domain/achievements";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 import { cn } from "@/lib/utils";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 

@@ -1,17 +1,17 @@
 import { Link2, Play, Square } from "lucide-react";
 import { type ReactNode, useEffect, useId, useRef, useState } from "react";
-import { StatusBanner } from "@/components/builds/StatusBanner";
+import { StatusBanner } from "@/components/shared/StatusBanner";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import type { ManagerInstructionEnvelope } from "@/lib/managerInstructions";
+import { cn } from "@/lib/utils";
 import {
   ScannerManagerClient,
   ScannerManagerError,
   type ScannerResult,
   type ScannerStatus,
-} from "@/lib/scannerManager";
-import { cn } from "@/lib/utils";
+} from "@/providers/scanner-manager/client";
+import type { ManagerInstructionEnvelope } from "@/providers/scanner-manager/instructions";
 
 const reasons: Record<string, MessageKey> = {
   noOpAlreadyDesired: "manager.alreadyDesired",

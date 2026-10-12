@@ -1,8 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { CritMode } from "@/domain/combat/model/formulas";
-import { isCombatJobCancelled, runCombatJob } from "@/lib/combat/client";
-import type { SimulateResponse, WorkspaceSources } from "@/lib/combat/jobs";
-import type { TeamPlan } from "@/stores/teamSchemas";
+import type { TeamPlan } from "@/domain/team/schemas";
+import { isCombatJobCancelled, runCombatJob } from "@/services/combat/client";
+import type {
+  SimulateResponse,
+  WorkspaceSources,
+} from "@/services/combat/jobs";
 
 export interface TeamSimulationState {
   /** Latest finished result; kept while a newer request runs. */

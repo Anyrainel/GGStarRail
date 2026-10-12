@@ -7,9 +7,9 @@ import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
-import { filterArchiveItems } from "@/lib/archiveFilters";
-import { formatGameText } from "@/lib/gameText";
-import { compareReleaseVersionsDescending } from "@/lib/releaseVersion";
+import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
+import { formatGameText } from "@/lib/game/text";
+import { filterArchiveItems } from "@/lib/search/archiveFilters";
 import {
   getLocalizedValue,
   loadRelicPieces,

@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
-import { consumeAuthReturnPath } from "@/lib/authNavigation";
+import { consumeAuthReturnPath } from "@/services/auth/navigation";
 
 function Callback() {
   const navigate = useNavigate();

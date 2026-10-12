@@ -4,14 +4,14 @@ import type { Relic } from "@/domain/account/schemas";
 import type { RelicScore, ScoreGrade } from "@/domain/build/scoring";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
-import type { BuildReferences } from "@/lib/buildReferences";
+import { cn } from "@/lib/utils";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import {
   formatAccountStatValue,
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import { shortStatKey } from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
+} from "@/services/catalog/presentation";
+import { shortStatKey } from "@/services/catalog/relicPresentation";
 
 interface RelicStatDisplayProps {
   relic: Relic;

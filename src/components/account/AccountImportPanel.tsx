@@ -25,7 +25,7 @@ import {
 } from "@/domain/account/merge";
 import type { ImportCoverage } from "@/domain/account/schemas";
 import { useI18n } from "@/i18n/I18nContext";
-import { redactDiagnostic } from "@/lib/security";
+import { redactDiagnostic } from "@/lib/security/credentials";
 import { importFromUidShowcase } from "@/providers/enka/client";
 import {
   EphemeralAuthMaterial,

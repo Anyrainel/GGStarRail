@@ -1,7 +1,7 @@
 import { Gem, Orbit } from "lucide-react";
 import { useI18n } from "@/i18n/I18nContext";
-import type { RelicKind } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
+import type { RelicKind } from "@/services/catalog/relicPresentation";
 
 /** Gem marks Cavern Relics and Orbit marks Planar Ornaments, as on Relic Priority. */
 export const RELIC_KIND_ICONS = { cavern: Gem, planar: Orbit } as const;

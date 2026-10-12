@@ -1,6 +1,5 @@
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { ItemIcon } from "@/components/shared/ItemIcon";
-import type { PickerItem } from "@/components/shared/ItemPicker";
 import {
   CavernPlanIcon,
   PlanarSetIcon,
@@ -10,15 +9,16 @@ import type { BuildRelicFilter } from "@/domain/build/filters";
 import type { BuildConfiguration } from "@/domain/build/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
-import { buildDisplayName } from "@/lib/buildPresentation";
-import type { BuildReferences } from "@/lib/buildReferences";
+import { cn } from "@/lib/utils";
+import type { CharacterDefinition } from "@/providers/reference/types";
+import { buildDisplayName } from "@/services/builds/presentation";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
+import type { PickerItem } from "@/services/catalog/pickerTypes";
 import {
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import type { RelicKind } from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
-import type { CharacterDefinition } from "@/providers/reference/types";
+} from "@/services/catalog/presentation";
+import type { RelicKind } from "@/services/catalog/relicPresentation";
 import { setPlanBonuses, shortStatLabel } from "./filterPresentation";
 
 interface FilterSetCardProps {

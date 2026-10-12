@@ -12,11 +12,6 @@ import {
 import { APP_PATHS } from "@/config/navigation";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
-import {
-  currencyWarSkillGroups,
-  currencyWarSkillLevelCaps,
-  currencyWarTextGroups,
-} from "@/lib/currencyWarPresentation";
 import { cn } from "@/lib/utils";
 import {
   getLocalizedValue,
@@ -29,6 +24,11 @@ import type {
   CurrencyWarLightConeAdaptation,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import {
+  currencyWarSkillGroups,
+  currencyWarSkillLevelCaps,
+  currencyWarTextGroups,
+} from "@/services/catalog/currencyWarPresentation";
 import { CatalogFailure, CatalogLoading } from "./CatalogStatus";
 import {
   type CharacterDescriptionMode,

@@ -144,8 +144,8 @@ test("commit gates check related tests, dependency boundaries, conventions and W
   assert.ok(
     calls.some(
       ([, args]) =>
-        args.includes("tests/ui-invariants.test.ts") &&
-        args.includes("tests/i18n.test.tsx")
+        args.includes("tests/contracts/ui-invariants.test.ts") &&
+        args.includes("tests/i18n/i18n.test.tsx")
     )
   );
   const related = calls.find(([, args]) => args.includes("related"));

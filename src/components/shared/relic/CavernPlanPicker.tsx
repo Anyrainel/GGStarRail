@@ -4,12 +4,11 @@ import type { ItemIconSize } from "@/components/shared/ItemIcon";
 import {
   ItemPicker,
   ItemPickerEmptyTile,
-  type PickerFilter,
-  type PickerItem,
 } from "@/components/shared/ItemPicker";
 import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+import type { PickerFilter, PickerItem } from "@/services/catalog/pickerTypes";
 import { CavernPlanIcon, PlanarSetIcon } from "./SetPlanIcon";
 
 type PlanMode = "four" | "split";

@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
+import { SidebarPanel, SidebarSection } from "@/components/layout/SidebarPanel";
 import {
   SelectField,
   type SelectOption,
   ToggleField,
-} from "@/components/builds/BuildControls";
-import { SidebarPanel, SidebarSection } from "@/components/layout/SidebarPanel";
+} from "@/components/shared/FieldControls";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { useI18n } from "@/i18n/I18nContext";

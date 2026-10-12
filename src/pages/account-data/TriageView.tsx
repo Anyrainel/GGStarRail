@@ -8,10 +8,6 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCallback, useId, useMemo, useState } from "react";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { AccountSourceBadge } from "@/components/account-data/planning/AccountSourceBadge";
 import {
@@ -35,6 +31,10 @@ import { useGridColumns } from "@/components/account-data/planning/useGridColumn
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { HelpButton } from "@/components/shared/HelpButton";
@@ -53,13 +53,16 @@ import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
-import { createRelicScoringContext } from "@/lib/buildReferences";
-import { localizedName } from "@/lib/catalogPresentation";
-import { createManagerInstructionPreview } from "@/lib/managerInstructions";
-import { reconcileManagerResult } from "@/lib/managerResult";
-import type { RelicKind, RelicSlotId } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
 import { HSR_REFERENCE_REVISION } from "@/providers/reference/catalog";
+import { createManagerInstructionPreview } from "@/providers/scanner-manager/instructions";
+import { createRelicScoringContext } from "@/services/catalog/buildReferences";
+import { localizedName } from "@/services/catalog/presentation";
+import type {
+  RelicKind,
+  RelicSlotId,
+} from "@/services/catalog/relicPresentation";
+import { reconcileManagerResult } from "@/services/scanner-manager/reconcile";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 

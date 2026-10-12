@@ -3,8 +3,8 @@ import { useState } from "react";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
-import type { RelicKind } from "@/lib/relicPresentation";
 import { cn } from "@/lib/utils";
+import type { RelicKind } from "@/services/catalog/relicPresentation";
 
 export interface RelicSetFilterOption {
   setId: string;

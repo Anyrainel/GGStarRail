@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { maybeHandleBetaMagic } from "@/data/betaState";
 import { useI18n } from "@/i18n/I18nContext";
+import { maybeHandleBetaMagic } from "@/services/catalog/betaMode";
 
 export function useBetaSearch(onChange: (value: string) => void) {
   const { t } = useI18n();

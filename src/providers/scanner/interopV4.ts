@@ -17,7 +17,7 @@ import {
   statBonusTraceId,
 } from "@/domain/account/traces";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
-import { assertNoSensitiveFields } from "@/lib/security";
+import { assertNoSensitiveFields } from "@/lib/security/credentials";
 import type {
   HsrReferenceCatalog,
   ProgressionTables,

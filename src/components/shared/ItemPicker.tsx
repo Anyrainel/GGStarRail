@@ -16,31 +16,15 @@ import {
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
 import { cn } from "@/lib/utils";
+import type { PickerFilter, PickerItem } from "@/services/catalog/pickerTypes";
 import { CatalogHoverCard } from "./CatalogHoverCard";
 import {
   ItemIcon,
-  type ItemIconProps,
   type ItemIconSize,
   itemIconArtworkHeight,
   itemIconRadius,
   itemIconWidth,
 } from "./ItemIcon";
-
-export interface PickerItem {
-  id: string;
-  name: string;
-  searchText: string;
-  iconPath: string;
-  rarity: number | null;
-  cornerAsset?: ItemIconProps["cornerAsset"];
-  tags?: readonly string[];
-}
-
-export interface PickerFilter {
-  id: string;
-  label: string;
-  options: readonly { id: string; label: string }[];
-}
 
 export interface ItemPickerTriggerState {
   open: boolean;

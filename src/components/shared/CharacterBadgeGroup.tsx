@@ -1,16 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
-import {
-  characterCatalogPresentation,
-  localizedName,
-} from "@/lib/catalogPresentation";
 import { cn } from "@/lib/utils";
 import { characterAffiliationIds } from "@/providers/reference/characterAffiliations";
 import type {
   CharacterDefinition,
   PropertyCatalog,
 } from "@/providers/reference/types";
+import {
+  characterCatalogPresentation,
+  localizedName,
+} from "@/services/catalog/presentation";
 import { AssetImage } from "./AssetImage";
 import { RarityStars } from "./RarityStars";
 

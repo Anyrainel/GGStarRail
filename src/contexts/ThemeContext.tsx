@@ -8,8 +8,8 @@ import {
   useState,
 } from "react";
 import { STORAGE_KEYS } from "@/config/identity";
-import type { ThemeId } from "@/contexts/themeTypes";
-import { applyThemeVars } from "@/lib/themeGenerator";
+import { applyThemeVars } from "@/lib/theme/generator";
+import type { ThemeId } from "@/lib/theme/types";
 
 export const THEME_IDS: readonly ThemeId[] = [
   "astral",

@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react";
-import { loadAchievementDisplay } from "@/data/achievementLoader";
-import type { AchievementDisplayData } from "@/data/achievementTypes";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
+import { loadAchievementDisplay } from "@/providers/reference/achievementLoader";
+import type { AchievementDisplayData } from "@/providers/reference/achievementTypes";
 import { loadCatalogAssetLookup } from "@/providers/reference/assets";
 import {
   type AchievementArchiveCategoryView,

@@ -4,12 +4,12 @@ import type { ItemIconSize } from "@/components/shared/ItemIcon";
 import { ItemPicker } from "@/components/shared/ItemPicker";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
-import type { BuildReferences } from "@/lib/buildReferences";
+import type { CharacterDefinition } from "@/providers/reference/types";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import {
   catalogPickerItems,
   rarityPickerFilter,
-} from "@/lib/catalogPickerItems";
-import type { CharacterDefinition } from "@/providers/reference/types";
+} from "@/services/catalog/pickerItems";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 
 const EMPTY_CHOICES: string[] = [];

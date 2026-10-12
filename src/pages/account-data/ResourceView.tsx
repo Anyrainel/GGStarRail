@@ -1,9 +1,5 @@
 import { PackageSearch } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  CatalogLoadError,
-  CatalogLoading,
-} from "@/components/account/CatalogLoadState";
 import { WorkspaceStartState } from "@/components/account/WorkspaceStartState";
 import { AccountSourceBadge } from "@/components/account-data/planning/AccountSourceBadge";
 import { ResourceActionToggle } from "@/components/account-data/planning/ResourceActionToggle";
@@ -22,6 +18,10 @@ import {
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import {
+  CatalogLoadError,
+  CatalogLoading,
+} from "@/components/shared/CatalogLoadState";
 import { CategoryChip } from "@/components/shared/CategoryChip";
 import { HelpButton } from "@/components/shared/HelpButton";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -35,10 +35,10 @@ import type {
 import type { ResourceRelicDefinition } from "@/domain/resources/types";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import { createRelicScoringContext } from "@/lib/buildReferences";
-import { localizedName } from "@/lib/catalogPresentation";
-import type { RelicKind } from "@/lib/relicPresentation";
 import { accountRelicSlot } from "@/providers/accountNormalization";
+import { createRelicScoringContext } from "@/services/catalog/buildReferences";
+import { localizedName } from "@/services/catalog/presentation";
+import type { RelicKind } from "@/services/catalog/relicPresentation";
 import { useResourceSettingsStore } from "@/stores/useResourceSettingsStore";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 

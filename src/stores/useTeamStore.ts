@@ -2,14 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/config/identity";
 import {
-  DEFAULT_TEAM_STORE,
   emptyTeam,
-  type PersistedTeamStore,
-  PersistedTeamStoreSchema,
-  TEAM_STORE_VERSION,
   type TeamMemberPlan,
   TeamMemberPlanSchema,
   type TeamPlan,
+} from "@/domain/team/schemas";
+import {
+  DEFAULT_TEAM_STORE,
+  type PersistedTeamStore,
+  PersistedTeamStoreSchema,
+  TEAM_STORE_VERSION,
 } from "./teamSchemas";
 
 interface TeamActions {

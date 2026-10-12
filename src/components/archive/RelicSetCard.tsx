@@ -2,7 +2,7 @@ import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { useI18n } from "@/i18n/I18nContext";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
 import { getLocalizedValue } from "@/providers/reference/catalog";
 import type {
   RelicPieceDefinition,

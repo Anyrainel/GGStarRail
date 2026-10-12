@@ -7,13 +7,13 @@ import type { RelicScore } from "@/domain/build/scoring";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
-import type { BuildReferences } from "@/lib/buildReferences";
+import { cn } from "@/lib/utils";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import {
   formatAccountStatValue,
   localizedName,
-} from "@/lib/catalogPresentation";
-import { cn } from "@/lib/utils";
-import { GradeBadge } from "./BuildControls";
+} from "@/services/catalog/presentation";
+import { GradeBadge } from "../shared/FieldControls";
 
 interface RelicScoreCardProps {
   relic: Relic;

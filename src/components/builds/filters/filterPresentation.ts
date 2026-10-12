@@ -1,9 +1,9 @@
 import type { Locale } from "@/i18n/locales";
 import type { MessageKey } from "@/i18n/messages.en";
-import type { BuildReferences } from "@/lib/buildReferences";
-import { localizedName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
-import { shortStatKey } from "@/lib/relicPresentation";
+import { formatGameText } from "@/lib/game/text";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
+import { localizedName } from "@/services/catalog/presentation";
+import { shortStatKey } from "@/services/catalog/relicPresentation";
 
 export interface SetBonusLine {
   key: string;

@@ -16,10 +16,6 @@ import {
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
-  AccountImportAction,
-  AccountImportDialog,
-} from "@/components/account/AccountImportAction";
-import {
   PageActionContext,
   type RegisteredPageActions,
 } from "@/components/layout/PageActions";
@@ -54,7 +50,7 @@ import {
 } from "@/config/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/i18n/I18nContext";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 import { cn } from "@/lib/utils";
 
 const GENSHIN_SITE_URL =
@@ -438,7 +434,18 @@ function SectionTabs() {
   );
 }
 
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  accountImportAction,
+  renderAccountImportDialog,
+}: {
+  children: ReactNode;
+  accountImportAction?: ReactNode;
+  renderAccountImportDialog?: (props: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+  }) => ReactNode;
+}) {
   const { t } = useI18n();
   const { pathname } = useLocation();
   const [importOpen, setImportOpen] = useState(false);
@@ -466,12 +473,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DesktopNavigation />
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {showAccountImport && (
-                <AccountImportAction
-                  variant="outline"
-                  className="hidden bg-background/70 sm:inline-flex"
-                />
-              )}
+              {showAccountImport && accountImportAction}
               <div className="hidden items-center gap-2 sm:flex">
                 {actions?.primary}
               </div>
@@ -507,7 +509,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <AccountImportDialog open={importOpen} onOpenChange={setImportOpen} />
+        {renderAccountImportDialog?.({
+          open: importOpen,
+          onOpenChange: setImportOpen,
+        })}
         <SectionTabs />
         <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden pt-2 2xl:pt-4">
           <div

@@ -2,6 +2,83 @@
 module.exports = {
   forbidden: [
     {
+      name: "leaf-code-is-framework-free",
+      severity: "error",
+      from: { path: "^src/(lib|providers)/" },
+      to: {
+        path: "(^|node_modules/)(react|react-dom|react-router-dom|zustand)(/|$)",
+      },
+    },
+    {
+      name: "composition-is-at-the-top",
+      severity: "error",
+      from: { path: "^src/", pathNot: "^src/(app/|pages/|main\\.tsx$)" },
+      to: { path: "^src/(app|pages)/" },
+    },
+    {
+      name: "shared-ui-has-no-feature-or-layout-dependencies",
+      severity: "error",
+      from: { path: "^src/components/shared/" },
+      to: { path: "^src/components/", pathNot: "^src/components/(shared|ui)/" },
+    },
+    {
+      name: "layouts-have-no-feature-dependencies",
+      severity: "error",
+      from: { path: "^src/components/layout/" },
+      to: {
+        path: "^src/components/",
+        pathNot: "^src/components/(shared|ui|layout)/",
+      },
+    },
+    {
+      name: "feature-components-are-isolated",
+      severity: "error",
+      from: {
+        path: "^src/components/([^/]+)/",
+        pathNot: "^src/components/(shared|ui|layout)/",
+      },
+      to: {
+        path: "^src/components/([^/]+)/",
+        pathNot: ["^src/components/$1/", "^src/components/(shared|ui|layout)/"],
+      },
+    },
+    {
+      name: "libraries-are-leaf-utilities",
+      severity: "error",
+      from: { path: "^src/lib/" },
+      to: {
+        path: "^src/(app|pages|components|hooks|contexts|providers|services|stores)/",
+      },
+    },
+    {
+      name: "libraries-use-domain-contracts-only",
+      severity: "error",
+      from: { path: "^src/lib/" },
+      to: { path: "^src/domain/", dependencyTypesNot: ["type-only"] },
+    },
+    {
+      name: "services-do-not-own-react-or-live-state",
+      severity: "error",
+      from: { path: "^src/services/" },
+      to: {
+        path: [
+          "^src/(app|pages|components|hooks|contexts)/",
+          "^src/stores/",
+          "(^|node_modules/)(react|react-dom|react-router-dom|zustand)(/|$)",
+        ],
+        pathNot:
+          "^src/stores/(schemas\\.ts|teamSchemas\\.ts|resourceSettingsSchemas\\.ts|migration/)",
+      },
+    },
+    {
+      name: "foundations-do-not-import-application-layers",
+      severity: "error",
+      from: { path: "^src/(config|data|generated|presets|i18n)/" },
+      to: {
+        path: "^src/(app|pages|components|hooks|contexts|providers|services|stores)/",
+      },
+    },
+    {
       name: "ui-primitives-are-independent",
       severity: "error",
       from: { path: "^src/components/ui/" },
@@ -14,7 +91,9 @@ module.exports = {
       name: "stores-do-not-own-ui",
       severity: "error",
       from: { path: "^src/stores/" },
-      to: { path: "^src/(components|pages|hooks|contexts)/" },
+      to: {
+        path: "^src/(components|pages|hooks|contexts|services|providers|app)/",
+      },
     },
     {
       name: "no-circular",
@@ -46,7 +125,7 @@ module.exports = {
       from: { path: "^src/domain/" },
       to: {
         path: [
-          "^src/(components|contexts|hooks|pages|providers|stores)/",
+          "^src/(components|contexts|hooks|pages|providers|stores|services|app)/",
           "(^|node_modules/)(react|react-dom|react-router-dom|zustand)(/|$)",
         ],
       },
@@ -57,14 +136,14 @@ module.exports = {
       from: { path: "^src/providers/" },
       // A pure format migration is shared by persistence and account import.
       to: {
-        path: "^src/(components|contexts|pages|stores)/",
+        path: "^src/(components|contexts|hooks|pages|stores|services|app)/",
         pathNot: "^src/stores/migration/account\\.ts$",
       },
     },
     {
       name: "persisted-state-cannot-see-hoyolab-auth",
       severity: "error",
-      from: { path: "^src/(stores|lib/backup)" },
+      from: { path: "^src/(stores/|services/backup/)" },
       to: { path: "^src/providers/hoyolab/" },
     },
     {

@@ -4,7 +4,7 @@ import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { Button } from "@/components/ui/button";
 import { APP_PATHS } from "@/config/navigation";
 import { useI18n } from "@/i18n/I18nContext";
-import { getAssetUrl } from "@/lib/assets";
+import { getAssetUrl } from "@/lib/assets/urls";
 
 export default function NotFoundPage() {
   const { t } = useI18n();

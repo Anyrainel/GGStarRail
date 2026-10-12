@@ -7,8 +7,8 @@ import type {
 } from "@/components/tier-list/tierTableTypes";
 import { useLightConeReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
-import { localizedName } from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
+import { formatGameText } from "@/lib/game/text";
+import { localizedName } from "@/services/catalog/presentation";
 import { useLightConePriorityStore } from "@/stores/useLightConePriorityStore";
 
 export default function LightConeTierListView() {

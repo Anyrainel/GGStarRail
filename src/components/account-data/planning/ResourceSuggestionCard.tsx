@@ -14,14 +14,14 @@ import type { Relic } from "@/domain/account/schemas";
 import type { ResourceSuggestion } from "@/domain/resources/types";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useI18n } from "@/i18n/I18nContext";
-import type { BuildReferences } from "@/lib/buildReferences";
+import { cn } from "@/lib/utils";
+import type { BuildReferences } from "@/services/catalog/buildReferences";
 import {
   characterCatalogName,
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import { shortStatKey } from "@/lib/relicPresentation";
-import { cn } from "@/lib/utils";
+} from "@/services/catalog/presentation";
+import { shortStatKey } from "@/services/catalog/relicPresentation";
 import { RESOURCE_ACTION } from "./resourcePresentation";
 
 const ROW_CLASS =

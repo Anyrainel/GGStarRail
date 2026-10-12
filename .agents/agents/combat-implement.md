@@ -40,7 +40,7 @@ You are not alone in the codebase:
 4. Add a comment only where the translation is not obvious from the text
    (approximations, EN/ZH conflicts, assumptions). Do not restate the code.
 5. Check your kits in isolation:
-   - `KIT_FILES=<path>[,<path>...] npx vitest run tests/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept`.
+   - `KIT_FILES=<path>[,<path>...] npx vitest run tests/domain/combat/kit-check.test.ts --reporter=verbose --disableConsoleIntercept`.
      It runs each kit at E0/E6 (or S1/S5, or the set tiers) in a team with
      Robin and Kafka, then prints the timeline and an ability breakdown.
      Light Cones are worn by a reference kit of their Path (or a generic

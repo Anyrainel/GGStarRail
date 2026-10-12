@@ -13,7 +13,7 @@ import {
   ResponsiveDialogTitle,
 } from "@/components/ui/responsive-dialog";
 import { useI18n } from "@/i18n/I18nContext";
-import { updateLogs } from "@/lib/updateLog";
+import { updateLogs } from "@/services/content/updateLog";
 
 // ── Graph types ────────────────────────────────────────────────────────
 

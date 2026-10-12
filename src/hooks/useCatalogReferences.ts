@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { loadBuildReferences } from "@/lib/buildReferences";
 import {
   loadCharacters,
   loadLightCones,
@@ -7,6 +6,7 @@ import {
   loadRelicPieces,
   loadRelicSets,
 } from "@/providers/reference/catalog";
+import { loadBuildReferences } from "@/services/catalog/buildReferences";
 
 async function loadCharacterReferences() {
   const [characters, properties] = await Promise.all([

@@ -1,7 +1,7 @@
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScannerManagerConnection } from "@/components/account-data/ScannerManagerConnection";
-import { StatusBanner } from "@/components/builds/StatusBanner";
+import { StatusBanner } from "@/components/shared/StatusBanner";
 import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/responsive-dialog";
 import { useI18n } from "@/i18n/I18nContext";
 import type { MessageKey } from "@/i18n/messages.en";
+import type { ScannerResult } from "@/providers/scanner-manager/client";
 import type {
   ManagerInstructionEnvelope,
   ManagerInstructionPreview,
-} from "@/lib/managerInstructions";
-import type { ScannerResult } from "@/lib/scannerManager";
+} from "@/providers/scanner-manager/instructions";
 
 /**
  * "Apply to game": prepares a fresh lock and discard-mark preview each time it

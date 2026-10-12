@@ -3,21 +3,21 @@ import { type ReactElement, useState } from "react";
 import {
   CatalogLoadError,
   CatalogLoading,
-} from "@/components/account/CatalogLoadState";
+} from "@/components/shared/CatalogLoadState";
 import type { Relic } from "@/domain/account/schemas";
 import type { CatalogAssetKind } from "@/domain/assets";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useI18n } from "@/i18n/I18nContext";
+import { formatGameText } from "@/lib/game/text";
+import { formatGameTextVariants } from "@/lib/game/textVariants";
+import { groupLightConeEffects } from "@/services/catalog/lightConeEffects";
 import {
   characterCatalogName,
   formatAccountStatValue,
   localizedName,
   localizedPropertyName,
-} from "@/lib/catalogPresentation";
-import { formatGameText } from "@/lib/gameText";
-import { formatGameTextVariants } from "@/lib/gameTextVariants";
-import { groupLightConeEffects } from "@/lib/lightConeEffects";
+} from "@/services/catalog/presentation";
 import { getCombatTypeColor } from "./colors";
 import { ItemIcon } from "./ItemIcon";
 import { RarityStars } from "./RarityStars";

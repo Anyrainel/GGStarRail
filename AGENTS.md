@@ -27,42 +27,22 @@
   conventions and related tests; pushes run the full validation stack against
   a clean, unchanged HEAD. Do not bypass the hooks to publish failing changes.
 
-## Project Layout And Commands
+## Repository architecture
 
-React 19 + TypeScript + Vite 7, Tailwind CSS 3, Radix primitives, Lucide, and
-Zustand persist. Check `package.json` for the current command definitions.
+The authoritative target layout and dependency rules are in
+[docs/architecture.md](docs/architecture.md). That document supersedes older
+general folder descriptions. Read it before reorganizing modules.
 
-- `npm run dev` starts Vite; `npm run dev:worker` starts the import Worker.
-- `npm run type-check`, `npm run lint`, and `npm run depcheck` check types,
-  Biome rules, and dependency boundaries.
-- `npm run test` runs app/domain tests; `npm run test:worker` runs Worker tests.
-- `npm run build` prepares WebP assets and builds the production app.
-- `npm run check` runs the complete validation stack required before commits.
-- `src/domain/` owns framework-free account, build, Relic, and combat logic.
-  Keep it independent of UI, stores, and providers.
-- `src/domain/combat/` holds the combat engine and optimizer; `impl/` holds one
-  translated kit per Character, Light Cone, or Relic set. Kits follow
-  `.agents/skills/hsr-combat/` (translator rules, kit authoring, tracker). Use
-  the `combat-agents` skill to launch translator agents.
-- `src/lib/combat/` connects the engine to catalogs, the account, persisted
-  teams, and the combat worker.
-- `npm run combat:dossier -- C|L|R <id>` prints everything a kit translation
-  needs; `docs/combat/tracker/` records approximations and engine gaps.
-- `src/providers/` owns external formats, adapters, and reference catalogs.
-  Providers must not own UI or persisted state.
-- `src/stores/` owns persisted state; `src/stores/migration/` owns store migrations.
-- `src/components/shared/` and `src/components/ui/` hold reusable UI;
-  `src/components/layout/` holds page shells and navigation UI.
-- `src/lib/` holds app utilities; `src/i18n/` holds localization.
-- `src/generated/` is generated input. Use the data/asset scripts rather than
-  editing generated files. See `docs/source-provenance.md` and `docs/deployment.md`.
-- `worker/` is standalone and must not import browser code from `src/`.
-- `tests/` holds app/domain tests and fixtures; `tests/worker/` holds Worker tests.
+Command definitions live in `package.json`; `npm run check` is the complete
+validation stack. Combat kit work follows `.agents/skills/hsr-combat/`; use
+`combat-agents` for translation workers and `npm run combat:dossier -- C|L|R <id>`
+for source dossiers. Operational data/asset rules are in
+`docs/source-provenance.md` and `docs/deployment.md`.
 
 ## Page Map
 
 Use `src/config/navigation.ts` for paths, `src/app/routeRegistry.ts` for page
-labels, and `src/App.tsx` for the actual route components.
+labels, and `src/app/App.tsx` for the actual route components.
 
 | Page | Route | Implementation |
 | --- | --- | --- |
@@ -71,9 +51,9 @@ labels, and `src/App.tsx` for the actual route components.
 | Inventory | `/account-data/inventory` | `src/pages/account-data/InventoryView.tsx` |
 | Resources | `/account-data/resources` | `src/pages/account-data/ResourceView.tsx` |
 | Relic Triage | `/account-data/triage` | `src/pages/account-data/TriageView.tsx` |
-| DMG Optimizer | `/team-damage/optimizer` | `src/pages/damage/TeamDamagePage.tsx` |
-| Investment | `/team-damage/investment` | `src/pages/damage/TeamDamagePage.tsx` |
-| Light Cone & Relic Choice | `/team-damage/choice` | `src/pages/damage/TeamDamagePage.tsx` |
+| DMG Optimizer | `/team-damage/optimizer` | `src/pages/team-analysis/TeamDamagePage.tsx` |
+| Investment | `/team-damage/investment` | `src/pages/team-analysis/TeamDamagePage.tsx` |
+| Light Cone & Relic Choice | `/team-damage/choice` | `src/pages/team-analysis/TeamDamagePage.tsx` |
 | Character Builds | `/builds/configure` | `src/pages/builds/CharacterBuildView.tsx` |
 | Relic Filters | `/builds/filters` | `src/pages/builds/RelicFiltersView.tsx` |
 | Character Priority | `/tier-list/characters` | `src/pages/tier-list/CharacterTierListView.tsx` |
@@ -89,9 +69,9 @@ labels, and `src/App.tsx` for the actual route components.
 
 | Need | Source of truth |
 | --- | --- |
-| Theme colors and surfaces | `tailwind.config.ts`, `src/lib/themeGenerator.ts`: use `bg-background`, `text-foreground`, `bg-primary`, `bg-gradient-card`, `bg-gradient-select` |
+| Theme colors and surfaces | `tailwind.config.ts`, `src/lib/theme/generator.ts`: use `bg-background`, `text-foreground`, `bg-primary`, `bg-gradient-card`, `bg-gradient-select` |
 | Dynamic Combat Type, rarity and Tier classes | `src/components/shared/colors.ts`: `getCombatTypeColor(id, "text")`, `getRarityColor(rarity, "gradient")`, `getTierColor(tier, "header")`; compose with `cn()` |
-| Game palettes / raw chart colors | `src/config/gameColors.ts`; `src/lib/gameColors.ts` exposes actual CSS values for non-DOM consumers. Change values in the palette, not in individual components |
+| Game palettes / raw chart colors | `src/config/gameColors.ts`; `src/lib/game/colors.ts` exposes actual CSS values for non-DOM consumers. Change values in the palette, not in individual components |
 | Item identity and filter controls | `src/components/shared/ItemIcon.tsx`, `AssetImage.tsx`, `FilterChip.tsx`, `FilterChipGroup.tsx` |
 | Page structure | `src/components/layout/{PageLayout,SidebarLayout,WideLayout,ScrollLayout,SidebarDetailLayout}.tsx`; inspect a sibling page before creating a scroll shell |
 | Responsive dialogs | `src/components/ui/responsive-dialog.tsx` and its existing callers |
@@ -111,7 +91,7 @@ labels, and `src/App.tsx` for the actual route components.
   than hardcoded UI colors. Do not add opacity to `text-muted-foreground` or
   `border-border`; keep controls and important information visible at rest.
 - Use `AssetImage` / `ItemIcon` for catalog art and the helpers in
-  `src/lib/assets.ts` for asset URLs. Preserve cache lookup and fallback behavior.
+  `src/lib/assets/urls.ts` for asset URLs. Preserve cache lookup and fallback behavior.
 - Use `src/components/ui/responsive-dialog.tsx` for responsive dialogs and follow
   nearby callers for desktop/mobile interactions.
 - Verify changed UI on its actual route at desktop and narrow widths, including

@@ -3,7 +3,7 @@ import type {
   CatalogAssetLookupEntry,
 } from "@/domain/assets";
 import runtimeLookupUrl from "@/generated/hsr-assets/runtime-lookup.json?url";
-import { configureCatalogAssetLookup } from "@/lib/assets";
+import { configureCatalogAssetLookup } from "@/lib/assets/urls";
 
 const CATALOG_ASSET_KINDS = new Set<CatalogAssetKind>([
   "achievement",
