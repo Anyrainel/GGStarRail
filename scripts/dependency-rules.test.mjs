@@ -85,7 +85,7 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
     write("src/providers/hoyolab/secret.ts", "export const value = true;");
     write(
       "src/providers/bad.ts",
-      'import "../components/shared/control.ts"; import "vitest";'
+      'import "../components/shared/control.ts"; import "cloudflare:workers"; import "vitest";'
     );
     write("src/config/bad.ts", 'import "../services/workflow.ts";');
     write(
@@ -139,6 +139,7 @@ test("dependency-cruiser rejects representative forbidden imports", () => {
       "feature-components-are-isolated",
       "libraries-are-leaf-utilities",
       "libraries-use-domain-contracts-only",
+      "browser-has-no-worker-runtime-imports",
       "leaf-code-is-framework-free",
       "services-do-not-own-react-or-live-state",
       "stores-do-not-own-ui",

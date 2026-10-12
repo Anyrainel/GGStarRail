@@ -2,6 +2,12 @@
 module.exports = {
   forbidden: [
     {
+      name: "browser-has-no-worker-runtime-imports",
+      severity: "error",
+      from: { path: "^src/" },
+      to: { path: "^cloudflare:" },
+    },
+    {
       name: "scanner-formats-do-not-depend-on-companion",
       severity: "error",
       from: { path: "^src/providers/scanner/formats/" },

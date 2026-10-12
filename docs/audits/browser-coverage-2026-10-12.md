@@ -20,6 +20,10 @@ desktop and mobile widths:
   file input, review counts, explicit apply, visible character roster, and
   persisted hydration after reload. Assertions use literal expected game IDs,
   levels and UID rather than importing the site's parser into the test.
+  The same journey adds the imported Character to a team through the public
+  picker, opens its optimizer detail, observes the real combat Worker and waits
+  for populated battle timeline actions. This covers the built Worker entry and
+  its lazy catalog/engine imports as well as the route bundle.
 
 The v4 browser fixture is the existing `tests/fixtures/scanner/hsr-scanner-v4.json`,
 not a claimed GGScanner-generated export. GOODScanner's read-only

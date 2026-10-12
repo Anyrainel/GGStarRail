@@ -18,7 +18,7 @@ export async function buildUiCss(): Promise<string> {
     build: {
       write: false,
       cssMinify: false,
-      rollupOptions: { input: path.join(root, "src/index.css") },
+      rolldownOptions: { input: path.join(root, "src/index.css") },
     },
   });
   if ("output" in result) {

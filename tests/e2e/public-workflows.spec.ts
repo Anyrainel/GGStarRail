@@ -147,5 +147,25 @@ test("scanner v4 file crosses upload, review, apply and persisted hydration boun
   await expect(page.getByText("Bronya", { exact: true }).first()).toBeVisible();
   await page.goto("/account-data/inventory");
   await expectResponsiveShell(page);
+  await page.goto("/team-damage/optimizer");
+  await page
+    .getByRole("button", { name: "Add Character", exact: true })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Bronya", exact: true }).click();
+  const combatWorker = page.waitForEvent("worker", {
+    predicate: (worker) => worker.url().includes("combat.worker"),
+  });
+  await page
+    .getByRole("button", { name: "DMG Optimizer", exact: true })
+    .click();
+  await combatWorker;
+  await page
+    .getByRole("button", { name: "Battle Timeline", exact: true })
+    .click();
+  await expect(page.locator("[data-timeline-action]").first()).toBeVisible();
+  await expect(
+    page.getByText("The simulation failed.", { exact: true })
+  ).toHaveCount(0);
   expect(errors).toEqual([]);
 });
