@@ -482,9 +482,24 @@ describe("Team DMG detail", () => {
     await user.click(within(appbar).getByRole("button", { name: "More" }));
     await user.click(screen.getByRole("menuitem", { name: "Duplicate team" }));
     expect(teamIds()).toHaveLength(2);
-    await waitFor(() =>
-      expect(screen.getByTestId("location")).not.toHaveTextContent("team%3Aa")
+    const copyId = teamIds().find((id) => id !== "team:a");
+    if (!copyId) throw new Error("Missing duplicated team");
+    // The store mutation is synchronous, but opening the duplicated detail
+    // commits through the router. Wait for that detail, not just any URL change.
+    await screen.findByRole(
+      "heading",
+      { level: 2, name: "Team 2" },
+      { timeout: 15_000 }
     );
+    const location = screen.getByTestId("location");
+    expect(location).not.toHaveTextContent("team%3Aa");
+    expect(
+      new URL(
+        location.textContent ?? "",
+        "https://example.test"
+      ).searchParams.get("team")
+    ).toBe(copyId);
+    expect(useTeamStore.getState().activeTeamId).toBe(copyId);
 
     await user.click(within(appbar).getByRole("button", { name: "More" }));
     await user.click(screen.getByRole("menuitem", { name: "Delete team" }));
@@ -495,5 +510,5 @@ describe("Team DMG detail", () => {
     );
     expect(teamIds()).toEqual(["team:a"]);
     expect(await grid()).toBeInTheDocument();
-  });
+  }, 30_000);
 });
