@@ -71,7 +71,7 @@ function CharacterBuildCardComponent({
       <CardHeader className={cn("pb-3 pt-3", isVeryNarrow ? "px-2" : "px-3")}>
         <div
           className={cn(
-            "flex min-w-0 items-center",
+            "flex w-full min-w-0 items-center",
             isVeryNarrow ? "gap-2" : "gap-3 md:gap-4"
           )}
           data-character-build-header

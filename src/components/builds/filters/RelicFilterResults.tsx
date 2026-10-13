@@ -44,7 +44,7 @@ export function RecommendedLoadoutCard({
   return (
     <Card className="bg-gradient-card" data-filter-loadout>
       <CardHeader className="p-3 md:px-6 md:pb-3 md:pt-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <CardTitle className={TITLE_CLASS}>
             {t("filters.recommendationTitle")}
           </CardTitle>
