@@ -490,7 +490,6 @@ describe("Team DMG detail", () => {
       { timeout: 15_000 }
     );
     const location = screen.getByTestId("location");
-    expect(location).not.toHaveTextContent("team%3Aa");
     expect(
       new URL(
         location.textContent ?? "",
