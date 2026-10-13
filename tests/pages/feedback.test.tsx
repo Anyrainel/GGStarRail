@@ -140,8 +140,8 @@ describe("Star Rail feedback and support pages", () => {
     renderPage(<FeedbackPage />);
     fireEvent.click(screen.getByRole("button", { name: "Submit feedback" }));
     expect(
-      screen.getByText(/Game site: Honkai: Star Rail/)
-    ).toBeInTheDocument();
+      screen.queryByText(/Game site: Honkai: Star Rail/)
+    ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Submit feedback" })
     ).toBeDisabled();

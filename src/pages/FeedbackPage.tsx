@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
+import { Checkbox } from "@/components/shared/Checkbox";
 import { PublicPosts } from "@/components/shared/PublicPosts";
 import { Button } from "@/components/ui/button";
 import {
@@ -248,9 +249,6 @@ export default function FeedbackPage() {
               onSubmit={(event) => void submit(event)}
               className="mt-5 space-y-4"
             >
-              <div className="text-sm">
-                {t("feedback.gameSite")}: {t("site.starRail")}
-              </div>
               <fieldset className="space-y-2" disabled={busy}>
                 <legend className="text-sm font-medium">
                   {t("feedback.ratingLabel")}
@@ -345,10 +343,9 @@ export default function FeedbackPage() {
               </label>
               <label
                 htmlFor="feedback-hidden"
-                className="flex items-center gap-2 text-sm"
+                className="flex cursor-pointer items-center gap-2 text-sm"
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   id="feedback-hidden"
                   checked={draft.hidden}
                   disabled={busy}
