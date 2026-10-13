@@ -12,6 +12,7 @@ import {
   MessageSquare,
   MoreVertical,
   Palette,
+  Settings,
 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
@@ -24,6 +25,7 @@ import {
   ThemeChoices,
   ThemeLocaleControls,
 } from "@/components/layout/ThemeLocaleControls";
+import { ImportIcon } from "@/components/shared/importExportIcons";
 import { LocalizedSheetContent as SheetContent } from "@/components/shared/LocalizedSheetContent";
 import { StableDropdownSubTrigger as DropdownMenuSubTrigger } from "@/components/shared/StableDropdownSubTrigger";
 import { Button } from "@/components/ui/button";
@@ -43,6 +45,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { getAccountManagementUrl } from "@/config/auth";
 import {
   APP_PATHS,
   NAVIGATION_SECTIONS,
@@ -180,7 +183,7 @@ function AccountMenu({ onImport }: { onImport: () => void }) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onImport}>
-            <Download className="size-4" aria-hidden />
+            <ImportIcon className="size-4" aria-hidden />
             {t("imports.open")}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
@@ -192,6 +195,12 @@ function AccountMenu({ onImport }: { onImport: () => void }) {
           {auth.isAuthenticated && (
             <>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a href={getAccountManagementUrl()}>
+                  <Settings className="size-4" aria-hidden />
+                  {t("auth.manageAccount")}
+                </a>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={auth.isLoading}
                 onSelect={() => void authenticate(auth.signOut)}
@@ -495,7 +504,7 @@ export function AppShell({
                         className="sm:hidden"
                         onSelect={() => setImportOpen(true)}
                       >
-                        <Download className="h-4 w-4" aria-hidden />
+                        <ImportIcon className="h-4 w-4" aria-hidden />
                         {t("imports.open")}
                       </DropdownMenuItem>
                     ) : undefined

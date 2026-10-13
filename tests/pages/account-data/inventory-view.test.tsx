@@ -44,7 +44,7 @@ describe("combined Account inventory", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("No account imported.")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Import account" })
+      screen.getByRole("button", { name: "Import game account" })
     ).toBeInTheDocument();
   });
 
@@ -140,7 +140,7 @@ describe("combined Account inventory", () => {
     expect(syncButtons).toHaveLength(3);
     await user.click(syncButtons[2]!);
     expect(
-      await screen.findByRole("dialog", { name: "Import account data" })
+      await screen.findByRole("dialog", { name: "Import game account data" })
     ).toBeVisible();
   });
 

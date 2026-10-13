@@ -33,7 +33,7 @@ describe("Fresh workspace actions", () => {
     renderPage(page());
 
     expect(
-      screen.getByRole("button", { name: "Import account" })
+      screen.getByRole("button", { name: "Import game account" })
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Load demo account" })
@@ -47,9 +47,13 @@ describe("Fresh workspace actions", () => {
     const user = userEvent.setup();
     renderPage(<CharacterView />);
 
-    await user.click(screen.getByRole("button", { name: "Import account" }));
+    await user.click(
+      screen.getByRole("button", { name: "Import game account" })
+    );
 
-    const dialog = screen.getByRole("dialog", { name: "Import account data" });
+    const dialog = screen.getByRole("dialog", {
+      name: "Import game account data",
+    });
     expect(dialog).toBeInTheDocument();
     const methodHeadings = screen.getAllByRole("heading", { level: 3 });
     expect(methodHeadings).toHaveLength(3);

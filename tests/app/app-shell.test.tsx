@@ -90,8 +90,12 @@ describe("GGArtifact family shell", () => {
     expect(
       screen.getByRole("menuitem", { name: "Feedback" })
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("menuitem", { name: "Import account" }));
-    const dialog = screen.getByRole("dialog", { name: "Import account data" });
+    await user.click(
+      screen.getByRole("menuitem", { name: "Import game account" })
+    );
+    const dialog = screen.getByRole("dialog", {
+      name: "Import game account data",
+    });
     expect(
       within(dialog).getByRole("link", { name: "Download GGScanner" })
     ).toHaveAttribute("href", APP_PATHS.scannerDownload);
@@ -227,12 +231,12 @@ describe("GGArtifact family shell", () => {
     renderApp(APP_PATHS.inventory);
 
     const [appBarImport] = screen.getAllByRole("button", {
-      name: "Import account",
+      name: "Import game account",
     });
     await user.click(appBarImport);
 
     expect(
-      screen.getByRole("dialog", { name: "Import account data" })
+      screen.getByRole("dialog", { name: "Import game account data" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /UID profile showcase/ })
@@ -243,7 +247,7 @@ describe("GGArtifact family shell", () => {
     await user.type(cookie, "ltoken_v2=transient-only");
     await user.click(
       within(
-        screen.getByRole("dialog", { name: "Import account data" })
+        screen.getByRole("dialog", { name: "Import game account data" })
       ).getByRole("button", { name: "Close" })
     );
     await user.click(appBarImport);

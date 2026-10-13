@@ -46,6 +46,7 @@ export const messagesEn = {
   "feedback.signInDescription": "Sign in before sending feedback.",
   "feedback.sessionExpired": "Your session has expired. Please sign in again.",
   "auth.signIn": "Sign in",
+  "auth.manageAccount": "Manage account",
   "auth.signOut": "Sign out",
   "auth.signedIn": "Signed-in account",
   "auth.completing": "Completing sign-in…",
@@ -250,7 +251,7 @@ export const messagesEn = {
   "guide.scanner": "Get the scanner",
   "guide.account.title": "Import",
   "guide.account.action1":
-    "In Account Data, choose Import account, then select a JSON file or UID import.",
+    "In Account Data, choose Import game account, then select a JSON file or UID import.",
   "guide.account.action2":
     "Check the UID, item counts, and import notices in the preview, then confirm.",
   "guide.builds.title": "Builds",
@@ -901,8 +902,8 @@ export const messagesEn = {
   "archive.levelShort": "Lv. {value}",
   "archive.showMore": "Show more",
   "archive.showLess": "Show less",
-  "imports.open": "Import account",
-  "imports.dialog.title": "Import account data",
+  "imports.open": "Import game account",
+  "imports.dialog.title": "Import game account data",
   "imports.account.title": "JSON file import",
   "imports.method.recommended": "Recommended",
   "imports.method.file": "Coverage depends on the exported file",

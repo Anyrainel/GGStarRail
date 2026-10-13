@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -7,6 +7,16 @@ import { test } from "node:test";
 import { installGitHooks } from "./install-git-hooks.mjs";
 import { runPreCommit } from "./pre-commit.mjs";
 import { runPrePush } from "./pre-push.mjs";
+
+// Hook-local Git variables otherwise redirect temporary-repository commands
+// into the real checkout, even when spawnSync supplies a different cwd.
+for (const key of execFileSync("git", ["rev-parse", "--local-env-vars"], {
+  encoding: "utf8",
+})
+  .trim()
+  .split(/\s+/)) {
+  delete process.env[key];
+}
 
 test("installs hooks in fresh clones, is idempotent, and preserves custom hooks", () => {
   const cwd = mkdtempSync(path.join(tmpdir(), "ggstarrail-hooks-"));

@@ -1,9 +1,9 @@
-import { Download } from "lucide-react";
 import { type ComponentProps, type ReactNode, useState } from "react";
 import {
   type AccountImportMethod,
   AccountImportPanel,
 } from "@/components/game-account/imports/AccountImportPanel";
+import { ImportIcon } from "@/components/shared/importExportIcons";
 import { Button } from "@/components/ui/button";
 import {
   ResponsiveDialog,
@@ -53,7 +53,7 @@ export function AccountImportAction({
           className={className}
           aria-label={compactOnMobile ? t("imports.open") : undefined}
         >
-          <Download className="h-4 w-4" aria-hidden />
+          <ImportIcon className="h-4 w-4" aria-hidden />
           <span className={cn(compactOnMobile && "hidden sm:inline")}>
             {t("imports.open")}
           </span>

@@ -1,6 +1,7 @@
-import { Download, FileDown, Trash2, Upload } from "lucide-react";
+import { FileDown, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
+import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
@@ -40,7 +41,7 @@ export function TierPageActions({
       <PageActions
         primary={
           <PageActionButton
-            icon={Download}
+            icon={ImportIcon}
             label={t("tier.controls.import")}
             onClick={onImport}
           />
@@ -48,11 +49,11 @@ export function TierPageActions({
         overflow={
           <>
             <DropdownMenuItem className="sm:hidden" onSelect={onImport}>
-              <Download className="h-4 w-4" aria-hidden="true" />
+              <ImportIcon className="h-4 w-4" aria-hidden="true" />
               {t("tier.controls.import")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={onExport}>
-              <Upload className="h-4 w-4" aria-hidden="true" />
+              <ExportIcon className="h-4 w-4" aria-hidden="true" />
               {t("tier.controls.export")}
             </DropdownMenuItem>
             <DropdownMenuItem
