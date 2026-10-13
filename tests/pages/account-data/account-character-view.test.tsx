@@ -71,7 +71,7 @@ describe("Account Character loadouts", () => {
   it("starts with account import and offers no demo account", () => {
     renderView();
     expect(
-      screen.getByRole("button", { name: "Import account" })
+      screen.getByRole("button", { name: "Import game account" })
     ).toBeVisible();
     expect(
       screen.queryByRole("button", { name: /demo/i })

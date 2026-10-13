@@ -1,6 +1,7 @@
-import { Download, Trash2, Upload } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
+import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildWorkspaceBundle } from "@/services/builds/bundle";
@@ -254,7 +255,7 @@ export function BuildWorkspaceActions({
       <PageActions
         primary={
           <PageActionButton
-            icon={Download}
+            icon={ImportIcon}
             label={t("build.importAction")}
             onClick={() => inputRef.current?.click()}
           />
@@ -265,14 +266,14 @@ export function BuildWorkspaceActions({
               className="sm:hidden"
               onSelect={() => inputRef.current?.click()}
             >
-              <Download className="h-4 w-4" aria-hidden="true" />
+              <ImportIcon className="h-4 w-4" aria-hidden="true" />
               {t("build.importAction")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!hasWorkspace}
               onSelect={exportWorkspace}
             >
-              <Upload className="h-4 w-4" aria-hidden="true" />
+              <ExportIcon className="h-4 w-4" aria-hidden="true" />
               {t("build.export")}
             </DropdownMenuItem>
             <DropdownMenuItem

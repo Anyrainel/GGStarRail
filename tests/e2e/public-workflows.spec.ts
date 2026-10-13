@@ -113,7 +113,7 @@ test("scanner v4 file crosses upload, review, apply and persisted hydration boun
   const errors = collectBundleFailures(page);
   await page.goto("/account-data/characters");
   await page
-    .getByRole("button", { name: "Import account", exact: true })
+    .getByRole("button", { name: "Import game account", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
   await dialog

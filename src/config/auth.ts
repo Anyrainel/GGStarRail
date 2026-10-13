@@ -14,3 +14,9 @@ export const AUTH_CONFIG: LogtoConfig = {
 };
 export const AUTH_CALLBACK_PATH = "/callback";
 export const AUTH_RETURN_KEY = "ggstarrail:auth:return-path:v1";
+
+export function getAccountManagementUrl(): string {
+  const url = new URL("/account/security", endpoint);
+  url.searchParams.set("redirect", window.location.href);
+  return url.href;
+}
