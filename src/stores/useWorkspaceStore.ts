@@ -5,6 +5,11 @@ import {
   type CharacterLightConeChoices,
   CharacterLightConeChoicesSchema,
 } from "@/domain/build/lightConeChoices";
+import {
+  type BuildPresetSnapshot,
+  type BuildPresetSubscription,
+  reconcileBuildPreset,
+} from "@/domain/build/presetSubscription";
 import type {
   BuildConfiguration,
   ScoreProfile,
@@ -27,6 +32,12 @@ import {
 } from "./schemas";
 
 interface WorkspaceActions {
+  subscribeBuildPreset: (
+    presetId: string,
+    snapshot: BuildPresetSnapshot
+  ) => void;
+  hydrateBuildPreset: (presetId: string, snapshot: BuildPresetSnapshot) => void;
+  detachBuildPreset: () => void;
   setCharacterLightCones: (characterId: string, ids: string[]) => void;
   duplicateBuild: (buildId: string, name: string) => void;
   moveBuild: (buildId: string, direction: "up" | "down") => void;
@@ -51,6 +62,7 @@ interface WorkspaceActions {
     builds: BuildConfiguration[];
     scoreProfiles: ScoreProfile[];
     triageRules: TriageRules;
+    buildPresetSubscription?: BuildPresetSubscription | null;
   }) => void;
   replaceWorkspace: (workspace: PersistedWorkspace) => void;
   clearWorkspace: () => void;
@@ -62,6 +74,35 @@ export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
       ...structuredClone(DEFAULT_WORKSPACE),
+      subscribeBuildPreset: (presetId, snapshot) => {
+        const { builds, scoreProfiles, characterLightConeIds, triageRules } =
+          structuredClone(snapshot);
+        const baseline = {
+          builds,
+          scoreProfiles,
+          characterLightConeIds,
+          triageRules,
+        };
+        set({
+          ...baseline,
+          buildPresetSubscription: {
+            presetId,
+            baseline: structuredClone(baseline),
+            deletedBuildIds: [],
+          },
+        });
+      },
+      hydrateBuildPreset: (presetId, snapshot) =>
+        set((state) =>
+          state.buildPresetSubscription?.presetId === presetId
+            ? reconcileBuildPreset(
+                state,
+                state.buildPresetSubscription,
+                snapshot
+              )
+            : state
+        ),
+      detachBuildPreset: () => set({ buildPresetSubscription: null }),
       setCharacterLightCones: (characterId, ids) =>
         set((state) => ({
           characterLightConeIds: CharacterLightConeChoicesSchema.parse({
@@ -190,7 +231,15 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         scoreProfiles,
         triageRules,
         characterLightConeIds = {},
-      }) => set({ builds, scoreProfiles, triageRules, characterLightConeIds }),
+        buildPresetSubscription = null,
+      }) =>
+        set({
+          builds,
+          scoreProfiles,
+          triageRules,
+          characterLightConeIds,
+          buildPresetSubscription,
+        }),
       replaceWorkspace: (workspace) => set(workspace),
       clearWorkspace: () => set(structuredClone(DEFAULT_WORKSPACE)),
     }),
@@ -205,6 +254,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         builds: state.builds,
         scoreProfiles: state.scoreProfiles,
         triageRules: state.triageRules,
+        buildPresetSubscription: state.buildPresetSubscription,
       }),
       migrate: migrateWorkspaceStore,
       merge: (persistedState, currentState) => {

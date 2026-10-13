@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CharacterLightConeChoicesSchema } from "@/domain/build/lightConeChoices";
+import { BuildPresetSubscriptionSchema } from "@/domain/build/presetSubscription";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
@@ -21,13 +22,14 @@ export const WORKSPACE_USER_FIELDS = {
   triageRules: TriageRulesSchema,
 } as const;
 
-export const WORKSPACE_SCHEMA_VERSION = 3;
+export const WORKSPACE_SCHEMA_VERSION = 4;
 
 export const PersistedWorkspaceSchema = z
   .object({
     schemaVersion: z.literal(WORKSPACE_SCHEMA_VERSION),
     account: AccountSnapshotSchema.nullable(),
     ...WORKSPACE_USER_FIELDS,
+    buildPresetSubscription: BuildPresetSubscriptionSchema.nullable(),
   })
   .strict()
   .superRefine((value, context) => {
@@ -71,6 +73,7 @@ export const DEFAULT_WORKSPACE: PersistedWorkspace = {
   account: null,
   localAchievementCompletion: { completedIds: [] },
   builds: [],
+  buildPresetSubscription: null,
   scoreProfiles: [],
   triageRules: {
     keepScoreAtLeast: 40,

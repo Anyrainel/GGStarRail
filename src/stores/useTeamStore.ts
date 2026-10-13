@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/config/identity";
 import type { AnalysisMode } from "@/domain/team/analysis";
+import { reconcileTeamPreset } from "@/domain/team/presetSubscription";
 import {
   emptyTeam,
   type TeamMemberPlan,
@@ -17,6 +18,16 @@ import {
 } from "./teamSchemas";
 
 interface TeamActions {
+  replaceTeams: (
+    input: Pick<
+      PersistedTeamStore,
+      "teams" | "activeTeamId" | "analysisByTeamId"
+    > &
+      Partial<Pick<PersistedTeamStore, "presetSubscription">>
+  ) => void;
+  subscribePreset: (presetId: string, teams: readonly TeamPlan[]) => void;
+  hydratePreset: (presetId: string, teams: readonly TeamPlan[]) => void;
+  stopPresetSubscription: () => void;
   setAnalysisMode: (teamId: string, mode: AnalysisMode) => void;
   setInvestmentSettings: (
     teamId: string,
@@ -70,6 +81,50 @@ export const useTeamStore = create<TeamState>()(
   persist(
     (set, get) => ({
       ...structuredClone(DEFAULT_TEAM_STORE),
+      replaceTeams: (input) => {
+        const parsed = PersistedTeamStoreSchema.parse({
+          teams: input.teams,
+          activeTeamId: input.activeTeamId,
+          analysisByTeamId: input.analysisByTeamId,
+          presetSubscription: input.presetSubscription ?? null,
+          schemaVersion: TEAM_STORE_VERSION,
+        });
+        set(structuredClone(parsed));
+      },
+      subscribePreset: (presetId, teams) => {
+        const parsed = PersistedTeamStoreSchema.parse({
+          schemaVersion: TEAM_STORE_VERSION,
+          teams,
+          activeTeamId: teams[0]?.id ?? null,
+          analysisByTeamId: {},
+          presetSubscription: { presetId, baseline: teams, deletedTeamIds: [] },
+        });
+        set(structuredClone(parsed));
+      },
+      hydratePreset: (presetId, incoming) =>
+        set((state) => {
+          if (state.presetSubscription?.presetId !== presetId) return {};
+          const result = reconcileTeamPreset(
+            state.teams,
+            state.presetSubscription,
+            incoming
+          );
+          const ids = new Set(result.teams.map((team) => team.id));
+          return {
+            teams: result.teams,
+            presetSubscription: result.subscription,
+            activeTeamId:
+              state.activeTeamId && ids.has(state.activeTeamId)
+                ? state.activeTeamId
+                : (result.teams[0]?.id ?? null),
+            analysisByTeamId: Object.fromEntries(
+              Object.entries(state.analysisByTeamId).filter(([id]) =>
+                ids.has(id)
+              )
+            ),
+          };
+        }),
+      stopPresetSubscription: () => set({ presetSubscription: null }),
       setAnalysisMode: (id, mode) =>
         set((state) => ({
           analysisByTeamId: {
@@ -119,6 +174,19 @@ export const useTeamStore = create<TeamState>()(
           return {
             teams,
             analysisByTeamId,
+            presetSubscription:
+              state.presetSubscription &&
+              state.teams.some((team) => team.id === teamId)
+                ? {
+                    ...state.presetSubscription,
+                    deletedTeamIds: [
+                      ...new Set([
+                        ...state.presetSubscription.deletedTeamIds,
+                        teamId,
+                      ]),
+                    ],
+                  }
+                : state.presetSubscription,
             activeTeamId:
               state.activeTeamId === teamId
                 ? (teams[0]?.id ?? null)
@@ -141,7 +209,12 @@ export const useTeamStore = create<TeamState>()(
           return { teams };
         }),
       clearTeams: () =>
-        set({ teams: [], activeTeamId: null, analysisByTeamId: {} }),
+        set({
+          teams: [],
+          activeTeamId: null,
+          analysisByTeamId: {},
+          presetSubscription: null,
+        }),
       setActiveTeam: (teamId) => set({ activeTeamId: teamId }),
       renameTeam: (teamId, name) =>
         set((state) =>
@@ -193,6 +266,7 @@ export const useTeamStore = create<TeamState>()(
       partialize: (state) => ({
         schemaVersion: state.schemaVersion,
         teams: state.teams,
+        presetSubscription: state.presetSubscription,
         activeTeamId: state.activeTeamId,
         analysisByTeamId: state.analysisByTeamId,
       }),

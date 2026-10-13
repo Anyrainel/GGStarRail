@@ -23,7 +23,7 @@ Paths. All slots remain accessible on narrow screens. Account imports leave choi
 Duplicate creates an independent score profile. Move swaps positions only with
 the adjacent build belonging to the same Character and category.
 
-Workspace and build bundle v1 separate Cavern and Planar builds into independent
+Workspace and build bundles separate Cavern and Planar builds into independent
 cards. Cavern cards configure a 4-piece or 2+2 combination, Body/Feet main stats,
 and a score profile for the four Cavern slots. Planar cards configure a 2-piece
 set, Sphere/Rope main stats, and a score profile for the two Planar slots. The
@@ -31,10 +31,12 @@ filter page selects one card from each category for the same Character, allowing
 every cross-combination without saving duplicated 4+2 builds. Unconfigured
 categories remain unconfigured and produce review decisions in triage.
 
-The current v1 contract is provisional during development. Earlier experimental
+The card contract is provisional during development. Earlier experimental
 formats are unsupported: incompatible local workspaces start empty, and invalid
-backup/build imports are rejected. There are no historical workspace or paired
-build migrations. HoyoData generates native recommendations directly in this format.
+backup/build imports are rejected. Released workspace v1–v3 and build-export v1
+formats remain supported through versioned migration; experimental paired-build
+formats are unsupported. HoyoData generates native recommendations directly in
+the independent card format.
 
 HoyoData's full `hoyodata ggstarrail` export writes generated presets to
 `src/config/presets/builds/in-game.json`. This uses the build bundle contract with optional
@@ -44,3 +46,13 @@ in the current UI language; editing a name saves literal user text. Ordinary use
 exports may omit metadata. Conversion
 reports remain producer-side. The preset tests validate these JSON files against
 the importer and available game catalogs on every check.
+
+Selecting the in-game preset subscribes to the entire `in-game` file. Workspace
+v4 and build-export bundle v2 preserve the preset ID, previous baseline, and
+deleted-card tombstones. Startup reconciles the latest bundled file: untouched
+cards and profiles update, while locally edited entries, custom cards, deletions,
+Light Cone choices, and user ordering remain. Stopping a subscription retains
+the resolved workspace. Local file import restores its saved subscription when
+present; old workspace v1–v3 and build-export v1 files import as local data.
+HoyoData's generated v1 file remains accepted by the importer. Failed preset
+loads retain the last resolved workspace and offer a retry.

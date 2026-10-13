@@ -1,14 +1,16 @@
 import { z } from "zod";
 import { StableIdSchema } from "@/domain/game-account/schemas";
 import { AnalysisModeSchema } from "@/domain/team/analysis";
+import { TeamPresetSubscriptionSchema } from "@/domain/team/presetSubscription";
 import { TeamPlanSchema } from "@/domain/team/schemas";
 
-export const TEAM_STORE_VERSION = 2;
+export const TEAM_STORE_VERSION = 3;
 
 export const PersistedTeamStoreSchema = z
   .object({
     schemaVersion: z.literal(TEAM_STORE_VERSION),
     teams: z.array(TeamPlanSchema),
+    presetSubscription: TeamPresetSubscriptionSchema.nullable().default(null),
     activeTeamId: StableIdSchema.nullable(),
     analysisByTeamId: z
       .record(
@@ -39,6 +41,7 @@ export type PersistedTeamStore = z.infer<typeof PersistedTeamStoreSchema>;
 export const DEFAULT_TEAM_STORE: PersistedTeamStore = {
   schemaVersion: TEAM_STORE_VERSION,
   teams: [],
+  presetSubscription: null,
   activeTeamId: null,
   analysisByTeamId: {},
 };

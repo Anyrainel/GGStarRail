@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
+import { createTeamWorkspaceBundle } from "@/services/teams/bundle";
 import {
   DEFAULT_TEAM_STORE,
   PersistedTeamStoreSchema,
@@ -16,6 +17,22 @@ afterEach(() => {
 });
 
 describe("team store list actions", () => {
+  it("replaces teams and saved analysis as a validated isolated snapshot", () => {
+    const store = useTeamStore.getState();
+    const id = store.createTeam();
+    store.setAnalysisMode(id, "investment");
+    const input = {
+      teams: structuredClone(useTeamStore.getState().teams),
+      activeTeamId: id,
+      analysisByTeamId: { [id]: { mode: "builds" as const } },
+    };
+    store.createTeam();
+    store.replaceTeams(createTeamWorkspaceBundle(input));
+    expect(ids()).toEqual([id]);
+    expect(useTeamStore.getState().analysisByTeamId[id]?.mode).toBe("builds");
+    input.teams[0]!.name = "External mutation";
+    expect(useTeamStore.getState().teams[0]?.name).toBeUndefined();
+  });
   it("returns the duplicated team identity even if a subscriber restores the URL selection", () => {
     const source = useTeamStore.getState().createTeam();
     const unsubscribe = useTeamStore.subscribe((state, previous) => {
@@ -82,6 +99,7 @@ describe("team store list actions", () => {
     expect(Object.keys(stored.state).sort()).toEqual([
       "activeTeamId",
       "analysisByTeamId",
+      "presetSubscription",
       "schemaVersion",
       "teams",
     ]);

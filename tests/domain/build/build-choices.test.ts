@@ -80,7 +80,7 @@ describe("Character build choices", () => {
     expect(useWorkspaceStore.getState().characterLightConeIds).toEqual({
       [character.id]: [cone.id],
     });
-    expect(bundle.schemaVersion).toBe(1);
+    expect(bundle.schemaVersion).toBe(2);
   });
 
   it("duplicates an independent profile and reorders only the Character's builds", async () => {

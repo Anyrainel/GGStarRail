@@ -1,0 +1,1495 @@
+{
+  "schema": "ggstarrail.team-preset",
+  "schemaVersion": 1,
+  "id": "flagship-teams",
+  "name": {
+    "en": "Flagship Teams",
+    "zh-CN": "旗舰配队"
+  },
+  "teams": [
+    {
+      "id": "preset:team:silver-wolf-999",
+      "members": [
+        {
+          "characterId": "1506",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1501",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1502",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1503",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:evanescia",
+      "members": [
+        {
+          "characterId": "1505",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "8009",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1502",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1503",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:sparxie",
+      "members": [
+        {
+          "characterId": "1501",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1502",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1503",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:aventurine-waveflair",
+      "members": [
+        {
+          "characterId": "1513",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1504",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1507",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:castorice",
+      "members": [
+        {
+          "characterId": "1407",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1413",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1415",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:evernight",
+      "members": [
+        {
+          "characterId": "1413",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1407",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1415",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:phainon",
+      "members": [
+        {
+          "characterId": "1408",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1412",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:anaxa",
+      "members": [
+        {
+          "characterId": "1405",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1412",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:the-herta",
+      "members": [
+        {
+          "characterId": "1401",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1405",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:aglaea",
+      "members": [
+        {
+          "characterId": "1402",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1415",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:mydei",
+      "members": [
+        {
+          "characterId": "1404",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1415",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:acheron",
+      "members": [
+        {
+          "characterId": "1308",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1507",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1218",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:mortenax-blade",
+      "members": [
+        {
+          "characterId": "1507",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1504",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:ashveil",
+      "members": [
+        {
+          "characterId": "1504",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1507",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:feixiao",
+      "members": [
+        {
+          "characterId": "1220",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1504",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:firefly",
+      "members": [
+        {
+          "characterId": "1310",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1321",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1303",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:rappa",
+      "members": [
+        {
+          "characterId": "1317",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1321",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:hysilens",
+      "members": [
+        {
+          "characterId": "1410",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1307",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:kafka",
+      "members": [
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1410",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1307",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:black-swan",
+      "members": [
+        {
+          "characterId": "1307",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1410",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:archer",
+      "members": [
+        {
+          "characterId": "1015",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1508",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:saber",
+      "members": [
+        {
+          "characterId": "1014",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1509",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:gilgamesh",
+      "members": [
+        {
+          "characterId": "1509",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1014",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:himeko-nova",
+      "members": [
+        {
+          "characterId": "1510",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1507",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1004",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:seele",
+      "members": [
+        {
+          "characterId": "1102",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1412",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:jing-yuan",
+      "members": [
+        {
+          "characterId": "1204",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:blade",
+      "members": [
+        {
+          "characterId": "1205",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:jingliu",
+      "members": [
+        {
+          "characterId": "1212",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1409",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:imbibitor-lunae",
+      "members": [
+        {
+          "characterId": "1213",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:argenti",
+      "members": [
+        {
+          "characterId": "1302",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:yunli",
+      "members": [
+        {
+          "characterId": "1221",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:boothill",
+      "members": [
+        {
+          "characterId": "1315",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1321",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:dr-ratio",
+      "members": [
+        {
+          "characterId": "1305",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1112",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1304",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:clara",
+      "members": [
+        {
+          "characterId": "1107",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:jade",
+      "members": [
+        {
+          "characterId": "1314",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1401",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:qingque",
+      "members": [
+        {
+          "characterId": "1201",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1006",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:xueyi",
+      "members": [
+        {
+          "characterId": "1214",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1303",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:dan-heng",
+      "members": [
+        {
+          "characterId": "1002",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:sushang",
+      "members": [
+        {
+          "characterId": "1206",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1303",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:hook",
+      "members": [
+        {
+          "characterId": "1109",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1202",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:arlan",
+      "members": [
+        {
+          "characterId": "1008",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:misha",
+      "members": [
+        {
+          "characterId": "1312",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:yanqing",
+      "members": [
+        {
+          "characterId": "1209",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1304",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:serval",
+      "members": [
+        {
+          "characterId": "1103",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1403",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1313",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:herta",
+      "members": [
+        {
+          "characterId": "1013",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1314",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:himeko",
+      "members": [
+        {
+          "characterId": "1003",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1303",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:luka",
+      "members": [
+        {
+          "characterId": "1111",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:sampo",
+      "members": [
+        {
+          "characterId": "1108",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1410",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:guinaifen",
+      "members": [
+        {
+          "characterId": "1210",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1005",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1410",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1217",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:moze",
+      "members": [
+        {
+          "characterId": "1223",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1220",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1304",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:march-7th-hunt",
+      "members": [
+        {
+          "characterId": "1224",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1321",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1225",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1222",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:topaz",
+      "members": [
+        {
+          "characterId": "1112",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1220",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1309",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    },
+    {
+      "id": "preset:team:rin-tohsaka",
+      "members": [
+        {
+          "characterId": "1508",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1412",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1306",
+          "options": {},
+          "skill": "kit"
+        },
+        {
+          "characterId": "1414",
+          "options": {},
+          "skill": "kit"
+        }
+      ],
+      "scenario": "bossWithAdds",
+      "cycles": 3,
+      "enemyLevel": 95
+    }
+  ]
+}

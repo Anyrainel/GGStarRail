@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import inGamePreset from "@/config/presets/builds/in-game.json";
+import { createCharacterScoreProfile } from "@/domain/build/configuration";
 import type { RelicSlotId } from "@/providers/reference/types";
 import { parseBuildWorkspaceBundle } from "@/services/builds/bundle";
 import { buildDisplayName } from "@/services/builds/presentation";
@@ -13,6 +14,29 @@ const slots = {
 } as const satisfies Record<string, RelicSlotId>;
 
 describe("generated in-game build presets", () => {
+  it("uses the same normalized native stat weights as character scoring", async () => {
+    const references = await loadBuildReferences();
+    const preset = parseBuildWorkspaceBundle(JSON.stringify(inGamePreset));
+    const profiles = new Map(
+      preset.scoreProfiles.map((profile) => [profile.id, profile])
+    );
+    for (const build of preset.builds) {
+      const character = references.characters.byId.get(
+        build.characterDefinitionId
+      )!;
+      const expected = createCharacterScoreProfile(
+        character,
+        references.progression,
+        "Native weights"
+      );
+      const actual = profiles.get(build.scoreProfileId)!;
+      for (const [propertyId, weight] of Object.entries(expected.statWeights)) {
+        expect(actual.statWeights[propertyId]).toBeCloseTo(weight, 10);
+      }
+      expect(actual.includeMainStat).toBe(false);
+      expect(actual.gradeThresholds).toEqual(expected.gradeThresholds);
+    }
+  });
   it("imports one language-neutral preset with localized metadata", () => {
     const preset = parseBuildWorkspaceBundle(JSON.stringify(inGamePreset));
     expect(preset.metadata).toEqual({

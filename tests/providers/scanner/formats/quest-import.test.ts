@@ -100,8 +100,10 @@ describe("complete Quest capture imports", () => {
         completedIds: [[...(await loadAchievementIds())][0]!],
       },
     };
+    const { buildPresetSubscription: _subscription, ...oldFields } =
+      structuredClone(DEFAULT_WORKSPACE);
     const old = {
-      ...structuredClone(DEFAULT_WORKSPACE),
+      ...oldFields,
       schemaVersion: 1,
       account,
     };

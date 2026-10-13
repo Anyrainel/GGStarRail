@@ -3,6 +3,7 @@ import {
   type CharacterLightConeChoices,
   CharacterLightConeChoicesSchema,
 } from "@/domain/build/lightConeChoices";
+import { BuildPresetSubscriptionSchema } from "@/domain/build/presetSubscription";
 import {
   BuildConfigurationSchema,
   ScoreProfileSchema,
@@ -13,7 +14,9 @@ import { assertNoSensitiveFields } from "../../lib/security/credentials";
 export const BuildWorkspaceBundleSchema = z
   .object({
     schema: z.literal("ggstarrail.build-workspace"),
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
+    buildPresetSubscription:
+      BuildPresetSubscriptionSchema.nullable().default(null),
     metadata: z
       .object({
         name: z
@@ -72,8 +75,15 @@ export type BuildWorkspaceBundle = z.infer<typeof BuildWorkspaceBundleSchema>;
 
 type BuildWorkspaceInput = Omit<
   BuildWorkspaceBundle,
-  "schema" | "schemaVersion" | "exportedAt" | "characterLightConeIds"
-> & { characterLightConeIds?: CharacterLightConeChoices };
+  | "schema"
+  | "schemaVersion"
+  | "exportedAt"
+  | "characterLightConeIds"
+  | "buildPresetSubscription"
+> & {
+  characterLightConeIds?: CharacterLightConeChoices;
+  buildPresetSubscription?: BuildWorkspaceBundle["buildPresetSubscription"];
+};
 
 export function createBuildWorkspaceBundle(
   input: BuildWorkspaceInput,
@@ -81,7 +91,7 @@ export function createBuildWorkspaceBundle(
 ): BuildWorkspaceBundle {
   const bundle = BuildWorkspaceBundleSchema.parse({
     schema: "ggstarrail.build-workspace",
-    schemaVersion: 1,
+    schemaVersion: 2,
     characterLightConeIds: {},
     exportedAt: now.toISOString(),
     ...input,
@@ -99,5 +109,18 @@ export function serializeBuildWorkspaceBundle(
 export function parseBuildWorkspaceBundle(input: string): BuildWorkspaceBundle {
   const parsed: unknown = JSON.parse(input);
   assertNoSensitiveFields(parsed);
+  // Build bundle v1 stored concrete builds without a subscription.
+  if (
+    typeof parsed === "object" &&
+    parsed !== null &&
+    "schemaVersion" in parsed &&
+    parsed.schemaVersion === 1
+  ) {
+    return BuildWorkspaceBundleSchema.parse({
+      ...parsed,
+      schemaVersion: 2,
+      buildPresetSubscription: null,
+    });
+  }
   return BuildWorkspaceBundleSchema.parse(parsed);
 }

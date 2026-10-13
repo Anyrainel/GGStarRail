@@ -193,7 +193,9 @@ describe("scanner manager connection", () => {
     expect(
       screen.getByRole("button", { name: /^(Disconnect|断开连接)$/ })
     ).toBeEnabled();
-    expect(onRunningChange).toHaveBeenLastCalledWith(false);
+    await waitFor(() =>
+      expect(onRunningChange).toHaveBeenLastCalledWith(false)
+    );
   });
 
   it("reconnects to a completed task and prominently shows manual review and skipped reasons", async () => {

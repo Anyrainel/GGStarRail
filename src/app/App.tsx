@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppShell } from "@/app/AppShell";
+import { PresetSubscriptions } from "@/app/PresetSubscriptions";
 import { routeDefinition } from "@/app/routeRegistry";
 import { PRODUCT_NAME } from "@/config/identity";
 import { APP_PATHS } from "@/config/navigation";
@@ -76,6 +77,7 @@ export default function App() {
 
   return (
     <AppShell>
+      <PresetSubscriptions />
       <Suspense
         fallback={
           <p role="status" className="p-6">

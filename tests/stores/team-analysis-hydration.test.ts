@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
 import { emptyTeam } from "@/domain/team/schemas";
-import { DEFAULT_TEAM_STORE } from "@/stores/teamSchemas";
+import { DEFAULT_TEAM_STORE, TEAM_STORE_VERSION } from "@/stores/teamSchemas";
 import { useTeamStore } from "@/stores/useTeamStore";
 
 afterEach(() => {
@@ -10,6 +10,46 @@ afterEach(() => {
 });
 
 describe("analysis team persistence boundary", () => {
+  it("migrates realistic v2 teams and analysis without inferring a subscription", async () => {
+    const team = emptyTeam("preset:team:silver-wolf-999");
+    team.name = "My saved lineup";
+    team.members[0] = {
+      characterId: "1506",
+      eidolon: 2,
+      options: {},
+      skill: "prefer",
+    };
+    const analysisByTeamId = {
+      [team.id]: {
+        mode: "investment",
+        investment: {
+          limits: { "0:1506": { eidolon: 4, superimposition: 3 } },
+          budget: "perfect",
+          critMode: "crit",
+        },
+      },
+    };
+    localStorage.setItem(
+      STORAGE_KEYS.teams,
+      JSON.stringify({
+        version: 2,
+        state: {
+          schemaVersion: 2,
+          teams: [team],
+          activeTeamId: team.id,
+          analysisByTeamId,
+        },
+      })
+    );
+    await useTeamStore.persist.rehydrate();
+    expect(useTeamStore.getState()).toMatchObject({
+      schemaVersion: 3,
+      teams: [team],
+      activeTeamId: team.id,
+      analysisByTeamId,
+      presetSubscription: null,
+    });
+  });
   it("hydrates multiple v1 teams without changing authored ranks or battle setup", async () => {
     const a = emptyTeam("team:a");
     a.members[0] = {
@@ -41,7 +81,10 @@ describe("analysis team persistence boundary", () => {
     expect(useTeamStore.getState().activeTeamId).toBe(b.id);
     expect(useTeamStore.getState().analysisByTeamId).toEqual({});
     expect(JSON.parse(localStorage.getItem(STORAGE_KEYS.teams)!)).toMatchObject(
-      { version: 2, state: { schemaVersion: 2 } }
+      {
+        version: TEAM_STORE_VERSION,
+        state: { schemaVersion: TEAM_STORE_VERSION, presetSubscription: null },
+      }
     );
   });
 

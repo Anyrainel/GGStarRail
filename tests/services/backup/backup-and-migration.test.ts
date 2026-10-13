@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
+import inGamePreset from "@/config/presets/builds/in-game.json";
 import { parseScannerExport } from "@/providers/scanner/formats/schema";
 import {
   createBackupEnvelope,
   parseBackup,
   serializeBackup,
 } from "@/services/backup/workspace";
-import { DEFAULT_WORKSPACE } from "@/stores/schemas";
+import { parseBuildWorkspaceBundle } from "@/services/builds/bundle";
+import { DEFAULT_WORKSPACE, WORKSPACE_SCHEMA_VERSION } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { makeAccountSnapshot } from "../../fixtures";
 
@@ -49,9 +51,53 @@ describe("independent persistence and backup identity", () => {
     ).toThrow(/Sensitive field/);
   });
 
+  it("restores a subscribed build file through backup and keeps edits across its next update", async () => {
+    const preset = parseBuildWorkspaceBundle(JSON.stringify(inGamePreset));
+    const [edited, deleted, untouched] = preset.builds;
+    if (!edited || !deleted || !untouched)
+      throw new Error("Missing preset fixtures");
+    useWorkspaceStore.getState().clearWorkspace();
+    useWorkspaceStore.getState().subscribeBuildPreset("in-game", preset);
+    useWorkspaceStore
+      .getState()
+      .upsertBuild({ ...edited, name: "My saved build" });
+    useWorkspaceStore.getState().removeBuild(deleted.id);
+    const persisted = JSON.parse(
+      localStorage.getItem(STORAGE_KEYS.workspace) ?? "null"
+    ).state;
+    const backup = parseBackup(serializeBackup(persisted));
+    useWorkspaceStore.getState().clearWorkspace();
+    useWorkspaceStore.getState().replaceWorkspace(backup.payload);
+    await useWorkspaceStore.persist.rehydrate();
+    expect(useWorkspaceStore.getState().buildPresetSubscription?.presetId).toBe(
+      "in-game"
+    );
+    const update = {
+      ...preset,
+      builds: preset.builds.map((build) => ({
+        ...build,
+        name: "Updated preset build",
+      })),
+    };
+    useWorkspaceStore.getState().hydrateBuildPreset("in-game", update);
+    const state = useWorkspaceStore.getState();
+    expect(state.builds.find((build) => build.id === edited.id)?.name).toBe(
+      "My saved build"
+    );
+    expect(state.builds.some((build) => build.id === deleted.id)).toBe(false);
+    expect(state.builds.find((build) => build.id === untouched.id)?.name).toBe(
+      "Updated preset build"
+    );
+    expect(state.buildPresetSubscription?.baseline.builds).toEqual(
+      update.builds
+    );
+    useWorkspaceStore.getState().clearWorkspace();
+    localStorage.removeItem(STORAGE_KEYS.workspace);
+  });
+
   it("rejects unsupported workspace versions instead of guessing", () => {
     const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
-    for (const version of [0, 4, 5, 6]) {
+    for (const version of [0, 5, 6]) {
       expect(() =>
         parseBackup(
           JSON.stringify({
@@ -73,7 +119,9 @@ describe("independent persistence and backup identity", () => {
       })
     );
     await useWorkspaceStore.persist.rehydrate();
-    expect(useWorkspaceStore.getState().schemaVersion).toBe(3);
+    expect(useWorkspaceStore.getState().schemaVersion).toBe(
+      WORKSPACE_SCHEMA_VERSION
+    );
     expect(useWorkspaceStore.getState().builds).toEqual([]);
     useWorkspaceStore.getState().clearWorkspace();
     localStorage.removeItem(STORAGE_KEYS.workspace);
@@ -101,7 +149,7 @@ describe("independent persistence and backup identity", () => {
         ...(format === "quest-branch" ? { questProgress } : {}),
       };
       const previous = {
-        ...structuredClone(DEFAULT_WORKSPACE),
+        ...historicalWorkspace(),
         schemaVersion: format === "published" ? 2 : 1,
         characterLightConeIds: { "1101": ["20001"] },
         localAchievementCompletion: { completedIds: [103] },
@@ -115,7 +163,7 @@ describe("independent persistence and backup identity", () => {
       );
       await useWorkspaceStore.persist.rehydrate();
       const hydrated = useWorkspaceStore.getState();
-      expect(hydrated.schemaVersion).toBe(3);
+      expect(hydrated.schemaVersion).toBe(WORKSPACE_SCHEMA_VERSION);
       expect(hydrated.account).toEqual({
         ...account,
         schemaVersion: 5,
@@ -137,7 +185,8 @@ describe("independent persistence and backup identity", () => {
       ).payload;
       expect(restored).toEqual({
         ...previous,
-        schemaVersion: 3,
+        schemaVersion: WORKSPACE_SCHEMA_VERSION,
+        buildPresetSubscription: null,
         account: hydrated.account,
       });
       const native = parseScannerExport({
@@ -156,7 +205,7 @@ describe("independent persistence and backup identity", () => {
   it("migrates workspace v1 interoperable trace keys to catalog point IDs", async () => {
     const account = legacyV3Account();
     const persistedV1 = {
-      ...structuredClone(DEFAULT_WORKSPACE),
+      ...historicalWorkspace(),
       schemaVersion: 1,
       account,
     };
@@ -168,7 +217,7 @@ describe("independent persistence and backup identity", () => {
     );
     await useWorkspaceStore.persist.rehydrate();
     const hydrated = useWorkspaceStore.getState();
-    expect(hydrated.schemaVersion).toBe(3);
+    expect(hydrated.schemaVersion).toBe(WORKSPACE_SCHEMA_VERSION);
     expect(hydrated.account?.schemaVersion).toBe(5);
     expect(hydrated.account?.characters[0]?.traces).toEqual(CANONICAL_TRACES);
     useWorkspaceStore.getState().clearWorkspace();
@@ -178,12 +227,19 @@ describe("independent persistence and backup identity", () => {
     const parsed = parseBackup(
       JSON.stringify({ ...backup, payload: persistedV1 })
     );
-    expect(parsed.payload.schemaVersion).toBe(3);
+    expect(parsed.payload.schemaVersion).toBe(WORKSPACE_SCHEMA_VERSION);
     expect(parsed.payload.account?.characters[0]?.traces).toEqual(
       CANONICAL_TRACES
     );
   });
 });
+
+/** Pre-subscription workspace fields, as stored by released v1–v3 clients. */
+function historicalWorkspace() {
+  const { buildPresetSubscription: _subscription, ...fields } =
+    structuredClone(DEFAULT_WORKSPACE);
+  return fields;
+}
 
 const CANONICAL_TRACES = {
   "1101001": 6,

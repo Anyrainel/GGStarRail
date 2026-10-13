@@ -12,7 +12,8 @@ import { MigratingAccountSnapshotSchema } from "./account";
 // The unpublished Quest branch used persist v2 with workspace v1/account v4.
 const PreviousWorkspaceSchema = z
   .object({
-    schemaVersion: z.union([z.literal(1), z.literal(2)]),
+    // Workspace v1–v3 held concrete builds with no preset subscription.
+    schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]),
     account: MigratingAccountSnapshotSchema.nullable(),
     ...WORKSPACE_USER_FIELDS,
   })
@@ -28,6 +29,7 @@ export function migrateWorkspacePayload(
   const migrated = PersistedWorkspaceSchema.safeParse({
     ...previous.data,
     schemaVersion: WORKSPACE_SCHEMA_VERSION,
+    buildPresetSubscription: null,
   });
   return migrated.success ? migrated.data : null;
 }
@@ -36,7 +38,9 @@ export function migrateWorkspaceStore(
   persistedState: unknown,
   persistedVersion: number
 ): PersistedWorkspace {
-  const migrated = [1, 2, WORKSPACE_SCHEMA_VERSION].includes(persistedVersion)
+  const migrated = [1, 2, 3, WORKSPACE_SCHEMA_VERSION].includes(
+    persistedVersion
+  )
     ? migrateWorkspacePayload(persistedState)
     : null;
   return migrated ?? structuredClone(DEFAULT_WORKSPACE);

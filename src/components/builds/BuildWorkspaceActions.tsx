@@ -2,6 +2,7 @@ import { Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
+import { PresetImportDialog } from "@/components/shared/PresetImportDialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/i18n/I18nContext";
 import type { BuildWorkspaceBundle } from "@/services/builds/bundle";
@@ -9,6 +10,7 @@ import {
   parseBuildWorkspaceBundle,
   serializeBuildWorkspaceBundle,
 } from "@/services/builds/bundle";
+import { loadInGameBuildPreset } from "@/services/builds/presets";
 import type { BuildReferences } from "@/services/catalog/buildReferences";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
@@ -105,6 +107,18 @@ function referenceImportIssue(
   references: BuildReferences,
   t: ReturnType<typeof useI18n>["t"]
 ): string | null {
+  if (bundle.buildPresetSubscription) {
+    const baselineIssue = referenceImportIssue(
+      {
+        ...bundle,
+        ...bundle.buildPresetSubscription.baseline,
+        buildPresetSubscription: null,
+      },
+      references,
+      t
+    );
+    if (baselineIssue) return baselineIssue;
+  }
   for (const [characterId, coneIds] of Object.entries(
     bundle.characterLightConeIds
   )) {
@@ -160,6 +174,9 @@ export function BuildWorkspaceActions({
 }) {
   const { t } = useI18n();
   const builds = useWorkspaceStore((state) => state.builds);
+  const subscription = useWorkspaceStore(
+    (state) => state.buildPresetSubscription
+  );
   const characterLightConeIds = useWorkspaceStore(
     (state) => state.characterLightConeIds
   );
@@ -172,6 +189,9 @@ export function BuildWorkspaceActions({
   const [pendingImport, setPendingImport] =
     useState<BuildWorkspaceBundle | null>(null);
   const [clearOpen, setClearOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [presetLoading, setPresetLoading] = useState(false);
+  const [pendingPresetId, setPendingPresetId] = useState<string | null>(null);
   const [status, setStatus] = useState<WorkspaceStatus | null>(null);
 
   function exportWorkspace() {
@@ -180,6 +200,8 @@ export function BuildWorkspaceActions({
       characterLightConeIds,
       scoreProfiles,
       triageRules,
+      buildPresetSubscription:
+        useWorkspaceStore.getState().buildPresetSubscription,
     });
     const url = URL.createObjectURL(
       new Blob([json], { type: "application/json" })
@@ -206,6 +228,8 @@ export function BuildWorkspaceActions({
       const referenceIssue = referenceImportIssue(bundle, references, t);
       if (referenceIssue) throw new BuildImportReviewError(referenceIssue);
       setPendingImport(bundle);
+      setPendingPresetId(null);
+      setImportOpen(false);
       setStatus(null);
     } catch (reason: unknown) {
       setStatus({
@@ -220,14 +244,46 @@ export function BuildWorkspaceActions({
     }
   }
 
+  async function reviewPreset() {
+    setPresetLoading(true);
+    try {
+      const bundle = await loadInGameBuildPreset();
+      if (!references) {
+        throw new BuildImportReviewError(t("build.importReferenceUnavailable"));
+      }
+      const issue = referenceImportIssue(bundle, references, t);
+      if (issue) throw new BuildImportReviewError(issue);
+      setPendingImport(bundle);
+      setPendingPresetId("in-game");
+      setImportOpen(false);
+      setStatus(null);
+    } catch (reason: unknown) {
+      setStatus({
+        tone: "error",
+        message:
+          reason instanceof BuildImportReviewError
+            ? reason.message
+            : t("build.importError"),
+      });
+    } finally {
+      setPresetLoading(false);
+    }
+  }
+
   function applyImport() {
     if (!pendingImport) return;
-    replaceBuildWorkspace({
-      builds: pendingImport.builds,
-      characterLightConeIds: pendingImport.characterLightConeIds,
-      scoreProfiles: pendingImport.scoreProfiles,
-      triageRules: pendingImport.triageRules,
-    });
+    if (pendingPresetId)
+      useWorkspaceStore
+        .getState()
+        .subscribeBuildPreset(pendingPresetId, pendingImport);
+    else
+      replaceBuildWorkspace({
+        builds: pendingImport.builds,
+        characterLightConeIds: pendingImport.characterLightConeIds,
+        scoreProfiles: pendingImport.scoreProfiles,
+        triageRules: pendingImport.triageRules,
+        buildPresetSubscription: pendingImport.buildPresetSubscription,
+      });
     setStatus({
       tone: "success",
       message: t("build.imported", { count: pendingImport.builds.length }),
@@ -257,14 +313,14 @@ export function BuildWorkspaceActions({
           <PageActionButton
             icon={ImportIcon}
             label={t("build.importAction")}
-            onClick={() => inputRef.current?.click()}
+            onClick={() => setImportOpen(true)}
           />
         }
         overflow={
           <>
             <DropdownMenuItem
               className="sm:hidden"
-              onSelect={() => inputRef.current?.click()}
+              onSelect={() => setImportOpen(true)}
             >
               <ImportIcon className="h-4 w-4" aria-hidden="true" />
               {t("build.importAction")}
@@ -286,6 +342,18 @@ export function BuildWorkspaceActions({
           </>
         }
       />
+      <PresetImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        title={t("build.import")}
+        options={[{ id: "in-game", label: t("build.presetInGame") }]}
+        onSelect={() => void reviewPreset()}
+        onLocalImport={() => inputRef.current?.click()}
+        disabled={presetLoading}
+        error={status?.tone === "error" ? status.message : undefined}
+        selectedId={subscription?.presetId}
+        onDetach={() => useWorkspaceStore.getState().detachBuildPreset()}
+      />
       <input
         ref={inputRef}
         type="file"
@@ -306,10 +374,16 @@ export function BuildWorkspaceActions({
           if (!open) setPendingImport(null);
         }}
         title={t("build.importReviewTitle")}
-        description={t("build.importConfirm", {
-          count: pendingImport?.builds.length ?? 0,
-        })}
-        confirmLabel={t("build.importApply")}
+        description={
+          pendingPresetId
+            ? t("build.presetConfirm", { count: builds.length })
+            : t("build.importConfirm", {
+                count: pendingImport?.builds.length ?? 0,
+              })
+        }
+        confirmLabel={
+          pendingPresetId ? t("preset.subscribe") : t("build.importApply")
+        }
         cancelLabel={t("common.cancel")}
         onConfirm={applyImport}
       />

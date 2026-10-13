@@ -24,7 +24,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { PageActionButton, PageActions } from "@/components/layout/PageActions";
+import { PageActions } from "@/components/layout/PageActions";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CategoryChip } from "@/components/shared/CategoryChip";
@@ -54,6 +54,7 @@ import {
 } from "./gridView";
 import { TeamCard, type TeamCardDrag } from "./TeamCard";
 import { useTeamDmgData } from "./TeamDmgData";
+import { useTeamWorkspaceActions } from "./TeamWorkspaceActions";
 import { teamDisplayName, teamIsEmpty } from "./teamNames";
 
 const GHOST_TEAM: TeamPlan = emptyTeam("team:ghost");
@@ -98,6 +99,7 @@ function SortableTeamCard({
  */
 export function TeamGrid({ onOpen }: { onOpen: (teamId: string) => void }) {
   const { locale, t } = useI18n();
+  const workspaceActions = useTeamWorkspaceActions();
   const { references, lookup, account, previewOf } = useTeamDmgData();
   const teams = useTeamStore((state) => state.teams);
   const createTeam = useTeamStore((state) => state.createTeam);
@@ -337,22 +339,10 @@ export function TeamGrid({ onOpen }: { onOpen: (teamId: string) => void }) {
 
   const actions = (
     <PageActions
-      primary={
-        <PageActionButton
-          icon={Plus}
-          label={t("combat.team.new")}
-          onClick={() => addTeam("end")}
-        />
-      }
+      primary={workspaceActions.primary}
       overflow={
         <>
-          <DropdownMenuItem
-            className="sm:hidden"
-            onSelect={() => addTeam("end")}
-          >
-            <Plus className="h-4 w-4" aria-hidden />
-            {t("combat.team.new")}
-          </DropdownMenuItem>
+          {workspaceActions.overflow}
           <DropdownMenuItem
             disabled={teams.length === 0}
             className="text-destructive focus:text-destructive"
@@ -407,6 +397,7 @@ export function TeamGrid({ onOpen }: { onOpen: (teamId: string) => void }) {
             }}
           />
         </div>
+        {workspaceActions.dialogs}
         {clearDialog}
       </ScrollLayout>
     );
@@ -578,6 +569,7 @@ export function TeamGrid({ onOpen }: { onOpen: (teamId: string) => void }) {
           </Button>
         </EmptyState>
       )}
+      {workspaceActions.dialogs}
       {clearDialog}
     </ScrollLayout>
   );
