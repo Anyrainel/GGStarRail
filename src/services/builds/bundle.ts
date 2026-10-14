@@ -14,7 +14,7 @@ import { assertNoSensitiveFields } from "../../lib/security/credentials";
 export const BuildWorkspaceBundleSchema = z
   .object({
     schema: z.literal("ggstarrail.build-workspace"),
-    schemaVersion: z.literal(2),
+    schemaVersion: z.literal(3),
     buildPresetSubscription:
       BuildPresetSubscriptionSchema.nullable().default(null),
     metadata: z
@@ -91,7 +91,7 @@ export function createBuildWorkspaceBundle(
 ): BuildWorkspaceBundle {
   const bundle = BuildWorkspaceBundleSchema.parse({
     schema: "ggstarrail.build-workspace",
-    schemaVersion: 2,
+    schemaVersion: 3,
     characterLightConeIds: {},
     exportedAt: now.toISOString(),
     ...input,
@@ -114,12 +114,15 @@ export function parseBuildWorkspaceBundle(input: string): BuildWorkspaceBundle {
     typeof parsed === "object" &&
     parsed !== null &&
     "schemaVersion" in parsed &&
-    parsed.schemaVersion === 1
+    (parsed.schemaVersion === 1 || parsed.schemaVersion === 2)
   ) {
     return BuildWorkspaceBundleSchema.parse({
       ...parsed,
-      schemaVersion: 2,
-      buildPresetSubscription: null,
+      schemaVersion: 3,
+      buildPresetSubscription:
+        "buildPresetSubscription" in parsed
+          ? parsed.buildPresetSubscription
+          : null,
     });
   }
   return BuildWorkspaceBundleSchema.parse(parsed);

@@ -76,12 +76,8 @@ describe("CharacterBuildCard", () => {
       name: "Add Planar Ornament build",
     });
     expect(cavern.parentElement).toBe(planar.parentElement);
-    expect(
-      cavern.querySelector('[data-relic-kind-icon="cavern"]')
-    ).not.toBeNull();
-    expect(
-      planar.querySelector('[data-relic-kind-icon="planar"]')
-    ).not.toBeNull();
+    expect(cavern.querySelector('[data-relic-kind-icon="cavern"]')).toBeNull();
+    expect(planar.querySelector('[data-relic-kind-icon="planar"]')).toBeNull();
     await user.click(cavern);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(onAddBuild).toHaveBeenCalledExactlyOnceWith("cavern");

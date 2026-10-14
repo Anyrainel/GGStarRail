@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 import {
   AccountImportAction,
   AccountImportDialog,
@@ -19,6 +20,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       }
       renderAccountImportDialog={(props) => <AccountImportDialog {...props} />}
     >
+      <Toaster
+        closeButton
+        toastOptions={{
+          style: {
+            background: "hsl(var(--card))",
+            color: "hsl(var(--foreground))",
+            borderColor: "hsl(var(--border))",
+          },
+        }}
+      />
       {children}
     </LayoutShell>
   );

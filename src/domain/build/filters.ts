@@ -68,6 +68,7 @@ export function deriveBuildFilters(
   build: BuildConfiguration,
   profile: ScoreProfile
 ): BuildRelicFilter[] {
+  if (build.enabled === false) return [];
   const weightedProfileStatIds = Object.entries(profile.statWeights)
     .filter(([, weight]) => weight >= 0.6)
     .sort(

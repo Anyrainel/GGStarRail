@@ -2,7 +2,8 @@ import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/i18n/I18nContext";
 import CharacterBuildView from "@/pages/builds/CharacterBuildView";
 import CharacterView from "@/pages/game-account/CharacterView";
@@ -159,6 +160,7 @@ describe("Fresh workspace actions", () => {
   }, 15_000);
 
   it("reviews invalid build bundles without replacing local builds", async () => {
+    const errorToast = vi.spyOn(toast, "error");
     const user = userEvent.setup();
     renderPage(<CharacterBuildView />);
     const [createButton] = await screen.findAllByRole("button", {
@@ -285,7 +287,9 @@ describe("Fresh workspace actions", () => {
         })
       );
       await waitFor(() => {
-        expect(screen.getByRole("alert")).toHaveTextContent(testCase.message);
+        expect(errorToast).toHaveBeenLastCalledWith(
+          expect.stringContaining(testCase.message)
+        );
       });
     }
     expect(useWorkspaceStore.getState().builds).toHaveLength(1);

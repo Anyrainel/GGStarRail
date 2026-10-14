@@ -279,8 +279,7 @@ function OptionGroup({
   return (
     <CheckboxGroup
       label={label}
-      // Path names are long, so Paths take the full sidebar width.
-      columns={kind === "path" ? 1 : "sidebar"}
+      columns={2}
       onClear={selected.length > 0 ? () => onSelected([]) : undefined}
     >
       {options.map((option) => (
@@ -330,7 +329,7 @@ function CheckboxGroup({
   return (
     <fieldset
       aria-labelledby={labelId}
-      className="m-0 min-w-0 space-y-2 border-0 p-0"
+      className="m-0 min-w-0 space-y-2 border-0 p-0 pt-4"
     >
       <div className="flex min-h-5 items-center justify-between gap-2">
         <span

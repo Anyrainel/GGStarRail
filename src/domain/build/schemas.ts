@@ -55,6 +55,13 @@ export const PreferredMainStatsSchema = z
   .strict();
 
 const BuildIdentitySchema = z.object({
+  enabled: z.boolean().optional(),
+  roles: z
+    .array(z.enum(["damage", "support", "sustain"]))
+    .max(3)
+    .refine((roles) => new Set(roles).size === roles.length)
+    .optional(),
+  minimumEidolon: z.number().int().min(0).max(6).optional(),
   id: StableIdSchema,
   name: z.string().min(1).max(80).optional(),
   characterDefinitionId: StableIdSchema,

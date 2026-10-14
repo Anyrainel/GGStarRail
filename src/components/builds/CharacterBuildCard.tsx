@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
 import { CharacterInfo } from "@/components/shared/CharacterInfo";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
-import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { BuildConfiguration, ScoreProfile } from "@/domain/build/schemas";
@@ -137,11 +136,6 @@ function CharacterBuildCardComponent({
                 >
                   {categoryBuilds.length > 0 && (
                     <h3 className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground">
-                      <RelicKindIcon
-                        kind={category}
-                        className="h-3.5 w-3.5"
-                        decorative
-                      />
                       {t(CATEGORY_LABEL[category])}
                     </h3>
                   )}
@@ -225,11 +219,6 @@ function AddBuildButton({
       )}
       onClick={onClick}
     >
-      <RelicKindIcon
-        kind={category}
-        className={narrow ? "h-3 w-3" : "h-4 w-4"}
-        decorative
-      />
       {t(ADD_LABEL[category])}
     </Button>
   );

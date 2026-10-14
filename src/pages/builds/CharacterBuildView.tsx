@@ -1,6 +1,7 @@
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { CharacterBuildCard } from "@/components/builds/CharacterBuildCard";
 import {
@@ -20,7 +21,6 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { StatusBanner } from "@/components/shared/StatusBanner";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
@@ -61,7 +61,6 @@ export default function CharacterBuildView() {
     ownedOnly: account !== null,
   }));
   const ownedDefaultApplied = useRef(account !== null);
-  const [createError, setCreateError] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<BuildConfiguration | null>(
     null
   );
@@ -261,9 +260,8 @@ export default function CharacterBuildView() {
       );
       upsertScoreProfile(profile);
       upsertBuild(build);
-      setCreateError(null);
     } catch {
-      setCreateError(t("build.createError"));
+      toast.error(t("build.createError"));
     }
   }
 
@@ -317,7 +315,6 @@ export default function CharacterBuildView() {
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0 space-y-3" data-character-build-list>
-            {createError && <StatusBanner message={createError} tone="error" />}
             {visibleCharacters.map((character) => {
               return (
                 <CharacterBuildCard

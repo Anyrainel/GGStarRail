@@ -57,7 +57,9 @@ export function buildsFor(
 ): BuildConfiguration[] {
   const canonical = canonicalCharacterId(characterId);
   return builds.filter(
-    (build) => canonicalCharacterId(build.characterDefinitionId) === canonical
+    (build) =>
+      build.enabled !== false &&
+      canonicalCharacterId(build.characterDefinitionId) === canonical
   );
 }
 

@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+import { toast } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -22,6 +23,7 @@ afterEach(() => {
 
 describe("build preset import", () => {
   it("rejects unknown catalog references hidden in a subscribed file baseline", async () => {
+    const errorToast = vi.spyOn(toast, "error");
     const references = await loadBuildReferences();
     const preset = await loadInGameBuildPreset();
     useWorkspaceStore.getState().subscribeBuildPreset("in-game", preset);
@@ -50,9 +52,12 @@ describe("build preset import", () => {
       screen.getByLabelText("Import builds", { selector: "input" }),
       { target: { files: [file] } }
     );
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "unknown-character"
+    await waitFor(() =>
+      expect(errorToast).toHaveBeenCalledWith(
+        expect.stringContaining("unknown-character")
+      )
     );
+    expect(screen.queryByRole("alert")).toBeNull();
     expect(
       screen.queryByRole("heading", { name: "Review build workspace import" })
     ).toBeNull();

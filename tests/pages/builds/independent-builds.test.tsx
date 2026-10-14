@@ -118,10 +118,10 @@ describe("independent Cavern and Planar builds", () => {
         characterLightConeIds: workspace.characterLightConeIds,
       })
     );
-    expect(bundle.schemaVersion).toBe(2);
+    expect(bundle.schemaVersion).toBe(3);
     expect(bundle.builds).toEqual(workspace.builds);
     expect(bundle.scoreProfiles).toEqual(workspace.scoreProfiles);
-    for (const version of [0, 3])
+    for (const version of [0, 4])
       expect(() =>
         parseBuildWorkspaceBundle(
           JSON.stringify({ ...bundle, schemaVersion: version })

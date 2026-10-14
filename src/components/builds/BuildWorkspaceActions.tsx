@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
 import { PresetImportDialog } from "@/components/shared/PresetImportDialog";
@@ -15,7 +16,7 @@ import type { BuildReferences } from "@/services/catalog/buildReferences";
 import { DEFAULT_WORKSPACE } from "@/stores/schemas";
 import { useWorkspaceStore } from "@/stores/useWorkspaceStore";
 import { ConfirmDialog } from "../shared/ConfirmDialog";
-import { StatusBanner, type StatusTone } from "../shared/StatusBanner";
+import type { StatusTone } from "../shared/StatusBanner";
 
 interface WorkspaceStatus {
   tone: StatusTone;
@@ -192,7 +193,9 @@ export function BuildWorkspaceActions({
   const [importOpen, setImportOpen] = useState(false);
   const [presetLoading, setPresetLoading] = useState(false);
   const [pendingPresetId, setPendingPresetId] = useState<string | null>(null);
-  const [status, setStatus] = useState<WorkspaceStatus | null>(null);
+  function setStatus(status: WorkspaceStatus | null) {
+    if (status) toast[status.tone](status.message);
+  }
 
   function exportWorkspace() {
     const json = serializeBuildWorkspaceBundle({
@@ -230,7 +233,6 @@ export function BuildWorkspaceActions({
       setPendingImport(bundle);
       setPendingPresetId(null);
       setImportOpen(false);
-      setStatus(null);
     } catch (reason: unknown) {
       setStatus({
         tone: "error",
@@ -256,7 +258,6 @@ export function BuildWorkspaceActions({
       setPendingImport(bundle);
       setPendingPresetId("in-game");
       setImportOpen(false);
-      setStatus(null);
     } catch (reason: unknown) {
       setStatus({
         tone: "error",
@@ -351,7 +352,6 @@ export function BuildWorkspaceActions({
         onSelect={() => void reviewPreset()}
         onLocalImport={() => inputRef.current?.click()}
         disabled={presetLoading}
-        error={status?.tone === "error" ? status.message : undefined}
         selectedId={subscription?.presetId}
         onDetach={() => useWorkspaceStore.getState().detachBuildPreset()}
       />
@@ -363,12 +363,6 @@ export function BuildWorkspaceActions({
         className="sr-only"
         onChange={(event) => void reviewImport(event.target.files?.[0])}
       />
-      {status && (
-        <div className="wide-container shrink-0 pb-2">
-          <StatusBanner message={status.message} tone={status.tone} />
-        </div>
-      )}
-
       <ConfirmDialog
         open={pendingImport !== null}
         onOpenChange={(open) => {

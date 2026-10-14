@@ -7,8 +7,10 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
+import { Switch as SwitchPrimitive } from "radix-ui";
 import { useEffect, useMemo, useState } from "react";
 import { StatSelect } from "@/components/builds/StatSelect";
+import { CheckboxRow } from "@/components/shared/Checkbox";
 import {
   NumberField,
   TextField,
@@ -61,6 +63,12 @@ import {
   localizedPropertyName,
 } from "@/services/catalog/presentation";
 import { shortStatKey } from "@/services/catalog/relicPresentation";
+
+const ROLE_LABELS = {
+  damage: "build.roleDamage",
+  support: "build.roleSupport",
+  sustain: "build.roleSustain",
+} as const;
 
 const BUILD_SLOTS = [
   ["body", "BODY"],
@@ -230,12 +238,12 @@ export function BuildCard({
   const { locale, t } = useI18n();
   const isMobile = useMediaQuery("(max-width: 767px)");
   const displayName = buildDisplayName(build, references, locale);
-  const [nameDraft, setNameDraft] = useState(displayName);
+  const [nameDraft, setNameDraft] = useState(build.name ?? "");
   const [scoringOpen, setScoringOpen] = useState(false);
 
   useEffect(() => {
-    setNameDraft(displayName);
-  }, [displayName]);
+    setNameDraft(build.name ?? "");
+  }, [build.name]);
 
   const setItems = useMemo(
     () =>
@@ -362,7 +370,10 @@ export function BuildCard({
     <>
       <Card asChild className="shadow-none">
         <article
-          className="overflow-hidden rounded-lg border border-border bg-muted/30"
+          className={cn(
+            "overflow-hidden rounded-lg border border-border bg-muted/30",
+            build.enabled === false && "opacity-50"
+          )}
           data-build-card
           data-build-category={build.category}
         >
@@ -372,14 +383,15 @@ export function BuildCard({
                 <span className="sr-only">{t("build.name")}</span>
                 <input
                   value={nameDraft}
+                  placeholder={t("build.namePlaceholder")}
                   aria-label={t("build.name")}
                   className="h-7 w-full rounded-full border-0 bg-transparent px-2 text-sm font-semibold text-primary outline-hidden focus-visible:ring-2 focus-visible:ring-ring md:h-8 md:px-3 md:text-base"
                   onChange={(event) => setNameDraft(event.target.value)}
                   onBlur={() => {
                     const nextName = nameDraft.trim();
-                    if (nextName && nextName !== displayName)
-                      onBuildChange({ ...build, name: nextName });
-                    else setNameDraft(displayName);
+                    if (nextName !== (build.name ?? ""))
+                      onBuildChange({ ...build, name: nextName || undefined });
+                    else setNameDraft(build.name ?? "");
                   }}
                   onKeyDown={(event) => {
                     if (event.key === "Enter") event.currentTarget.blur();
@@ -438,6 +450,75 @@ export function BuildCard({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 px-2 pb-2">
+              <SwitchPrimitive.Root
+                className="group inline-flex h-5 w-9 shrink-0 items-center rounded-full bg-input p-0.5 outline-hidden data-[state=checked]:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={t("build.enabled")}
+                checked={build.enabled !== false}
+                onCheckedChange={(enabled) =>
+                  onBuildChange({ ...build, enabled })
+                }
+              >
+                <SwitchPrimitive.Thumb className="h-4 w-4 rounded-full bg-background shadow-sm transition-transform group-data-[state=checked]:translate-x-4" />
+              </SwitchPrimitive.Root>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs"
+                    aria-label={t("build.roles")}
+                  >
+                    {build.roles?.length
+                      ? build.roles
+                          .map((role) => t(ROLE_LABELS[role]))
+                          .join(" / ")
+                      : t("build.rolesPlaceholder")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-36 space-y-2">
+                  {(["damage", "support", "sustain"] as const).map((role) => (
+                    <CheckboxRow
+                      key={role}
+                      label={t(ROLE_LABELS[role])}
+                      checked={build.roles?.includes(role) ?? false}
+                      onCheckedChange={(checked) =>
+                        onBuildChange({
+                          ...build,
+                          roles: checked
+                            ? [...(build.roles ?? []), role]
+                            : (build.roles ?? []).filter(
+                                (value) => value !== role
+                              ),
+                        })
+                      }
+                    />
+                  ))}
+                </PopoverContent>
+              </Popover>
+              <LightweightSelect
+                value={String(build.minimumEidolon ?? 0)}
+                onValueChange={(value) =>
+                  onBuildChange({ ...build, minimumEidolon: Number(value) })
+                }
+              >
+                <LightweightSelectTrigger
+                  aria-label={t("build.minimumEidolon")}
+                  className="h-7 w-auto gap-1 px-2 text-xs"
+                >
+                  {t("build.eidolonMinimum", {
+                    count: build.minimumEidolon ?? 0,
+                  })}
+                </LightweightSelectTrigger>
+                <LightweightSelectContent>
+                  {[0, 1, 2, 3, 4, 5, 6].map((count) => (
+                    <LightweightSelectItem key={count} value={String(count)}>
+                      {t("build.eidolonMinimum", { count })}
+                    </LightweightSelectItem>
+                  ))}
+                </LightweightSelectContent>
+              </LightweightSelect>
             </div>
           </CardHeader>
 

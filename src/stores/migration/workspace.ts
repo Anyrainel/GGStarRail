@@ -22,6 +22,16 @@ const PreviousWorkspaceSchema = z
 export function migrateWorkspacePayload(
   payload: unknown
 ): PersistedWorkspace | null {
+  // Workspace v4 builds had no enabled, roles or minimumEidolon fields.
+  // Absence remains enabled, unassigned and E0 at every schema boundary.
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "schemaVersion" in payload &&
+    payload.schemaVersion === 4
+  ) {
+    payload = { ...payload, schemaVersion: WORKSPACE_SCHEMA_VERSION };
+  }
   const current = PersistedWorkspaceSchema.safeParse(payload);
   if (current.success) return current.data;
   const previous = PreviousWorkspaceSchema.safeParse(payload);
@@ -38,7 +48,7 @@ export function migrateWorkspaceStore(
   persistedState: unknown,
   persistedVersion: number
 ): PersistedWorkspace {
-  const migrated = [1, 2, 3, WORKSPACE_SCHEMA_VERSION].includes(
+  const migrated = [1, 2, 3, 4, WORKSPACE_SCHEMA_VERSION].includes(
     persistedVersion
   )
     ? migrateWorkspacePayload(persistedState)

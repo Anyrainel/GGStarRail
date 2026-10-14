@@ -41,6 +41,60 @@ async function prepareCard() {
 }
 
 describe("BuildCard", () => {
+  it("allows an unnamed card, clearing its name, disabling it and clearing all roles", async () => {
+    const { build, profile, references } = await prepareCard();
+    const onBuildChange = vi.fn();
+    const user = userEvent.setup();
+    const view = render(
+      <I18nProvider>
+        <BuildCard
+          build={{ ...build, name: undefined }}
+          profile={profile}
+          references={references}
+          onBuildChange={onBuildChange}
+          onProfileChange={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </I18nProvider>
+    );
+    expect(screen.getByRole("textbox", { name: "Build name" })).toHaveValue("");
+    await user.click(screen.getByRole("switch", { name: "Enabled" }));
+    expect(onBuildChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ enabled: false })
+    );
+    await user.click(screen.getByRole("button", { name: "Roles" }));
+    await user.click(screen.getByRole("checkbox", { name: "Support" }));
+    expect(onBuildChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ roles: ["support"] })
+    );
+    view.rerender(
+      <I18nProvider>
+        <BuildCard
+          build={{ ...build, roles: ["support"] }}
+          profile={profile}
+          references={references}
+          onBuildChange={onBuildChange}
+          onProfileChange={vi.fn()}
+          onDelete={vi.fn()}
+        />
+      </I18nProvider>
+    );
+    await user.click(screen.getByRole("checkbox", { name: "Support" }));
+    expect(onBuildChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ roles: [] })
+    );
+    await user.keyboard("{Escape}");
+    const name = screen.getByRole("textbox", { name: "Build name" });
+    await user.clear(name);
+    await user.tab();
+    expect(onBuildChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ name: undefined })
+    );
+    expect(
+      screen.getByRole("combobox", { name: "Minimum Eidolon" })
+    ).toHaveTextContent("E0+");
+  });
+
   it("keeps both Cavern 2-piece sets editable without converting the build", async () => {
     const { build, profile, references } = await prepareCard();
     const [first, second, replacement] = references.relicSets.values.filter(
@@ -209,7 +263,9 @@ describe("BuildCard", () => {
     }
     expect(card?.querySelector('[data-build-slot="head"]')).toBeNull();
     expect(card?.querySelector('[data-build-slot="hands"]')).toBeNull();
-    expect(card).not.toHaveTextContent(/\+\d/);
+    expect(card?.querySelector("[data-build-set-plan]")).not.toHaveTextContent(
+      /\+\d/
+    );
     expect(card?.querySelector("fieldset")).toBeNull();
     expect(card?.querySelector("select")).toBeNull();
   });

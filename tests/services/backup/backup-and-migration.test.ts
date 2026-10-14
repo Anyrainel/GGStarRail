@@ -97,7 +97,7 @@ describe("independent persistence and backup identity", () => {
 
   it("rejects unsupported workspace versions instead of guessing", () => {
     const backup = createBackupEnvelope(DEFAULT_WORKSPACE);
-    for (const version of [0, 5, 6]) {
+    for (const version of [0, 6, 7]) {
       expect(() =>
         parseBackup(
           JSON.stringify({

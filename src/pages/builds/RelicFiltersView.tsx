@@ -54,7 +54,11 @@ const CANDIDATE_LIMIT = 18;
 export default function RelicFiltersView() {
   const { locale, t } = useI18n();
   const account = useWorkspaceStore((state) => state.account);
-  const builds = useWorkspaceStore((state) => state.builds);
+  const allBuilds = useWorkspaceStore((state) => state.builds);
+  const builds = useMemo(
+    () => allBuilds.filter((build) => build.enabled !== false),
+    [allBuilds]
+  );
   const profiles = useWorkspaceStore((state) => state.scoreProfiles);
   const { data, error, loading } = useBuildReferences();
   const compact = useMediaQuery("(max-width: 767px)");

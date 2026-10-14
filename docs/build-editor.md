@@ -41,8 +41,13 @@ the independent card format.
 HoyoData's full `hoyodata ggstarrail` export writes generated presets to
 `src/config/presets/builds/in-game.json`. This uses the build bundle contract with optional
 `metadata: { name: { en, "zh-CN" }, author }`; author is `In-Game`.
-Generated card/profile names are absent. Card names derive from Character/set IDs
-in the current UI language; editing a name saves literal user text. Ordinary user
+Generated card/profile names are absent. The name input stays empty until the user names a card. Labels outside the editor
+may derive from Character/set IDs in the current UI language. Clearing a name
+removes the saved user text. Cards may be disabled without deleting them; disabled
+cards do not generate filters or participate in triage or team recommendations.
+Roles are optional multi-select metadata; minimum Eidolon defaults to E0.
+Workspace v5 and build-export v3 preserve these fields, including subscription
+baselines; older imports retain enabled, unassigned, E0 behavior. Ordinary user
 exports may omit metadata. Conversion
 reports remain producer-side. The preset tests validate these JSON files against
 the importer and available game catalogs on every check.

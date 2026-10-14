@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { STORAGE_KEYS } from "@/config/identity";
+import { deriveBuildFilters } from "@/domain/build/filters";
 import { BuildPresetSubscriptionSchema } from "@/domain/build/presetSubscription";
+import { parseBackup, serializeBackup } from "@/services/backup/workspace";
 import {
   parseBuildWorkspaceBundle,
   serializeBuildWorkspaceBundle,
@@ -15,6 +17,58 @@ afterEach(() => {
 });
 
 describe("build preset subscription", () => {
+  it("migrates a subscribed v4 workspace and retains optional card controls through imports and updates", async () => {
+    const preset = await loadInGameBuildPreset();
+    useWorkspaceStore.getState().subscribeBuildPreset("in-game", preset);
+    const old = { ...useWorkspaceStore.getState(), schemaVersion: 4 };
+    const persisted = JSON.parse(JSON.stringify(old));
+    useWorkspaceStore.getState().clearWorkspace();
+    localStorage.setItem(
+      STORAGE_KEYS.workspace,
+      JSON.stringify({ version: 4, state: persisted })
+    );
+    await useWorkspaceStore.persist.rehydrate();
+    expect(useWorkspaceStore.getState().builds).toEqual(preset.builds);
+    expect(
+      useWorkspaceStore.getState().buildPresetSubscription?.baseline.builds
+    ).toEqual(preset.builds);
+    const build = {
+      ...preset.builds[0]!,
+      enabled: false,
+      roles: ["support", "sustain"] as ("support" | "sustain")[],
+      minimumEidolon: 2,
+    };
+    useWorkspaceStore.getState().upsertBuild(build);
+    useWorkspaceStore.getState().hydrateBuildPreset("in-game", preset);
+    expect(useWorkspaceStore.getState().builds[0]).toEqual(build);
+    expect(deriveBuildFilters(build, preset.scoreProfiles[0]!)).toEqual([]);
+    const backup = serializeBackup(
+      JSON.parse(JSON.stringify(useWorkspaceStore.getState()))
+    );
+    expect(parseBackup(backup).payload.builds[0]).toEqual(build);
+    const legacyBackup = JSON.parse(backup);
+    legacyBackup.payload = persisted;
+    expect(parseBackup(JSON.stringify(legacyBackup)).payload.builds).toEqual(
+      preset.builds
+    );
+    const imported = parseBuildWorkspaceBundle(
+      serializeBuildWorkspaceBundle({
+        builds: useWorkspaceStore.getState().builds,
+        scoreProfiles: useWorkspaceStore.getState().scoreProfiles,
+        triageRules: useWorkspaceStore.getState().triageRules,
+        characterLightConeIds:
+          useWorkspaceStore.getState().characterLightConeIds,
+        buildPresetSubscription:
+          useWorkspaceStore.getState().buildPresetSubscription,
+      })
+    );
+    expect(imported.builds[0]).toEqual(build);
+    expect(
+      parseBuildWorkspaceBundle(JSON.stringify({ ...preset, schemaVersion: 2 }))
+        .builds
+    ).toEqual(preset.builds);
+  });
+
   it("keeps an inserted duplicate beside its original after hydration and upstream reordering", async () => {
     const preset = await loadInGameBuildPreset();
     const first = preset.builds[0];
