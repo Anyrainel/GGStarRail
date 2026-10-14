@@ -1,5 +1,6 @@
 import { Filter, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { BuildWorkspaceActions } from "@/components/builds/BuildWorkspaceActions";
 import { FilterSetCard } from "@/components/builds/filters/FilterSetCard";
 import {
   type LoadoutRecommendation,
@@ -238,6 +239,7 @@ export default function RelicFiltersView() {
     return (
       <PageLayout>
         {header}
+        <BuildWorkspaceActions references={data} />
         <ScrollLayout>
           <WorkspaceStartState
             messageKey="filters.needsBuild"
@@ -285,6 +287,7 @@ export default function RelicFiltersView() {
   return (
     <PageLayout>
       {header}
+      <BuildWorkspaceActions references={data} />
       <SidebarLayout
         sidebar={
           <RelicFilterSidebar

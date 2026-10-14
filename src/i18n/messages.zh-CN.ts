@@ -340,6 +340,8 @@ export const messagesZhCn = {
   "theme.astral": "空间站「黑塔」",
   "theme.express": "星穹列车",
   "theme.dreamscape": "匹诺康尼",
+  "common.import": "导入",
+  "common.export": "导出",
   "common.more": "更多",
   "common.close": "关闭",
   "stat.short.hp": "生命",

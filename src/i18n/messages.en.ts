@@ -364,6 +364,8 @@ export const messagesEn = {
   "theme.astral": "Herta Space Station",
   "theme.express": "Astral Express",
   "theme.dreamscape": "Penacony",
+  "common.import": "Import",
+  "common.export": "Export",
   "common.more": "More",
   "common.close": "Close",
   "stat.short.hp": "HP",

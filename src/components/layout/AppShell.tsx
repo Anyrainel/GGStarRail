@@ -505,7 +505,7 @@ export function AppShell({
                         onSelect={() => setImportOpen(true)}
                       >
                         <ImportIcon className="h-4 w-4" aria-hidden />
-                        {t("imports.open")}
+                        {t("common.import")}
                       </DropdownMenuItem>
                     ) : undefined
                   }

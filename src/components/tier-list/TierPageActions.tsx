@@ -3,7 +3,10 @@ import { useState } from "react";
 import { PageActionButton, PageActions } from "@/components/layout/PageActions";
 import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -42,7 +45,7 @@ export function TierPageActions({
         primary={
           <PageActionButton
             icon={ImportIcon}
-            label={t("tier.controls.import")}
+            label={t("common.import")}
             onClick={onImport}
           />
         }
@@ -50,22 +53,24 @@ export function TierPageActions({
           <>
             <DropdownMenuItem className="sm:hidden" onSelect={onImport}>
               <ImportIcon className="h-4 w-4" aria-hidden="true" />
-              {t("tier.controls.import")}
+              {t("common.import")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={onExport}>
               <ExportIcon className="h-4 w-4" aria-hidden="true" />
-              {t("tier.controls.export")}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={assignedCount === 0}
-              onSelect={() => setResetOpen(true)}
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" />
-              {t("tier.priority.reset")}
+              {t("common.export")}
             </DropdownMenuItem>
             <DropdownMenuItem disabled={exporting} onSelect={onDownloadImage}>
               <FileDown className="h-4 w-4" aria-hidden="true" />
               {t("tier.controls.image")}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled={assignedCount === 0}
+              className="text-destructive focus:text-destructive"
+              onSelect={() => setResetOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              {t("tier.priority.reset")}
             </DropdownMenuItem>
           </>
         }

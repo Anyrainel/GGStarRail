@@ -217,7 +217,7 @@ describe("Build route interactions", () => {
       within(document.querySelector("header")!).queryByRole("button", {
         name: "Import",
       })
-    ).toBeNull();
+    ).toBeInTheDocument();
 
     const cavernCard = document.querySelector(
       '[data-filter-set-card="cavern"]'

@@ -1,7 +1,8 @@
-import { Download, Unlink, Upload } from "lucide-react";
+import { Unlink } from "lucide-react";
 import { useRef, useState } from "react";
 import { PageActionButton } from "@/components/layout/PageActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ExportIcon, ImportIcon } from "@/components/shared/importExportIcons";
 import { PresetImportDialog } from "@/components/shared/PresetImportDialog";
 import { StatusBanner } from "@/components/shared/StatusBanner";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
@@ -92,19 +93,11 @@ export function useTeamWorkspaceActions() {
     }
   }
   const primary = (
-    <>
-      <PageActionButton
-        icon={Upload}
-        label={t("teamDmg.import")}
-        onClick={() => setOpen(true)}
-      />
-      <PageActionButton
-        icon={Download}
-        label={t("teamDmg.export")}
-        disabled={!teams.length}
-        onClick={exportTeams}
-      />
-    </>
+    <PageActionButton
+      icon={ImportIcon}
+      label={t("common.import")}
+      onClick={() => setOpen(true)}
+    />
   );
   const overflow = (
     <>
@@ -117,16 +110,12 @@ export function useTeamWorkspaceActions() {
         </DropdownMenuItem>
       )}
       <DropdownMenuItem className="sm:hidden" onSelect={() => setOpen(true)}>
-        <Upload className="h-4 w-4" aria-hidden />
-        {t("teamDmg.import")}
+        <ImportIcon className="h-4 w-4" aria-hidden />
+        {t("common.import")}
       </DropdownMenuItem>
-      <DropdownMenuItem
-        className="sm:hidden"
-        disabled={!teams.length}
-        onSelect={exportTeams}
-      >
-        <Download className="h-4 w-4" aria-hidden />
-        {t("teamDmg.export")}
+      <DropdownMenuItem disabled={!teams.length} onSelect={exportTeams}>
+        <ExportIcon className="h-4 w-4" aria-hidden />
+        {t("common.export")}
       </DropdownMenuItem>
     </>
   );

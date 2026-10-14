@@ -20,6 +20,7 @@ interface AccountImportActionProps {
   size?: ComponentProps<typeof Button>["size"];
   className?: string;
   compactOnMobile?: boolean;
+  appBar?: boolean;
   /** The import method opened first. */
   initialMethod?: AccountImportMethod;
 }
@@ -34,6 +35,7 @@ export function AccountImportAction({
   size = "default",
   className,
   compactOnMobile = false,
+  appBar = false,
   initialMethod,
 }: AccountImportActionProps) {
   const { t } = useI18n();
@@ -55,7 +57,7 @@ export function AccountImportAction({
         >
           <ImportIcon className="h-4 w-4" aria-hidden />
           <span className={cn(compactOnMobile && "hidden sm:inline")}>
-            {t("imports.open")}
+            {appBar ? t("common.import") : t("imports.open")}
           </span>
         </Button>
       </ResponsiveDialogTrigger>

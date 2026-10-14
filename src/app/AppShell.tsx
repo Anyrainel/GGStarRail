@@ -11,8 +11,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <LayoutShell
       accountImportAction={
         <AccountImportAction
+          appBar
           variant="outline"
-          className="hidden bg-background/70 sm:inline-flex"
+          size="sm"
+          className="hidden h-9 gap-2 px-3 sm:inline-flex"
         />
       }
       renderAccountImportDialog={(props) => <AccountImportDialog {...props} />}

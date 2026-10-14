@@ -312,7 +312,7 @@ export function BuildWorkspaceActions({
         primary={
           <PageActionButton
             icon={ImportIcon}
-            label={t("build.importAction")}
+            label={t("common.import")}
             onClick={() => setImportOpen(true)}
           />
         }
@@ -323,17 +323,18 @@ export function BuildWorkspaceActions({
               onSelect={() => setImportOpen(true)}
             >
               <ImportIcon className="h-4 w-4" aria-hidden="true" />
-              {t("build.importAction")}
+              {t("common.import")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!hasWorkspace}
               onSelect={exportWorkspace}
             >
               <ExportIcon className="h-4 w-4" aria-hidden="true" />
-              {t("build.export")}
+              {t("common.export")}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={!hasWorkspace}
+              className="text-destructive focus:text-destructive"
               onSelect={() => setClearOpen(true)}
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />

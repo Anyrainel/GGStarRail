@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -124,18 +124,18 @@ describe("GGArtifact family shell", () => {
     expect(
       await within(appbar).findByRole(
         "button",
-        { name: "Import list" },
+        { name: "Import" },
         { timeout: 15000 }
       )
     ).toBeInTheDocument();
     expect(
       within(screen.getByRole("main")).queryByRole("button", {
-        name: "Import list",
+        name: "Import",
       })
     ).toBeNull();
     await user.click(within(appbar).getByRole("button", { name: "More" }));
     expect(
-      screen.getByRole("menuitem", { name: "Export list" })
+      screen.getByRole("menuitem", { name: "Export" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("menuitem", { name: "Download image" })
@@ -147,16 +147,16 @@ describe("GGArtifact family shell", () => {
       screen.getByRole("heading", { name: "Light Cone Priority" })
     ).toBeInTheDocument();
     expect(
-      within(appbar).getAllByRole("button", { name: "Import list" })
+      within(appbar).getAllByRole("button", { name: "Import" })
     ).toHaveLength(1);
     await user.click(screen.getByRole("link", { name: "Archive" }));
     await waitFor(() =>
       expect(
-        within(appbar).queryByRole("button", { name: "Import list" })
+        within(appbar).queryByRole("button", { name: "Import" })
       ).toBeNull()
     );
     await user.click(within(appbar).getByRole("button", { name: "More" }));
-    expect(screen.queryByRole("menuitem", { name: "Export list" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Export" })).toBeNull();
     expect(
       screen.queryByRole("menuitem", { name: "Download image" })
     ).toBeNull();
@@ -230,9 +230,12 @@ describe("GGArtifact family shell", () => {
     const user = userEvent.setup();
     renderApp(APP_PATHS.inventory);
 
-    const [appBarImport] = screen.getAllByRole("button", {
-      name: "Import game account",
-    });
+    const appBarImport = within(screen.getByRole("banner")).getByRole(
+      "button",
+      {
+        name: "Import",
+      }
+    );
     await user.click(appBarImport);
 
     expect(
@@ -394,11 +397,38 @@ describe("GGArtifact family shell", () => {
     ).not.toBeInTheDocument();
     await user.click(within(header!).getByRole("button", { name: "More" }));
     expect(
-      screen.getByRole("menuitem", { name: "Export builds" })
+      screen.getByRole("menuitem", { name: "Export" })
     ).toBeInTheDocument();
     expect(
       screen.getByRole("menuitem", { name: "Clear all" })
     ).toBeInTheDocument();
+  });
+
+  it("keeps team export in More for both empty and populated workspaces", async () => {
+    const user = userEvent.setup();
+    renderApp(APP_PATHS.teamDamage);
+    const appbar = document.querySelector("header")!;
+    expect(
+      await within(appbar).findByRole(
+        "button",
+        { name: "Import" },
+        { timeout: 15000 }
+      )
+    ).toBeInTheDocument();
+    expect(within(appbar).queryByRole("button", { name: "Export" })).toBeNull();
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    expect(screen.getByRole("menuitem", { name: "Export" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    await user.keyboard("{Escape}");
+    act(() => {
+      useTeamStore.getState().createTeam("end");
+    });
+    await user.click(within(appbar).getByRole("button", { name: "More" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Export" })
+    ).not.toHaveAttribute("aria-disabled", "true");
   });
 
   it("persists an explicitly selected theme", async () => {
