@@ -201,13 +201,13 @@ export function CurrencyWarArchiveContent({
     setQuery("");
     setCategory(new Set());
     setQuality(new Set());
-    setSearchParams({ tab }, { replace: true });
+    setSearchParams({ tab });
   };
   const select = (id: string) => {
     setQuery("");
     setCategory(new Set());
     setQuality(new Set());
-    setSearchParams({ tab: activeTab.id, id }, { replace: true });
+    setSearchParams({ tab: activeTab.id, id });
   };
   const panelId = "currency-war-panel";
   const tabPanel = (content: ReactNode) => (
