@@ -169,32 +169,8 @@ function AccountMenu({ onImport }: { onImport: () => void }) {
               {t("auth.signIn")}
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem asChild>
-            <Link to={APP_PATHS.feedback}>
-              <MessageSquare className="size-4" aria-hidden />
-              {t("account.feedback")}
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to={APP_PATHS.support}>
-              <HeartHandshake className="size-4" aria-hidden />
-              {t("account.support")}
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={onImport}>
-            <ImportIcon className="size-4" aria-hidden />
-            {t("imports.open")}
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link to={APP_PATHS.scannerDownload}>
-              <Download className="size-4" aria-hidden />
-              {t("scanner.menu")}
-            </Link>
-          </DropdownMenuItem>
           {auth.isAuthenticated && (
             <>
-              <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <a href={getAccountManagementUrl()}>
                   <Settings className="size-4" aria-hidden />
@@ -210,6 +186,31 @@ function AccountMenu({ onImport }: { onImport: () => void }) {
               </DropdownMenuItem>
             </>
           )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onImport}>
+            <ImportIcon className="size-4" aria-hidden />
+            {t("imports.open")}
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.scannerDownload}>
+              <Download className="size-4" aria-hidden />
+              {t("scanner.menu")}
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.feedback}>
+              <MessageSquare className="size-4" aria-hidden />
+              {t("account.feedback")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={APP_PATHS.support}>
+              <HeartHandshake className="size-4" aria-hidden />
+              {t("account.support")}
+            </Link>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {(actionFailed || auth.error) && (
