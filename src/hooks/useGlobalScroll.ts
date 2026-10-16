@@ -3,12 +3,12 @@ import { type RefObject, useEffect } from "react";
 /** Forward wheel events over layout gaps to the content, not the whole page. */
 export function useGlobalScroll(
   containerRef: RefObject<HTMLElement | null>,
-  mainScrollRef: RefObject<HTMLElement | null>
+  mainScrollRef: RefObject<HTMLElement | null> | undefined
 ) {
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
       const container = containerRef.current;
-      const main = mainScrollRef.current;
+      const main = mainScrollRef?.current;
       const target = event.target;
       if (
         !container ||

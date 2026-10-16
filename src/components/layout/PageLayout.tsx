@@ -12,7 +12,7 @@ export function PageLayout({
   return (
     <div
       className={cn(
-        "relative flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden",
+        "relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden",
         className
       )}
     >

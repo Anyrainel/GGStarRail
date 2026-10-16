@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { formatGameText } from "@/lib/game/text";
@@ -99,7 +100,7 @@ export function AchievementArchiveView() {
 
   if (resource.loading || resource.error || !viewData) {
     return (
-      <div className="container">
+      <ScrollLayout>
         {resource.loading ? (
           <CatalogLoading />
         ) : resource.error ? (
@@ -107,7 +108,7 @@ export function AchievementArchiveView() {
         ) : (
           <CatalogEmpty />
         )}
-      </div>
+      </ScrollLayout>
     );
   }
   return (

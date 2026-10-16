@@ -87,6 +87,14 @@ labels, and `src/app/App.tsx` for the actual route components.
 
 - Use `cn()` from `src/lib/utils.ts` for conditional Tailwind classes.
 - Reuse shared components and fix recurring defects in the shared primitive.
+- Every route must use a shared content layout, including loading, error and
+  empty states: `ScrollLayout` for flowing content, `SidebarLayout` for filters,
+  `SidebarDetailLayout` for browse/detail, or `WideLayout` for dense tables.
+  `PageLayout` is a bounded shell, not a scroller. Keep any wrapper between it
+  and the content layout bounded (`h-full min-h-0` or `flex-1 min-h-0` in a flex
+  column); an auto-height wrapper can expand a scroller beyond the viewport.
+  Preserve all five layout primitives and their capabilities when evolving UI.
+  Verify actual scrolling to the last content at desktop and narrow widths.
 - Use theme tokens from the existing ThemeContext/themeGenerator system rather
   than hardcoded UI colors. Do not add opacity to `text-muted-foreground` or
   `border-border`; keep controls and important information visible at rest.

@@ -109,13 +109,13 @@ export function CurrencyWarArchiveView() {
   const resource = useCatalogResource(loadArchive);
   if (resource.data) return <CurrencyWarArchiveContent {...resource.data} />;
   return (
-    <div className="container">
+    <ScrollLayout>
       {resource.error ? (
         <CatalogFailure error={resource.error} />
       ) : (
         <CatalogLoading />
       )}
-    </div>
+    </ScrollLayout>
   );
 }
 

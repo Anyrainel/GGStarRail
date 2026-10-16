@@ -1,5 +1,5 @@
 import { Filter, type LucideIcon } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, type RefObject, useRef, useState } from "react";
 import { LocalizedSheetContent as SheetContent } from "@/components/shared/LocalizedSheetContent";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -13,6 +13,10 @@ interface SidebarLayoutProps {
   triggerLabel?: string;
   activeFilterCount?: number;
   children: ReactNode;
+  /** Delegate scrolling to bounded children such as a virtualized list. */
+  contentScrollsInternally?: boolean;
+  /** The actual scroller used for wheel forwarding when children own scrolling. */
+  contentScrollRef?: RefObject<HTMLDivElement | null>;
 }
 
 /** Shared desktop sidebar and mobile filter sheet, adapted from GGArtifact's SidebarLayout. */
@@ -22,12 +26,17 @@ export function SidebarLayout({
   triggerLabel,
   activeFilterCount = 0,
   children,
+  contentScrollsInternally = false,
+  contentScrollRef,
 }: SidebarLayoutProps) {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
-  useGlobalScroll(containerRef, mainRef);
+  useGlobalScroll(
+    containerRef,
+    contentScrollsInternally ? contentScrollRef : mainRef
+  );
   const label = triggerLabel ?? t("common.filters");
   return (
     <div
@@ -66,12 +75,18 @@ export function SidebarLayout({
       <aside className="relative hidden min-w-0 shrink-0 overflow-y-auto overscroll-contain lg:block lg:w-60 xl:w-[17.5rem] 2xl:w-60 3xl:w-[17.5rem]">
         {sidebar}
       </aside>
-      <div
-        ref={mainRef}
-        className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"
-      >
-        {children}
-      </div>
+      {contentScrollsInternally ? (
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          {children}
+        </div>
+      ) : (
+        <div
+          ref={mainRef}
+          className="relative min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain"
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }

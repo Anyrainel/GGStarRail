@@ -1,6 +1,7 @@
 import { useHandleSignInCallback } from "@logto/react";
 import { useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nContext";
 import { consumeAuthReturnPath } from "@/services/auth/navigation";
@@ -34,5 +35,9 @@ function Callback() {
 }
 
 export default function AuthCallbackPage() {
-  return <Callback />;
+  return (
+    <ScrollLayout bodyClassName="flex items-center justify-center px-4">
+      <Callback />
+    </ScrollLayout>
+  );
 }

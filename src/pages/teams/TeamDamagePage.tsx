@@ -177,7 +177,7 @@ function TeamDamageContent() {
     <>
       {!team && <TeamGrid onOpen={openTeam} />}
       {frameTeam && (
-        <div hidden={!team}>
+        <div hidden={!team} className="h-full min-h-0 min-w-0 flex-1">
           <TeamDetailFrame team={frameTeam} onBack={closeTeam}>
             <RosterCard
               team={frameTeam}
