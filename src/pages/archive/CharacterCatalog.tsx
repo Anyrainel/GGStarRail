@@ -13,6 +13,7 @@ import { CharacterBadgeGroup } from "@/components/shared/CharacterBadgeGroup";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
 import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
@@ -211,15 +212,21 @@ export function CharacterCatalog() {
           {empty ? (
             <CatalogEmpty />
           ) : (
-            filtered.map((character) => (
-              <CharacterListRow
-                key={character.id}
-                character={character}
-                selected={character.id === selectedId}
-                propertyTables={propertyTables}
-                onSelect={() => select(character.id)}
-              />
-            ))
+            <VirtualCollection
+              items={filtered}
+              getKey={(character) => character.id}
+              gridClassName="grid gap-0.5"
+            >
+              {(character) => (
+                <CharacterListRow
+                  key={character.id}
+                  character={character}
+                  selected={character.id === selectedId}
+                  propertyTables={propertyTables}
+                  onSelect={() => select(character.id)}
+                />
+              )}
+            </VirtualCollection>
           )}
         </section>
       }
@@ -228,16 +235,21 @@ export function CharacterCatalog() {
           {empty ? (
             <CatalogEmpty />
           ) : (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2 p-2">
-              {filtered.map((character) => (
+            <VirtualCollection
+              className="p-2"
+              items={filtered}
+              getKey={(character) => character.id}
+              gridClassName="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-2"
+            >
+              {(character) => (
                 <CharacterGridTile
                   key={character.id}
                   character={character}
                   selected={character.id === selectedId}
                   onSelect={() => select(character.id)}
                 />
-              ))}
-            </div>
+              )}
+            </VirtualCollection>
           )}
         </section>
       }

@@ -21,6 +21,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import {
   createCharacterBuild,
   createCharacterScoreProfile,
@@ -315,21 +316,26 @@ export default function CharacterBuildView() {
           activeFilterCount={activeFilterCount}
         >
           <div className="min-w-0 space-y-3" data-character-build-list>
-            {visibleCharacters.map((character) => {
-              return (
-                <CharacterBuildCard
-                  key={character.id}
-                  character={character}
-                  builds={buildsByCharacter.get(character.id) ?? []}
-                  profiles={profilesById}
-                  references={data}
-                  onAddBuild={(setPlan) => addBuild(character.id, setPlan)}
-                  onBuildChange={upsertBuild}
-                  onProfileChange={upsertScoreProfile}
-                  onDeleteBuild={setPendingDelete}
-                />
-              );
-            })}
+            <VirtualCollection
+              items={visibleCharacters}
+              getKey={(character) => character.id}
+            >
+              {(character) => {
+                return (
+                  <CharacterBuildCard
+                    key={character.id}
+                    character={character}
+                    builds={buildsByCharacter.get(character.id) ?? []}
+                    profiles={profilesById}
+                    references={data}
+                    onAddBuild={(setPlan) => addBuild(character.id, setPlan)}
+                    onBuildChange={upsertBuild}
+                    onProfileChange={upsertScoreProfile}
+                    onDeleteBuild={setPendingDelete}
+                  />
+                );
+              }}
+            </VirtualCollection>
             {visibleCharacters.length === 0 && (
               <EmptyState
                 variant="inline"

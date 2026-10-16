@@ -17,9 +17,14 @@ import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChip } from "@/components/shared/FilterChip";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
-import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import {
+  ItemIcon,
+  type ItemIconSize,
+  itemIconWidth,
+} from "@/components/shared/ItemIcon";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
 import { RelicSlotChips } from "@/components/shared/relic/RelicSlotChips";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { type Relic, relicCategory } from "@/domain/game-account/schemas";
 import { CATALOG_RELIC_SLOT } from "@/domain/stats";
 import { useRelicReferences } from "@/hooks/useCatalogReferences";
@@ -377,21 +382,27 @@ export function InventoryRelicSection({
                     count: group.length,
                   })}
                 </h3>
-                <div className="flex flex-wrap gap-3 px-2">
-                  {group.map((relic) => (
-                    <RelicTile
-                      key={relic.key}
-                      relic={relic}
-                      piece={data.relicPieces.byId.get(relic.definitionId)}
-                      setName={localizedName(
-                        data.relicSets.byId.get(relic.setId)?.name,
-                        locale,
-                        relic.setId
-                      )}
-                      slotName={slotName(relic.slot)}
-                      iconSize={iconSize}
-                    />
-                  ))}
+                <div className="px-2">
+                  <VirtualCollection
+                    items={group}
+                    getKey={(relic) => relic.key}
+                    tileWidth={itemIconWidth(iconSize)}
+                  >
+                    {(relic) => (
+                      <RelicTile
+                        key={relic.key}
+                        relic={relic}
+                        piece={data.relicPieces.byId.get(relic.definitionId)}
+                        setName={localizedName(
+                          data.relicSets.byId.get(relic.setId)?.name,
+                          locale,
+                          relic.setId
+                        )}
+                        slotName={slotName(relic.slot)}
+                        iconSize={iconSize}
+                      />
+                    )}
+                  </VirtualCollection>
                 </div>
               </div>
             );

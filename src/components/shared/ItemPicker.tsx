@@ -25,6 +25,7 @@ import {
   itemIconRadius,
   itemIconWidth,
 } from "./ItemIcon";
+import { VirtualCollection } from "./VirtualCollection";
 
 export interface ItemPickerTriggerState {
   open: boolean;
@@ -246,8 +247,12 @@ export function ItemPicker({
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2"
         data-picker-results
       >
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] content-start gap-1">
-          {visible.map((item) => (
+        <VirtualCollection
+          items={visible}
+          getKey={(item) => item.id}
+          gridClassName="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] content-start gap-1"
+        >
+          {(item) => (
             <CatalogHoverCard kind={kind} id={item.id} key={item.id}>
               <button
                 type="button"
@@ -286,8 +291,8 @@ export function ItemPicker({
                 </span>
               </button>
             </CatalogHoverCard>
-          ))}
-        </div>
+          )}
+        </VirtualCollection>
         {!visible.length && (
           <p
             role="status"

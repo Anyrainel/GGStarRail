@@ -41,6 +41,7 @@ import { HelpButton } from "@/components/shared/HelpButton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RelicSlotChips } from "@/components/shared/relic/RelicSlotChips";
 import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { Button } from "@/components/ui/button";
 import {
   BUILD_SLOT_ORDER,
@@ -489,16 +490,23 @@ export function TriageView() {
               ref={gridRef}
               className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
             >
-              {items.map((evaluation, index) => (
-                <TriageRelicCard
-                  key={evaluation.relic.key}
-                  evaluation={evaluation}
-                  references={data}
-                  buildsById={buildsById}
-                  expanded={isRowExpanded(index)}
-                  onToggle={() => toggleRow(index)}
-                />
-              ))}
+              <VirtualCollection
+                className="col-span-full"
+                items={items}
+                getKey={(evaluation) => evaluation.relic.key}
+                gridClassName="grid gap-2 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+              >
+                {(evaluation, index) => (
+                  <TriageRelicCard
+                    key={evaluation.relic.key}
+                    evaluation={evaluation}
+                    references={data}
+                    buildsById={buildsById}
+                    expanded={isRowExpanded(index)}
+                    onToggle={() => toggleRow(index)}
+                  />
+                )}
+              </VirtualCollection>
             </div>
           )}
         </div>

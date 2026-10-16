@@ -5,6 +5,7 @@ import { RelicSetCard } from "@/components/archive/RelicSetCard";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { useI18n } from "@/i18n/I18nContext";
 import { compareReleaseVersionsDescending } from "@/lib/game/releaseVersion";
@@ -124,18 +125,25 @@ export function RelicSetCatalog() {
               <CatalogEmpty />
             </div>
           ) : (
-            filtered.map((set, index) => {
-              const row = rows.rowOf(index);
-              return (
-                <RelicSetCard
-                  key={set.id}
-                  relicSet={set}
-                  pieces={piecesBySet.get(set.id) ?? []}
-                  expanded={rows.isExpanded(row)}
-                  onToggleExpanded={() => rows.toggleRow(row)}
-                />
-              );
-            })
+            <VirtualCollection
+              className="col-span-full"
+              items={filtered}
+              getKey={(set) => set.id}
+              gridClassName="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3"
+            >
+              {(set, index) => {
+                const row = rows.rowOf(index);
+                return (
+                  <RelicSetCard
+                    key={set.id}
+                    relicSet={set}
+                    pieces={piecesBySet.get(set.id) ?? []}
+                    expanded={rows.isExpanded(row)}
+                    onToggleExpanded={() => rows.toggleRow(row)}
+                  />
+                );
+              }}
+            </VirtualCollection>
           )}
         </section>
       )}

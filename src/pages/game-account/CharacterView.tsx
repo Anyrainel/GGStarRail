@@ -22,6 +22,7 @@ import {
 } from "@/components/shared/CatalogLoadState";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { compareCharacterPriority } from "@/domain/tier-list/utils";
 import { useBuildReferences } from "@/hooks/useCatalogReferences";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -247,33 +248,38 @@ export default function CharacterView() {
                 )}
               </EmptyState>
             ) : (
-              <section
-                className="grid min-w-0 items-stretch gap-3 2xl:grid-cols-[repeat(2,minmax(32rem,1fr))]"
-                data-character-grid
-              >
-                {visibleCharacters.map((character) => {
-                  const build = buildByCharacterId.get(character.definitionId);
-                  return (
-                    <CharacterCard
-                      key={character.key}
-                      character={character}
-                      lightCone={
-                        character.lightConeKey
-                          ? lightConeByKey.get(character.lightConeKey)
-                          : undefined
-                      }
-                      relics={character.relicKeys.flatMap((key) => {
-                        const relic = relicByKey.get(key);
-                        return relic ? [relic] : [];
-                      })}
-                      builds={build ?? []}
-                      profiles={profileById}
-                      references={references}
-                      locale={locale}
-                      layout={cardLayout}
-                    />
-                  );
-                })}
+              <section className="min-w-0" data-character-grid>
+                <VirtualCollection
+                  items={visibleCharacters}
+                  getKey={(character) => character.key}
+                  gridClassName="grid items-stretch gap-3 2xl:grid-cols-[repeat(2,minmax(32rem,1fr))]"
+                >
+                  {(character) => {
+                    const build = buildByCharacterId.get(
+                      character.definitionId
+                    );
+                    return (
+                      <CharacterCard
+                        key={character.key}
+                        character={character}
+                        lightCone={
+                          character.lightConeKey
+                            ? lightConeByKey.get(character.lightConeKey)
+                            : undefined
+                        }
+                        relics={character.relicKeys.flatMap((key) => {
+                          const relic = relicByKey.get(key);
+                          return relic ? [relic] : [];
+                        })}
+                        builds={build ?? []}
+                        profiles={profileById}
+                        references={references}
+                        locale={locale}
+                        layout={cardLayout}
+                      />
+                    );
+                  }}
+                </VirtualCollection>
               </section>
             )}
           </div>

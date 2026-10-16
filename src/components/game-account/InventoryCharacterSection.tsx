@@ -21,6 +21,7 @@ import {
   type ItemIconSize,
   itemIconWidth,
 } from "@/components/shared/ItemIcon";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import type { Character } from "@/domain/game-account/schemas";
 import { useCharacterReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
@@ -226,61 +227,70 @@ export function InventoryCharacterSection({
       {visibleCharacters.length === 0 ? (
         <InventoryFilteredEmpty icon={UsersRound} onClear={clearAll} />
       ) : (
-        <section
-          className="flex flex-wrap gap-3 px-2"
-          aria-label={t("inventory.charactersList")}
-        >
-          {visibleCharacters.map((character) => {
-            const definition = data.characters.byId.get(character.definitionId);
-            const name = definition
-              ? characterCatalogName(definition, locale, t("terms.trailblazer"))
-              : character.definitionId;
-            const combatType = data.properties.combatTypeById.get(
-              character.combatTypeId
-            );
-            return (
-              <CatalogHoverCard
-                key={character.key}
-                kind="character"
-                id={definition?.id ?? character.definitionId}
-                disabled={!definition}
-              >
-                <div
-                  className="group flex shrink-0 flex-col items-center"
-                  style={{ width: itemIconWidth(iconSize) }}
+        <section className="px-2" aria-label={t("inventory.charactersList")}>
+          <VirtualCollection
+            items={visibleCharacters}
+            getKey={(character) => character.key}
+            tileWidth={itemIconWidth(iconSize)}
+          >
+            {(character) => {
+              const definition = data.characters.byId.get(
+                character.definitionId
+              );
+              const name = definition
+                ? characterCatalogName(
+                    definition,
+                    locale,
+                    t("terms.trailblazer")
+                  )
+                : character.definitionId;
+              const combatType = data.properties.combatTypeById.get(
+                character.combatTypeId
+              );
+              return (
+                <CatalogHoverCard
+                  key={character.key}
+                  kind="character"
+                  id={definition?.id ?? character.definitionId}
+                  disabled={!definition}
                 >
-                  <ItemIcon
-                    kind="character"
-                    id={definition?.id ?? character.definitionId}
-                    sourcePath={definition?.icon_path ?? ""}
-                    alt={`${name}, ${t("field.level", { value: character.level })}, ${t("field.eidolon", { value: character.eidolon })}`}
-                    rarity={definition?.rarity ?? null}
-                    badge={character.eidolon}
-                    level={`Lv. ${character.level}`}
-                    cornerAsset={
-                      combatType
-                        ? {
-                            kind: "combat-type",
-                            id: combatType.id,
-                            sourcePath: combatType.icon_path,
-                            alt: combatTypeName(character.combatTypeId),
-                          }
-                        : undefined
-                    }
-                    size={iconSize}
-                    tabIndex={0}
-                    className="rounded-md outline-hidden transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring group-hover:scale-105"
-                  />
-                  <span
-                    className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
-                    aria-hidden="true"
+                  <div
+                    className="group flex shrink-0 flex-col items-center"
+                    style={{ width: itemIconWidth(iconSize) }}
                   >
-                    {name}
-                  </span>
-                </div>
-              </CatalogHoverCard>
-            );
-          })}
+                    <ItemIcon
+                      kind="character"
+                      id={definition?.id ?? character.definitionId}
+                      sourcePath={definition?.icon_path ?? ""}
+                      alt={`${name}, ${t("field.level", { value: character.level })}, ${t("field.eidolon", { value: character.eidolon })}`}
+                      rarity={definition?.rarity ?? null}
+                      badge={character.eidolon}
+                      level={`Lv. ${character.level}`}
+                      cornerAsset={
+                        combatType
+                          ? {
+                              kind: "combat-type",
+                              id: combatType.id,
+                              sourcePath: combatType.icon_path,
+                              alt: combatTypeName(character.combatTypeId),
+                            }
+                          : undefined
+                      }
+                      size={iconSize}
+                      tabIndex={0}
+                      className="rounded-md outline-hidden transition-transform duration-200 focus-visible:ring-2 focus-visible:ring-ring group-hover:scale-105"
+                    />
+                    <span
+                      className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
+                      aria-hidden="true"
+                    >
+                      {name}
+                    </span>
+                  </div>
+                </CatalogHoverCard>
+              );
+            }}
+          </VirtualCollection>
         </section>
       )}
     </>

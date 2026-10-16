@@ -17,6 +17,7 @@ import { CategoryChip } from "@/components/shared/CategoryChip";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon, type ItemIconSize } from "@/components/shared/ItemIcon";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import type { LightCone } from "@/domain/game-account/schemas";
 import { useLightConeReferences } from "@/hooks/useCatalogReferences";
 import { useI18n } from "@/i18n/I18nContext";
@@ -235,71 +236,76 @@ export function InventoryLightConeSection({
       {tiles.length === 0 ? (
         <InventoryFilteredEmpty icon={WandSparkles} onClear={clearAll} />
       ) : (
-        <section
-          className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-3 px-2"
-          aria-label={t("inventory.lightConesList")}
-        >
-          {tiles.map(({ lightCone, count }) => {
-            const definition = data.lightCones.byId.get(lightCone.definitionId);
-            const name = localizedName(
-              definition?.name,
-              locale,
-              lightCone.definitionId
-            );
-            const label = [
-              name,
-              t("field.level", { value: lightCone.level }),
-              t("field.superimposition", {
-                value: lightCone.superimposition,
-              }),
-              lightCone.equippedCharacterKey ? t("field.equipped") : null,
-              count > 1 ? t("inventory.copies", { count }) : null,
-            ]
-              .filter(Boolean)
-              .join(", ");
-            return (
-              <CatalogHoverCard
-                key={lightCone.key}
-                kind="light-cone"
-                id={definition?.id ?? lightCone.definitionId}
-                disabled={!definition}
-              >
-                <div className="group flex min-w-0 flex-col items-center">
-                  <div className="relative transition-transform duration-200 group-hover:scale-105">
-                    <ItemIcon
-                      kind="light-cone"
-                      id={definition?.id ?? lightCone.definitionId}
-                      sourcePath={definition?.icon_path ?? ""}
-                      alt={label}
-                      rarity={definition?.rarity ?? null}
-                      badge={lightCone.superimposition}
-                      level={`Lv. ${lightCone.level}`}
-                      locked={lightCone.locked}
-                      size={iconSize}
-                      tabIndex={0}
-                      className="outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-                    />
-                    {count > 1 && (
-                      <div
-                        className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
-                        aria-hidden="true"
-                      >
-                        <span className="rounded-full bg-background/80 px-2 py-0.5 text-lg font-bold text-foreground shadow-xs backdrop-blur-[2px]">
-                          x{count}
-                        </span>
-                      </div>
-                    )}
+        <section className="px-2" aria-label={t("inventory.lightConesList")}>
+          <VirtualCollection
+            items={tiles}
+            getKey={({ lightCone }) => lightCone.key}
+            gridClassName="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] gap-3"
+          >
+            {({ lightCone, count }) => {
+              const definition = data.lightCones.byId.get(
+                lightCone.definitionId
+              );
+              const name = localizedName(
+                definition?.name,
+                locale,
+                lightCone.definitionId
+              );
+              const label = [
+                name,
+                t("field.level", { value: lightCone.level }),
+                t("field.superimposition", {
+                  value: lightCone.superimposition,
+                }),
+                lightCone.equippedCharacterKey ? t("field.equipped") : null,
+                count > 1 ? t("inventory.copies", { count }) : null,
+              ]
+                .filter(Boolean)
+                .join(", ");
+              return (
+                <CatalogHoverCard
+                  key={lightCone.key}
+                  kind="light-cone"
+                  id={definition?.id ?? lightCone.definitionId}
+                  disabled={!definition}
+                >
+                  <div className="group flex min-w-0 flex-col items-center">
+                    <div className="relative transition-transform duration-200 group-hover:scale-105">
+                      <ItemIcon
+                        kind="light-cone"
+                        id={definition?.id ?? lightCone.definitionId}
+                        sourcePath={definition?.icon_path ?? ""}
+                        alt={label}
+                        rarity={definition?.rarity ?? null}
+                        badge={lightCone.superimposition}
+                        level={`Lv. ${lightCone.level}`}
+                        locked={lightCone.locked}
+                        size={iconSize}
+                        tabIndex={0}
+                        className="outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                      {count > 1 && (
+                        <div
+                          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+                          aria-hidden="true"
+                        >
+                          <span className="rounded-full bg-background/80 px-2 py-0.5 text-lg font-bold text-foreground shadow-xs backdrop-blur-[2px]">
+                            x{count}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
+                      aria-hidden="true"
+                    >
+                      {name}
+                    </span>
                   </div>
-                  <span
-                    className="line-clamp-2 w-full min-w-0 break-words pt-1 text-center text-xs font-medium leading-tight text-foreground/90 transition-colors group-hover:text-foreground"
-                    aria-hidden="true"
-                  >
-                    {name}
-                  </span>
-                </div>
-              </CatalogHoverCard>
-            );
-          })}
+                </CatalogHoverCard>
+              );
+            }}
+          </VirtualCollection>
         </section>
       )}
     </>

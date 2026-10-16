@@ -8,6 +8,7 @@ import { LightConeCard } from "@/components/archive/LightConeCard";
 import { ScrollLayout } from "@/components/layout/ScrollLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
 import { TRAILBLAZER_TERMS } from "@/i18n/gameTerms";
 import { useI18n } from "@/i18n/I18nContext";
@@ -203,14 +204,20 @@ export function LightConeCatalog() {
                   </button>
                 </h2>
                 {expanded && (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5 border-t border-border px-1.5 pb-3 pt-2 md:gap-2 md:px-3">
-                    {cones.map((lightCone) => (
-                      <LightConeCard
-                        key={lightCone.id}
-                        lightCone={lightCone}
-                        path={path}
-                      />
-                    ))}
+                  <div className="border-t border-border px-1.5 pb-3 pt-2 md:px-3">
+                    <VirtualCollection
+                      items={cones}
+                      getKey={(lightCone) => lightCone.id}
+                      gridClassName="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-1.5 md:gap-2"
+                    >
+                      {(lightCone) => (
+                        <LightConeCard
+                          key={lightCone.id}
+                          lightCone={lightCone}
+                          path={path}
+                        />
+                      )}
+                    </VirtualCollection>
                   </div>
                 )}
               </section>

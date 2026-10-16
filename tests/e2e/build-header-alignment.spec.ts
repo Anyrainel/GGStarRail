@@ -88,7 +88,7 @@ test("account loadout recommendation badges reach the header right edge", async 
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/account-data/characters");
   await page
-    .getByRole("button", { name: "Import account", exact: true })
+    .getByRole("button", { name: "Import game account", exact: true })
     .click();
   const dialog = page.getByRole("dialog");
   await dialog

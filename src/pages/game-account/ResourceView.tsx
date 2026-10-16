@@ -26,6 +26,7 @@ import { CategoryChip } from "@/components/shared/CategoryChip";
 import { HelpButton } from "@/components/shared/HelpButton";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { RelicKindIcon } from "@/components/shared/relic/RelicKindIcon";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { generateResourceSuggestions } from "@/domain/resources/recommendations";
 import type {
   ResourceActionKind,
@@ -309,18 +310,25 @@ export function ResourceView() {
                 collapsed={collapsed.has(priority)}
                 onToggle={() => toggleGroup(priority)}
               >
-                {group.map((suggestion) => (
-                  <ResourceSuggestionCard
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    references={data}
-                    sourceRelic={
-                      suggestion.kind === "synthesize"
-                        ? undefined
-                        : relicByKey.get(suggestion.relicKey)
-                    }
-                  />
-                ))}
+                <VirtualCollection
+                  className="col-span-full"
+                  items={group}
+                  getKey={(suggestion) => suggestion.id}
+                  gridClassName="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
+                >
+                  {(suggestion) => (
+                    <ResourceSuggestionCard
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      references={data}
+                      sourceRelic={
+                        suggestion.kind === "synthesize"
+                          ? undefined
+                          : relicByKey.get(suggestion.relicKey)
+                      }
+                    />
+                  )}
+                </VirtualCollection>
               </ResourcePriorityGroup>
             );
           })

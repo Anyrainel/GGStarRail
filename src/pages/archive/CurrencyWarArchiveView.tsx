@@ -1,5 +1,5 @@
 import { ArrowRight, ArrowUpRight, Hammer, Link2, Users } from "lucide-react";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArchiveTabs } from "@/components/archive/ArchiveTabs";
 import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
@@ -13,6 +13,7 @@ import { AssetImage } from "@/components/shared/AssetImage";
 import { BetaBadge } from "@/components/shared/BetaBadge";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
 import { ItemIcon } from "@/components/shared/ItemIcon";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCatalogResource } from "@/hooks/useCatalogResource";
@@ -138,10 +139,9 @@ export function CurrencyWarArchiveContent({
   const [quality, setQuality] = useState<Set<string>>(new Set());
   const selectedId = searchParams.get("id");
   const records: readonly CurrencyWarRecord[] = catalog[activeTab.id];
-  useEffect(() => {
+  const focusSelected = useCallback(() => {
     if (!selectedId || activeTab.id === "bonds") return;
     const card = document.getElementById(`currency-war-card-${selectedId}`);
-    card?.scrollIntoView?.({ block: "nearest" });
     card?.focus({ preventScroll: true });
   }, [selectedId, activeTab.id]);
   const searchIndex = useMemo(
@@ -299,8 +299,12 @@ export function CurrencyWarArchiveContent({
         detailLabel={selected ? bondName(selected) : undefined}
         sidebar={tabPanel(
           filtered.length ? (
-            <div className="space-y-0.5">
-              {filtered.map((entry) => (
+            <VirtualCollection
+              items={filtered}
+              getKey={(entry) => entry.id}
+              gridClassName="grid gap-0.5"
+            >
+              {(entry) => (
                 <button
                   key={entry.id}
                   type="button"
@@ -324,16 +328,21 @@ export function CurrencyWarArchiveContent({
                     {bondName(entry)}
                   </span>
                 </button>
-              ))}
-            </div>
+              )}
+            </VirtualCollection>
           ) : (
             <CatalogEmpty />
           )
         )}
         mobileGrid={tabPanel(
           filtered.length ? (
-            <div className="grid grid-cols-3 gap-2 p-2">
-              {filtered.map((entry) => (
+            <VirtualCollection
+              className="p-2"
+              items={filtered}
+              getKey={(entry) => entry.id}
+              gridClassName="grid grid-cols-3 gap-2"
+            >
+              {(entry) => (
                 <button
                   key={entry.id}
                   type="button"
@@ -352,8 +361,8 @@ export function CurrencyWarArchiveContent({
                     {bondName(entry)}
                   </span>
                 </button>
-              ))}
-            </div>
+              )}
+            </VirtualCollection>
           ) : (
             <CatalogEmpty />
           )
@@ -378,15 +387,23 @@ export function CurrencyWarArchiveContent({
         filtered.length ? (
           <section
             aria-label={t("archive.currencyWar.results")}
-            className="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3"
+            className="min-w-0"
           >
-            {filtered.map((record, index) => {
-              const row = rows.rowOf(index);
-              return renderCard(record, {
-                expanded: rows.isExpanded(row),
-                onToggle: () => rows.toggleRow(row),
-              });
-            })}
+            <VirtualCollection
+              items={filtered}
+              getKey={(record) => record.id}
+              revealKey={selectedId}
+              onReveal={focusSelected}
+              gridClassName="grid items-stretch gap-4 lg:grid-cols-2 xl:grid-cols-3"
+            >
+              {(record, index) => {
+                const row = rows.rowOf(index);
+                return renderCard(record, {
+                  expanded: rows.isExpanded(row),
+                  onToggle: () => rows.toggleRow(row),
+                });
+              }}
+            </VirtualCollection>
           </section>
         ) : (
           <CatalogEmpty />

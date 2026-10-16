@@ -4,6 +4,7 @@ import { ArchiveToolbar } from "@/components/archive/ArchiveToolbar";
 import { SidebarDetailLayout } from "@/components/layout/SidebarDetailLayout";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { FilterChipGroup } from "@/components/shared/FilterChipGroup";
+import { VirtualCollection } from "@/components/shared/VirtualCollection";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -611,8 +612,12 @@ export function AchievementArchiveContent({
               {t("archive.achievement.noResults")}
             </p>
           ) : (
-            <div className="min-w-0 space-y-1.5">
-              {visibleSeries.map(({ series, seriesIds }) => (
+            <VirtualCollection
+              items={visibleSeries}
+              getKey={({ series }) => series[0]!.id}
+              gridClassName="grid gap-1.5"
+            >
+              {({ series, seriesIds }) => (
                 <AchievementSeriesCard
                   key={series[0]!.id}
                   series={series}
@@ -620,8 +625,8 @@ export function AchievementArchiveContent({
                   completedIds={liveCompletedIds}
                   onStatusChange={handleStatusChange}
                 />
-              ))}
-            </div>
+              )}
+            </VirtualCollection>
           )}
         </div>
       ) : null}
