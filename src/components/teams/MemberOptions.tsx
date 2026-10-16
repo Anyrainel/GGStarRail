@@ -123,6 +123,7 @@ function OptionRow({
     >
       <AssetImage
         kind={art.kind}
+        variant={art.kind === "character" ? "round" : undefined}
         id={art.id}
         sourcePath={art.sourcePath}
         alt=""

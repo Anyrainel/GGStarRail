@@ -28,6 +28,18 @@ describe("lazy reference producer asset runtime adapter", () => {
       resolveCatalogAsset({ kind: "character", id: "1001" })
     ).toMatchObject({ startsWithFallback: false });
     expect(
+      resolveCatalogAsset({ kind: "character", id: "1001", variant: "round" })
+    ).toMatchObject({ startsWithFallback: false, entry: { variant: "round" } });
+    expect(
+      resolveCatalogAsset({ kind: "light-cone", id: "20001" })
+    ).toMatchObject({
+      startsWithFallback: false,
+      entry: { variant: "portrait" },
+    });
+    expect(
+      resolveCatalogAsset({ kind: "light-cone", id: "20001", variant: "icon" })
+    ).toMatchObject({ startsWithFallback: false, entry: { variant: "icon" } });
+    expect(
       resolveCatalogAsset({
         kind: "property",
         id: "StanceBreakAddedRatio",

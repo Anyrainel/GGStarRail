@@ -198,12 +198,44 @@ The producer's source refresh includes acquisition; cached preparation only veri
 artwork and fails if an image is missing. A previously unknown icon namespace
 also fails for explicit review instead of generating an unverified URL.
 
-The tracked Light Cone source WebPs retain their original artwork. During
-`assets:webp`, the runtime copies are resized to at most 384 px wide and encoded
-at WebP quality 75. The app displays them at no more than 80 CSS px wide; the
-runtime files use content-hashed paths so a conversion change invalidates old
-browser caches. Character and Relic artwork keeps its existing dimensions and
-encoding.
+## Nanoka catalog artwork
+
+Character, Light Cone, Relic and Planar Ornament artwork comes exclusively from
+Nanoka's gallery assets. HoYoWiki remains a release/text evidence source; its
+uploaded images do not override catalog artwork. The artwork selection does not
+change normalized game values, release status, names or account data.
+
+`node scripts/nanoka-assets.mjs` reads the checksummed current catalog and acquires
+all referenced released and preview items. The producer-facing
+`publish-source-assets.mjs --reference-root ...` path uses the same acquisition
+logic. Source URLs are rooted at `https://static.nanoka.cc/assets/hsr/`:
+
+| Kind / variant | Nanoka gallery path |
+| --- | --- |
+| Character `avatar` | `avataricon/avatar/{id}.webp` |
+| Character `round` | `avatarroundicon/{id}.webp` |
+| Light Cone `portrait` | `lightconemaxfigures/{id}.webp` |
+| Light Cone `icon` | `lightconemediumicon/{id}.webp` |
+| Relic / Ornament piece | `relicfigures/{declared_icon_filename}.webp` |
+| Relic / Ornament set | `itemfigures/{declared_icon_filename}.webp` |
+
+The original WebP bytes and dimensions are preserved in `data/source-assets/`
+under content-hashed filenames, with URLs and checksums in the versioned source
+manifest. `assets:webp` restores these bytes without another lossy conversion or
+the former 384 px Light Cone downscale. The runtime lookup distinguishes variants;
+default Character art is `avatar`, and default Light Cone art is `portrait`.
+Existing round Character usages explicitly request `round`.
+
+Trailblazer genders and Paths use their own stable Nanoka IDs directly, replacing
+the former animated HoYoWiki frame extraction. Missing preview variants are
+recorded explicitly and render an honest placeholder; a Round or Shop Icon is
+never silently substituted for a missing Avatar Icon. Cached acquisition verifies
+the selected files and fails on corruption. It does not fetch missing files.
+
+`node scripts/audit-source-artwork.mjs` verifies source checksums, counts dimensions
+and source hosts, and writes `test-results/artwork-audit/dimensions.json` plus an
+HTML comparison of original, aligned, square and round display treatments. See
+[artwork-design.md](artwork-design.md) for the measured sizes and proposed usage.
 
 ## Home card publisher wallpapers
 

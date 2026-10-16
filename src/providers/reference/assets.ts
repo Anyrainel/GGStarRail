@@ -1,6 +1,7 @@
 import type {
   CatalogAssetKind,
   CatalogAssetLookupEntry,
+  CatalogAssetVariant,
 } from "@/domain/assets";
 import runtimeLookupUrl from "@/generated/assets/runtime-lookup.json?url";
 import { configureCatalogAssetLookup } from "@/lib/assets/urls";
@@ -27,10 +28,11 @@ type RuntimeLookupTuple = readonly [
   kind: CatalogAssetKind,
   id: string,
   cachePath: string | null,
+  variant: CatalogAssetVariant | null,
 ];
 
 interface RuntimeLookupDocument {
-  lookup_schema_version: "1";
+  lookup_schema_version: "2";
   asset_manifest_sha256: string;
   reference_manifest_sha256: string;
   source_revision: string;
@@ -58,7 +60,7 @@ function parseRuntimeLookup(value: unknown): RuntimeLookupDocument {
     throw new Error("Generated HSR asset lookup must be an object");
   }
   const document = value as Partial<RuntimeLookupDocument>;
-  if (document.lookup_schema_version !== "1") {
+  if (document.lookup_schema_version !== "2") {
     throw new Error("Generated HSR asset lookup has an unsupported schema");
   }
   if (
@@ -78,15 +80,25 @@ function toLookupEntries(
   return document.entries.map((entry, index) => {
     if (
       !Array.isArray(entry) ||
-      entry.length !== 3 ||
+      entry.length !== 4 ||
       !CATALOG_ASSET_KINDS.has(entry[0]) ||
       typeof entry[1] !== "string" ||
       entry[1].length === 0 ||
-      (entry[2] !== null && typeof entry[2] !== "string")
+      (entry[2] !== null && typeof entry[2] !== "string") ||
+      (entry[0] === "character"
+        ? entry[3] !== "avatar" && entry[3] !== "round"
+        : entry[0] === "light-cone"
+          ? entry[3] !== "portrait" && entry[3] !== "icon"
+          : entry[3] !== null)
     ) {
       throw new Error(`Generated HSR asset lookup entry ${index} is invalid`);
     }
-    return { kind: entry[0], id: entry[1], cachePath: entry[2] };
+    return {
+      kind: entry[0],
+      id: entry[1],
+      cachePath: entry[2],
+      variant: entry[3],
+    };
   });
 }
 

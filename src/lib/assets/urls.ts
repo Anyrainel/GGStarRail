@@ -3,6 +3,7 @@ import type {
   CatalogAssetKind,
   CatalogAssetLookupEntry,
   CatalogAssetRef,
+  CatalogAssetVariant,
 } from "@/domain/assets";
 
 export interface ResolvedCatalogAsset {
@@ -53,8 +54,15 @@ function normalizeAssetPath(assetPath: string): string {
   return normalized;
 }
 
-function lookupKey(kind: CatalogAssetKind, value: string): string {
-  return `${kind}\0${value}`;
+function lookupKey(
+  kind: CatalogAssetKind,
+  value: string,
+  variant?: CatalogAssetVariant | null
+): string {
+  const selectedVariant =
+    variant ??
+    (kind === "character" ? "avatar" : kind === "light-cone" ? "portrait" : "");
+  return `${kind}\0${value}\0${selectedVariant}`;
 }
 
 function validateLookupEntry(
@@ -62,6 +70,18 @@ function validateLookupEntry(
 ): CatalogAssetLookupEntry {
   if (!entry.id) {
     throw new Error("Catalog asset IDs must be non-empty");
+  }
+  if (
+    entry.variant != null &&
+    (entry.kind === "character"
+      ? entry.variant !== "avatar" && entry.variant !== "round"
+      : entry.kind === "light-cone"
+        ? entry.variant !== "portrait" && entry.variant !== "icon"
+        : true)
+  ) {
+    throw new Error(
+      `Invalid catalog asset variant: ${entry.kind}:${entry.variant}`
+    );
   }
   if (entry.sourcePath === "") {
     throw new Error("Catalog asset source paths must be non-empty when set");
@@ -80,12 +100,12 @@ export function configureCatalogAssetLookup(
   const nextBySourcePath = new Map<string, CatalogAssetLookupEntry>();
   for (const input of entries) {
     const entry = validateLookupEntry(input);
-    const idKey = lookupKey(entry.kind, entry.id);
+    const idKey = lookupKey(entry.kind, entry.id, entry.variant);
     if (nextByKey.has(idKey)) {
       throw new Error(`Duplicate catalog asset ID: ${entry.kind}:${entry.id}`);
     }
     if (entry.sourcePath) {
-      const sourceKey = lookupKey(entry.kind, entry.sourcePath);
+      const sourceKey = lookupKey(entry.kind, entry.sourcePath, entry.variant);
       const existingSource = nextBySourcePath.get(sourceKey);
       if (existingSource && existingSource.cachePath !== entry.cachePath) {
         throw new Error(
@@ -129,11 +149,11 @@ export function getAssetFallbackDataUrl(ref: CatalogAssetRef): string {
 export function resolveCatalogAsset(
   ref: CatalogAssetRef
 ): ResolvedCatalogAsset {
-  const idEntry = entriesByKey.get(lookupKey(ref.kind, ref.id));
+  const idEntry = entriesByKey.get(lookupKey(ref.kind, ref.id, ref.variant));
   const sourcePath =
     ref.kind === "property" && ref.sourcePath === "0" ? null : ref.sourcePath;
   const sourceEntry = sourcePath
-    ? entriesBySourcePath.get(lookupKey(ref.kind, sourcePath))
+    ? entriesBySourcePath.get(lookupKey(ref.kind, sourcePath, ref.variant))
     : undefined;
   const entry = idEntry ?? sourceEntry ?? null;
   const fallbackSrc = getAssetFallbackDataUrl(ref);

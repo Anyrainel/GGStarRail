@@ -206,6 +206,7 @@ export function TriageRelicCard({
                   {build.character && (
                     <AssetImage
                       kind="character"
+                      variant="round"
                       id={build.character.id}
                       sourcePath={build.character.icon_path}
                       alt=""

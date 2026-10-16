@@ -114,10 +114,27 @@ export async function checkGameData(repositoryRoot = root) {
       "utf8"
     )
   );
-  assert.equal(sourceAssets.schema_version, "1.0.0");
+  assert.equal(sourceAssets.schema_version, "2.0.0");
   assert.equal(sourceAssets.source_revision, manifest.source_revision);
   const assetPaths = new Set();
+  const artworkKeys = new Set();
+  const expectedArtworkKeys = new Set();
   for (const asset of sourceAssets.entries) {
+    assert.ok(
+      asset.source_url.startsWith("https://static.nanoka.cc/assets/hsr/")
+    );
+    const key = `${asset.kind}:${asset.id}:${asset.variant ?? ""}`;
+    assert.equal(
+      artworkKeys.has(key),
+      false,
+      `Duplicate source artwork: ${key}`
+    );
+    artworkKeys.add(key);
+    if (asset.availability === "unavailable") {
+      assert.equal(asset.source_http_status, 404);
+      assert.equal(asset.path, undefined);
+      continue;
+    }
     assert.match(asset.path, /^webp\/[a-f0-9]{64}\.webp$/);
     assert.equal(path.basename(asset.path, ".webp"), asset.sha256);
     const bytes = await readFile(
@@ -125,6 +142,16 @@ export async function checkGameData(repositoryRoot = root) {
     );
     assert.equal(bytes.length, asset.byte_count);
     assert.equal(sha256(bytes), asset.sha256);
+    if (
+      ["character", "light-cone", "relic-set", "relic-piece"].includes(
+        asset.kind
+      )
+    )
+      assert.equal(
+        asset.source_sha256,
+        asset.sha256,
+        `Nanoka artwork was re-encoded: ${key}`
+      );
     assetPaths.add(`/assets/ggstarrail/${asset.path}`);
   }
   const documents = {};
@@ -183,13 +210,47 @@ export async function checkGameData(repositoryRoot = root) {
           document.value.length,
           `Duplicate ${member}/${channel} IDs`
         );
+        const kind = {
+          characters: "character",
+          light_cones: "light-cone",
+          relic_sets: "relic-set",
+          relic_pieces: "relic-piece",
+          nanoka_characters: "character",
+          nanoka_light_cones: "light-cone",
+          nanoka_relic_sets: "relic-set",
+        }[member];
+        if (kind)
+          for (const record of document.value)
+            for (const variant of kind === "character"
+              ? ["avatar", "round"]
+              : kind === "light-cone"
+                ? ["portrait", "icon"]
+                : [""]) {
+              const key = `${kind}:${record.id}:${variant}`;
+              expectedArtworkKeys.add(key);
+              assert.ok(
+                artworkKeys.has(key),
+                `Catalog artwork absent from tracked assets: ${key}`
+              );
+            }
         if (member.startsWith("nanoka_")) {
           if (channel === "released") assert.equal(document.value.length, 0);
           for (const preview of document.value) {
-            assert.ok(
-              assetPaths.has(preview.image_path),
-              `Preview image absent from tracked assets: ${member}:${preview.id}`
-            );
+            const kind =
+              member === "nanoka_characters"
+                ? "character"
+                : member === "nanoka_light_cones"
+                  ? "light-cone"
+                  : "relic-set";
+            for (const variant of kind === "character"
+              ? ["avatar", "round"]
+              : kind === "light-cone"
+                ? ["portrait", "icon"]
+                : [""])
+              assert.ok(
+                artworkKeys.has(`${kind}:${preview.id}:${variant}`),
+                `Preview artwork absent from tracked assets: ${member}:${preview.id}:${variant}`
+              );
             assert.equal(Object.hasOwn(preview, "source_url"), false);
             assert.equal(Object.hasOwn(preview, "source_version"), false);
             assert.ok(
@@ -201,6 +262,14 @@ export async function checkGameData(repositoryRoot = root) {
       }
     }
   }
+  const catalogKeys = [...artworkKeys].filter((key) =>
+    /^(character|light-cone|relic-set|relic-piece):/.test(key)
+  );
+  assert.deepEqual(
+    new Set(catalogKeys),
+    expectedArtworkKeys,
+    "Tracked artwork contains stale catalog IDs or variants"
+  );
   for (const key of [
     "characters",
     "light_cones",

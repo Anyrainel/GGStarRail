@@ -8,7 +8,6 @@ import {
   root,
   saveJson,
   sha256,
-  webpAsset,
 } from "./crawl-common.mjs";
 
 const host = "https://static.nanoka.cc";
@@ -30,26 +29,10 @@ export function nanokaVersion(value) {
 export async function crawlNanoka({
   evidencePath = path.join(crawlRoot, "hoyolab.json"),
   outputRoot = path.join(crawlRoot, "nanoka"),
-  images = true,
 } = {}) {
   const manifestBytes = await fetchBytes(`${host}/manifest.json`);
   const manifest = JSON.parse(manifestBytes);
   const version = nanokaVersion(manifest);
-  let previousAssets = new Map();
-  try {
-    const previous = JSON.parse(
-      await readFile(path.join(outputRoot, "latest.json"), "utf8")
-    );
-    if (previous.schema_version === "1.0.0" && Array.isArray(previous.entries))
-      previousAssets = new Map(
-        previous.entries.map((entry) => [
-          `${entry.collection}:${entry.id}`,
-          entry.asset,
-        ])
-      );
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
   const official = JSON.parse(await readFile(evidencePath, "utf8"));
   const released = new Set(
     official.entries
@@ -108,19 +91,6 @@ export async function crawlNanoka({
           };
         }
       }
-      if (images) {
-        const imagePath =
-          collection === "characters"
-            ? `avatarshopicon/${id}.webp`
-            : collection === "light_cones"
-              ? `lightconemediumicon/${id}.webp`
-              : `itemfigures/${path.posix.basename(record.icon).replace(/\.png$/i, ".webp")}`;
-        entry.asset = await webpAsset(
-          `${host}/assets/hsr/${imagePath}`,
-          undefined,
-          previousAssets.get(`${collection}:${id}`)
-        );
-      }
       return entry;
     });
     entries.push(...found);
@@ -146,11 +116,10 @@ if (
 ) {
   const args = process.argv.slice(2);
   if (args.includes("--help"))
-    console.log("node scripts/nanoka.mjs [--no-images] [--output-root DIR]");
+    console.log("node scripts/nanoka.mjs [--output-root DIR]");
   else {
     const index = args.indexOf("--output-root");
     await crawlNanoka({
-      images: !args.includes("--no-images"),
       ...(index >= 0
         ? { outputRoot: path.resolve(root, args[index + 1]) }
         : {}),

@@ -115,6 +115,7 @@ export function ResourceSuggestionCard({
           {character && (
             <AssetImage
               kind="character"
+              variant="round"
               id={character.id}
               sourcePath={character.icon_path}
               alt={t("resource.targetFor", { character: characterName })}

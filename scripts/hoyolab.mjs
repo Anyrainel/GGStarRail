@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
@@ -10,9 +9,7 @@ import {
   referenceDocuments,
   saveJson,
   sha256,
-  webpAsset,
 } from "./crawl-common.mjs";
-import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
 
 const api = "https://sg-wiki-api.hoyolab.com/hoyowiki/hsr/wapi";
 const headers = {
@@ -115,22 +112,8 @@ export async function crawlHoyolab({
   referenceRoot,
   output = path.join(crawlRoot, "hoyolab.json"),
   pageRoot = path.join(crawlRoot, "hoyolab-pages"),
-  images = true,
 } = {}) {
   const { manifest, documents } = await referenceDocuments(referenceRoot);
-  let previousAssets = new Map();
-  try {
-    const previous = JSON.parse(await readFile(output, "utf8"));
-    if (previous.schema_version === "1.0.0" && Array.isArray(previous.entries))
-      previousAssets = new Map(
-        previous.entries.map((entry) => [
-          `${entry.collection}:${entry.id}`,
-          entry.asset,
-        ])
-      );
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
-  }
   const entries = [];
   const unmatched = [];
   for (const [collection, menu] of Object.entries(menus)) {
@@ -263,14 +246,6 @@ export async function crawlHoyolab({
           path.join(pageRoot, `${candidate.page_id}-${candidate.id}.json`),
           response.data
         );
-        if (images && releasedPage(page) && page.icon_url)
-          entry.asset = await webpAsset(
-            page.icon_url,
-            collection === "characters"
-              ? trailblazerPortraitFrame(candidate.id)
-              : undefined,
-            previousAssets.get(`${collection}:${candidate.id}`)
-          );
         return entry;
       }
     );
@@ -300,12 +275,11 @@ if (
   const sourceIndex = args.indexOf("--reference-root");
   const referenceRoot = sourceIndex < 0 ? undefined : args[sourceIndex + 1];
   if (args.includes("--help")) {
-    console.log("node scripts/hoyolab.mjs --reference-root DIR [--no-images]");
+    console.log("node scripts/hoyolab.mjs --reference-root DIR");
   } else {
     if (!referenceRoot) throw new Error("--reference-root is required");
     await crawlHoyolab({
       referenceRoot,
-      images: !args.includes("--no-images"),
     });
   }
 }

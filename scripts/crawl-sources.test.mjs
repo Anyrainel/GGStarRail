@@ -17,7 +17,90 @@ import {
   releasedPage,
 } from "./hoyolab.mjs";
 import { nanokaVersion } from "./nanoka.mjs";
-import { trailblazerPortraitFrame } from "./trailblazer-assets.mjs";
+import {
+  cachedUnavailableArtwork,
+  nanokaArtworkRequests,
+} from "./nanoka-assets.mjs";
+import { sourceAssetVariant } from "./source-assets.mjs";
+
+test("Nanoka gallery variants keep distinct character and Light Cone artwork", () => {
+  const character = nanokaArtworkRequests("characters", [{ id: "8005" }]);
+  assert.deepEqual(
+    character.map((entry) => [entry.variant, entry.source_url]),
+    [
+      [
+        "avatar",
+        "https://static.nanoka.cc/assets/hsr/avataricon/avatar/8005.webp",
+      ],
+      [
+        "round",
+        "https://static.nanoka.cc/assets/hsr/avatarroundicon/8005.webp",
+      ],
+    ]
+  );
+  const cone = nanokaArtworkRequests("light_cones", [{ id: "23001" }]);
+  assert.deepEqual(
+    cone.map((entry) => [entry.variant, entry.source_url]),
+    [
+      [
+        "portrait",
+        "https://static.nanoka.cc/assets/hsr/lightconemaxfigures/23001.webp",
+      ],
+      [
+        "icon",
+        "https://static.nanoka.cc/assets/hsr/lightconemediumicon/23001.webp",
+      ],
+    ]
+  );
+  const ornament = nanokaArtworkRequests("relic_pieces", [
+    {
+      id: "63015",
+      icon_path: "SpriteOutput/ItemIcon/RelicIcons/IconRelic_301_5.png",
+    },
+  ]);
+  assert.equal(
+    ornament[0].source_url,
+    "https://static.nanoka.cc/assets/hsr/relicfigures/IconRelic_301_5.webp"
+  );
+  assert.throws(() => nanokaArtworkRequests("characters", [{ id: "../1001" }]));
+  assert.throws(() =>
+    sourceAssetVariant({ kind: "character", id: "1001", variant: "portrait" })
+  );
+  assert.throws(() =>
+    sourceAssetVariant({ kind: "relic-piece", id: "31011", variant: "icon" })
+  );
+});
+
+test("cached Nanoka absence preserves only the same explicit unavailable variant", () => {
+  const request = nanokaArtworkRequests("characters", [{ id: "1511" }])[0];
+  const previous = {
+    ...request,
+    availability: "unavailable",
+    source_http_status: 404,
+  };
+  assert.deepEqual(cachedUnavailableArtwork(request, previous, true), {
+    availability: "unavailable",
+    source_http_status: 404,
+  });
+  assert.equal(cachedUnavailableArtwork(request, previous, false), null);
+  assert.throws(() =>
+    cachedUnavailableArtwork(request, { ...previous, variant: "round" }, true)
+  );
+  assert.throws(() =>
+    cachedUnavailableArtwork(
+      request,
+      { ...previous, source_url: "https://example.com/avatar.webp" },
+      true
+    )
+  );
+  assert.throws(() =>
+    cachedUnavailableArtwork(
+      request,
+      { ...previous, path: "webp/unexpected.webp" },
+      true
+    )
+  );
+});
 
 for (const script of ["sync-hsr-reference.mjs", "sync-hsr-assets.mjs"])
   test(`${script} requires an explicit bundle instead of finding a producer`, () => {
@@ -46,15 +129,6 @@ for (const script of ["source-evidence.mjs", "publish-source-assets.mjs"])
     assert.equal(result.status, 1);
     assert.match(result.stderr, /--reference-root is required/);
   });
-
-test("Trailblazer portraits select the audited gender frame including reversed Harmony order", () => {
-  assert.equal(trailblazerPortraitFrame("8001"), 0);
-  assert.equal(trailblazerPortraitFrame("8002"), 1);
-  assert.equal(trailblazerPortraitFrame("8005"), 1);
-  assert.equal(trailblazerPortraitFrame("8006"), 0);
-  assert.equal(trailblazerPortraitFrame("8010"), 1);
-  assert.equal(trailblazerPortraitFrame("1001"), undefined);
-});
 
 test("official page publication requires explicit non-beta status", () => {
   assert.equal(releasedPage({ status: "Online" }), false);

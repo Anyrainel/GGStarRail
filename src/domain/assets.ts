@@ -15,15 +15,15 @@ export type CatalogAssetKind =
   | "combat-type"
   | "property";
 
+export type CatalogAssetVariant = "avatar" | "round" | "portrait" | "icon";
+
 export interface CatalogAssetRef {
   kind: CatalogAssetKind;
   id: string;
+  variant?: CatalogAssetVariant | null;
   sourcePath?: string | null;
 }
 
-export interface CatalogAssetLookupEntry {
-  kind: CatalogAssetKind;
-  id: string;
-  sourcePath?: string | null;
+export interface CatalogAssetLookupEntry extends CatalogAssetRef {
   cachePath: string | null;
 }

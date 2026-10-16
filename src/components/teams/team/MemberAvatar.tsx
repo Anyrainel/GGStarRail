@@ -25,6 +25,7 @@ export function MemberAvatar({
   return (
     <AssetImage
       kind="character"
+      variant="round"
       id={characterId}
       sourcePath={item?.iconPath}
       alt={decorative ? "" : (item?.name ?? characterId)}

@@ -15,14 +15,15 @@ export function AssetImage({
   kind,
   id,
   sourcePath,
+  variant,
   alt,
   loading = "lazy",
   decoding = "async",
   ...imageProps
 }: AssetImageProps): ReactElement {
   const resolved = useMemo(
-    () => resolveCatalogAsset({ kind, id, sourcePath }),
-    [id, kind, sourcePath]
+    () => resolveCatalogAsset({ kind, id, sourcePath, variant }),
+    [id, kind, sourcePath, variant]
   );
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const usesFallback =

@@ -171,6 +171,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
       kind,
       id,
       sourcePath,
+      variant,
       alt,
       rarity,
       badge,
@@ -222,6 +223,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
           kind={kind}
           id={id}
           sourcePath={sourcePath}
+          variant={variant}
           alt=""
           aria-hidden="true"
           draggable={false}
@@ -348,6 +350,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
               kind={cornerAsset.kind}
               id={cornerAsset.id}
               sourcePath={cornerAsset.sourcePath}
+              variant={cornerAsset.variant}
               alt=""
               aria-hidden="true"
               draggable={false}
