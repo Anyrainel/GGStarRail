@@ -135,7 +135,7 @@ describe("tier list controls", () => {
     ).toEqual(["Main ranking", "Speed team"]);
   });
 
-  it("groups the toolbar filters with icon-only Paths and an explained Owned only", async () => {
+  it("groups the toolbar filters with named Path icons and an explained Owned only", async () => {
     const user = userEvent.setup();
     const rendered = view();
     await loadedAction("Customize");
@@ -146,9 +146,9 @@ describe("tier list controls", () => {
       name: "Erudition",
     });
     expect(erudition).toHaveAttribute("title", "Erudition");
-    expect(within(erudition as HTMLElement).getByText("Erudition")).toHaveClass(
-      "md:sr-only"
-    );
+    expect(
+      within(erudition as HTMLElement).getByText("Erudition")
+    ).toBeVisible();
     expect(header.querySelectorAll('[aria-hidden="true"].w-px')).toHaveLength(
       3
     );

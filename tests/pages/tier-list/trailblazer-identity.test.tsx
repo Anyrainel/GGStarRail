@@ -113,13 +113,23 @@ describe("Trailblazer identity", () => {
       </I18nProvider>
     );
     const toggle = await screen.findByRole(
-      "group",
+      "radiogroup",
       { name: "Trailblazer appearance" },
       { timeout: 15000 }
     );
     await user.click(screen.getByRole("tab", { name: "Physical" }));
     const before = container.querySelectorAll("[data-priority-item-id]").length;
-    await user.click(within(toggle).getByRole("button", { name: "Stelle" }));
+    await user.click(within(toggle).getByRole("radio", { name: "Stelle" }));
+    expect(
+      within(toggle).getByRole("radio", { name: "Stelle" })
+    ).toHaveAttribute("aria-checked", "true");
+    expect(
+      within(toggle).getByRole("radio", { name: "Caelus" })
+    ).toHaveAttribute("aria-checked", "false");
+    await user.click(within(toggle).getByRole("radio", { name: "Stelle" }));
+    expect(
+      within(toggle).getByRole("radio", { name: "Stelle" })
+    ).toHaveAttribute("aria-checked", "true");
     await waitFor(() =>
       expect(
         container.querySelector('[data-priority-item-id="8001"]')

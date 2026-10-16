@@ -472,7 +472,7 @@ export function TierTable<Group extends string>({
           onSelectedValuesChange={setPaths}
           getKey={(id) => id}
           getTitle={pathName}
-          getLabel={(id) => <span className="md:sr-only">{pathName(id)}</span>}
+          getLabel={pathName}
           getIcon={(id, active) => (
             <AssetImage
               kind="path"

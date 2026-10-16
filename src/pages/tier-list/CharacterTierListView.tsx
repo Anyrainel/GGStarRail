@@ -1,5 +1,5 @@
+import { ToggleGroup } from "radix-ui";
 import { useMemo } from "react";
-import { FilterChip } from "@/components/shared/FilterChip";
 import { TierCatalogState } from "@/components/tier-list/TierCatalogState";
 import { TierTable } from "@/components/tier-list/TierTable";
 import type {
@@ -76,20 +76,25 @@ export default function CharacterTierListView() {
   return (
     <TierTable
       extraFilters={
-        <fieldset
+        <ToggleGroup.Root
+          type="single"
+          value={appearance}
+          onValueChange={(value) => {
+            if (value === "caelus" || value === "stelle") setAppearance(value);
+          }}
           aria-label={t("tier.trailblazerAppearance")}
-          className="flex items-center gap-1"
+          className="inline-flex shrink-0"
         >
           {(["caelus", "stelle"] as const).map((value) => (
-            <FilterChip
+            <ToggleGroup.Item
               key={value}
-              active={appearance === value}
-              onClick={() => setAppearance(value)}
+              value={value}
+              className="inline-flex h-7 items-center justify-center border border-border px-3 text-sm font-medium text-muted-foreground outline-hidden transition-colors first:rounded-l-sm last:-ml-px last:rounded-r-sm hover:bg-accent hover:text-accent-foreground focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
             >
               {value === "caelus" ? t("terms.caelus") : t("terms.stelle")}
-            </FilterChip>
+            </ToggleGroup.Item>
           ))}
-        </fieldset>
+        </ToggleGroup.Root>
       }
       items={items}
       groups={groups}
