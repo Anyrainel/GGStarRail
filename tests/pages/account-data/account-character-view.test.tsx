@@ -221,7 +221,8 @@ describe("Account Character loadouts", () => {
     expect(
       card.querySelector("[data-relic-group-header='planar']")
     ).toContainElement(planarSets);
-    expect(card.querySelectorAll("[data-relic-score]")).toHaveLength(6);
+    expect(card.querySelectorAll("[data-relic-score]")).toHaveLength(0);
+    expect(card.querySelector("[data-relic-markers]")).toBeNull();
     expect(card.querySelector("[data-aggregate-score]")).toBeVisible();
     expect(
       within(card).getByText(
@@ -279,16 +280,28 @@ describe("Account Character loadouts", () => {
     }
     const offTargetMessage =
       "Ungraded because this configurable main stat is not accepted by the selected build.";
+    const scoreTrigger = within(card).getByRole("button", {
+      name: "Relic score breakdown",
+    });
+    const user = userEvent.setup();
+    await user.click(scoreTrigger);
+    const breakdown = await screen.findByText("Relic score breakdown");
+    const popup = breakdown.parentElement!;
+    expect(popup.querySelectorAll("[data-relic-score]")).toHaveLength(6);
+    await user.click(within(popup).getByText("Body", { exact: true }));
     expect(
-      within(offTargetColumn).getByRole("img", { name: offTargetMessage })
+      within(popup.querySelector("details[open]") as HTMLElement).getByText(
+        offTargetMessage
+      )
     ).toBeVisible();
     expect(
-      within(offTargetColumn).getByRole("progressbar", {
-        name: "Body Relic slot",
-      })
-    ).toHaveAttribute(
-      "aria-valuetext",
-      expect.stringContaining(offTargetMessage)
+      within(popup.querySelector("details[open]") as HTMLElement).getByText(
+        "Substat score"
+      )
+    ).toBeVisible();
+    await user.keyboard("{Escape}");
+    await waitFor(() =>
+      expect(screen.queryByText("Relic score breakdown")).toBeNull()
     );
 
     const emptyCharacter = account.characters.find(

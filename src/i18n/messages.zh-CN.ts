@@ -683,6 +683,7 @@ export const messagesZhCn = {
   "scoring.missingSlot": "未装备{slot}",
   "scoring.inventoryTitle": "遗器评分",
   "scoring.showingTop": "显示前 {shown} / {total} 件",
+  "scoring.breakdown": "遗器评分详情",
   "scoring.substatScore": "副词条评分",
   "scoring.mainStatScore": "主词条评分",
   "scoring.offTargetMain": "此可变主词条不在所选配装的接受范围内，因此不评级。",

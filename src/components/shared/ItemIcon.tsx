@@ -92,7 +92,7 @@ export function itemIconArtworkHeight(
 ): number {
   const width = ICON_CONFIG[size].icon;
   if (kind === "character") return width * (8 / 7);
-  if (kind === "light-cone" && !square) return width * (16 / 11);
+  if (kind === "light-cone" && !square) return width * 0.9 * (16 / 11);
   return width;
 }
 
@@ -190,14 +190,8 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
     const config = ICON_CONFIG[size];
     const lightCone = kind === "light-cone";
     const squareLightCone = lightCone && square;
-    const radius = squareLightCone
-      ? config.radius
-      : lightCone
-        ? 0
-        : kind === "character"
-          ? config.radius / 3
-          : config.radius;
-    const cornerRadius = Math.min(config.cornerRadius, radius);
+    const radius = config.radius;
+    const cornerRadius = size === "md" ? 3 : config.cornerRadius;
     const showLevel = level !== undefined;
     const showStatus = locked === true || locked === null;
     const showMarker = marker !== undefined && badge === undefined;
@@ -209,7 +203,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
         className={cn(
           "relative shrink-0 select-none overflow-hidden",
           !lightCone && "ring-1 ring-inset ring-white/15",
-          (!lightCone || squareLightCone) && getRarityColor(rarity, "gradient")
+          getRarityColor(rarity, "gradient")
         )}
         data-item-artwork
         data-item-square={squareLightCone ? "" : undefined}
@@ -240,7 +234,7 @@ export const ItemIcon = forwardRef<HTMLDivElement, ItemIconProps>(
             // large Light Cone art; object-cover aliases these tiny thumbnails.
             lightCone &&
               !square &&
-              "absolute left-1/2 -top-px h-[calc(100%+2px)] w-auto max-w-none -translate-x-1/2",
+              "absolute left-1/2 top-0 h-full w-auto max-w-none -translate-x-1/2",
             // The square tile crops past the card's thin frame.
             squareLightCone &&
               "absolute -left-[6%] -top-[4%] h-[112%] w-[112%] max-w-none object-cover object-top"

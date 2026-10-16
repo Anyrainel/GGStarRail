@@ -121,8 +121,14 @@ export function formatAccountStatValue(
   property: PropertyDefinition | undefined,
   locale: Locale
 ): string {
+  const ratio = isRatioProperty(property);
+  // Equipment panels truncate flat stats to integers and percentages to tenths.
+  // Keep the full account value for scoring and calculations.
+  const scale = ratio ? 10 : 1;
+  const displayed = Math.trunc(Number((value * scale).toFixed(8))) / scale;
   const formatter = new Intl.NumberFormat(locale, {
-    maximumFractionDigits: 3,
+    minimumFractionDigits: ratio ? 1 : 0,
+    maximumFractionDigits: ratio ? 1 : 0,
   });
-  return `${formatter.format(value)}${isRatioProperty(property) ? "%" : ""}`;
+  return `${formatter.format(displayed)}${ratio ? "%" : ""}`;
 }

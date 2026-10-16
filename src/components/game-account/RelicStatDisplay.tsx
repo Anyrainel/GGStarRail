@@ -1,6 +1,5 @@
-import { CircleHelp, LockKeyhole, Trash2, TriangleAlert } from "lucide-react";
 import { AssetImage } from "@/components/shared/AssetImage";
-import type { RelicScore, ScoreGrade } from "@/domain/build/scoring";
+import type { RelicScore } from "@/domain/build/scoring";
 import type { Relic } from "@/domain/game-account/schemas";
 import { useI18n } from "@/i18n/I18nContext";
 import type { Locale } from "@/i18n/locales";
@@ -26,24 +25,7 @@ interface RelicStatDisplayProps {
 const ELEMENT_DAMAGE_SUFFIX = "AddedRatio";
 const EMPTY_SUBSTAT_ROWS = ["empty-1", "empty-2", "empty-3", "empty-4"];
 
-function gradeClass(grade: ScoreGrade | null): string {
-  switch (grade) {
-    case "S":
-      return "bg-amber-400/20 text-amber-200";
-    case "A":
-      return "bg-violet-400/20 text-violet-200";
-    case "B":
-      return "bg-sky-400/20 text-sky-200";
-    case "C":
-      return "bg-emerald-400/20 text-emerald-200";
-    case "D":
-      return "bg-slate-400/20 text-slate-200";
-    default:
-      return "bg-amber-500/15 text-amber-200";
-  }
-}
-
-/** One Relic slot of a loadout: main stat and level, substats, and score. */
+/** One Relic slot of a loadout: main stat and level, and substats. */
 export function RelicStatDisplay({
   relic,
   score,
@@ -75,35 +57,7 @@ export function RelicStatDisplay({
     : undefined;
   const emptyRows = Math.max(0, 4 - relic.substats.length);
   const offTargetMain = score?.grade === null;
-  const scorePercent = score ? Math.max(0, Math.min(100, score.total)) : 0;
   const lineText = compact ? "text-[10px] md:text-xs" : "text-sm";
-  const markerClass = compact ? "h-2.5 w-2.5" : "h-3 w-3";
-  const markers = [
-    relic.locked === true && (
-      <LockKeyhole
-        key="locked"
-        className={cn("text-red-300", markerClass)}
-        role="img"
-        aria-label={t("field.locked")}
-      />
-    ),
-    relic.locked === null && (
-      <CircleHelp
-        key="lock-unknown"
-        className={cn("text-slate-300", markerClass)}
-        role="img"
-        aria-label={t("field.lockUnknown")}
-      />
-    ),
-    relic.discarded === true && (
-      <Trash2
-        key="discard"
-        className={cn("text-orange-300", markerClass)}
-        role="img"
-        aria-label={t("characterLoadout.discardMarked")}
-      />
-    ),
-  ].filter(Boolean);
 
   return (
     <article
@@ -207,84 +161,6 @@ export function RelicStatDisplay({
           </div>
         ))}
       </div>
-
-      {(score || markers.length > 0) && (
-        <div
-          className={cn(
-            "relative z-10 mt-auto pt-1",
-            compact ? "text-[10px]" : "text-xs"
-          )}
-          data-relic-score={score ? relic.key : undefined}
-        >
-          <div className="flex items-center gap-1 font-mono tabular-nums">
-            {score &&
-              (offTargetMain ? (
-                <span
-                  className={cn(
-                    "flex items-center gap-0.5 rounded-[4px] px-1 font-bold",
-                    gradeClass(score.grade)
-                  )}
-                  role="img"
-                  aria-label={t("scoring.offTargetMain")}
-                  title={t("scoring.offTargetMain")}
-                >
-                  <TriangleAlert className={markerClass} aria-hidden="true" />
-                  <span aria-hidden="true">—</span>
-                </span>
-              ) : (
-                <span
-                  className={cn(
-                    "rounded-[4px] px-1 font-bold",
-                    gradeClass(score.grade)
-                  )}
-                >
-                  {score.grade}
-                </span>
-              ))}
-            {markers.length > 0 && (
-              <span
-                className="flex shrink-0 items-center gap-0.5"
-                data-relic-markers
-              >
-                {markers}
-              </span>
-            )}
-            {score && (
-              <span className="ml-auto font-semibold text-amber-100">
-                {score.total.toFixed(1)}
-              </span>
-            )}
-          </div>
-          {score && (
-            <div
-              className="mt-1 h-0.5 overflow-hidden rounded-full bg-white/10"
-              role="progressbar"
-              aria-label={t("characterLoadout.relicSlotLabel", {
-                slot: slotName,
-              })}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={scorePercent}
-              aria-valuetext={
-                offTargetMain
-                  ? `${score.total.toFixed(1)}. ${t("scoring.offTargetMain")}`
-                  : score.total.toFixed(1)
-              }
-              title={offTargetMain ? t("scoring.offTargetMain") : undefined}
-            >
-              <div
-                className={cn(
-                  "h-full rounded-full",
-                  offTargetMain
-                    ? "bg-amber-500/70"
-                    : "bg-linear-to-r from-sky-400 via-violet-400 to-amber-300"
-                )}
-                style={{ width: `${scorePercent}%` }}
-              />
-            </div>
-          )}
-        </div>
-      )}
     </article>
   );
 }

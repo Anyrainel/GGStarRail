@@ -1,6 +1,7 @@
 import { CircleAlert, Star } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { RelicScoreHoverCard } from "@/components/game-account/RelicScoreHoverCard";
 import { RelicStatDisplay } from "@/components/game-account/RelicStatDisplay";
 import { AssetImage } from "@/components/shared/AssetImage";
 import { CatalogHoverCard } from "@/components/shared/CatalogHoverCard";
@@ -340,9 +341,9 @@ function CharacterCardComponent({
     <div
       className="shrink-0 text-right"
       title={
-        targetName
-          ? t("characterLoadout.buildTarget", { name: targetName })
-          : t("characterLoadout.scoreUnavailableHelp")
+        averageScore === null
+          ? t("characterLoadout.scoreUnavailableHelp")
+          : undefined
       }
       data-score-block
     >
@@ -362,7 +363,13 @@ function CharacterCardComponent({
           )}
         </div>
       ) : (
-        <>
+        <RelicScoreHoverCard
+          relics={relics}
+          scores={scores}
+          references={references}
+          locale={locale}
+          targetName={targetName}
+        >
           <div
             className={cn(
               "whitespace-nowrap font-bold leading-tight text-muted-foreground",
@@ -392,7 +399,7 @@ function CharacterCardComponent({
                   count: scores.size,
                 })}
           </span>
-        </>
+        </RelicScoreHoverCard>
       )}
     </div>
   );

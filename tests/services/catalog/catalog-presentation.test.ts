@@ -4,6 +4,7 @@ import type { BuildReferences } from "@/services/catalog/buildReferences";
 import { loadBuildReferences } from "@/services/catalog/buildReferences";
 import {
   characterCatalogPresentation,
+  formatAccountStatValue,
   localizedPropertyName,
 } from "@/services/catalog/presentation";
 
@@ -20,6 +21,19 @@ function character(id: string) {
 }
 
 describe("build catalog presentation", () => {
+  it.each([
+    ["HPDelta", 38.103755, "38"],
+    ["AttackDelta", 19.051877, "19"],
+    ["SpeedDelta", 2.6, "2"],
+    ["CriticalChanceBase", 3.2400000000000002, "3.2%"],
+    ["CriticalDamageBase", 6.48, "6.4%"],
+    ["HPAddedRatio", 43.2, "43.2%"],
+  ])("formats %s using equipment panel precision", (id, value, expected) => {
+    const property = references.properties.propertyById.get(id);
+    expect(property).toBeDefined();
+    expect(formatAccountStatValue(value, property, "en")).toBe(expected);
+    expect(formatAccountStatValue(value, property, "zh-CN")).toBe(expected);
+  });
   it("disambiguates legitimate Character forms with Path and Combat Type", () => {
     const preservationMarch = characterCatalogPresentation(
       character("1001"),

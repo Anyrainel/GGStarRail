@@ -22,8 +22,8 @@ afterAll(() => stylesheet.remove());
 
 describe("ItemIcon", () => {
   it.each([
-    ["light-cone", 0],
-    ["character", 10 / 3],
+    ["light-cone", 10],
+    ["character", 10],
     ["relic-piece", 10],
   ] as const)(
     "uses the %s corner treatment on artwork and level strip",
@@ -46,14 +46,14 @@ describe("ItemIcon", () => {
       );
       if (kind === "light-cone") {
         expect(art).not.toHaveClass("ring-1");
-        expect(img).toHaveClass("h-[calc(100%+2px)]", "w-auto", "-top-px");
-        expect(art.style.backgroundImage).toBe("");
+        expect(img).toHaveClass("h-full", "w-auto", "top-0");
+        expect(art).toHaveClass(getRarityColor(5, "gradient"));
       }
     }
   );
   it.each([
     ["character", 7 / 8],
-    ["light-cone", 11 / 16],
+    ["light-cone", 11 / (16 * 0.9)],
     ["relic-piece", 1],
     ["relic-set", 1],
   ] as const)(

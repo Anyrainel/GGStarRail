@@ -724,6 +724,7 @@ export const messagesEn = {
   "scoring.missingSlot": "No equipped {slot}",
   "scoring.inventoryTitle": "Scored Relics",
   "scoring.showingTop": "Top {shown} of {total}",
+  "scoring.breakdown": "Relic score breakdown",
   "scoring.substatScore": "Substat score",
   "scoring.mainStatScore": "Main-stat score",
   "scoring.offTargetMain":
