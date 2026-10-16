@@ -67,8 +67,8 @@ function RankCards({ ranks }: { ranks: readonly CharacterRank[] }) {
 function visibleTraces(traces: readonly CharacterTrace[]) {
   return traces.filter((trace) =>
     Boolean(
-      trace.description?.en.value ||
-        trace.description?.["zh-CN"].value ||
+      trace.description?.en?.value ||
+        trace.description?.["zh-CN"]?.value ||
         trace.levels.some((level) => level.properties.length)
     )
   );
@@ -186,7 +186,7 @@ function EnhancementDetails({
   propertyTables: PropertyCatalog;
   descriptionMode: CharacterDescriptionMode;
 }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [selected, setSelected] = useState(0);
   const variant = variants[selected] ?? variants[0];
   if (!variant) return null;
@@ -227,7 +227,10 @@ function EnhancementDetails({
         className="space-y-2"
       >
         {variant.summaries.map((summary) => (
-          <CurrencyWarText key={summary.en.value} text={summary} />
+          <CurrencyWarText
+            key={getLocalizedValue(summary, locale)}
+            text={summary}
+          />
         ))}
         <div className="flex flex-col gap-2">
           {variant.skills

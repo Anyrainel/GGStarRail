@@ -1,3 +1,5 @@
+import { getReferenceLocale } from "@/config/referenceLocale";
+import type { ReferenceLocale } from "@/domain/provenance";
 import manifest from "../../generated/catalog/manifest.json";
 import { betaEnabled } from "./betaState";
 import {
@@ -20,6 +22,7 @@ const urls = import.meta.glob<string>(
 );
 
 const pending = new Map<string, Promise<unknown>>();
+const files = new Map<string, Promise<unknown>>();
 const betaIds = new Map<string, ReadonlySet<string>>();
 
 function entityIds(document: unknown): Set<string> {
@@ -39,7 +42,19 @@ export function isBetaEntity(member: string, id: string | number): boolean {
   return betaEnabled() && (betaIds.get(member)?.has(String(id)) ?? false);
 }
 
-async function fetchJson(path: string): Promise<unknown> {
+function fetchJson(path: string): Promise<unknown> {
+  let promise = files.get(path);
+  if (!promise) {
+    promise = fetchFile(path).catch((error: unknown) => {
+      files.delete(path);
+      throw error;
+    });
+    files.set(path, promise);
+  }
+  return promise;
+}
+
+async function fetchFile(path: string): Promise<unknown> {
   const url = urls[`../../generated/catalog/${path}`];
   if (!url) throw new Error(`Missing game data file: ${path}`);
   const response = await fetch(url);
@@ -65,27 +80,36 @@ function textMap(value: unknown, path: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-async function loadPartition(member: string, beta: boolean): Promise<unknown> {
+async function loadPartition(
+  member: string,
+  beta: boolean,
+  locale: ReferenceLocale
+): Promise<unknown> {
   const prefix = beta ? `${member}_beta` : member;
   const suffix = beta ? ".json.gz" : ".json";
-  const [stats, en, zh] = await Promise.all(
-    ["stats", "en", "zh"].map((part) => fetchJson(`${prefix}_${part}${suffix}`))
+  const [stats, text] = await Promise.all(
+    ["stats", locale === "en" ? "en" : "zh"].map((part) =>
+      fetchJson(`${prefix}_${part}${suffix}`)
+    )
   );
   return restoreSourceRevision(
-    restoreLocalizedText(stats, textMap(en, prefix), textMap(zh, prefix)),
+    restoreLocalizedText(stats, { [locale]: textMap(text, prefix) }),
     manifest.source_revision
   );
 }
 
-export function loadGameMember(member: string): Promise<unknown> {
+export function loadGameMember(
+  member: string,
+  locale = getReferenceLocale()
+): Promise<unknown> {
   const includeBeta = betaEnabled();
-  const key = `${member}:${includeBeta}`;
+  const key = `${member}:${includeBeta}:${locale}`;
   let promise = pending.get(key);
   if (!promise) {
     promise = (async () => {
-      const released = await loadPartition(member, false);
+      const released = await loadPartition(member, false, locale);
       if (!includeBeta) return released;
-      const beta = await loadPartition(member, true);
+      const beta = await loadPartition(member, true, locale);
       const releasedIds = entityIds(released);
       betaIds.set(
         member,

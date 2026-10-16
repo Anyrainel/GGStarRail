@@ -1,3 +1,4 @@
+import { getReferenceLocale } from "@/config/referenceLocale";
 import type { CombatReferenceData } from "@/domain/combat/model/data";
 import {
   loadCharacters,
@@ -6,11 +7,13 @@ import {
 } from "@/providers/reference/catalog";
 
 /** Catalog definitions satisfy the combat engine's structural data types. */
-export async function loadCombatReferenceData(): Promise<CombatReferenceData> {
+export async function loadCombatReferenceData(
+  locale = getReferenceLocale()
+): Promise<CombatReferenceData> {
   const [characters, lightCones, relicSets] = await Promise.all([
-    loadCharacters(),
-    loadLightCones(),
-    loadRelicSets(),
+    loadCharacters(locale),
+    loadLightCones(locale),
+    loadRelicSets(locale),
   ]);
   return {
     characters: characters.byId,

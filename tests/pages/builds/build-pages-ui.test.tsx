@@ -322,14 +322,14 @@ describe("Build route interactions", () => {
         .account?.characters.map(({ definitionId }) => definitionId)
     );
     const names = references.characters.values.map(
-      (character) => character.name.en.value
+      (character) => character.name.en!.value
     );
     // A Character whose name is not part of any other name, so the search is exact.
     const unowned = references.characters.values.find(
       (character) =>
         !owned.has(character.id) &&
         !character.id.startsWith("8") &&
-        names.filter((name) => name.includes(character.name.en.value))
+        names.filter((name) => name.includes(character.name.en!.value))
           .length === 1
     )!;
     renderRoute(`${APP_PATHS.builds}?character=${unowned.id}`);

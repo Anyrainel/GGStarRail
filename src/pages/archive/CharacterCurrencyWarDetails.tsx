@@ -251,7 +251,7 @@ export function CharacterCurrencyWarDetails({
       {positionInfo && (
         <div className="flex flex-wrap gap-2">
           {positionInfo.tag_names.map((tag) => (
-            <Badge key={tag.en.value} variant="outline">
+            <Badge key={getLocalizedValue(tag, locale)} variant="outline">
               {getLocalizedValue(tag, locale)}
             </Badge>
           ))}

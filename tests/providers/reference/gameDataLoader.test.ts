@@ -13,9 +13,9 @@ describe("published game transport", () => {
     const value = await loadGameMember("characters");
     expect(value).toHaveProperty("schema_version", "2.0.0");
     const requests = vi.mocked(fetch).mock.calls.map(([url]) => String(url));
-    expect(requests).toHaveLength(3);
+    expect(requests).toHaveLength(2);
     expect(
-      requests.every((url) => /characters_(stats|en|zh)\.json/.test(url))
+      requests.every((url) => /characters_(stats|en)\.json/.test(url))
     ).toBe(true);
     expect(requests.some((url) => url.includes("beta"))).toBe(false);
   });

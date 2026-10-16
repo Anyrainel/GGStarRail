@@ -5,7 +5,8 @@
  */
 
 export interface KitText {
-  en: { value: string };
+  en?: { value: string };
+  "zh-CN"?: { value: string };
 }
 
 export interface KitLinearStat {

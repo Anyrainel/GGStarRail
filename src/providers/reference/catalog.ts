@@ -1,3 +1,4 @@
+import { getReferenceLocale } from "@/config/referenceLocale";
 import { canonicalCharacterId } from "@/domain/characterIdentity";
 import type { ReferenceLocale } from "@/domain/provenance";
 import { RuntimeReferenceManifestSchema } from "@/domain/provenance";
@@ -23,9 +24,12 @@ export const HSR_REFERENCE_MANIFEST = RuntimeReferenceManifestSchema.parse(
 );
 export const HSR_REFERENCE_REVISION = manifestJson.source_revision;
 
-async function loadMember<T>(collection: string): Promise<T> {
+async function loadMember<T>(
+  collection: string,
+  locale: ReferenceLocale
+): Promise<T> {
   const [document] = await Promise.all([
-    loadGameMember(collection) as Promise<MemberDocument<T, "2.0.0">>,
+    loadGameMember(collection, locale) as Promise<MemberDocument<T, "2.0.0">>,
     loadCatalogAssetLookup(),
   ]);
   if (
@@ -38,9 +42,10 @@ async function loadMember<T>(collection: string): Promise<T> {
 }
 
 async function loadDefinitions<T extends { id: string | number }>(
-  collection: string
+  collection: string,
+  locale: ReferenceLocale
 ): Promise<DefinitionCatalog<T, "2.0.0">> {
-  const values = await loadMember<readonly T[]>(collection);
+  const values = await loadMember<readonly T[]>(collection, locale);
   return {
     schemaVersion: "2.0.0",
     values,
@@ -60,7 +65,7 @@ export function getLocalizedValue(
   text: LocalizedText | null | undefined,
   locale: ReferenceLocale
 ): string | null {
-  return text?.[locale].value ?? null;
+  return text ? (text[locale]?.value ?? "") : null;
 }
 
 export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
@@ -70,8 +75,11 @@ export async function loadAchievementIds(): Promise<ReadonlySet<number>> {
     )
   );
 }
-export async function loadCharacters() {
-  const catalog = await loadDefinitions<CharacterDefinition>("characters");
+export async function loadCharacters(locale = getReferenceLocale()) {
+  const catalog = await loadDefinitions<CharacterDefinition>(
+    "characters",
+    locale
+  );
   // Canonical identities enumerate each playable kit once. Provider variants
   // retain exact game IDs and Trace metadata for imports and existing builds.
   return {
@@ -81,22 +89,24 @@ export async function loadCharacters() {
     ),
   };
 }
-export function loadLightCones() {
-  return loadDefinitions<LightConeDefinition>("light_cones");
+export function loadLightCones(locale = getReferenceLocale()) {
+  return loadDefinitions<LightConeDefinition>("light_cones", locale);
 }
-export function loadRelicSets() {
-  return loadDefinitions<RelicSetDefinition>("relic_sets");
+export function loadRelicSets(locale = getReferenceLocale()) {
+  return loadDefinitions<RelicSetDefinition>("relic_sets", locale);
 }
-export function loadRelicPieces() {
-  return loadDefinitions<RelicPieceDefinition>("relic_pieces");
+export function loadRelicPieces(locale = getReferenceLocale()) {
+  return loadDefinitions<RelicPieceDefinition>("relic_pieces", locale);
 }
-export async function loadPropertyTables(): Promise<PropertyCatalog> {
+export async function loadPropertyTables(
+  locale = getReferenceLocale()
+): Promise<PropertyCatalog> {
   const {
     properties,
     paths,
     combat_types: combatTypes,
     relic_slots: relicSlots,
-  } = await loadMember<PropertyTables>("property_tables");
+  } = await loadMember<PropertyTables>("property_tables", locale);
   return {
     schemaVersion: "2.0.0",
     properties,
@@ -109,6 +119,8 @@ export async function loadPropertyTables(): Promise<PropertyCatalog> {
     relicSlotById: new Map(relicSlots.map((entry) => [entry.id, entry])),
   };
 }
-export function loadProgression(): Promise<ProgressionTables> {
-  return loadMember<ProgressionTables>("progression");
+export function loadProgression(
+  locale = getReferenceLocale()
+): Promise<ProgressionTables> {
+  return loadMember<ProgressionTables>("progression", locale);
 }

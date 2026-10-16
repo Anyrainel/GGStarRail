@@ -25,28 +25,28 @@ export function restoreSourceRevision(
 /** Text pointers are scoped to one partition, before released/beta merging. */
 export function restoreLocalizedText(
   value: unknown,
-  en: JsonObject,
-  zh: JsonObject
+  catalogs: Partial<Record<"en" | "zh-CN", JsonObject>>
 ): unknown {
   if (Array.isArray(value)) {
-    return value.map((entry) => restoreLocalizedText(entry, en, zh));
+    return value.map((entry) => restoreLocalizedText(entry, catalogs));
   }
   if (!isObject(value)) return value;
   if ("$text" in value) {
     const pointer = value.$text;
     if (
       typeof pointer !== "string" ||
-      !Object.hasOwn(en, pointer) ||
-      !Object.hasOwn(zh, pointer)
+      Object.values(catalogs).some((text) => !Object.hasOwn(text, pointer))
     ) {
       throw new Error(`Missing localized game text: ${String(pointer)}`);
     }
-    return { en: en[pointer], "zh-CN": zh[pointer] };
+    return Object.fromEntries(
+      Object.entries(catalogs).map(([locale, text]) => [locale, text[pointer]])
+    );
   }
   return Object.fromEntries(
     Object.entries(value).map(([key, entry]) => [
       key,
-      restoreLocalizedText(entry, en, zh),
+      restoreLocalizedText(entry, catalogs),
     ])
   );
 }

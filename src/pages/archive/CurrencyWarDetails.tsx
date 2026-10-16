@@ -18,10 +18,10 @@ export function currencyWarSearchText(value: unknown): string {
   if (value === null || typeof value !== "object") return "";
   if (Array.isArray(value)) return value.map(currencyWarSearchText).join(" ");
   const record = value as Record<string, unknown>;
-  if ("en" in record && "zh-CN" in record) {
+  if ("en" in record || "zh-CN" in record) {
     const text = value as LocalizedText;
     return formatGameText(
-      `${text.en.value} ${text["zh-CN"].value}`
+      `${text.en?.value ?? ""} ${text["zh-CN"]?.value ?? ""}`
     ).toLocaleLowerCase();
   }
   return Object.values(record).map(currencyWarSearchText).join(" ");

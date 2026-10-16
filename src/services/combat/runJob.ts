@@ -35,6 +35,7 @@ interface CombatJobResults {
 export type CombatJobResult<K extends CombatJob["kind"]> = CombatJobResults[K];
 
 export interface CombatJobMessage {
+  locale: "en" | "zh-CN";
   id: number;
   job: CombatJob;
   beta: boolean;

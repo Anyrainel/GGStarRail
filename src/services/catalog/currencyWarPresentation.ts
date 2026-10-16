@@ -10,15 +10,20 @@ export function currencyWarSkillLevelCaps(
   skill: CurrencyWarSkill,
   characterSkills: readonly CharacterSkill[]
 ) {
-  const matches = characterSkills.filter(
-    (entry) =>
-      entry.id === skill.id ||
-      (["en", "zh-CN"] as const).every(
+  const matches = characterSkills.filter((entry) => {
+    if (entry.id === skill.id) return true;
+    const locales = (["en", "zh-CN"] as const).filter(
+      (locale) => entry.name[locale] && skill.name[locale]
+    );
+    return (
+      locales.length > 0 &&
+      locales.every(
         (locale) =>
-          formatGameText(entry.name[locale].value) ===
-          formatGameText(skill.name[locale].value)
+          formatGameText(entry.name[locale]?.value ?? "") ===
+          formatGameText(skill.name[locale]?.value ?? "")
       )
-  );
+    );
+  });
   const base = matches.length === 1 ? matches[0] : undefined;
   const max = Math.min(base?.max_level ?? skill.max_level, skill.max_level);
   return {

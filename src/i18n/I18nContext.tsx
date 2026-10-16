@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { STORAGE_KEYS } from "@/config/identity";
+import { setReferenceLocale } from "@/config/referenceLocale";
 import { isLocale, type Locale } from "./locales";
 import { type MessageKey, messagesEn } from "./messages.en";
 import { messagesZhCn } from "./messages.zh-CN";
@@ -49,13 +50,18 @@ function formatMessage(
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    const initial = initialLocale();
+    setReferenceLocale(initial);
+    return initial;
+  });
 
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
 
   const setLocale = useCallback((nextLocale: Locale) => {
+    setReferenceLocale(nextLocale);
     setLocaleState(nextLocale);
     try {
       localStorage.setItem(STORAGE_KEYS.locale, nextLocale);

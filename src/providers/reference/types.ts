@@ -9,8 +9,8 @@ export interface SourceText {
 }
 
 export interface LocalizedText {
-  en: SourceText;
-  "zh-CN": SourceText;
+  en?: SourceText;
+  "zh-CN"?: SourceText;
 }
 
 export interface MemberDocument<

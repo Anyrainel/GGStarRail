@@ -86,12 +86,12 @@ describe("shared catalog picker", () => {
     await user.click(screen.getByRole("button", { name: "Add Light Cone" }));
     expect(
       screen.queryByRole("button", {
-        name: incompatible.name.en.value,
+        name: incompatible.name.en!.value,
       })
     ).toBeNull();
     await user.click(
       screen.getByRole("button", {
-        name: compatible[0]!.name.en.value,
+        name: compatible[0]!.name.en!.value,
       })
     );
     expect(
@@ -100,17 +100,17 @@ describe("shared catalog picker", () => {
     await user.click(screen.getByRole("button", { name: "Add Light Cone" }));
     expect(
       within(screen.getByRole("dialog")).queryByRole("button", {
-        name: compatible[0]!.name.en.value,
+        name: compatible[0]!.name.en!.value,
       })
     ).toBeNull();
     await user.click(
       screen.getByRole("button", {
-        name: compatible[1]!.name.en.value,
+        name: compatible[1]!.name.en!.value,
       })
     );
     await user.click(
       screen.getByRole("button", {
-        name: `Light Cone 1: ${compatible[0]!.name.en.value}`,
+        name: `Light Cone 1: ${compatible[0]!.name.en!.value}`,
       })
     );
     await user.click(screen.getByRole("button", { name: "Clear" }));

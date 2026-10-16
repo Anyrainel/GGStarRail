@@ -40,10 +40,28 @@ export function eidolonLevelBonuses(
   ) as Record<LeveledAbility, number>;
   for (const rank of data.ranks) {
     if (rank.rank > eidolon) continue;
-    const text = rank.description.en.value;
+    const text = rank.description.en?.value ?? "";
     for (const [kind, pattern] of BONUS_PATTERNS) {
       const match = pattern.exec(text);
       if (match) bonuses[kind] += Number(match[1]);
+    }
+    if (!rank.description.en) {
+      const chinese = rank.description["zh-CN"]?.value ?? "";
+      const labels: readonly [LeveledAbility, string][] = [
+        ["memospriteSkill", "忆灵技"],
+        ["memospriteTalent", "忆灵天赋"],
+        ["elationSkill", "欢愉技"],
+        ["basic", "普攻"],
+        ["skill", "战技"],
+        ["ultimate", "终结技"],
+        ["talent", "天赋"],
+      ];
+      for (const [kind, label] of labels) {
+        const match = new RegExp(
+          `(?:^|[；;]|\\\\n|\\n)${label}等级\\+(\\d+)`
+        ).exec(chinese);
+        if (match) bonuses[kind] += Number(match[1]);
+      }
     }
   }
   return bonuses;

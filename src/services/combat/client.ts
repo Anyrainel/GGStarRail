@@ -1,3 +1,4 @@
+import { getReferenceLocale } from "@/config/referenceLocale";
 import { betaEnabled } from "@/providers/reference/betaState";
 import type { CombatCatalog } from "./jobs";
 import type { CombatJob, CombatJobMessage, CombatJobResult } from "./runJob";
@@ -65,6 +66,7 @@ function stateFor(lane: CombatLane, scope?: CombatJobScope): LaneState {
 }
 let nextId = 1;
 let inlineCatalog: Promise<CombatCatalog> | null = null;
+let inlineCatalogKey = "";
 
 /** The lane a job runs on unless the caller chooses one. */
 export function defaultLane(kind: CombatJob["kind"]): CombatLane {
@@ -111,7 +113,16 @@ export async function runCombatJob<K extends CombatJob["kind"]>(
       import("./jobs"),
       import("./runJob"),
     ]);
-    inlineCatalog ??= loadCombatCatalog();
+    const key = `${betaEnabled()}:${getReferenceLocale()}`;
+    if (!inlineCatalog || inlineCatalogKey !== key) {
+      inlineCatalogKey = key;
+      inlineCatalog = loadCombatCatalog(getReferenceLocale()).catch(
+        (error: unknown) => {
+          if (inlineCatalogKey === key) inlineCatalog = null;
+          throw error;
+        }
+      );
+    }
     return runJob(await inlineCatalog, job);
   }
   const id = nextId;
@@ -119,7 +130,12 @@ export async function runCombatJob<K extends CombatJob["kind"]>(
   const { pending } = stateFor(lane, scope);
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve: resolve as (value: unknown) => void, reject });
-    const message: CombatJobMessage = { id, job, beta: betaEnabled() };
+    const message: CombatJobMessage = {
+      id,
+      job,
+      beta: betaEnabled(),
+      locale: getReferenceLocale(),
+    };
     target.postMessage(message);
   });
 }

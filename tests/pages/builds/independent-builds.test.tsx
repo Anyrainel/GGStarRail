@@ -169,7 +169,7 @@ describe("independent Cavern and Planar builds", () => {
       return card;
     };
     const setName = (id: string) =>
-      references.relicSets.byId.get(id)!.name.en.value;
+      references.relicSets.byId.get(id)!.name.en!.value;
     await screen.findByRole("combobox", { name: "Cavern Relics" });
     expect(
       screen.getByRole("region", {
@@ -250,7 +250,7 @@ describe("independent Cavern and Planar builds", () => {
       (set) => set.kind === "planar_ornament" && set.id !== planar.planarSetId
     )!;
     await user.click(
-      screen.getByRole("button", { name: replacement.name.en.value })
+      screen.getByRole("button", { name: replacement.name.en!.value })
     );
     expect(changes).toEqual([{ ...planar, planarSetId: replacement.id }]);
   });

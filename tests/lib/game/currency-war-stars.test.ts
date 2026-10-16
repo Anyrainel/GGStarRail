@@ -52,8 +52,8 @@ describe("Currency War star comparisons", () => {
     expect(
       groups.map((group) => group.variants.map((entry) => entry.star))
     ).toEqual([[1, 2, 3], [4]]);
-    expect(groups[1].skill.description.en.value).not.toEqual(
-      groups[0].skill.description.en.value
+    expect(groups[1].skill.description.en!.value).not.toEqual(
+      groups[0].skill.description.en!.value
     );
   });
 

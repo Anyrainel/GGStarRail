@@ -44,8 +44,7 @@ describe("partitioned game data", () => {
     expect(
       restoreLocalizedText(
         [{ id: "1001", name: { $text: "/value/0/name" }, hp: 100 }],
-        en,
-        zh
+        { en, "zh-CN": zh }
       )
     ).toEqual([
       {
@@ -98,9 +97,9 @@ describe("partitioned game data", () => {
   });
 
   it("rejects incomplete locale files instead of hiding corrupt exports", () => {
-    expect(() => restoreLocalizedText({ $text: "/missing" }, {}, {})).toThrow(
-      "Missing localized game text"
-    );
+    expect(() =>
+      restoreLocalizedText({ $text: "/missing" }, { en: {} })
+    ).toThrow("Missing localized game text");
   });
 
   it("keeps the entire released entity when beta has stale fields", () => {

@@ -44,9 +44,9 @@ export function CurrencyWarEquipmentRules({
     equipment.dress_rule === "DressRuleTraitOnly" &&
     linkedBonds.length > 0 &&
     linkedBonds.every((bond) =>
-      (["en", "zh-CN"] as const).every((language) => {
-        const description = equipment.description?.[language].value ?? "";
-        const name = bond.name[language].value;
+      [locale].every((language) => {
+        const description = equipment.description?.[language]?.value ?? "";
+        const name = bond.name[language]?.value ?? "";
         return (
           description.includes(name) &&
           (language === "zh-CN"

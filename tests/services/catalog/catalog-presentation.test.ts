@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
+import { setReferenceLocale } from "@/config/referenceLocale";
 import type { BuildReferences } from "@/services/catalog/buildReferences";
 import { loadBuildReferences } from "@/services/catalog/buildReferences";
 import {
@@ -73,7 +74,7 @@ describe("build catalog presentation", () => {
     expect(silverWolf.label).not.toContain("<unbreak>");
   });
 
-  it("disambiguates flat and ratio properties from value_kind", () => {
+  it("disambiguates flat and ratio properties from value_kind", async () => {
     expect(localizedPropertyName("HPDelta", references.properties, "en")).toBe(
       "HP"
     );
@@ -86,11 +87,13 @@ describe("build catalog presentation", () => {
     expect(
       localizedPropertyName("AttackAddedRatio", references.properties, "en")
     ).toBe("ATK%");
+    setReferenceLocale("zh-CN");
+    const chinese = await loadBuildReferences();
     expect(
-      localizedPropertyName("DefenceDelta", references.properties, "zh-CN")
+      localizedPropertyName("DefenceDelta", chinese.properties, "zh-CN")
     ).toBe("防御力");
     expect(
-      localizedPropertyName("DefenceAddedRatio", references.properties, "zh-CN")
+      localizedPropertyName("DefenceAddedRatio", chinese.properties, "zh-CN")
     ).toBe("防御力%");
   });
 });

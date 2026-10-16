@@ -33,7 +33,7 @@ function renderArchive(path: string = APP_PATHS.archiveCharacters) {
 async function catalogRegion() {
   return screen.findByRole(
     "region",
-    { name: "Character catalog results" },
+    { name: /^(Character catalog results|角色图鉴结果)$/ },
     { timeout: 15_000 }
   );
 }
@@ -63,6 +63,9 @@ async function switchLocale(
       name: chinese ? "简体中文" : "English",
     })
   );
+  await screen.findByRole("region", {
+    name: chinese ? "角色图鉴结果" : "Character catalog results",
+  });
 }
 
 async function selectSkillLevel(
@@ -204,7 +207,7 @@ describe("Character archive", () => {
     }
   }, 30_000);
 
-  it("searches both languages, bypasses chips during search and restores their scope afterwards", async () => {
+  it("searches the loaded language, bypasses chips during search and restores their scope afterwards", async () => {
     const user = userEvent.setup();
     renderArchive();
     const region = await catalogRegion();
@@ -215,7 +218,7 @@ describe("Character archive", () => {
     expect(rows().length).toBeLessThan(allCount);
     const search = screen.getByLabelText("Search", { selector: "input" });
     await user.click(search);
-    await user.paste("三月七");
+    await user.paste("March 7th");
     expect(iceChip).toBeDisabled();
     expect(rows()).toHaveLength(2);
     const huntMarch = characterRow(region, "1224");
@@ -241,7 +244,11 @@ describe("Character archive", () => {
       /\{NICKNAME\}|\{F#|\{M#/
     );
     await switchLocale(user, true);
-    expect(characterRow(region, "8001")).toHaveTextContent("开拓者");
+    await user.clear(screen.getByRole("searchbox"));
+    await user.type(screen.getByRole("searchbox"), "开拓者");
+    expect(characterRow(await catalogRegion(), "8001")).toHaveTextContent(
+      "开拓者"
+    );
     expect(screen.getByTestId("character-detail")).not.toHaveTextContent(
       "{NICKNAME}"
     );

@@ -16,7 +16,7 @@ vi.mock("@/providers/reference/catalog", () => ({
   getLocalizedValue: (
     text: LocalizedText | null | undefined,
     locale: "en" | "zh-CN"
-  ) => text?.[locale].value ?? null,
+  ) => text?.[locale]?.value ?? null,
 }));
 const text = (en: string, zh = en): LocalizedText => ({
   en: { value: en },
@@ -173,7 +173,7 @@ describe("Character skill comparisons", () => {
     expect(
       within(screen.getByRole("table")).getByTitle("Value 2")
     ).toBeInTheDocument();
-    expect(skillComparisonRows(skill.description.en.value)).toEqual([
+    expect(skillComparisonRows(skill.description.en!.value)).toEqual([
       { index: 0, token: "#1[i]%", number: 1 },
       { index: 1, token: "#2[i]", number: 2 },
     ]);

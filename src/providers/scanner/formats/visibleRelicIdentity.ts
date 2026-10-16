@@ -22,8 +22,8 @@ function visibleDefinitionSignature(piece: RelicPieceDefinition): string {
     slot: piece.slot,
     rarity: piece.rarity,
     name: {
-      en: piece.name.en.value,
-      zhCn: piece.name["zh-CN"].value,
+      en: piece.name.en?.value,
+      zhCn: piece.name["zh-CN"]?.value,
     },
     iconPath: piece.icon_path,
   });

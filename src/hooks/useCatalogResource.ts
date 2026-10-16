@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "@/i18n/I18nContext";
 
 interface CatalogResource<T> {
   data: T | null;
@@ -9,6 +10,8 @@ interface CatalogResource<T> {
 export function useCatalogResource<T>(
   loader: () => Promise<T>
 ): CatalogResource<T> {
+  const { locale } = useI18n();
+  const [loadedLocale, setLoadedLocale] = useState(locale);
   const [resource, setResource] = useState<CatalogResource<T>>({
     data: null,
     error: null,
@@ -17,6 +20,7 @@ export function useCatalogResource<T>(
 
   useEffect(() => {
     let active = true;
+    setLoadedLocale(locale);
     setResource({ data: null, error: null, loading: true });
     loader().then(
       (data) => {
@@ -35,7 +39,9 @@ export function useCatalogResource<T>(
     return () => {
       active = false;
     };
-  }, [loader]);
+  }, [loader, locale]);
 
-  return resource;
+  return loadedLocale === locale
+    ? resource
+    : { data: null, error: null, loading: true };
 }

@@ -157,7 +157,7 @@ export function CurrencyWarArchiveContent({
             if (
               category.size &&
               "category" in entry &&
-              !category.has(entry.category_name.en.value)
+              !category.has(getLocalizedValue(entry.category_name, locale))
             )
               return false;
             if (
@@ -187,7 +187,7 @@ export function CurrencyWarArchiveContent({
   const categories = [
     ...new Map(
       catalog.equipment.map((entry) => [
-        entry.category_name.en.value,
+        getLocalizedValue(entry.category_name, locale),
         entry.category_name,
       ])
     ).entries(),
@@ -566,7 +566,7 @@ function CurrencyWarDetail({
         {"tags" in record && record.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {record.tags.map((tag) => (
-              <Badge variant="outline" key={tag.en.value}>
+              <Badge variant="outline" key={getLocalizedValue(tag, locale)}>
                 {getLocalizedValue(tag, locale)}
               </Badge>
             ))}
@@ -633,10 +633,10 @@ function CurrencyWarDetail({
           <div className="space-y-2 rounded-lg border border-border bg-card/30 p-3">
             {record.remarks.map((remark) => (
               <CurrencyWarText
-                key={
-                  ("description" in remark ? remark.description : remark).en
-                    .value
-                }
+                key={getLocalizedValue(
+                  "description" in remark ? remark.description : remark,
+                  locale
+                )}
                 text={"description" in remark ? remark.description : remark}
                 parameters={
                   "parameters" in remark ? remark.parameters : record.parameters

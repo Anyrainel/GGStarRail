@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { cleanup, configure } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, vi } from "vitest";
+import { setReferenceLocale } from "@/config/referenceLocale";
 import { installTimerGuard } from "./helpers/timerGuard";
 
 let timerGuard: ReturnType<typeof installTimerGuard>;
@@ -53,6 +54,7 @@ beforeAll(installFixtureTransport);
 beforeEach(() => {
   timerGuard = installTimerGuard();
   localStorage.clear();
+  setReferenceLocale("en");
   installFixtureTransport();
   Object.defineProperty(window, "matchMedia", {
     configurable: true,

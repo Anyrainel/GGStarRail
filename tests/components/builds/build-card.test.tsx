@@ -124,12 +124,12 @@ describe("BuildCard", () => {
       </I18nProvider>
     );
     const trigger = screen.getByRole("button", {
-      name: `Cavern Relic set: ${first.name.en.value} 2-piece + ${second.name.en.value} 2-piece`,
+      name: `Cavern Relic set: ${first.name.en!.value} 2-piece + ${second.name.en!.value} 2-piece`,
     });
     expect(trigger.querySelector('[data-set-plan="split"]')).not.toBeNull();
     expect(
       view.container.querySelector("[data-set-plan-names]")
-    ).toHaveTextContent(`${first.name.en.value}${second.name.en.value}`);
+    ).toHaveTextContent(`${first.name.en!.value}${second.name.en!.value}`);
     expect(
       screen.queryByRole("button", { name: /^Cavern mode|^4$|^2\+2$/ })
     ).toBeNull();
@@ -140,13 +140,13 @@ describe("BuildCard", () => {
       "true"
     );
     expect(
-      screen.getByRole("button", { name: first.name.en.value })
+      screen.getByRole("button", { name: first.name.en!.value })
     ).toHaveAttribute("aria-pressed", "true");
     expect(
-      screen.getByRole("button", { name: second.name.en.value })
+      screen.getByRole("button", { name: second.name.en!.value })
     ).toHaveAttribute("aria-pressed", "true");
     await user.click(
-      screen.getByRole("button", { name: replacement.name.en.value })
+      screen.getByRole("button", { name: replacement.name.en!.value })
     );
     expect(onBuildChange).toHaveBeenLastCalledWith({
       ...mixedBuild,
@@ -186,7 +186,9 @@ describe("BuildCard", () => {
       "aria-pressed",
       "true"
     );
-    await user.click(screen.getByRole("button", { name: other.name.en.value }));
+    await user.click(
+      screen.getByRole("button", { name: other.name.en!.value })
+    );
     expect(onBuildChange).toHaveBeenLastCalledWith({
       ...build,
       cavern: { mode: "two-plus-two", setIds: [current, other.id] },
@@ -197,7 +199,7 @@ describe("BuildCard", () => {
       screen.getByRole("button", { name: /^Cavern Relic set: .* 4-piece$/ })
     );
     await user.click(screen.getByRole("tab", { name: "2+2" }));
-    const currentName = references.relicSets.byId.get(current)!.name.en.value;
+    const currentName = references.relicSets.byId.get(current)!.name.en!.value;
     await user.click(screen.getByRole("button", { name: currentName }));
     expect(onBuildChange).toHaveBeenLastCalledWith({
       ...build,
@@ -383,7 +385,7 @@ describe("BuildCard", () => {
       })
     ).toBeVisible();
     await user.click(
-      screen.getByRole("button", { name: replacement.name.en.value })
+      screen.getByRole("button", { name: replacement.name.en!.value })
     );
     expect(onBuildChange).toHaveBeenCalledWith({
       ...build,

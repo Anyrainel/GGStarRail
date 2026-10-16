@@ -1,3 +1,4 @@
+import { getReferenceLocale } from "@/config/referenceLocale";
 import type { BuildConfiguration } from "@/domain/build/schemas";
 import { DEFAULT_BATTLE_OPTIONS } from "@/domain/combat/battle/battle";
 import type { ActionRecord } from "@/domain/combat/battle/log";
@@ -66,13 +67,15 @@ export interface CombatCatalog {
   readonly presetLightConeIds: Readonly<Record<string, readonly string[]>>;
 }
 
-export async function loadCombatCatalog(): Promise<CombatCatalog> {
+export async function loadCombatCatalog(
+  locale = getReferenceLocale()
+): Promise<CombatCatalog> {
   const [data, progression, pieces, propertyTables, presets] =
     await Promise.all([
-      loadCombatReferenceData(),
-      loadProgression(),
-      loadRelicPieces(),
-      loadPropertyTables(),
+      loadCombatReferenceData(locale),
+      loadProgression(locale),
+      loadRelicPieces(locale),
+      loadPropertyTables(locale),
       import("@/config/presets/builds/in-game.json"),
     ]);
   const preset = presets.default as unknown as {

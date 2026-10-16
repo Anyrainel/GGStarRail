@@ -130,7 +130,7 @@ describe("Light Cone archive cards", () => {
     expect(card).toHaveFocus();
   });
 
-  it("searches both languages across inactive chips and restores chip filters when cleared", async () => {
+  it("searches the loaded language across inactive chips and restores chip filters when cleared", async () => {
     const user = userEvent.setup();
     renderCatalog(<LightConeCatalog />);
     await screen.findByRole("button", { name: "Arrows" }, catalogWait);
@@ -140,7 +140,7 @@ describe("Light Cone archive cards", () => {
       screen.queryByRole("button", { name: "Arrows" })
     ).not.toBeInTheDocument();
     const search = screen.getByRole("searchbox");
-    await user.type(search, "锋镝");
+    await user.type(search, "Arrows");
     expect(screen.getByRole("button", { name: "Arrows" })).toBeInTheDocument();
     expect(rarity).toBeDisabled();
     await user.clear(search);
@@ -221,7 +221,7 @@ describe("Relic archive cards", () => {
     expect(within(planar).queryByText("4-Piece")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Planar/ }));
     await user.click(screen.getByRole("button", { name: /^Cavern/ }));
-    await user.type(screen.getByRole("searchbox"), "太空封印站");
+    await user.type(screen.getByRole("searchbox"), "Space Sealing Station");
     expect(screen.getByRole("button", { name: /^Cavern/ })).toBeDisabled();
     expect(screen.getAllByRole("article")).toHaveLength(1);
     expect(
@@ -256,7 +256,7 @@ describe("Relic archive cards", () => {
     }
   });
 
-  it("localizes concise set labels and retains English-name search", async () => {
+  it("localizes concise set labels and searches the loaded Chinese names", async () => {
     localStorage.setItem(STORAGE_KEYS.locale, "zh-CN");
     const user = userEvent.setup();
     renderCatalog(<RelicSetCatalog />);
@@ -265,10 +265,7 @@ describe("Relic archive cards", () => {
       { name: "遗器与位面饰品套装图鉴结果" },
       catalogWait
     );
-    await user.type(
-      screen.getByRole("searchbox"),
-      "Passerby of Wandering Cloud"
-    );
+    await user.type(screen.getByRole("searchbox"), "云无留迹的过客");
     const card = screen.getByRole("article", { name: "云无留迹的过客" });
     expect(within(card).getByText("2件套")).toBeInTheDocument();
     expect(within(card).getByText("4件套")).toBeInTheDocument();

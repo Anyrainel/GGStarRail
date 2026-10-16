@@ -3,11 +3,11 @@ import { STORAGE_KEYS } from "@/config/identity";
 import type { CombatCatalog } from "./jobs";
 import type { CombatJob, CombatJobMessage } from "./runJob";
 
-let catalog: Promise<CombatCatalog> | null = null;
+const catalogs = new Map<string, Promise<CombatCatalog>>();
 
 /**
- * Workers have no localStorage. The catalog loader only reads the beta flag,
- * which the page sends with every job so both sides load the same entities.
+ * Workers have no localStorage. Each job carries the beta flag and locale so
+ * both sides load the same data without fetching the other language.
  */
 function installStorageShim(beta: boolean) {
   const store: Record<string, string> = { [STORAGE_KEYS.beta]: String(beta) };
@@ -21,12 +21,21 @@ function installStorageShim(beta: boolean) {
 }
 
 self.onmessage = async (event: MessageEvent<CombatJobMessage>) => {
-  const { id, job, beta } = event.data;
+  const { id, job, beta, locale } = event.data;
   try {
+    const key = `${beta}:${locale}`;
+    let catalog = catalogs.get(key);
     if (!catalog) {
-      installStorageShim(beta);
-      const jobs = await import("./jobs");
-      catalog = jobs.loadCombatCatalog();
+      catalog = import("./jobs")
+        .then((jobs) => {
+          installStorageShim(beta);
+          return jobs.loadCombatCatalog(locale);
+        })
+        .catch((error: unknown) => {
+          catalogs.delete(key);
+          throw error;
+        });
+      catalogs.set(key, catalog);
     }
     const loaded = await catalog;
     const { runJob } = await import("./runJob");
