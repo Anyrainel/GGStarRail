@@ -12,7 +12,7 @@ export default function HomePage() {
   const { locale, t } = useI18n();
   return (
     <ScrollLayout bodyClassName="mx-auto flex min-h-full flex-col gap-6 overflow-x-hidden px-8 pb-4">
-      <section className="space-y-1 pb-0 pt-6 text-center">
+      <section className="space-y-1 pb-10 pt-6 text-center">
         <h1 className="flex h-16 items-center justify-center md:h-24">
           {locale === "zh-CN" ? (
             <span className="font-serif text-4xl font-bold tracking-wide text-primary drop-shadow-md md:text-6xl">

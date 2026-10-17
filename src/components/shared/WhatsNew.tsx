@@ -6,12 +6,8 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  ResponsiveDialog,
-  ResponsiveDialogContent,
-  ResponsiveDialogHeader,
-  ResponsiveDialogTitle,
-} from "@/components/ui/responsive-dialog";
+import { LocalizedSheetContent } from "@/components/shared/LocalizedSheetContent";
+import { Sheet, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useI18n } from "@/i18n/I18nContext";
 import { updateLogs } from "@/services/content/updateLog";
 
@@ -355,7 +351,7 @@ export function WhatsNew({ children }: { children: ReactNode }) {
     <>
       <style>{STYLES}</style>
 
-      <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <Sheet open={open} onOpenChange={setOpen}>
         <div ref={containerRef} className="hsr-whats-new relative">
           {children}
 
@@ -450,18 +446,19 @@ export function WhatsNew({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <ResponsiveDialogContent
+        <LocalizedSheetContent
+          side="right"
           closeLabel={t("common.close")}
           aria-describedby={undefined}
-          className="md:w-[min(30rem,calc(100vw-2rem))]"
+          className="w-[min(400px,85vw)] gap-0 p-0"
         >
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle className="flex items-center gap-2">
+          <SheetHeader className="shrink-0 border-b border-border px-5 pb-3 pt-5">
+            <SheetTitle className="flex items-center gap-2">
               <Megaphone className="size-4 text-primary" aria-hidden />
               {t("whatsNew.title")}
-            </ResponsiveDialogTitle>
-          </ResponsiveDialogHeader>
-          <div className="mt-5 space-y-6">
+            </SheetTitle>
+          </SheetHeader>
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-4">
             {news.roadmap.length > 0 && (
               <section>
                 <h3 className="mb-2 font-semibold text-primary">
@@ -501,8 +498,8 @@ export function WhatsNew({ children }: { children: ReactNode }) {
               </p>
             )}
           </div>
-        </ResponsiveDialogContent>
-      </ResponsiveDialog>
+        </LocalizedSheetContent>
+      </Sheet>
     </>
   );
 }
