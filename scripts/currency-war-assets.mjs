@@ -84,7 +84,7 @@ export async function publishCurrencyWarAssets({
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   const reference = await currencyWarAssetRequests(referenceRoot);
   if (
-    manifest.schema_version !== "2.0.0" ||
+    manifest.schema_version !== "3.0.0" ||
     manifest.source_revision !== reference.source_revision
   )
     throw new Error(

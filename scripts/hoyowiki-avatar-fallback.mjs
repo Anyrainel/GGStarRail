@@ -1,6 +1,11 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import {
+  artworkEncodingPolicy,
+  encodeArtwork,
+  validateEncodedArtwork,
+} from "./artwork-encoding.mjs";
 import { fetchBytes, sha256 } from "./crawl-common.mjs";
 
 // Audited standard portraits only. Do not accept arbitrary HoYoWiki uploads:
@@ -37,39 +42,23 @@ export function validateHoyowikiAvatarSource(entry) {
     !validImageUrl(entry.source_url) ||
     entry.width !== 160 ||
     entry.height !== 188 ||
-    !["original-webp", "webp-lossless"].includes(entry.encoding) ||
+    entry.encoding !== artworkEncodingPolicy("character", "avatar").id ||
     !/^[a-f0-9]{64}$/.test(entry.source_sha256) ||
     !/^[a-f0-9]{64}$/.test(entry.sha256) ||
     !/^[a-f0-9]{64}$/.test(entry.source_page_sha256) ||
     entry.path !== `webp/${entry.sha256}.webp` ||
-    (entry.source_format === "webp"
-      ? entry.encoding !== "original-webp" ||
-        entry.original_path !== `webp/${entry.source_sha256}.webp` ||
-        entry.sha256 !== entry.source_sha256
-      : entry.source_format !== "png" ||
-        entry.encoding !== "webp-lossless" ||
-        entry.original_path !== `originals/${entry.source_sha256}.png`)
+    !["png", "webp"].includes(entry.source_format) ||
+    entry.source_width !== 160 ||
+    entry.source_height !== 188 ||
+    entry.original_path !== undefined
   )
     throw new Error(`Invalid HoYoWiki Avatar fallback: ${entry.id}`);
 }
 
 export async function validateHoyowikiAvatarFallback(entry, directory) {
   validateHoyowikiAvatarSource(entry);
-  const original = await readFile(path.join(directory, entry.original_path));
-  if (
-    sha256(original) !== entry.source_sha256 ||
-    original.length !== entry.original_byte_count
-  )
-    throw new Error(`HoYoWiki Avatar original checksum mismatch: ${entry.id}`);
-  const metadata = await sharp(original).metadata();
-  if (
-    metadata.format !== entry.source_format ||
-    metadata.width !== 160 ||
-    metadata.height !== 188
-  )
-    throw new Error(
-      `HoYoWiki Avatar original dimensions mismatch: ${entry.id}`
-    );
+  const bytes = await readFile(path.join(directory, entry.path));
+  await validateEncodedArtwork(entry, bytes);
 }
 
 export async function acquireHoyowikiAvatarFallback(
@@ -126,29 +115,15 @@ export async function acquireHoyowikiAvatarFallback(
     throw new Error(
       `HoYoWiki Avatar must be 160×188 PNG or WebP: ${request.id}`
     );
-  const originalHash = sha256(original);
-  const output =
-    metadata.format === "webp"
-      ? original
-      : await sharp(original).webp({ lossless: true, effort: 4 }).toBuffer();
-  const hash = sha256(output);
+  const encoded = await encodeArtwork(original, request.kind, request.variant);
+  const hash = encoded.fields.sha256;
   const result = {
     ...base,
-    source_sha256: originalHash,
-    original_path:
-      metadata.format === "webp"
-        ? `webp/${originalHash}.webp`
-        : `originals/${originalHash}.png`,
-    source_format: metadata.format,
-    encoding: metadata.format === "webp" ? "original-webp" : "webp-lossless",
-    original_byte_count: original.length,
+    ...encoded.fields,
     path: `webp/${hash}.webp`,
     sha256: hash,
-    byte_count: output.length,
   };
-  await mkdir(path.join(directory, "originals"), { recursive: true });
   await mkdir(path.join(directory, "webp"), { recursive: true });
-  await writeFile(path.join(directory, result.original_path), original);
-  await writeFile(path.join(directory, result.path), output);
+  await writeFile(path.join(directory, result.path), encoded.bytes);
   return result;
 }

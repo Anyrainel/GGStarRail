@@ -5,6 +5,11 @@ import { parseArgs } from "node:util";
 import { gunzipSync } from "node:zlib";
 import sharp from "sharp";
 import {
+  artworkEncodingPolicy,
+  encodeArtwork,
+  validateEncodedArtwork,
+} from "./artwork-encoding.mjs";
+import {
   fetchBytes,
   mapConcurrent,
   root,
@@ -169,6 +174,8 @@ export async function publishNanokaArtwork({
     if (error.code !== "ENOENT") throw error;
   }
   const inventory = await catalogArtworkRequests(catalogRoot, previous.entries);
+  // Multiple downloads encode concurrently; avoid oversubscribing libvips too.
+  sharp.concurrency(1);
   const unavailable = new Map(
     previous.entries
       .filter((entry) => entry.availability === "unavailable")
@@ -176,7 +183,7 @@ export async function publishNanokaArtwork({
   );
   const byUrl = new Map(
     previous.entries
-      .filter((entry) => entry.path && entry.source_sha256 === entry.sha256)
+      .filter((entry) => entry.path && entry.source_provider !== "hoyowiki")
       .map((entry) => [entry.source_url, entry])
   );
   const downloads = new Map();
@@ -219,6 +226,30 @@ export async function publishNanokaArtwork({
             bytes = await readFile(path.join(outputDirectory, old.path));
             if (sha256(bytes) !== old.sha256 || bytes.length !== old.byte_count)
               throw new Error(`Corrupted Nanoka cache: ${old.path}`);
+            const policy = artworkEncodingPolicy(request.kind, request.variant);
+            if (old.encoding === policy.id) {
+              await validateEncodedArtwork(old, bytes);
+              const fields = { ...old };
+              // Several rarity-specific Relic IDs share one URL/file. Cache
+              // image fields only; preserve each current request's identity.
+              for (const key of [
+                "kind",
+                "id",
+                "variant",
+                "source_url",
+                "preview",
+              ])
+                delete fields[key];
+              return fields;
+            }
+            if (cached)
+              throw new Error(
+                `Stale artwork encoding; refresh required: ${request.source_url}`
+              );
+            // Migrate existing originals once. A later policy change must fetch
+            // upstream again, never recompress an already optimized derivative.
+            if (old.source_sha256 !== old.sha256)
+              bytes = await fetchBytes(request.source_url);
           } else {
             if (cached)
               throw new Error(
@@ -249,7 +280,13 @@ export async function publishNanokaArtwork({
           const metadata = await sharp(bytes).metadata();
           if (metadata.format !== "webp" || !metadata.width || !metadata.height)
             throw new Error(`Invalid Nanoka WebP: ${request.source_url}`);
-          const hash = sha256(bytes);
+          const encoded = await encodeArtwork(
+            bytes,
+            request.kind,
+            request.variant
+          );
+          bytes = encoded.bytes;
+          const hash = encoded.fields.sha256;
           const assetPath = `webp/${hash}.webp`;
           await writeFile(path.join(outputDirectory, assetPath), bytes);
           const publicPath = path.join(
@@ -260,19 +297,17 @@ export async function publishNanokaArtwork({
           await mkdir(path.dirname(publicPath), { recursive: true });
           await copyFile(path.join(outputDirectory, assetPath), publicPath);
           return {
-            source_sha256: hash,
+            ...encoded.fields,
             path: assetPath,
             sha256: hash,
             byte_count: bytes.length,
-            width: metadata.width,
-            height: metadata.height,
           };
         })()
       );
     return { ...request, ...(await downloads.get(request.source_url)) };
   });
   await saveJson(path.join(outputDirectory, "manifest.json"), {
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     source_revision: inventory.source_revision,
     entries: [
       ...previous.entries.filter(
@@ -287,7 +322,7 @@ export async function publishNanokaArtwork({
     ),
   });
   console.log(
-    `Nanoka artwork verified: ${entries.length} mappings / ${downloads.size} original WebPs`
+    `Catalog artwork verified: ${entries.length} mappings / ${downloads.size} optimized WebPs`
   );
   return entries;
 }

@@ -219,10 +219,11 @@ logic. Source URLs are rooted at `https://static.nanoka.cc/assets/hsr/`:
 | Relic / Ornament piece | `relicfigures/{declared_icon_filename}.webp` |
 | Relic / Ornament set | `itemfigures/{declared_icon_filename}.webp` |
 
-The original WebP bytes and dimensions are preserved in `data/source-assets/`
-under content-hashed filenames, with URLs and checksums in the versioned source
-manifest. `assets:webp` restores these bytes without another lossy conversion or
-the former 384 px Light Cone downscale. The runtime lookup distinguishes variants;
+Only optimized website WebPs are kept in `data/source-assets/` under content-hashed
+filenames. Source URLs, original checksums/dimensions/byte counts and the encoding
+policy are recorded in source manifest schema `3.0.0`; full-size originals are not
+retained. `assets:webp` restores the optimized bytes without re-encoding them.
+The runtime lookup distinguishes variants;
 default Character art is `avatar`, and default Light Cone art is `portrait`.
 Existing round Character usages explicitly request `round`.
 
@@ -231,11 +232,24 @@ Three audited Character Avatar fallbacks are allowed only after Nanoka returns
 the live English page identity, release status, official upload host and exactly
 160 × 188 source dimensions. The manifest explicitly records `source_provider:
 "hoyowiki"`, the Nanoka 404, HoYoWiki page URL/checksum and original image checksum.
-Already-WebP responses are preserved byte-for-byte even when their URL ends in
-`.png`; actual PNG responses retain their original bytes and use lossless WebP
-for rendering. Cached restoration verifies both source and runtime checksums.
+Image format is detected from bytes rather than the URL extension. These
+fallbacks use the same optimized Avatar policy, retaining source checksums but
+no original binaries. Cached restoration verifies encoded checksums and bounds.
 Normal acquisition retries Nanoka first, so a newly available primary image
 replaces the fallback. HoYoWiki's 118 × 130 Aha icon is intentionally not accepted.
+
+`scripts/artwork-encoding.mjs` defines the shared policies: Avatar at most
+160 × 188, Round at most 128 × 128, both Light Cone variants at most 256 px wide,
+and Relic/Ornament art within 256 × 256. All preserve aspect ratio and transparency,
+never upscale, and use WebP quality 85 with alpha quality 100. A clean, in-bounds
+WebP is kept unchanged if encoding would increase its size. Metadata is removed
+from generated images. The 256px equipment width covers an 80 CSS px icon at 3×
+pixel density. Currency War's existing small 128/256px icons remain unchanged.
+
+Cached acquisition verifies the current policy and never re-encodes a derivative.
+On a policy change, normal acquisition downloads the original source again;
+the one-time original-to-optimized migration can use a verified original already
+present locally. Obsolete source binaries are removed after replacing the manifest.
 
 Trailblazer genders and Paths use their own stable Nanoka IDs directly, replacing
 the former animated HoYoWiki frame extraction. Missing preview variants are

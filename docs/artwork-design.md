@@ -1,8 +1,9 @@
 # Catalog artwork audit and display proposal
 
-Measured on 2026-10-16 after replacing Character, Light Cone, Relic and Planar
-Ornament artwork with the original Nanoka gallery WebPs and three verified
-HoYoWiki Avatar fallbacks. This is a proposal for
+Source dimensions were measured on 2026-10-16 after replacing Character, Light Cone,
+Relic and Planar Ornament artwork with Nanoka gallery art and three verified
+HoYoWiki Avatar fallbacks. Website assets are now optimized derivatives, with no
+full-size originals retained. This is a proposal for
 the four display modes, not a claim that every existing caller has migrated.
 The source switch and independent variant selection are implemented.
 
@@ -12,7 +13,7 @@ The selected current catalog contains 99 Character IDs, 172 Light Cone IDs,
 64 sets and 774 rarity-specific Relic/Ornament piece IDs. Shared artwork is
 downloaded once; multiple rarity IDs can resolve to the same original file.
 
-| Asset | Available mappings | Source dimensions |
+| Asset | Available mappings | Upstream source dimensions |
 | --- | ---: | --- |
 | Character Avatar Icon | 98 | All 160 × 188; 95 Nanoka, three HoYoWiki fallbacks |
 | Character Round Icon | 99 | All 128 × 128 |
@@ -106,12 +107,15 @@ handwritten round avatars and equipment thumbnails into these primitives.
 
 ## Quality and validation
 
-Keep downloaded originals immutable and checksummed. This refresh stores the
-original WebP bytes and does not apply the former 384px / quality-75 Light Cone
-conversion. Original source files therefore remain available for visual review
-and future responsive derivatives. If profiling later justifies thumbnails,
-generate them from the originals with explicit density-aware sizes; never use
-the tilted image as an accidental low-resolution replacement for flat art.
+Retain only website-sized, quality-85 WebPs. Avatar files are at most 160 × 188,
+Round files 128 × 128, Light Cone files 256px wide, and Relic/Ornament art fits
+within 256 × 256. Preserve transparency at alpha quality 100 and do not upscale.
+Clean small source WebPs may pass through if recompression would increase bytes.
+The former full-size corpus occupied 91.2 MB; the optimized corpus is 19.5 MB,
+including unchanged Currency War icons. Median flat Light Cone size falls from
+394 KB to 32 KB. Source URLs and checksums allow originals to be downloaded again
+if larger artwork becomes a product requirement. Do not upscale the optimized
+images for a future large gallery, or recompress derivatives after a policy change.
 
 Run `node scripts/audit-source-artwork.mjs` to regenerate a checksum-verified
 dimension report and comparison HTML under `test-results/artwork-audit/`.

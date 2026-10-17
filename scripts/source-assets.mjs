@@ -1,5 +1,6 @@
 import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { validateEncodedArtwork } from "./artwork-encoding.mjs";
 import { root, sha256 } from "./crawl-common.mjs";
 import { currencyWarAssetKinds } from "./currency-war-assets.mjs";
 import { validateHoyowikiAvatarFallback } from "./hoyowiki-avatar-fallback.mjs";
@@ -44,7 +45,7 @@ export async function restoreSourceAssets(lookup) {
     )
   );
   if (
-    manifest.schema_version !== "2.0.0" ||
+    manifest.schema_version !== "3.0.0" ||
     manifest.source_revision !== reference.source_revision
   )
     throw new Error("Tracked source assets do not match reference revision");
@@ -108,6 +109,8 @@ export async function restoreSourceAssets(lookup) {
       payload.length !== entry.byte_count
     )
       throw new Error(`Tracked source asset checksum mismatch: ${entry.path}`);
+    if (catalogArtworkKinds.includes(entry.kind))
+      await validateEncodedArtwork(entry, payload);
     const target = path.join(root, "public/assets/ggstarrail", entry.path);
     await mkdir(path.dirname(target), { recursive: true });
     await copyFile(path.join(directory, entry.path), target);

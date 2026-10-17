@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import sharp from "sharp";
+import { encodeArtwork, validateEncodedArtwork } from "./artwork-encoding.mjs";
 import { reusableWebpAsset, sha256 } from "./crawl-common.mjs";
 import {
   currencyWarAssetKinds,
@@ -26,11 +27,116 @@ import { nanokaVersion } from "./nanoka.mjs";
 import {
   cachedUnavailableArtwork,
   nanokaArtworkRequests,
+  publishNanokaArtwork,
 } from "./nanoka-assets.mjs";
 import { sourceAssetVariant } from "./source-assets.mjs";
 
+test("artwork compression bounds each image kind without losing alpha or upscaling", async () => {
+  for (const [kind, variant, width, height, expectedWidth, expectedHeight] of [
+    ["character", "avatar", 320, 376, 160, 188],
+    ["character", "round", 256, 256, 128, 128],
+    ["light-cone", "portrait", 904, 1260, 256, 357],
+    ["light-cone", "icon", 348, 408, 256, 300],
+    ["relic-piece", undefined, 512, 512, 256, 256],
+    ["relic-set", undefined, 128, 128, 128, 128],
+  ]) {
+    const original = await sharp({
+      create: {
+        width,
+        height,
+        channels: 4,
+        background: { r: 20, g: 100, b: 140, alpha: 0.5 },
+      },
+    })
+      .png()
+      .toBuffer();
+    const result = await encodeArtwork(original, kind, variant);
+    const entry = { kind, variant, id: "1001", ...result.fields };
+    await validateEncodedArtwork(entry, result.bytes);
+    assert.equal(entry.width, expectedWidth);
+    assert.equal(entry.height, expectedHeight);
+    assert.equal(entry.source_sha256, sha256(original));
+    const stats = await sharp(result.bytes).stats();
+    assert.equal(stats.channels[3].min, 128);
+    assert.equal(stats.channels[3].max, 128);
+    await assert.rejects(
+      validateEncodedArtwork(
+        { ...entry, encoding: "old-policy" },
+        result.bytes
+      ),
+      /Invalid optimized artwork/
+    );
+  }
+});
+
+test("cached optimized Relic art preserves separate rarity IDs sharing one source", async (t) => {
+  const directory = await mkdtemp(
+    path.join(os.tmpdir(), "ggsr-artwork-cache-")
+  );
+  t.after(async () => {
+    assert.equal(path.dirname(directory), path.resolve(os.tmpdir()));
+    await rm(directory, { recursive: true });
+  });
+  const catalogRoot = path.join(directory, "catalog");
+  const outputDirectory = path.join(directory, "artwork");
+  await mkdir(catalogRoot);
+  await mkdir(path.join(outputDirectory, "webp"), { recursive: true });
+  const records = [
+    {
+      id: "31011",
+      icon_path: "SpriteOutput/ItemIcon/RelicIcons/IconRelic_101_1.png",
+    },
+    {
+      id: "41011",
+      icon_path: "SpriteOutput/ItemIcon/RelicIcons/IconRelic_101_1.png",
+    },
+  ];
+  const files = {};
+  for (const collection of [
+    "characters",
+    "light_cones",
+    "relic_sets",
+    "relic_pieces",
+  ]) {
+    const bytes = Buffer.from(
+      JSON.stringify({ value: collection === "relic_pieces" ? records : [] })
+    );
+    files[`${collection}.json`] = { sha256: sha256(bytes) };
+    await writeFile(path.join(catalogRoot, `${collection}.json`), bytes);
+  }
+  await writeFile(
+    path.join(catalogRoot, "manifest.json"),
+    JSON.stringify({ source: { revision: "a".repeat(40) }, files })
+  );
+  const original = await sharp({
+    create: { width: 32, height: 32, channels: 4, background: "transparent" },
+  })
+    .png()
+    .toBuffer();
+  const encoded = await encodeArtwork(original, "relic-piece");
+  const assetPath = `webp/${encoded.fields.sha256}.webp`;
+  await writeFile(path.join(outputDirectory, assetPath), encoded.bytes);
+  const entries = nanokaArtworkRequests("relic_pieces", records).map(
+    (request) => ({ ...request, ...encoded.fields, path: assetPath })
+  );
+  await writeFile(
+    path.join(outputDirectory, "manifest.json"),
+    JSON.stringify({ schema_version: "3.0.0", entries })
+  );
+  const result = await publishNanokaArtwork({
+    catalogRoot,
+    outputDirectory,
+    cached: true,
+  });
+  assert.deepEqual(
+    result.map((entry) => entry.id),
+    ["31011", "41011"]
+  );
+  assert.equal(result[0].path, result[1].path);
+});
+
 for (const format of ["png", "webp"])
-  test(`HoYoWiki fallback preserves 160×188 ${format} pixels and provenance`, async (t) => {
+  test(`HoYoWiki fallback optimizes 160×188 ${format} with provenance`, async (t) => {
     const directory = await mkdtemp(
       path.join(os.tmpdir(), "ggsr-avatar-fallback-")
     );
@@ -75,10 +181,18 @@ for (const format of ["png", "webp"])
     assert.equal(asset.source_sha256, sha256(original));
     await validateHoyowikiAvatarFallback(asset, directory);
     const output = await readFile(path.join(directory, asset.path));
-    if (format === "webp") assert.deepEqual(output, original);
+    assert.equal(asset.original_path, undefined);
     assert.deepEqual(
-      await sharp(output).ensureAlpha().raw().toBuffer(),
-      await sharp(original).ensureAlpha().raw().toBuffer()
+      await sharp(output)
+        .ensureAlpha()
+        .extractChannel("alpha")
+        .raw()
+        .toBuffer(),
+      await sharp(original)
+        .ensureAlpha()
+        .extractChannel("alpha")
+        .raw()
+        .toBuffer()
     );
     assert.throws(
       () => validateHoyowikiAvatarSource({ ...asset, id: "1511" }),
@@ -96,10 +210,10 @@ for (const format of ["png", "webp"])
         }),
       /Invalid HoYoWiki/
     );
-    await writeFile(path.join(directory, asset.original_path), "corrupted");
+    await writeFile(path.join(directory, asset.path), "corrupted");
     await assert.rejects(
       validateHoyowikiAvatarFallback(asset, directory),
-      /checksum mismatch/
+      /Invalid optimized artwork|unsupported image format/
     );
   });
 

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
+import { validateEncodedArtwork } from "./artwork-encoding.mjs";
 import { checkAchievementData } from "./check-achievement-data.mjs";
 import { root, sha256 } from "./crawl-common.mjs";
 import { validateHoyowikiAvatarFallback } from "./hoyowiki-avatar-fallback.mjs";
@@ -115,7 +116,7 @@ export async function checkGameData(repositoryRoot = root) {
       "utf8"
     )
   );
-  assert.equal(sourceAssets.schema_version, "2.0.0");
+  assert.equal(sourceAssets.schema_version, "3.0.0");
   assert.equal(sourceAssets.source_revision, manifest.source_revision);
   const assetPaths = new Set();
   const artworkKeys = new Set();
@@ -151,16 +152,11 @@ export async function checkGameData(repositoryRoot = root) {
     assert.equal(bytes.length, asset.byte_count);
     assert.equal(sha256(bytes), asset.sha256);
     if (
-      !hoyowiki &&
       ["character", "light-cone", "relic-set", "relic-piece"].includes(
         asset.kind
       )
     )
-      assert.equal(
-        asset.source_sha256,
-        asset.sha256,
-        `Nanoka artwork was re-encoded: ${key}`
-      );
+      await validateEncodedArtwork(asset, bytes);
     assetPaths.add(`/assets/ggstarrail/${asset.path}`);
   }
   const documents = {};
