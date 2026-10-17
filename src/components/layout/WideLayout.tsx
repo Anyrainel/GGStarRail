@@ -63,11 +63,11 @@ export function WideLayout({
             <>
               {groups ? (
                 <div
-                  className="ml-auto hidden min-w-0 flex-wrap items-center gap-4 md:flex"
+                  className="ml-auto hidden min-w-0 flex-wrap items-center gap-3 md:flex"
                   data-wide-filters
                 >
                   {groups.map((group, index) => (
-                    <div key={group.key} className="flex items-center gap-4">
+                    <div key={group.key} className="flex items-center gap-3">
                       {index > 0 && (
                         <div
                           className="h-6 w-px shrink-0 bg-border"
@@ -105,7 +105,7 @@ export function WideLayout({
                 >
                   <SheetTitle>{t("common.filters")}</SheetTitle>
                   {groups ? (
-                    <div className="mt-4 space-y-4">
+                    <div className="mt-4 space-y-3">
                       {groups.map((group) => (
                         <div key={group.key} className="space-y-2">
                           {group.label && (

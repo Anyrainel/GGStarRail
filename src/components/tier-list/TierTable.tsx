@@ -47,7 +47,7 @@ import { useTierLayout } from "./tierLayoutMode";
 import type { TierGroupConfig, TierItemData } from "./tierTableTypes";
 
 interface TierTableProps<Group extends string> {
-  /** Display chips placed before Show Paths in the first filter group. */
+  /** Additional display controls in the first filter group. */
   extraFilters?: ReactNode;
   /** Adds a chip per group that limits the grid to the chosen groups. */
   filterableGroups?: boolean;
@@ -150,7 +150,7 @@ export function TierTable<Group extends string>({
             )
           : category === "light-cone"
             ? account?.lightCones.map((item) => item.definitionId)
-            : account?.relics.map((item) => item.setId)
+            : []
       ),
     [account, category]
   );
@@ -386,21 +386,11 @@ export function TierTable<Group extends string>({
   const pathName = (id: string) =>
     localizedName(references?.properties.pathById.get(id)?.name, locale, id);
   const filterGroups: WideFilterGroup[] = [];
-  if (category === "character") {
+  if (extraFilters) {
     filterGroups.push({
       key: "display",
       fullWidth: true,
-      content: (
-        <div className="flex flex-wrap items-center gap-1">
-          {extraFilters}
-          <FilterChip
-            active={showPaths}
-            onClick={() => setShowPaths(!showPaths)}
-          >
-            {t("tier.controls.showPaths")}
-          </FilterChip>
-        </div>
-      ),
+      content: extraFilters,
     });
   }
   if (filterableGroups) {
@@ -444,22 +434,36 @@ export function TierTable<Group extends string>({
       ),
     });
   }
-  filterGroups.push({
-    key: "owned",
-    fullWidth: true,
-    content: (
-      <FilterChip
-        active={ownedOnly && !!account}
-        title={account ? undefined : t("tier.controls.ownedOnlyUnavailable")}
-        className={cn(!account && "cursor-not-allowed")}
-        onClick={() => {
-          if (account) setOwnedOnly(!ownedOnly);
-        }}
-      >
-        {t("tier.controls.ownedOnly")}
-      </FilterChip>
-    ),
-  });
+  if (category !== "relic-set") {
+    filterGroups.push({
+      key: "options",
+      fullWidth: true,
+      content: (
+        <div className="flex flex-wrap items-center gap-1">
+          <FilterChip
+            active={ownedOnly && !!account}
+            title={
+              account ? undefined : t("tier.controls.ownedOnlyUnavailable")
+            }
+            className={cn(!account && "cursor-not-allowed")}
+            onClick={() => {
+              if (account) setOwnedOnly(!ownedOnly);
+            }}
+          >
+            {t("tier.controls.ownedOnly")}
+          </FilterChip>
+          {category === "character" && (
+            <FilterChip
+              active={showPaths}
+              onClick={() => setShowPaths(!showPaths)}
+            >
+              {t("tier.controls.showPaths")}
+            </FilterChip>
+          )}
+        </div>
+      ),
+    });
+  }
   if (pathOptions.length) {
     filterGroups.push({
       key: "paths",
