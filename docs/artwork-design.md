@@ -1,7 +1,8 @@
 # Catalog artwork audit and display proposal
 
 Measured on 2026-10-16 after replacing Character, Light Cone, Relic and Planar
-Ornament artwork with the original Nanoka gallery WebPs. This is a proposal for
+Ornament artwork with the original Nanoka gallery WebPs and three verified
+HoYoWiki Avatar fallbacks. This is a proposal for
 the four display modes, not a claim that every existing caller has migrated.
 The source switch and independent variant selection are implemented.
 
@@ -13,7 +14,7 @@ downloaded once; multiple rarity IDs can resolve to the same original file.
 
 | Asset | Available mappings | Source dimensions |
 | --- | ---: | --- |
-| Character Avatar Icon | 95 | All 160 × 188 |
+| Character Avatar Icon | 98 | All 160 × 188; 95 Nanoka, three HoYoWiki fallbacks |
 | Character Round Icon | 99 | All 128 × 128 |
 | Light Cone flat portrait | 172 | 170 at 904 × 1260; one 902 × 1258; one 902 × 1260 |
 | Light Cone tilted icon | 172 | 171 at 348 × 408; one 317 × 394 |
@@ -31,10 +32,11 @@ change the dimensions of aligned or square display frames.
 
 Nanoka's Avatar endpoints currently return 404 for 1507 (千冶·刃),
 1512 (知更鸟·晴歌), 1513 (砂金·戏浪), and preview-only 1511. Their Round Icons
-exist. These absences are explicit source-manifest records, not substituted
-Shop Icons, old HoYoWiki images or generated crops presented as original art.
-Native Avatar requests currently render the normal missing-art placeholder for
-these four IDs; Round requests work. Re-running acquisition rechecks the gaps.
+exist. The first three now use explicitly recorded, live-verified HoYoWiki
+160 × 188 portraits. HoYoWiki's page for 1511 (Aeon ★ Aha) currently offers a
+118 × 130 crop, so its native Avatar request still renders the normal missing-art
+placeholder; its Nanoka Round Icon works. No Shop Icon or generated crop is
+presented as a standard Avatar. Re-running acquisition retries Nanoka first.
 
 The prior square artwork for Yukong, Hanya, Rappa and The Herta has been
 replaced by the same 160 × 188 Avatar Icon format as other available Characters.

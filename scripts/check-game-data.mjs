@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { gunzipSync } from "node:zlib";
 import { checkAchievementData } from "./check-achievement-data.mjs";
 import { root, sha256 } from "./crawl-common.mjs";
+import { validateHoyowikiAvatarFallback } from "./hoyowiki-avatar-fallback.mjs";
 import { currencyWarMembers } from "./validate-currency-war.mjs";
 import { validateCurrentReference } from "./validate-current-reference.mjs";
 
@@ -120,9 +121,16 @@ export async function checkGameData(repositoryRoot = root) {
   const artworkKeys = new Set();
   const expectedArtworkKeys = new Set();
   for (const asset of sourceAssets.entries) {
-    assert.ok(
-      asset.source_url.startsWith("https://static.nanoka.cc/assets/hsr/")
-    );
+    const hoyowiki = asset.source_provider === "hoyowiki";
+    if (hoyowiki)
+      await validateHoyowikiAvatarFallback(
+        asset,
+        path.join(repositoryRoot, "data/source-assets")
+      );
+    else
+      assert.ok(
+        asset.source_url.startsWith("https://static.nanoka.cc/assets/hsr/")
+      );
     const key = `${asset.kind}:${asset.id}:${asset.variant ?? ""}`;
     assert.equal(
       artworkKeys.has(key),
@@ -143,6 +151,7 @@ export async function checkGameData(repositoryRoot = root) {
     assert.equal(bytes.length, asset.byte_count);
     assert.equal(sha256(bytes), asset.sha256);
     if (
+      !hoyowiki &&
       ["character", "light-cone", "relic-set", "relic-piece"].includes(
         asset.kind
       )

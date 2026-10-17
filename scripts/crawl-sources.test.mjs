@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import sharp from "sharp";
 import { reusableWebpAsset, sha256 } from "./crawl-common.mjs";
 import {
   currencyWarAssetKinds,
@@ -16,12 +17,145 @@ import {
   crawlHoyolab,
   releasedPage,
 } from "./hoyolab.mjs";
+import {
+  acquireHoyowikiAvatarFallback,
+  validateHoyowikiAvatarFallback,
+  validateHoyowikiAvatarSource,
+} from "./hoyowiki-avatar-fallback.mjs";
 import { nanokaVersion } from "./nanoka.mjs";
 import {
   cachedUnavailableArtwork,
   nanokaArtworkRequests,
 } from "./nanoka-assets.mjs";
 import { sourceAssetVariant } from "./source-assets.mjs";
+
+for (const format of ["png", "webp"])
+  test(`HoYoWiki fallback preserves 160×188 ${format} pixels and provenance`, async (t) => {
+    const directory = await mkdtemp(
+      path.join(os.tmpdir(), "ggsr-avatar-fallback-")
+    );
+    t.after(async () => {
+      assert.equal(path.dirname(directory), path.resolve(os.tmpdir()));
+      await rm(directory, { recursive: true });
+    });
+    const original = await sharp({
+      create: {
+        width: 160,
+        height: 188,
+        channels: 4,
+        background: { r: 13, g: 128, b: 211, alpha: 0.7 },
+      },
+    })
+      .toFormat(format)
+      .toBuffer();
+    const request = nanokaArtworkRequests("characters", [{ id: "1507" }])[0];
+    const page = {
+      retcode: 0,
+      data: {
+        page: {
+          id: "5217",
+          name: "Mortenax Blade",
+          beta: false,
+          status: "Online",
+          icon_url:
+            "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/avatar.png",
+        },
+      },
+    };
+    const fetchSource = async (url) =>
+      url.includes("entry_page?")
+        ? Buffer.from(JSON.stringify(page))
+        : original;
+    const asset = await acquireHoyowikiAvatarFallback(
+      request,
+      directory,
+      fetchSource
+    );
+    assert.equal(asset.primary_source_url, request.source_url);
+    assert.equal(asset.source_sha256, sha256(original));
+    await validateHoyowikiAvatarFallback(asset, directory);
+    const output = await readFile(path.join(directory, asset.path));
+    if (format === "webp") assert.deepEqual(output, original);
+    assert.deepEqual(
+      await sharp(output).ensureAlpha().raw().toBuffer(),
+      await sharp(original).ensureAlpha().raw().toBuffer()
+    );
+    assert.throws(
+      () => validateHoyowikiAvatarSource({ ...asset, id: "1511" }),
+      /Invalid HoYoWiki/
+    );
+    assert.throws(
+      () => validateHoyowikiAvatarSource({ ...asset, width: 118 }),
+      /Invalid HoYoWiki/
+    );
+    assert.throws(
+      () =>
+        validateHoyowikiAvatarSource({
+          ...asset,
+          source_url: "https://example.com/avatar.png",
+        }),
+      /Invalid HoYoWiki/
+    );
+    await writeFile(path.join(directory, asset.original_path), "corrupted");
+    await assert.rejects(
+      validateHoyowikiAvatarFallback(asset, directory),
+      /checksum mismatch/
+    );
+  });
+
+test("HoYoWiki fallback rejects mismatched portraits and leaves nonstandard Aha unavailable", async (t) => {
+  const directory = await mkdtemp(
+    path.join(os.tmpdir(), "ggsr-avatar-fallback-")
+  );
+  t.after(async () => {
+    assert.equal(path.dirname(directory), path.resolve(os.tmpdir()));
+    await rm(directory, { recursive: true });
+  });
+  const request = nanokaArtworkRequests("characters", [{ id: "1512" }])[0];
+  const page = {
+    retcode: 0,
+    data: {
+      page: {
+        id: "6565",
+        name: "Robin • Summeretto",
+        beta: false,
+        status: "Online",
+        icon_url:
+          "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/avatar.png",
+      },
+    },
+  };
+  const wrongCrop = await sharp({
+    create: { width: 118, height: 130, channels: 4, background: "transparent" },
+  })
+    .png()
+    .toBuffer();
+  await assert.rejects(
+    acquireHoyowikiAvatarFallback(request, directory, async (url) =>
+      url.includes("entry_page?")
+        ? Buffer.from(JSON.stringify(page))
+        : wrongCrop
+    ),
+    /must be 160×188/
+  );
+  page.data.page.name = "Robin";
+  await assert.rejects(
+    acquireHoyowikiAvatarFallback(request, directory, async () =>
+      Buffer.from(JSON.stringify(page))
+    ),
+    /identity mismatch/
+  );
+  assert.equal(
+    await acquireHoyowikiAvatarFallback(
+      nanokaArtworkRequests("characters", [{ id: "1511" }])[0],
+      directory,
+      async () => {
+        throw new Error("Must not fetch");
+      }
+    ),
+    null
+  );
+});
 
 test("Nanoka gallery variants keep distinct character and Light Cone artwork", () => {
   const character = nanokaArtworkRequests("characters", [{ id: "8005" }]);

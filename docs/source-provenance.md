@@ -200,9 +200,9 @@ also fails for explicit review instead of generating an unverified URL.
 
 ## Nanoka catalog artwork
 
-Character, Light Cone, Relic and Planar Ornament artwork comes exclusively from
+Character, Light Cone, Relic and Planar Ornament artwork primarily comes from
 Nanoka's gallery assets. HoYoWiki remains a release/text evidence source; its
-uploaded images do not override catalog artwork. The artwork selection does not
+uploaded images do not override available Nanoka artwork. The artwork selection does not
 change normalized game values, release status, names or account data.
 
 `node scripts/nanoka-assets.mjs` reads the checksummed current catalog and acquires
@@ -225,6 +225,17 @@ manifest. `assets:webp` restores these bytes without another lossy conversion or
 the former 384 px Light Cone downscale. The runtime lookup distinguishes variants;
 default Character art is `avatar`, and default Light Cone art is `portrait`.
 Existing round Character usages explicitly request `round`.
+
+Three audited Character Avatar fallbacks are allowed only after Nanoka returns
+404: 1507 (HoYoWiki page 5217), 1512 (6565), and 1513 (6566). Acquisition validates
+the live English page identity, release status, official upload host and exactly
+160 × 188 source dimensions. The manifest explicitly records `source_provider:
+"hoyowiki"`, the Nanoka 404, HoYoWiki page URL/checksum and original image checksum.
+Already-WebP responses are preserved byte-for-byte even when their URL ends in
+`.png`; actual PNG responses retain their original bytes and use lossless WebP
+for rendering. Cached restoration verifies both source and runtime checksums.
+Normal acquisition retries Nanoka first, so a newly available primary image
+replaces the fallback. HoYoWiki's 118 × 130 Aha icon is intentionally not accepted.
 
 Trailblazer genders and Paths use their own stable Nanoka IDs directly, replacing
 the former animated HoYoWiki frame extraction. Missing preview variants are

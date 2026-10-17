@@ -11,6 +11,10 @@ import {
   saveJson,
   sha256,
 } from "./crawl-common.mjs";
+import {
+  acquireHoyowikiAvatarFallback,
+  validateHoyowikiAvatarFallback,
+} from "./hoyowiki-avatar-fallback.mjs";
 
 const host = "https://static.nanoka.cc/assets/hsr";
 export const catalogArtworkKinds = [
@@ -176,12 +180,33 @@ export async function publishNanokaArtwork({
       .map((entry) => [entry.source_url, entry])
   );
   const downloads = new Map();
+  const fallbackByPrimaryUrl = new Map(
+    previous.entries
+      .filter((entry) => entry.source_provider === "hoyowiki")
+      .map((entry) => [entry.primary_source_url, entry])
+  );
   await mkdir(path.join(outputDirectory, "webp"), { recursive: true });
   const entries = await mapConcurrent(inventory.requests, async (request) => {
     if (!downloads.has(request.source_url))
       downloads.set(
         request.source_url,
         (async () => {
+          const previousFallback = fallbackByPrimaryUrl.get(request.source_url);
+          if (cached && previousFallback) {
+            await validateHoyowikiAvatarFallback(
+              previousFallback,
+              outputDirectory
+            );
+            const bytes = await readFile(
+              path.join(outputDirectory, previousFallback.path)
+            );
+            if (
+              sha256(bytes) !== previousFallback.sha256 ||
+              bytes.length !== previousFallback.byte_count
+            )
+              throw new Error(`Corrupted HoYoWiki Avatar cache: ${request.id}`);
+            return previousFallback;
+          }
           const absent = cachedUnavailableArtwork(
             request,
             unavailable.get(request.source_url),
@@ -206,8 +231,18 @@ export async function publishNanokaArtwork({
                 request.kind === "character" &&
                 request.variant === "avatar" &&
                 error.message.startsWith("Source HTTP 404:")
-              )
-                return { availability: "unavailable", source_http_status: 404 };
+              ) {
+                const fallback = await acquireHoyowikiAvatarFallback(
+                  request,
+                  outputDirectory
+                );
+                return (
+                  fallback ?? {
+                    availability: "unavailable",
+                    source_http_status: 404,
+                  }
+                );
+              }
               throw error;
             }
           }

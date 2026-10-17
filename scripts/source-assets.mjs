@@ -2,6 +2,7 @@ import { copyFile, mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { root, sha256 } from "./crawl-common.mjs";
 import { currencyWarAssetKinds } from "./currency-war-assets.mjs";
+import { validateHoyowikiAvatarFallback } from "./hoyowiki-avatar-fallback.mjs";
 import {
   catalogArtworkKinds,
   nanokaArtworkRequests,
@@ -70,7 +71,12 @@ export async function restoreSourceAssets(lookup) {
     )
       throw new Error(`Invalid tracked source asset entry: ${key}`);
     sourceKeys.add(key);
-    if (entry.kind === "character" || entry.kind === "light-cone") {
+    const hoyowiki = entry.source_provider === "hoyowiki";
+    if (hoyowiki) await validateHoyowikiAvatarFallback(entry, directory);
+    if (
+      !hoyowiki &&
+      (entry.kind === "character" || entry.kind === "light-cone")
+    ) {
       const expected = nanokaArtworkRequests(
         entry.kind === "character" ? "characters" : "light_cones",
         [{ id: entry.id }]
@@ -78,7 +84,10 @@ export async function restoreSourceAssets(lookup) {
       if (entry.source_url !== expected.source_url)
         throw new Error(`Unexpected Nanoka artwork URL: ${key}`);
     }
-    if (!entry.source_url.startsWith("https://static.nanoka.cc/assets/hsr/"))
+    if (
+      !hoyowiki &&
+      !entry.source_url.startsWith("https://static.nanoka.cc/assets/hsr/")
+    )
       throw new Error(`Non-Nanoka source artwork: ${key}`);
     if (entry.availability === "unavailable") {
       if (
