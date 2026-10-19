@@ -143,6 +143,39 @@ describe("scanner manager connection", () => {
     ).rejects.toMatchObject({ code: "response" });
   });
 
+  it("preserves the companion's validation reason when a batch is rejected", async () => {
+    const envelope = ManagerInstructionEnvelopeSchema.parse(
+      JSON.parse(
+        readFileSync(
+          "tests/fixtures/scanner/manager-instructions-v1.json",
+          "utf8"
+        )
+      )
+    );
+    const feedback = {
+      zh: "管理指令无效",
+      en: "Invalid manager instructions",
+      details: "HSR_MANAGER_INSTRUCTIONS_INVALID: duplicate matcher",
+    };
+    const fetch = vi.fn((url: string) =>
+      Promise.resolve(
+        url.endsWith("/manage")
+          ? response({ error: feedback }, 400)
+          : response(idle)
+      )
+    );
+    vi.stubGlobal("fetch", fetch);
+    await expect(
+      new ScannerManagerClient(8765).apply(envelope)
+    ).rejects.toMatchObject({
+      code: "request",
+      feedback,
+    });
+    expect(
+      fetch.mock.calls.filter(([url]) => url.endsWith("/manage"))
+    ).toHaveLength(1);
+  });
+
   it("shows disconnected guidance by the action without sending instructions", async () => {
     const fetch = vi.fn().mockRejectedValue(new TypeError("network"));
     vi.stubGlobal("fetch", fetch);

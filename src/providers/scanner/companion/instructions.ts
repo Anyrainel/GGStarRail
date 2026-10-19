@@ -225,11 +225,23 @@ export async function createManagerInstructionPreview(
     ...plan,
   }));
   const actionability = summarizeInstructionActionability(proposedInstructions);
+  // The companion rejects duplicate matchers for the entire envelope. Keep
+  // these in the review counts, but omit every ambiguous instruction on wire.
+  const ambiguousIds = new Set(
+    actionability.instructions
+      .filter(({ reasons }) => reasons.includes("ambiguous-matcher"))
+      .map(({ instructionId }) => instructionId)
+  );
   const omittedInstructionIds = proposedInstructions
-    .filter(isLockedDiscardInstruction)
+    .filter(
+      (instruction) =>
+        isLockedDiscardInstruction(instruction) ||
+        ambiguousIds.has(instruction.id)
+    )
     .map(({ id }) => id);
+  const omittedIds = new Set(omittedInstructionIds);
   const instructions = proposedInstructions.filter(
-    (instruction) => !isLockedDiscardInstruction(instruction)
+    (instruction) => !omittedIds.has(instruction.id)
   );
   const semanticPayload = JSON.stringify({ referenceRevision, instructions });
   const idempotencyKey = `sha256:${await sha256(semanticPayload)}`;

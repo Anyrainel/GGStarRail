@@ -92,10 +92,15 @@ export class ScannerManagerClient {
       if (signal?.aborted) throw error;
       throw new ScannerManagerError("connect");
     }
-    if (!response.ok)
-      throw new ScannerManagerError(
-        response.status === 409 ? "busy" : "request"
+    if (!response.ok) {
+      const failure = FailureSchema.safeParse(
+        await response.json().catch(() => null)
       );
+      throw new ScannerManagerError(
+        response.status === 409 ? "busy" : "request",
+        failure.success ? failure.data.error : undefined
+      );
+    }
     try {
       return await response.json();
     } catch {

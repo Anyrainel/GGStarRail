@@ -95,7 +95,7 @@ export function TriageManagerDialog({
         ],
         [
           "triage.managerBlockedLockedDiscard",
-          preview?.omittedInstructionIds.length ?? 0,
+          actionability.reasonCounts.locked,
         ],
       ]
     : [];

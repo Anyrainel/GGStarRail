@@ -204,7 +204,9 @@ order; `requestId` is excluded. The scanner rebinds each matcher to the current
 reference and observation before device actions. Both prior lock and discard
 values must be known, fresh, and equal to the observation; unknown prior state,
 equipped pieces, and duplicate or ambiguous visible matchers remain
-preview-only. The manager envelope sets
+preview-only. Repeated matchers and locked discard instructions stay in the
+website preview counts but are omitted from the submitted envelope; the
+idempotency key covers only the submitted instructions. The manager envelope sets
 `accountIdentifiersIncluded`, `rawPacketDataIncluded`, and
 `serverItemIdentifiersIncluded` to literal `false` and excludes local IDs.
 GGStarRail never emits salvage, delete, equip, or unlock operations.
