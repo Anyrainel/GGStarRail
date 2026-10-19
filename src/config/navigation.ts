@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   Archive,
+  ArrowUpRight,
   Boxes,
   Coins,
   Crosshair,
@@ -10,6 +11,7 @@ import {
   Gem,
   Library,
   Lightbulb,
+  ListChecks,
   SlidersHorizontal,
   Trophy,
   UserRound,
@@ -25,6 +27,8 @@ export const APP_PATHS = {
   support: "/account/support",
   characters: "/account-data/characters",
   inventory: "/account-data/inventory",
+  recommendations: "/account-data/recommendations",
+  evaluation: "/account-data/evaluation",
   resources: "/account-data/resources",
   triage: "/account-data/triage",
   teamDamage: "/team-damage/analysis",
@@ -72,6 +76,16 @@ export const NAVIGATION_SECTIONS: readonly NavigationSection[] = [
         icon: UsersRound,
       },
       { path: APP_PATHS.inventory, labelKey: "nav.inventory", icon: Boxes },
+      {
+        path: APP_PATHS.recommendations,
+        labelKey: "route.recommendations.title",
+        icon: ArrowUpRight,
+      },
+      {
+        path: APP_PATHS.evaluation,
+        labelKey: "route.evaluation.title",
+        icon: ListChecks,
+      },
       {
         path: APP_PATHS.resources,
         labelKey: "nav.resources",

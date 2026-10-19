@@ -23,6 +23,14 @@ const INDEX_COPY: Partial<
     title: "home.index.resources.title",
     description: "home.index.resources.description",
   },
+  [APP_PATHS.recommendations]: {
+    title: "route.recommendations.title",
+    description: "route.recommendations.description",
+  },
+  [APP_PATHS.evaluation]: {
+    title: "route.evaluation.title",
+    description: "route.evaluation.description",
+  },
   [APP_PATHS.triage]: {
     title: "home.index.triage.title",
     description: "home.index.triage.description",

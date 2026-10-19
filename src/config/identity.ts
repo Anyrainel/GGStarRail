@@ -15,6 +15,7 @@ export const STORAGE_KEYS = {
   relicPriority: "ggstarrail:relic-priority:v1",
   tierLibrary: "ggstarrail:tier-library:v1",
   trailblazerAppearance: "ggstarrail:trailblazer-appearance:v1",
+  greeting: "ggstarrail:greeting:v1",
 } as const;
 
 export const BACKUP_IDENTITY = {

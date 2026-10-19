@@ -12,6 +12,16 @@ import NotFoundPage from "@/pages/NotFoundPage";
 
 const CharacterView = lazy(() => import("@/pages/game-account/CharacterView"));
 const InventoryView = lazy(() => import("@/pages/game-account/InventoryView"));
+const ScoreUpView = lazy(() =>
+  import("@/pages/game-account/ScoreUpView").then((module) => ({
+    default: module.ScoreUpView,
+  }))
+);
+const EvaluationView = lazy(() =>
+  import("@/pages/game-account/EvaluationView").then((module) => ({
+    default: module.EvaluationView,
+  }))
+);
 const ResourceView = lazy(() =>
   import("@/pages/game-account/ResourceView").then((module) => ({
     default: module.ResourceView,
@@ -101,6 +111,8 @@ export default function App() {
           />
           <Route path={APP_PATHS.characters} element={<CharacterView />} />
           <Route path={APP_PATHS.inventory} element={<InventoryView />} />
+          <Route path={APP_PATHS.recommendations} element={<ScoreUpView />} />
+          <Route path={APP_PATHS.evaluation} element={<EvaluationView />} />
           <Route path={APP_PATHS.resources} element={<ResourceView />} />
           <Route
             path="/account-data/light-cones"

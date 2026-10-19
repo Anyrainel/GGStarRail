@@ -52,6 +52,7 @@ export const TRIAGE_REASON_KEY: Readonly<Record<TriageReason, MessageKey>> = {
   "keep-score": "triage.reason.keepScore",
   "review-score": "triage.reason.reviewScore",
   "low-score": "triage.reason.lowScore",
+  "upgrade-potential": "triage.reason.upgradePotential",
 };
 
 /** Grade filter buckets; a Relic with no matching build has no grade. */

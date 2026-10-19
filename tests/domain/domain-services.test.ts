@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { evaluateAccountTriage } from "@/domain/build/evaluation";
 import { matchesComputedFilter } from "@/domain/build/filters";
 import type {
   BuildConfiguration,
@@ -13,7 +14,7 @@ import {
 } from "@/domain/build/scoring";
 import { triageRelic } from "@/domain/build/triage";
 import { relicCategory } from "@/domain/game-account/schemas";
-import { makeRelic } from "../fixtures";
+import { makeAccountSnapshot, makeRelic } from "../fixtures";
 
 const profile: ScoreProfile = {
   id: "score:crit",
@@ -75,6 +76,86 @@ const rules: TriageRules = {
 };
 
 describe("HSR build services", () => {
+  const build: BuildConfiguration = {
+    id: "build:triage",
+    characterDefinitionId: "character:trailblazer",
+    scoreProfileId: profile.id,
+    category: "cavern",
+    cavern: { mode: "four-piece", setId: "relic-set:1" },
+    preferredMainStats: { body: ["crit-rate"], feet: ["hp-percent"] },
+  };
+
+  function triage(relic: ReturnType<typeof makeRelic>, builds = [build]) {
+    return evaluateAccountTriage(
+      { ...makeAccountSnapshot(), relics: [relic] },
+      builds,
+      [profile],
+      { ...rules, reviewScoreAtLeast: 5 },
+      scoringContext
+    )[0]!;
+  }
+
+  it("uses triage thresholds below the build filter's grade-C floor", () => {
+    const result = triage(
+      makeRelic({
+        mainStat: { statId: "HPDelta", value: 705 },
+        substats: [
+          { statId: "crit-rate", value: 1.6 },
+          { statId: "crit-dmg", value: 3.2 },
+        ],
+      })
+    );
+    expect(result.score).toBeGreaterThan(5);
+    expect(result.score).toBeLessThan(profile.gradeThresholds.c);
+    expect(result.matchingBuildIds).toEqual([build.id]);
+    expect(result.result.decision).toBe("review");
+  });
+
+  it.each([4, 5])(
+    "reviews an unenhanced %i-star piece with an unrevealed useful substat",
+    (rarity) => {
+      const result = triage(
+        makeRelic({
+          rarity,
+          level: 0,
+          mainStat: { statId: "HPDelta", value: 112 },
+          substats: [
+            { statId: "crit-rate", value: 3.2 },
+            { statId: "attack-flat", value: 16 },
+            { statId: "hp-percent", value: 4 },
+          ],
+        })
+      );
+      expect(result.result).toEqual({
+        decision: "review",
+        reasons: ["upgrade-potential"],
+      });
+    }
+  );
+
+  it("does not assume revealed off-target substats can change on enhancement", () => {
+    const relic = makeRelic({
+      level: 0,
+      mainStat: { statId: "HPDelta", value: 112 },
+      substats: [
+        { statId: "crit-rate", value: 3.2 },
+        { statId: "attack-flat", value: 16 },
+        { statId: "hp-percent", value: 4 },
+        { statId: "other", value: 1 },
+      ],
+    });
+    expect(triage(relic).result.decision).toBe("salvage-review");
+    expect(triage({ ...relic, locked: true }).result.decision).toBe("keep");
+  });
+
+  it("reviews a category whose only build is disabled", () => {
+    const result = triage(makeRelic(), [{ ...build, enabled: false }]);
+    expect(result.result).toEqual({
+      decision: "review",
+      reasons: ["no-builds"],
+    });
+  });
+
   it("normalizes flat and percentage-point substats into high-roll counts", () => {
     const result = scoreRelic(
       makeRelic({

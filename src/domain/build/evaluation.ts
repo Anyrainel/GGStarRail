@@ -318,6 +318,51 @@ export function evaluateEquippedBuild(
   };
 }
 
+function canDevelopForFilter(
+  relic: Relic,
+  filter: BuildRelicFilter,
+  context: RelicScoringContext
+): boolean {
+  const piece = context.relicPieces.get(relic.definitionId);
+  if (!piece)
+    throw new Error(`Missing triage reference for Relic ${relic.definitionId}`);
+  const remaining =
+    Math.floor(piece.max_level / 3) - Math.floor(relic.level / 3);
+  if (remaining <= 0) return false;
+  const current = new Set(relic.substats.map(({ statId }) => statId));
+  const available = new Set(
+    context.subAffixes
+      .filter(
+        (affix) =>
+          affix.group_id === piece.sub_affix_group &&
+          affix.property_id !== relic.mainStat.statId
+      )
+      .map((affix) => affix.property_id)
+  );
+  const desired = filter.weightedStatIds.filter((statId) =>
+    available.has(statId)
+  );
+  const existing = desired.filter((statId) => current.has(statId)).length;
+  const openLines = Math.min(remaining, Math.max(0, 4 - current.size));
+  const possibleDesired = Math.min(openLines, desired.length - existing);
+  const required = Math.min(
+    filter.minimumDesiredStats,
+    filter.weightedStatIds.filter((statId) => statId !== relic.mainStat.statId)
+      .length
+  );
+  const mustHave = filter.mustHaveStatIds.filter(
+    (statId) => statId !== relic.mainStat.statId
+  );
+  return (
+    existing + possibleDesired >= required &&
+    (mustHave.length === 0 ||
+      mustHave.some(
+        (statId) =>
+          current.has(statId) || (openLines > 0 && available.has(statId))
+      ))
+  );
+}
+
 export function evaluateAccountTriage(
   account: AccountSnapshot,
   builds: readonly BuildConfiguration[],
@@ -327,6 +372,7 @@ export function evaluateAccountTriage(
 ): RelicTriageEvaluation[] {
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const buildInputs = builds.flatMap((build) => {
+    if (build.enabled === false) return [];
     const profile = profileById.get(build.scoreProfileId);
     return profile
       ? [{ build, profile, filters: deriveBuildFilters(build, profile) }]
@@ -334,13 +380,23 @@ export function evaluateAccountTriage(
   });
   return account.relics
     .map((relic) => {
+      let upgradePotential = false;
       const matches = buildInputs.flatMap(({ build, profile, filters }) => {
         const filter = filters.find(
           (candidate) => candidate.slot === relic.slot
         );
         if (!filter) return [];
         const score = scoreRelic(relic, profile, context, build);
-        if (!evaluateBuildFilter(relic, filter, score.total).matches) return [];
+        // Triage thresholds belong to the user's triage rules. The build's
+        // grade-C filter must not hide lower-scoring matching pieces here.
+        const match = evaluateBuildFilter(relic, filter);
+        if (
+          match.structuralMatch &&
+          canDevelopForFilter(relic, filter, context)
+        ) {
+          upgradePotential = true;
+        }
+        if (!match.matches) return [];
         return [
           {
             buildId: build.id,
@@ -360,6 +416,7 @@ export function evaluateAccountTriage(
             ({ build }) => build.category === relicCategory(relic.slot)
           ).length,
           matchingBuildCount: matches.length,
+          upgradePotential,
         },
         rules
       );

@@ -10,6 +10,7 @@ import {
   type BuildPresetSubscription,
   reconcileBuildPreset,
 } from "@/domain/build/presetSubscription";
+import { equipRecommendedRelics } from "@/domain/build/recommendations";
 import type {
   BuildConfiguration,
   ScoreProfile,
@@ -32,6 +33,11 @@ import {
 } from "./schemas";
 
 interface WorkspaceActions {
+  applyRecommendedLoadout: (
+    expectedAccount: AccountSnapshot,
+    characterKey: string,
+    relicKeys: readonly string[]
+  ) => boolean;
   subscribeBuildPreset: (
     presetId: string,
     snapshot: BuildPresetSnapshot
@@ -74,6 +80,21 @@ export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
       ...structuredClone(DEFAULT_WORKSPACE),
+      applyRecommendedLoadout: (expectedAccount, characterKey, relicKeys) => {
+        let applied = false;
+        set((state) => {
+          if (state.account !== expectedAccount) return state;
+          const result = equipRecommendedRelics(
+            state.account,
+            characterKey,
+            relicKeys
+          );
+          if (result.status !== "applied") return state;
+          applied = true;
+          return { account: result.account };
+        });
+        return applied;
+      },
       subscribeBuildPreset: (presetId, snapshot) => {
         const { builds, scoreProfiles, characterLightConeIds, triageRules } =
           structuredClone(snapshot);

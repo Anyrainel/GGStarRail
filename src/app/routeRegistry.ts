@@ -9,6 +9,8 @@ export interface RouteDefinition {
     | "scanner-download"
     | "characters"
     | "inventory"
+    | "recommendations"
+    | "evaluation"
     | "resources"
     | "builds"
     | "filters"
@@ -65,6 +67,18 @@ export const ROUTE_REGISTRY: readonly RouteDefinition[] = [
     path: APP_PATHS.inventory,
     titleKey: "route.inventory.title",
     descriptionKey: "route.inventory.description",
+  },
+  {
+    id: "recommendations",
+    path: APP_PATHS.recommendations,
+    titleKey: "route.recommendations.title",
+    descriptionKey: "route.recommendations.description",
+  },
+  {
+    id: "evaluation",
+    path: APP_PATHS.evaluation,
+    titleKey: "route.evaluation.title",
+    descriptionKey: "route.evaluation.description",
   },
   {
     id: "resources",

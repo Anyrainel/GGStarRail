@@ -1,3 +1,4 @@
+import { estimateRelicPotential } from "@/domain/build/completion";
 import {
   BUILD_SLOT_ORDER,
   type BuildLoadoutResult,
@@ -91,52 +92,11 @@ function usefulSubstatCount(relic: Relic, profile: ScoreProfile): number {
 
 function optimisticLevelScore(
   relic: Relic,
-  score: RelicScore,
-  targetLevel: number,
   profile: ScoreProfile,
   input: ResourceRecommendationInput,
   build: BuildConfiguration
 ): number {
-  const piece = input.scoringContext.relicPieces.get(relic.definitionId);
-  if (!piece) {
-    throw new Error(
-      `Missing resource reference for Relic ${relic.definitionId}`
-    );
-  }
-  const strongestEligibleWeight = Math.max(
-    0,
-    ...input.scoringContext.subAffixes
-      .filter(
-        (affix) =>
-          affix.group_id === piece.sub_affix_group &&
-          affix.property_id !== relic.mainStat.statId
-      )
-      .map((affix) => profile.statWeights[affix.property_id] ?? 0)
-  );
-  const remainingEnhancements = Math.max(
-    0,
-    Math.floor(targetLevel / 3) - Math.floor(relic.level / 3)
-  );
-  const optimisticWeighted =
-    score.weightedRolls + remainingEnhancements * strongestEligibleWeight;
-  const optimisticSubstatScore =
-    score.maximumWeightedRolls > 0
-      ? Math.min(100, (optimisticWeighted / score.maximumWeightedRolls) * 100)
-      : 0;
-  const maxLevelScore = scoreRelic(
-    { ...relic, level: targetLevel },
-    profile,
-    input.scoringContext,
-    build
-  );
-  const mainWeight = profile.includeMainStat ? profile.mainStatWeight : 0;
-  return round(
-    Math.min(
-      100,
-      maxLevelScore.mainStatScore * mainWeight +
-        optimisticSubstatScore * (1 - mainWeight)
-    )
-  );
+  return estimateRelicPotential(relic, profile, input.scoringContext, build);
 }
 
 function optimisticRerollScore(
@@ -239,8 +199,6 @@ function suggestionsForSlot(
       .map(({ relic, score }) => {
         const optimisticScore = optimisticLevelScore(
           relic,
-          score,
-          target.maxLevel,
           profile,
           input,
           build
@@ -346,6 +304,12 @@ export function generateResourceSuggestions(
     input.scoreProfiles.map((profile) => [profile.id, profile])
   );
   const suggestions = input.builds.flatMap((build) => {
+    if (build.enabled === false) return [];
+    const character = input.account.characters.find(
+      (entry) => entry.definitionId === build.characterDefinitionId
+    );
+    if (!character || character.eidolon < (build.minimumEidolon ?? 0))
+      return [];
     const profile = profileById.get(build.scoreProfileId);
     if (!profile) return [];
     const filters = deriveBuildFilters(build, profile);

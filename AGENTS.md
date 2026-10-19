@@ -49,6 +49,8 @@ labels, and `src/app/App.tsx` for the actual route components.
 | Home | `/` | `src/pages/HomePage.tsx` |
 | Characters | `/account-data/characters` | `src/pages/game-account/CharacterView.tsx` |
 | Inventory | `/account-data/inventory` | `src/pages/game-account/InventoryView.tsx` |
+| Score Up | `/account-data/recommendations` | `src/pages/game-account/ScoreUpView.tsx` |
+| Build Evaluation | `/account-data/evaluation` | `src/pages/game-account/EvaluationView.tsx` |
 | Resources | `/account-data/resources` | `src/pages/game-account/ResourceView.tsx` |
 | Relic Triage | `/account-data/triage` | `src/pages/game-account/TriageView.tsx` |
 | DMG Optimizer | `/team-damage/optimizer` | `src/pages/teams/TeamDamagePage.tsx` |

@@ -93,6 +93,30 @@ beforeAll(async () => {
 });
 
 describe("HSR resource suggestions", () => {
+  it("does not spend resources on disabled, unowned or unavailable Eidolon builds", () => {
+    expect(
+      generateResourceSuggestions({
+        ...setup,
+        builds: setup.builds.flatMap((build) => [
+          { ...build, enabled: false },
+          {
+            ...build,
+            id: `${build.id}:unowned`,
+            characterDefinitionId: "unknown",
+          },
+          { ...build, id: `${build.id}:e6`, minimumEidolon: 6 },
+        ]),
+        account: {
+          ...setup.account,
+          characters: setup.account.characters.map((character) => ({
+            ...character,
+            eidolon: 0,
+          })),
+        },
+        settings: DEFAULT_RESOURCE_SETTINGS,
+      })
+    ).toEqual([]);
+  });
   it("labels existing Relic actions with their actual main stat when a build accepts alternatives", () => {
     const build = setup.builds[0]!;
     if (build.category !== "cavern") throw new Error("Expected Cavern build");

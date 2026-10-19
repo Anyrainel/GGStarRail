@@ -12,6 +12,25 @@ export default defineConfig({
   reporter: [["list"]],
   use: {
     baseURL,
+    // Most workflows start after the welcome flow. Startup tests explicitly
+    // replace this with empty storage to exercise a first visit and updates.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: new URL(baseURL).origin,
+          localStorage: [
+            {
+              name: "ggstarrail:greeting:v1",
+              value: JSON.stringify({
+                version: 1,
+                state: { buildPromptSeen: true, lastSeenUpdate: "2099-12-31" },
+              }),
+            },
+          ],
+        },
+      ],
+    },
     locale: "en-US",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",

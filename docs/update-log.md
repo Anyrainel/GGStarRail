@@ -1,10 +1,17 @@
 # Player-facing update history
 
-The home page's roaming Pac-Man opens the bilingual What's New dialog.
+The home page's roaming Pac-Man opens the bilingual full-history side sheet.
 GGStarRail owns its history independently from GenshinTools.
 
+`app/StartupDialogs.tsx` shows the newest dated entry in a responsive dialog
+when its date is newer than the browser's last-read date. It offers the same
+full-history side sheet. The missing-build first-use prompt takes precedence;
+closing it acknowledges the current update too, avoiding consecutive dialogs.
+Closing either dialog persists browser-local preferences under
+`ggstarrail:greeting:v1`; account and build exports do not include them.
+
 Publish approved entries in `src/content/updatelog/en.md` and
-`src/content/updatelog/zh-CN.md`. Before the first approved entry, the dialog
+`src/content/updatelog/zh-CN.md`. Before the first approved entry, the side sheet
 shows its localized empty state. Both files use the same structure:
 
 ```markdown

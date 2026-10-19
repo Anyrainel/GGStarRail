@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
+import { StartupDialogs } from "@/app/StartupDialogs";
 import {
   AccountImportAction,
   AccountImportDialog,
@@ -31,6 +32,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         }}
       />
       {children}
+      <StartupDialogs />
     </LayoutShell>
   );
 }

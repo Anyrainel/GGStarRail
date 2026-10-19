@@ -1,5 +1,6 @@
 import { PackageSearch } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SourceCoverageNotice } from "@/components/builds/SourceCoverageNotice";
 import { WorkspaceStartState } from "@/components/game-account/imports/WorkspaceStartState";
 import { AccountSourceBadge } from "@/components/game-account/planning/AccountSourceBadge";
@@ -53,6 +54,9 @@ const ALL_ACTIONS: ResourceSettings["enabledActions"] = {
 
 export function ResourceView() {
   const { locale, t } = useI18n();
+  const [params, setParams] = useSearchParams();
+  const selectedCharacterId = params.get("character");
+  const selectedBuildId = params.get("build");
   const account = useWorkspaceStore((state) => state.account);
   const builds = useWorkspaceStore((state) => state.builds);
   const scoreProfiles = useWorkspaceStore((state) => state.scoreProfiles);
@@ -93,12 +97,22 @@ export function ResourceView() {
   // Every action is generated so a hidden action keeps its count; the saved
   // action toggles only decide which rows are shown.
   const minimumScoreGap = settings.minimumScoreGap;
+  const selectedBuilds = useMemo(
+    () =>
+      builds.filter(
+        (build) =>
+          (!selectedCharacterId ||
+            build.characterDefinitionId === selectedCharacterId) &&
+          (!selectedBuildId || build.id === selectedBuildId)
+      ),
+    [builds, selectedBuildId, selectedCharacterId]
+  );
   const suggestions = useMemo(
     () =>
       account && scoringContext
         ? generateResourceSuggestions({
             account,
-            builds,
+            builds: selectedBuilds,
             scoreProfiles,
             scoringContext,
             relicDefinitions,
@@ -107,7 +121,7 @@ export function ResourceView() {
         : [],
     [
       account,
-      builds,
+      selectedBuilds,
       minimumScoreGap,
       relicDefinitions,
       scoreProfiles,
@@ -243,6 +257,20 @@ export function ResourceView() {
         </span>
       </PageHeader>
       <div className="flex flex-wrap items-center gap-1.5 md:gap-3">
+        {(selectedCharacterId || selectedBuildId) && (
+          <CategoryChip
+            active
+            label={t("resource.clearSelection")}
+            onClick={() =>
+              setParams((current) => {
+                const next = new URLSearchParams(current);
+                next.delete("character");
+                next.delete("build");
+                return next;
+              })
+            }
+          />
+        )}
         {RESOURCE_ACTIONS.map((kind) => (
           <ResourceActionToggle
             key={kind}

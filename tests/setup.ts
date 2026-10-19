@@ -4,6 +4,8 @@ import path from "node:path";
 import { cleanup, configure } from "@testing-library/react";
 import { afterEach, beforeAll, beforeEach, vi } from "vitest";
 import { setReferenceLocale } from "@/config/referenceLocale";
+import { updateLogs } from "@/services/content/updateLog";
+import { useGreetingStore } from "@/stores/useGreetingStore";
 import { installTimerGuard } from "./helpers/timerGuard";
 
 let timerGuard: ReturnType<typeof installTimerGuard>;
@@ -54,6 +56,13 @@ beforeAll(installFixtureTransport);
 beforeEach(() => {
   timerGuard = installTimerGuard();
   localStorage.clear();
+  // Ordinary feature tests start after the first-use/update dialogs. Dedicated
+  // startup tests reset these preferences to exercise the actual entry flow.
+  useGreetingStore.setState({
+    buildPromptSeen: true,
+    lastSeenUpdate: updateLogs.en.entries[0]?.date ?? null,
+  });
+  localStorage.removeItem("ggstarrail:greeting:v1");
   setReferenceLocale("en");
   installFixtureTransport();
   Object.defineProperty(window, "matchMedia", {

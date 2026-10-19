@@ -8,6 +8,7 @@ export interface TriageContext {
   equipped: boolean;
   configuredBuildCount: number;
   matchingBuildCount: number;
+  upgradePotential?: boolean;
 }
 
 export type TriageReason =
@@ -19,7 +20,8 @@ export type TriageReason =
   | "no-build-match"
   | "keep-score"
   | "review-score"
-  | "low-score";
+  | "low-score"
+  | "upgrade-potential";
 
 export interface TriageResult {
   decision: TriageDecision;
@@ -43,10 +45,16 @@ export function triageRelic(
     return { decision: "review", reasons: ["no-builds"] };
   }
   if (context.matchingBuildCount === 0) {
+    if (context.upgradePotential) {
+      return { decision: "review", reasons: ["upgrade-potential"] };
+    }
     return { decision: "salvage-review", reasons: ["no-build-match"] };
   }
   if (context.score >= rules.keepScoreAtLeast) {
     return { decision: "keep", reasons: ["build-match", "keep-score"] };
+  }
+  if (context.upgradePotential) {
+    return { decision: "review", reasons: ["upgrade-potential"] };
   }
   if (context.score >= rules.reviewScoreAtLeast) {
     return { decision: "review", reasons: ["build-match", "review-score"] };
