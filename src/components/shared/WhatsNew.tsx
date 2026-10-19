@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { LocalizedSheetContent } from "@/components/shared/LocalizedSheetContent";
+import { NewsText } from "@/components/shared/NewsText";
 import { Sheet, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useI18n } from "@/i18n/I18nContext";
 import { updateLogs } from "@/services/content/updateLog";
@@ -466,7 +467,11 @@ export function WhatsNew({ children }: { children: ReactNode }) {
                 </h3>
                 <ul className="list-disc space-y-1 pl-5 text-sm">
                   {news.roadmap.map((item) => (
-                    <li key={item}>{item}</li>
+                    <li key={item}>
+                      <NewsText onNavigate={() => setOpen(false)}>
+                        {item}
+                      </NewsText>
+                    </li>
                   ))}
                 </ul>
               </section>
@@ -485,7 +490,11 @@ export function WhatsNew({ children }: { children: ReactNode }) {
                     </h4>
                     <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed">
                       {section.items.map((item) => (
-                        <li key={item}>{item}</li>
+                        <li key={item}>
+                          <NewsText onNavigate={() => setOpen(false)}>
+                            {item}
+                          </NewsText>
+                        </li>
                       ))}
                     </ul>
                   </section>

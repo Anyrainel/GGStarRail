@@ -20,7 +20,11 @@ shows its localized empty state. Both files use the same structure:
 ```
 
 Keep roadmap first and dates newest first. Omit empty sections. The files must
-have matching dates, sections, and bullet counts. All copy is plain text.
+have matching dates, sections, and bullet counts. Keep copy plain apart from
+inline Markdown links: `[label](/site-path)` for site navigation and
+`[label](https://example.com)` for external pages. Site links close the history
+sheet and navigate within the app; external links open a new tab. HTML and
+other Markdown formatting are not rendered.
 
 For updates, fetch origin and gather commits since the last log edit, including
 remote changes. For the first entry, summarize the current product rather than

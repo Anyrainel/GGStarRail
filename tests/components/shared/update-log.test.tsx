@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import { WhatsNew } from "@/components/shared/WhatsNew";
 import { I18nProvider } from "@/i18n/I18nContext";
@@ -38,9 +39,11 @@ describe("update history", () => {
   it("opens from the Pac-Man keyboard control and closes with Escape", () => {
     render(
       <I18nProvider>
-        <WhatsNew>
-          <div data-wn-card>Card</div>
-        </WhatsNew>
+        <MemoryRouter>
+          <WhatsNew>
+            <div data-wn-card>Card</div>
+          </WhatsNew>
+        </MemoryRouter>
       </I18nProvider>
     );
     const pacman = screen.getByLabelText("What’s New");
@@ -50,11 +53,16 @@ describe("update history", () => {
       expect(screen.getByText(entry.date)).toBeVisible();
       for (const section of entry.sections) {
         for (const item of section.items) {
-          expect(screen.getByText(item)).toBeVisible();
+          expect(screen.getByRole("dialog")).toHaveTextContent(
+            item.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+          );
         }
       }
     }
     expect(screen.queryByText("No updates yet.")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "GGScanner / GGScannerOCR" })
+    ).toHaveAttribute("href", "/download-scanner");
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
