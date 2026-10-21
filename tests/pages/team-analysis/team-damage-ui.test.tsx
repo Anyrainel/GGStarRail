@@ -338,7 +338,8 @@ describe("Team DMG detail", () => {
         "0:1102"
       ]?.eidolon
     ).toBe(2);
-  });
+    // This full navigation workflow needs the same CI budget as the roster flows.
+  }, 30_000);
 
   it("goes back through history to the grid that opened the team", async () => {
     const user = userEvent.setup();
