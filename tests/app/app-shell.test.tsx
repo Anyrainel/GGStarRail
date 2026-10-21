@@ -68,7 +68,7 @@ describe("GGArtifact family shell", () => {
     ).toHaveAttribute(
       "href",
       expect.stringContaining(
-        "/GOODScanner/releases/latest/download/GOODCapture.exe"
+        "/GGScanner/releases/latest/download/GGScanner.exe"
       )
     );
     expect(
@@ -76,7 +76,7 @@ describe("GGArtifact family shell", () => {
     ).toHaveAttribute(
       "href",
       expect.stringContaining(
-        "/GOODScanner/releases/latest/download/GOODScanner.exe"
+        "/GGScanner/releases/latest/download/GGScannerOCR.exe"
       )
     );
     expect(
